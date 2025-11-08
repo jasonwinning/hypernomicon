@@ -74,8 +74,8 @@ class MentionsAndDisplayIndexTest
 
   private static boolean firstDisplaysSecond(HDT_RecordWithMainText displayer, HDT_RecordWithMainText displayed)
   {
-    boolean rv1 = displayer.getMainText().getDisplayItemsUnmod().stream().filter(item -> item.type == DisplayItemType.diRecord)
-                                                                         .anyMatch(item -> item.record == displayed);
+    boolean rv1 = displayer.displayItemsStream().filter(item -> item.type == DisplayItemType.diRecord)
+                                                .anyMatch(item -> item.record == displayed);
 
     HDT_RecordWithMainText mainSpoke = displayer.mainSpoke();
 
@@ -179,7 +179,7 @@ class MentionsAndDisplayIndexTest
 
     assertTrue(firstMentionsSecond(person, term, false));
 
-    assertTrue(firstMentionsSecond(person, concept, false), "A concept's mentioners should include mentioners of its term");
+    assertFalse(firstMentionsSecond(person, concept, false), "A concept's mentioners should not automatically include mentioners of its term");
 
     // Cleanup
 

@@ -47,109 +47,91 @@ public class QueryWhereKeyWorks extends RecordQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected boolean evalInclude(HDT_RecordWithMainText recordWMT, HDT_Record specifiedRecord)
-  {
-    return (HDT_Record.isEmpty(specifiedRecord, false) == false) &&
-           recordWMT.getMainText().getKeyWorksUnmod().stream().anyMatch(keyWork -> keyWork.getRecord() == specifiedRecord);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected boolean evalExclude(HDT_RecordWithMainText recordWMT, HDT_Record specifiedRecord)
-  {
-    return (HDT_Record.isEmpty(specifiedRecord, false) == false) &&
-           recordWMT.getMainText().getKeyWorksUnmod().stream().noneMatch(keyWork -> keyWork.getRecord() == specifiedRecord);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected boolean evalEmpty(HDT_RecordWithMainText recordWMT)
-  {
-    return recordWMT.getMainText().getKeyWorksUnmod().isEmpty();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected boolean evalNotEmpty(HDT_RecordWithMainText recordWMT)
-  {
-    return recordWMT.getMainText().getKeyWorksUnmod().isEmpty() == false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public final boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
   {
     vp1.setPopulator(row, Populator.createWithIDMatching(cvtOperand,
 
-      new ItemOperatorHTC(itemOpEqualTo, "Include record", true)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          return evalInclude((HDT_RecordWithMainText) record, HyperTableCell.getRecord(op3));
-        }
+      createIncludeExcludeOperatorCell(itemOpEqualTo   ),
+      createIncludeExcludeOperatorCell(itemOpNotEqualTo),
 
-        @Override public boolean op1Change(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-        {
-          vp2.setPopulator(row, new RecordTypePopulator(operandRecordTypesStream()));
-          vp3.setPopulator(row, new RecordByTypePopulator());
-
-          return true;
-        }
-
-        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-        {
-          return recordByTypeOpChange(op2, row, vp3);
-        }
-      },
-
-//---------------------------------------------------------------------------
-
-      new ItemOperatorHTC(itemOpNotEqualTo, "Exclude record", true)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          return evalExclude((HDT_RecordWithMainText) record, HyperTableCell.getRecord(op3));
-        }
-
-        @Override public boolean op1Change(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-        {
-          vp2.setPopulator(row, new RecordTypePopulator(operandRecordTypesStream()));
-          vp3.setPopulator(row, new RecordByTypePopulator());
-
-          return true;
-        }
-
-        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-        {
-          return recordByTypeOpChange(op2, row, vp3);
-        }
-      },
-
-//---------------------------------------------------------------------------
-
-      new ItemOperatorHTC(itemOpEmpty, "Empty", true)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          return evalEmpty((HDT_RecordWithMainText) record);
-        }
-      },
-
-//---------------------------------------------------------------------------
-
-      new ItemOperatorHTC(itemOpNotEmpty, "Not empty", true)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          return evalNotEmpty((HDT_RecordWithMainText) record);
-        }
-      }));
+      createMainTextEmptyOperatorCell(itemOpEmpty   ),
+      createMainTextEmptyOperatorCell(itemOpNotEmpty)));
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ItemOperatorHTC createIncludeExcludeOperatorCell(ItemOperator operator)
+  {
+    String caption = switch (operator)
+    {
+      case itemOpEqualTo    -> "Include record";
+      case itemOpNotEqualTo -> "Exclude record";
+      default               -> throw new IllegalArgumentException("Unsupported operator");
+    };
+
+    return new ItemOperatorHTC(operator, caption, true)
+    {
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        HDT_Record target = HyperTableCell.getRecord(op3);
+
+        return (HDT_Record.isEmpty(target, false) == false) && evalIncludesExcludes((HDT_RecordWithMainText) record, target, operator == itemOpEqualTo);
+      }
+
+      @Override public boolean op1Change(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+      {
+        vp2.setPopulator(row, new RecordTypePopulator(operandRecordTypesStream()));
+        vp3.setPopulator(row, new RecordByTypePopulator());
+        return true;
+      }
+
+      @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+      {
+        return recordByTypeOpChange(op2, row, vp3);
+      }
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ItemOperatorHTC createMainTextEmptyOperatorCell(ItemOperator operator)
+  {
+    String caption = switch (operator)
+    {
+      case itemOpEmpty    -> "Empty";
+      case itemOpNotEmpty -> "Not empty";
+      default             -> throw new IllegalArgumentException("Unsupported operator");
+    };
+
+    return new ItemOperatorHTC(operator, caption, true)
+    {
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        HDT_RecordWithMainText rec = (HDT_RecordWithMainText) record;
+
+        return evalEmptyNotEmpty(rec, operator == itemOpEmpty);
+      }
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected boolean evalEmptyNotEmpty(HDT_RecordWithMainText rec, boolean trueMeansEmpty)
+  {
+    return trueMeansEmpty == rec.keyWorksStream().findAny().isEmpty();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected boolean evalIncludesExcludes(HDT_RecordWithMainText rec, HDT_Record target, boolean includes)
+  {
+    return includes == rec.keyWorksStream().anyMatch(kw -> kw.getRecord() == target);
   }
 
 //---------------------------------------------------------------------------
@@ -171,8 +153,6 @@ public class QueryWhereKeyWorks extends RecordQuery
 
   @Override public final boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
   {
-    clearOperands(row, 3);
-
     return operatorOp2Change(op1, op1, op2, row, vp1, vp2, vp3);
   }
 

@@ -215,7 +215,7 @@ class MentionsIndex
         });
       }
 
-      mainText.getDisplayItemsUnmod().forEach(displayItem ->
+      mainText.displayItemsStream().forEach(displayItem ->
       {
         if (displayItem.type == diRecord)
         {
@@ -224,7 +224,7 @@ class MentionsIndex
         }
         else if (displayItem.type == diKeyWorks)
         {
-          mainText.getKeyWorksUnmod().stream().map(KeyWork::getRecord).forEach(keyWorkRecord ->
+          mainText.keyWorksStream().map(KeyWork::getRecord).forEach(keyWorkRecord ->
           {
             mentionedAnywhereToMentioners.addForward(keyWorkRecord, record);
             mentionedInDescToMentioners  .addForward(keyWorkRecord, record);
@@ -371,10 +371,8 @@ class MentionsIndex
 
     mentioners = switch(target.getType())
     {
-      // A term's "mentioners" should include mentioners of its concepts because they may be
-      // displayed records.
+      // A term's "mentioners" should include mentioners of its concepts.
 
-      case hdtConcept -> Stream.concat(mentioners, map.getForwardStream(((HDT_Concept)target).term.get()));
       case hdtTerm    -> Stream.concat(mentioners, ((HDT_Term)target).concepts.stream().flatMap(map::getForwardStream));
 
       // Include mentioners of investigations as mentioners of the corresponding person

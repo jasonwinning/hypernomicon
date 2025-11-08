@@ -23,6 +23,7 @@ import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
@@ -76,14 +77,17 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 
 //---------------------------------------------------------------------------
 
-  @Override public final boolean hasMainText() { return true; }
-  @Override public final boolean hasDesc()     { return true; }
-  @Override public final MainText getDesc()    { return mainText; }
+  @Override public final boolean hasMainText()    { return true; }
+  @Override public final boolean hasDesc()        { return true; }
+  @Override public final MainText getDesc()       { return mainText; }
 
-  public MainText getMainText()                { return mainText; }
-  public HDT_Hub getHub()                      { return hub; }
-  public boolean hasHub()                      { return hub != null; }
-  public HDT_RecordWithMainText mainSpoke()    { return hub == null ? this : hub.mainSpoke(false); }
+  public MainText getMainText()                   { return mainText; }
+  public List<KeyWork> keyWorksUnmod()            { return mainText.getKeyWorksUnmod(); }
+  public Stream<KeyWork> keyWorksStream()         { return mainText.keyWorksStream(); }
+  public Stream<DisplayItem> displayItemsStream() { return mainText.displayItemsStream(); }
+  public HDT_Hub getHub()                         { return hub; }
+  public boolean hasHub()                         { return hub != null; }
+  public HDT_RecordWithMainText mainSpoke()       { return hub == null ? this : hub.mainSpoke(false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -106,54 +110,47 @@ public abstract class HDT_RecordWithMainText extends HDT_RecordBase implements H
 
   public void addParentDisplayRecord()
   {
-    if (mainText.getPlain().strip().length() > 0) return;
+    if ((mainText.getPlain().strip().length() > 0) || displayItemsStream().anyMatch(displayItem -> displayItem.type == diRecord))
+      return;
 
-    HDT_RecordWithMainText parent = null;
-    List<DisplayItem> displayItems = mainText.getDisplayItemsCopy();
-    RecordType type = getType();
-
-    if (displayItems.stream().anyMatch(displayItem -> displayItem.type == diRecord)) return;
-
-    switch (type)
+    HDT_RecordWithMainText parent = switch (getType())
     {
-      case hdtPosition:
-
+      case hdtPosition ->
+      {
         HDT_Position position = (HDT_Position) this;
 
-        if (position.largerDebates.isEmpty() == false)
-          parent = position.largerDebates.getFirst();
-        else if (position.largerPositions.isEmpty() == false)
-          parent = position.largerPositions.getFirst();
+        if (position.largerDebates  .isEmpty() == false)  yield position.largerDebates  .getFirst();
+        if (position.largerPositions.isEmpty() == false)  yield position.largerPositions.getFirst();
 
-        break;
+        yield null;
+      }
 
-      case hdtArgument:
-
+      case hdtArgument ->
+      {
         HDT_Argument argument = (HDT_Argument) this;
 
-        if (argument.positions.isEmpty() == false)
-          parent = argument.positions.getFirst();
-        else if (argument.targetArgs.isEmpty() == false)
-          parent = argument.targetArgs.getFirst();
+        if (argument.positions .isEmpty() == false)  yield argument.positions .getFirst();
+        if (argument.targetArgs.isEmpty() == false)  yield argument.targetArgs.getFirst();
 
-        break;
+        yield null;
+      }
 
-      case hdtDebate:
-
+      case hdtDebate ->
+      {
         HDT_Debate debate = (HDT_Debate) this;
 
-        if (debate.largerDebates.isEmpty() == false)
-          parent = debate.largerDebates.getFirst();
+        yield debate.largerDebates.isEmpty() ? null : debate.largerDebates.getFirst();
+      }
 
-        break;
-
-      default: break;
-    }
+      default -> null;
+    };
 
     if ((parent == null) || isUnstoredRecord(parent)) return;
 
     boolean wasRunningConversion = db.runningConversion;
     db.runningConversion = true;
+
+    List<DisplayItem> displayItems = mainText.getDisplayItemsCopy();
 
     displayItems.add(new DisplayItem(parent));
     mainText.setDisplayItemsFromList(displayItems);

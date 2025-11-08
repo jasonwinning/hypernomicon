@@ -196,20 +196,20 @@ public abstract class Query<HDT_T extends HDT_Record>
 
   public abstract class ItemOperatorHTC extends AbstractHTC
   {
-    public final ItemOperator op;
+    public final ItemOperator operator;
     public final String text;
     public final boolean restrictedInput;
 
-    ItemOperatorHTC(ItemOperator op, String text, boolean restrictedInput)
+    ItemOperatorHTC(ItemOperator operator, String text, boolean restrictedInput)
     {
       super(false);
 
-      this.op = op;
+      this.operator = operator;
       this.text = text;
       this.restrictedInput = restrictedInput;
     }
 
-    @Override public final int getID()                { return op.favID; }
+    @Override public final int getID()                { return operator.favID; }
     @Override public final String getText()           { return text; }
     @Override public final RecordType getRecordType() { return hdtNone; }
     @Override public final boolean isEmpty()          { return false; }
@@ -228,7 +228,7 @@ public abstract class Query<HDT_T extends HDT_Record>
 
     public static boolean hasOperand(HyperTableCell cell)
     {
-      return (cell instanceof Query<?>.ItemOperatorHTC ItemOperatorHTC) && (Set.of(itemOpEmpty, itemOpNotEmpty, itemOpTrue, itemOpFalse).contains(ItemOperatorHTC.op) == false);
+      return (cell instanceof Query<?>.ItemOperatorHTC ItemOperatorHTC) && (Set.of(itemOpEmpty, itemOpNotEmpty, itemOpTrue, itemOpFalse).contains(ItemOperatorHTC.operator) == false);
     }
   }
 

@@ -56,9 +56,9 @@ public class HDT_Investigation extends HDT_RecordWithMainText
 
   public Stream<HDT_RecordWithAuthors<? extends RecordAuthors>> worksAndMiscFilesStream()
   {
-    return getMainText().getKeyWorksUnmod().stream().map(KeyWork::getRecord)
-                                                    .filter(Objects::nonNull)
-                                                    .map(record -> (HDT_RecordWithAuthors<? extends RecordAuthors>) record);
+    return keyWorksStream().map(KeyWork::getRecord)
+                           .filter(Objects::nonNull)
+                           .map(record -> (HDT_RecordWithAuthors<? extends RecordAuthors>) record);
   }
 
 //---------------------------------------------------------------------------

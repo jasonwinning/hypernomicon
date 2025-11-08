@@ -487,9 +487,9 @@ public final class MainTextUtil
       StringBuilder innerHtml = new StringBuilder();
 
       if (detailed)
-        appendDetailedKeyWorkBody(record.getMainText().getKeyWorksUnmod(), innerHtml, sortByName, span.hasClass(TOPMOST_CLASS));
+        appendDetailedKeyWorkBody(record.keyWorksUnmod(), innerHtml, sortByName, span.hasClass(TOPMOST_CLASS));
       else
-        appendKeyWorkBody(record.getMainText().getKeyWorksUnmod(), innerHtml, sortByName);
+        appendKeyWorkBody(record.keyWorksUnmod(), innerHtml, sortByName);
 
       weToUse.executeScript("document.getElementById(\"" + span.id() + "\").innerHTML = \"" + escapeEcmaScript(innerHtml.toString()) + "\";");
     });
@@ -502,7 +502,7 @@ public final class MainTextUtil
   {
     innerHtml.append(keyWorkSpanElement(recordWMT, tagNdx, sortByName, topmost));
 
-    List<KeyWork> keyWorks = recordWMT.getMainText().getKeyWorksUnmod();
+    List<KeyWork> keyWorks = recordWMT.keyWorksUnmod();
 
     if (textViewInfo.detailedWorks)
       appendDetailedKeyWorkBody(keyWorks, innerHtml, sortByName, topmost);
@@ -533,7 +533,7 @@ public final class MainTextUtil
   static String getSecondaryDisplayHtml(HDT_RecordWithMainText recordWMT, MutableInt tagNdx, TextViewInfo textViewInfo)
   {
     MainText mainText = recordWMT.getMainText();
-    List<KeyWork> keyWorks = mainText.getKeyWorksUnmod();
+    List<KeyWork> keyWorks = recordWMT.keyWorksUnmod();
     Document doc = jsoupParse(prepHtmlForDisplay(mainText.getHtml()));
     String embeddedHtml = doc.body().html();
 

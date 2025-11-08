@@ -417,7 +417,7 @@ public final class MainTextWrapper
   private static boolean hasAnyNestedKeyWorks(HDT_RecordWithMainText record, Collection<KeyWork> localKeyWorks)
   {
     return (collEmpty(localKeyWorks) == false) || nullSwitch(getLabelOfRecord(record), false, parentLabel ->
-      parentLabel.subLabels.stream().anyMatch(sub -> hasAnyNestedKeyWorks(sub, sub.getMainText().getKeyWorksUnmod())));
+      parentLabel.subLabels.stream().anyMatch(sub -> hasAnyNestedKeyWorks(sub, sub.keyWorksUnmod())));
   }
 
 //---------------------------------------------------------------------------

@@ -72,7 +72,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
     {
       // For each key work, remove it from the index and run handler (remove from TreeView)
 
-      recordWMT.mainText.getKeyWorksUnmod().forEach(keyWork -> db.handleKeyWork(recordWMT, keyWork.getRecord(), false));
+      recordWMT.keyWorksUnmod().forEach(keyWork -> db.handleKeyWork(recordWMT, keyWork.getRecord(), false));
       return;
     }
 

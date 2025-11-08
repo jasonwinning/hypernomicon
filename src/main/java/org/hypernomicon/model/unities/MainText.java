@@ -26,6 +26,7 @@ import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.records.*;
@@ -115,22 +116,30 @@ public class MainText
   void expire()                                   { removeKeyWorks(false); }
 
   /**
-   * Returns an unmodifiable view of the list of DisplayItems.
-   * @return Unmodifiable view of the list of DisplayItems.
-   */
-  public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
-
-  /**
    * Returns a modifiable copy of the list of DisplayItems.
    * @return Modifiable copy of the list of DisplayItems.
    */
   public List<DisplayItem> getDisplayItemsCopy()  { return new ArrayList<>(displayItems); }
 
   /**
+   * Provides a sequential {@link Stream} over the {@link DisplayItem} elements
+   * contained in this record.
+   * @return a sequential stream of {@link DisplayItem} instances
+   */
+  public Stream<DisplayItem> displayItemsStream() { return displayItems.stream(); }
+
+  /**
    * Returns an unmodifiable view of the list of KeyWorks.
    * @return Unmodifiable view of the list of KeyWorks.
    */
   public List<KeyWork> getKeyWorksUnmod()         { return Collections.unmodifiableList(keyWorks); }
+
+  /**
+   * Provides a sequential {@link Stream} over the {@link KeyWork} elements
+   * contained in this record.
+   * @return a sequential stream of {@link KeyWork} instances
+   */
+  public Stream<KeyWork> keyWorksStream()         { return keyWorks.stream(); }
 
   /**
    * Returns a modifiable copy of the list of KeyWorks.

@@ -95,81 +95,92 @@ public class QueryWhereBibField extends WorkQuery
   {
     vp2.setPopulator(row, Populator.createWithIDMatching(cvtOperand,
 
-      new ItemOperatorHTC(itemOpEqualTo, "Is exactly", false)
-      {
-        @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          String str = getBibStr(work, op1);
+      createEqualsNotEqualsOperatorCell(itemOpEqualTo   ),
+      createEqualsNotEqualsOperatorCell(itemOpNotEqualTo),
 
-          return strNotNullOrEmpty(str) && str.strip().equalsIgnoreCase(getCellText(op3).strip());
-        }
-      },
+      createContainsNotContainsOperatorCell(itemOpContain   ),
+      createContainsNotContainsOperatorCell(itemOpNotContain),
 
-//---------------------------------------------------------------------------
-
-      new ItemOperatorHTC(itemOpNotEqualTo, "Is not", false)
-      {
-        @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          String str = getBibStr(work, op1);
-
-          return (str != null) && (str.strip().equalsIgnoreCase(getCellText(op3).strip()) == false);
-        }
-      },
-
-//---------------------------------------------------------------------------
-
-      new ItemOperatorHTC(itemOpContain, "Contains text", false)
-      {
-        @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          String str = getBibStr(work, op1);
-          if (str == null) return false;
-
-          String val3 = getCellText(op3).strip();
-
-          return (val3.isEmpty() == false) && str.contains(val3.toLowerCase());
-        }
-      },
-
-//---------------------------------------------------------------------------
-
-      new ItemOperatorHTC(itemOpNotContain, "Doesn't contain text", false)
-      {
-        @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          String str = getBibStr(work, op1);
-          if (str == null) return false;
-
-          String val3 = getCellText(op3).strip();
-
-          return (val3.isEmpty() == false) && (str.contains(val3.toLowerCase()) == false);
-        }
-      },
-
-//---------------------------------------------------------------------------
-
-      new ItemOperatorHTC(itemOpEmpty, "Is empty", true)
-      {
-        @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          String str = getBibStr(work, op1);
-          return (str != null) && str.isEmpty();
-        }
-      },
-
-//---------------------------------------------------------------------------
-
-      new ItemOperatorHTC(itemOpNotEmpty, "Is not empty", true)
-      {
-        @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          String str = getBibStr(work, op1);
-          return strNotNullOrEmpty(str);
-        }
-      }));
+      createEmptyNotEmptyOperatorCell(itemOpEmpty   ),
+      createEmptyNotEmptyOperatorCell(itemOpNotEmpty)));
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ItemOperatorHTC createEqualsNotEqualsOperatorCell(ItemOperator operator)
+  {
+    String caption = switch (operator)
+    {
+      case itemOpEqualTo    -> "Is exactly";
+      case itemOpNotEqualTo -> "Is not";
+      default               -> throw new IllegalArgumentException("Unsupported operator");
+    };
+
+    return new ItemOperatorHTC(operator, caption, false)
+    {
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        String str = safeStr(getBibStr(work, op1)).strip(),
+               queryStr = getCellText(op3).strip();
+
+        if ((operator == itemOpEqualTo) && str.isEmpty())
+          return false;
+
+        return (operator == itemOpEqualTo) == str.equalsIgnoreCase(queryStr);
+      }
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ItemOperatorHTC createContainsNotContainsOperatorCell(ItemOperator operator)
+  {
+    String caption = switch (operator)
+    {
+      case itemOpContain    -> "Contains text";
+      case itemOpNotContain -> "Doesn't contain text";
+      default               -> throw new IllegalArgumentException("Unsupported operator");
+    };
+
+    return new ItemOperatorHTC(operator, caption, false)
+    {
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        String str = getBibStr(work, op1);
+        if (str == null) return false;
+
+        String val3 = getCellText(op3).strip();
+
+        return (val3.isEmpty() == false) && (operator == itemOpContain) == str.toLowerCase().contains(val3.toLowerCase());
+      }
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ItemOperatorHTC createEmptyNotEmptyOperatorCell(ItemOperator operator)
+  {
+    String caption = switch (operator)
+    {
+      case itemOpEmpty    -> "Is empty";
+      case itemOpNotEmpty -> "Is not empty";
+      default             -> throw new IllegalArgumentException("Unsupported operator");
+    };
+
+    return new ItemOperatorHTC(operator, caption, true)
+    {
+      @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        String str = getBibStr(work, op1);
+
+        return (str != null) && ((operator == itemOpEmpty) == str.isEmpty());
+      }
+    };
   }
 
 //---------------------------------------------------------------------------

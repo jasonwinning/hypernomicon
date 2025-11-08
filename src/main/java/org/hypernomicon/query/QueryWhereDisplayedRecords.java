@@ -45,49 +45,25 @@ public class QueryWhereDisplayedRecords extends QueryWhereKeyWorks
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected boolean evalInclude(HDT_RecordWithMainText recordWMT, HDT_Record specifiedRecord)
+  @Override protected boolean evalEmptyNotEmpty(HDT_RecordWithMainText rec, boolean trueMeansEmpty)
   {
-    if (HDT_Record.isEmpty(specifiedRecord, false) || (specifiedRecord.hasMainText() == false))
+    return trueMeansEmpty == rec.displayItemsStream().noneMatch(dispItem -> dispItem.type == DisplayItemType.diRecord);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean evalIncludesExcludes(HDT_RecordWithMainText recordWMT, HDT_Record specifiedRecord, boolean includes)
+  {
+    if (specifiedRecord.hasMainText() == false)
       return false;
 
     HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText) specifiedRecord;
 
-    return recordWMT.getMainText().getDisplayItemsUnmod().stream()
+    return includes == recordWMT.displayItemsStream()
 
       .filter(displayItem -> displayItem.type == DisplayItemType.diRecord)
       .anyMatch(displayItem -> displayItem.record.getMainText() == specifiedRecordWMT.getMainText());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean evalExclude(HDT_RecordWithMainText recordWMT, HDT_Record specifiedRecord)
-  {
-    if (HDT_Record.isEmpty(specifiedRecord, false) || (specifiedRecord.hasMainText() == false))
-      return false;
-
-    HDT_RecordWithMainText specifiedRecordWMT = (HDT_RecordWithMainText) specifiedRecord;
-
-    return recordWMT.getMainText().getDisplayItemsUnmod().stream()
-
-      .filter(displayItem -> displayItem.type == DisplayItemType.diRecord)
-      .noneMatch(displayItem -> displayItem.record.getMainText() == specifiedRecordWMT.getMainText());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean evalEmpty(HDT_RecordWithMainText recordWMT)
-  {
-    return recordWMT.getMainText().getDisplayItemsUnmod().stream().noneMatch(displayItem -> displayItem.type == DisplayItemType.diRecord);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean evalNotEmpty(HDT_RecordWithMainText recordWMT)
-  {
-    return recordWMT.getMainText().getDisplayItemsUnmod().stream().anyMatch(displayItem -> displayItem.type == DisplayItemType.diRecord);
   }
 
 //---------------------------------------------------------------------------

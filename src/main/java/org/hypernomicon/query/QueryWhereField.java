@@ -178,165 +178,27 @@ class QueryWhereField extends RecordQuery
 
     if (hasBoolean)
     {
-      operatorCells.add(new ItemOperatorHTC(itemOpTrue, "Is true", true)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          HyperDataCategory cat = nullSwitch(db.getSchema(record.getType(), tag), null, HDI_Schema::category);
-
-          return (cat != null) && switch (cat)
-          {
-            case hdcBoolean -> record.getTagBoolean(tag);
-            case hdcTernary -> record.getTagTernary(tag).isTrue();
-            default -> false;
-          };
-        }
-      });
-
-//---------------------------------------------------------------------------
-
-      operatorCells.add(new ItemOperatorHTC(itemOpFalse, "Is false", true)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          HyperDataCategory cat = nullSwitch(db.getSchema(record.getType(), tag), null, HDI_Schema::category);
-
-          return (cat != null) && switch (cat)
-          {
-            case hdcBoolean -> record.getTagBoolean(tag) == false;
-            case hdcTernary -> record.getTagTernary(tag).isFalse();
-            default -> false;
-          };
-        }
-      });
+      operatorCells.add(createBooleanOperatorCell(itemOpTrue , tag));
+      operatorCells.add(createBooleanOperatorCell(itemOpFalse, tag));
     }
 
 //---------------------------------------------------------------------------
 
-    RecordType finalObjType = objType;
-
     if ((objType != hdtNone) || (restrict == false))
     {
-      operatorCells.add(new ItemOperatorHTC(itemOpEqualTo, objType != hdtNone ? "Is or includes record" : "Is exactly", restrict)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          if (finalObjType != hdtNone)
-            return evalIncludesExcludesRecord(record, tag, op3, true);
+      operatorCells.add(createEqualityOperatorCell(itemOpEqualTo   , tag, objType, restrict));
+      operatorCells.add(createEqualityOperatorCell(itemOpNotEqualTo, tag, objType, restrict));
 
-          String tagStrVal = record.resultTextForTag(tag, false, true);
-
-          return strNotNullOrEmpty(tagStrVal) && tagStrVal.strip().equalsIgnoreCase(queryText);
-        }
-
-        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-        {
-          if (finalObjType != hdtNone)
-            vp3.setPopulator(row, new StandardPopulator(finalObjType));
-          else
-            vp3.setRestricted(row, false);
-
-          return true;
-        }
-      });
-
-//---------------------------------------------------------------------------
-
-      operatorCells.add(new ItemOperatorHTC(itemOpNotEqualTo, objType != hdtNone ? "Excludes record" : "Is not", restrict)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          if (finalObjType != hdtNone)
-            return evalIncludesExcludesRecord(record, tag, op3, false);
-
-          String tagStrVal = record.resultTextForTag(tag, false, true);
-
-          return (tagStrVal != null) && (tagStrVal.strip().equalsIgnoreCase(queryText) == false);
-        }
-
-        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-        {
-          if (finalObjType != hdtNone)
-            vp3.setPopulator(row, new StandardPopulator(finalObjType));
-          else
-            vp3.setRestricted(row, false);
-
-          return true;
-        }
-      });
-
-    //---------------------------------------------------------------------------
-
-      operatorCells.add(new ItemOperatorHTC(itemOpContain, "Contains text", false)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          return strNotNullOrEmpty(queryText) && record.resultTextForTag(tag, false, true).toLowerCase().strip().contains(queryText);
-        }
-
-        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-        {
-          vp3.setRestricted(row, false);
-
-          return true;
-        }
-      });
-
-//---------------------------------------------------------------------------
-
-      operatorCells.add(new ItemOperatorHTC(itemOpNotContain, "Doesn't contain text", false)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          return record.resultTextForTag(tag, false, true).toLowerCase().strip().contains(queryText) == false;
-        }
-
-        @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
-        {
-          vp3.setRestricted(row, false);
-
-          return true;
-        }
-      });
+      operatorCells.add(createContainsOperatorCell(itemOpContain   , tag));
+      operatorCells.add(createContainsOperatorCell(itemOpNotContain, tag));
     }
 
 //---------------------------------------------------------------------------
 
     if (hasEmpty)
     {
-      operatorCells.add(new ItemOperatorHTC(itemOpEmpty, "Is empty", true)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          Tag tag = Tag.getTag(getCellID(op1));
-
-          if (finalObjType != hdtNone)
-            return evalWhetherPointerEmpty(record, tag, true);
-
-          return nullSwitch(db.getSchema(record.getType(), tag), null, HDI_Schema::category) == hdcTernary ?
-            record.getTagTernary(tag).isUnset()
-          :
-            record.resultTextForTag(tag, true, false).isEmpty();
-        }
-      });
-
-//---------------------------------------------------------------------------
-
-      operatorCells.add(new ItemOperatorHTC(itemOpNotEmpty, "Is not empty", true)
-      {
-        @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
-        {
-          Tag tag = Tag.getTag(getCellID(op1));
-
-          if (finalObjType != hdtNone)
-            return evalWhetherPointerEmpty(record, tag, false);
-
-          return nullSwitch(db.getSchema(record.getType(), tag), null, HDI_Schema::category) == hdcTernary ?
-            record.getTagTernary(tag).isUnset() == false
-          :
-            record.resultTextForTag(tag, true, false).isEmpty() == false;
-        }
-      });
+      operatorCells.add(createEmptyOperatorCell(itemOpEmpty   , objType));
+      operatorCells.add(createEmptyOperatorCell(itemOpNotEmpty, objType));
     }
 
     vp2.setPopulator(row, Populator.createWithIDMatching(cvtOperand, operatorCells));
@@ -347,27 +209,147 @@ class QueryWhereField extends RecordQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean evalWhetherPointerEmpty(HDT_Record record, Tag tag, boolean trueMeansEmpty)
+  private ItemOperatorHTC createBooleanOperatorCell(ItemOperator operator, Tag tag)
   {
-    HDI_Schema schema = record.getSchema(tag);
+    String caption = switch (operator)
+    {
+      case itemOpTrue  -> "Is true";
+      case itemOpFalse -> "Is false";
+      default          -> throw new IllegalArgumentException("Unsupported operator");
+    };
 
-    return (schema != null) && (db.getObjectList(schema.relType(), record, true).isEmpty() == trueMeansEmpty);
+    return new ItemOperatorHTC(operator, caption, true)
+    {
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        HyperDataCategory cat = nullSwitch(db.getSchema(record.getType(), tag), null, HDI_Schema::category);
+
+        return (cat != null) && switch (cat)
+        {
+          case hdcBoolean -> (operator == itemOpTrue) == record.getTagBoolean(tag);
+          case hdcTernary -> (operator == itemOpTrue) ? record.getTagTernary(tag).isTrue() : record.getTagTernary(tag).isFalse();
+          default -> false;
+        };
+      }
+    };
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean evalIncludesExcludesRecord(HDT_Record record, Tag tag, HyperTableCell op3, boolean isIncludes)
+  private ItemOperatorHTC createEqualityOperatorCell(ItemOperator operator, Tag tag, RecordType objType, boolean restrict)
   {
-    HDI_Schema schema = record.getSchema(tag);
+    String caption = switch (operator)
+    {
+      case itemOpEqualTo    -> (objType != hdtNone ? "Is or includes record" : "Is exactly");
+      case itemOpNotEqualTo -> (objType != hdtNone ? "Excludes record" : "Is not");
+      default               -> throw new IllegalArgumentException("Unsupported operator");
+    };
 
-    if (schema == null) return false;
+    return new ItemOperatorHTC(operator, caption, restrict)
+    {
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        if (objType != hdtNone)
+        {
+          HDI_Schema schema = record.getSchema(tag);
+          if (schema == null) return false;
 
-    for (HDT_Record objRecord : db.getObjectList(schema.relType(), record, true))
-      if ((objRecord.getID() == getCellID(op3)) && (objRecord.getType() == getCellType(op3)))
-        return isIncludes;
+          for (HDT_Record objRecord : db.getObjectList(schema.relType(), record, true))
+            if ((objRecord.getID() == getCellID(op3)) && (objRecord.getType() == getCellType(op3)))
+              return operator == itemOpEqualTo;
 
-    return isIncludes == false;
+          return operator == itemOpNotEqualTo;
+        }
+
+        String tagStrVal = record.resultTextForTag(tag, false, true);
+
+        return operator == itemOpEqualTo ?
+          (strNotNullOrEmpty(tagStrVal) && tagStrVal.strip().equalsIgnoreCase(queryText))
+        :
+          ((tagStrVal != null) && (tagStrVal.strip().equalsIgnoreCase(queryText) == false));
+      }
+
+      @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+      {
+        if (objType != hdtNone)
+          vp3.setPopulator(row, new StandardPopulator(objType));
+        else
+          vp3.setRestricted(row, false);
+
+        return true;
+      }
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ItemOperatorHTC createContainsOperatorCell(ItemOperator operator, Tag tag)
+  {
+    String caption = switch (operator)
+    {
+      case itemOpContain    -> "Contains text";
+      case itemOpNotContain -> "Doesn't contain text";
+      default               -> throw new IllegalArgumentException("Unsupported operator");
+    };
+
+    return new ItemOperatorHTC(operator, caption, false)
+    {
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        String tagStrVal = record.resultTextForTag(tag, false, true);
+        if (tagStrVal == null) return false;
+
+        String normalized = tagStrVal.toLowerCase().strip();
+
+        return operator == itemOpContain ?
+          (strNotNullOrEmpty(queryText) && normalized.contains(queryText))
+        :
+          (normalized.contains(queryText) == false);
+      }
+
+      @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
+      {
+        vp3.setRestricted(row, false);
+        return true;
+      }
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ItemOperatorHTC createEmptyOperatorCell(ItemOperator operator, RecordType objType)
+  {
+    String caption = switch (operator)
+    {
+      case itemOpEmpty    -> "Is empty";
+      case itemOpNotEmpty -> "Is not empty";
+      default             -> throw new IllegalArgumentException("Unsupported operator");
+    };
+
+    return new ItemOperatorHTC(operator, caption, true)
+    {
+      @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+      {
+        Tag tag = Tag.getTag(getCellID(op1));
+
+        if (objType != hdtNone)
+        {
+          HDI_Schema schema = record.getSchema(tag);
+
+          return (schema != null) && (db.getObjectList(schema.relType(), record, true).isEmpty() == (operator == itemOpEmpty));
+        }
+
+        HyperDataCategory cat = nullSwitch(db.getSchema(record.getType(), tag), null, HDI_Schema::category);
+
+        return (operator == itemOpEmpty) == (cat == hdcTernary ?
+          record.getTagTernary(tag).isUnset()
+        :
+          record.resultTextForTag(tag, true, false).isEmpty());
+      }
+    };
   }
 
 //---------------------------------------------------------------------------
