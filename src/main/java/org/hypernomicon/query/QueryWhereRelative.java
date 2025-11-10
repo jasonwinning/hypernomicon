@@ -43,6 +43,10 @@ public class QueryWhereRelative extends RecordQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private String queryText;
+
+//---------------------------------------------------------------------------
+
   QueryWhereRelative(int queryID, String description)
   {
     super(queryID, description);
@@ -67,6 +71,14 @@ public class QueryWhereRelative extends RecordQuery
     }
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+  {
+    queryText = convertToEnglishChars(getCellText(op3)).strip().toLowerCase();
   }
 
 //---------------------------------------------------------------------------
@@ -114,7 +126,7 @@ public class QueryWhereRelative extends RecordQuery
         if (targetID < 1) return false;
 
         return nullSwitch(getSubjList(record, op1), false, subjList ->
-          (operator == itemOpEqualTo) == subjList.stream().anyMatch (subjRecord -> subjRecord.getID() == targetID));
+          (operator == itemOpEqualTo) == subjList.stream().anyMatch(subjRecord -> subjRecord.getID() == targetID));
       }
 
       @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
@@ -141,11 +153,10 @@ public class QueryWhereRelative extends RecordQuery
     {
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        String targetText = getCellText(op3).toLowerCase();
-        if (strNullOrEmpty(targetText)) return false;
+        if (strNullOrEmpty(queryText)) return false;
 
         return nullSwitch(getSubjList(record, op1), false, subjList ->
-          (operator == itemOpContain) == subjList.stream().anyMatch(subjRecord -> subjRecord.listName().toLowerCase().contains(targetText)));
+          (operator == itemOpContain) == subjList.stream().anyMatch(subjRecord -> convertToEnglishChars(subjRecord.listName()).strip().toLowerCase().contains(queryText)));
       }
 
       @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)

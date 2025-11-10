@@ -86,7 +86,7 @@ class QueryWhereField extends RecordQuery
 
   @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
-    queryText = convertToEnglishChars(getCellText(op3).strip()).toLowerCase();
+    queryText = convertToEnglishChars(getCellText(op3)).strip().toLowerCase();
   }
 
 //---------------------------------------------------------------------------
@@ -298,15 +298,10 @@ class QueryWhereField extends RecordQuery
     {
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        String tagStrVal = record.resultTextForTag(tag, false, true);
-        if (tagStrVal == null) return false;
+        if (strNullOrEmpty(queryText)) return false;
 
-        String normalized = tagStrVal.toLowerCase().strip();
-
-        return operator == itemOpContain ?
-          (strNotNullOrEmpty(queryText) && normalized.contains(queryText))
-        :
-          (normalized.contains(queryText) == false);
+        return nullSwitch(record.resultTextForTag(tag, false, true), false, tagStrVal ->
+          (operator == itemOpContain) == tagStrVal.strip().toLowerCase().contains(queryText));
       }
 
       @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)

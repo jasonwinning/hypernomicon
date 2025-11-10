@@ -49,6 +49,10 @@ public class QueryWhereBibField extends WorkQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private String queryText;
+
+//---------------------------------------------------------------------------
+
   QueryWhereBibField(int queryID, String description)
   {
     super(queryID, description);
@@ -91,6 +95,14 @@ public class QueryWhereBibField extends WorkQuery
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+  {
+    queryText = convertToEnglishChars(getCellText(op3)).strip().toLowerCase();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public boolean op1Change(HyperTableCell op1, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
   {
     vp2.setPopulator(row, Populator.createWithIDMatching(cvtOperand,
@@ -123,13 +135,12 @@ public class QueryWhereBibField extends WorkQuery
     {
       @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        String str = safeStr(getBibStr(work, op1)).strip(),
-               queryStr = getCellText(op3).strip();
+        String str = convertToEnglishChars(safeStr(getBibStr(work, op1))).strip();
 
         if ((operator == itemOpEqualTo) && str.isEmpty())
           return false;
 
-        return (operator == itemOpEqualTo) == str.equalsIgnoreCase(queryStr);
+        return (operator == itemOpEqualTo) == str.equalsIgnoreCase(queryText);
       }
     };
   }
@@ -150,12 +161,10 @@ public class QueryWhereBibField extends WorkQuery
     {
       @Override public boolean evaluate(HDT_Work work, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        String str = getBibStr(work, op1);
-        if (str == null) return false;
+        if (strNullOrEmpty(queryText)) return false;
 
-        String val3 = getCellText(op3).strip();
-
-        return (val3.isEmpty() == false) && (operator == itemOpContain) == str.toLowerCase().contains(val3.toLowerCase());
+        return nullSwitch(getBibStr(work, op1), false, str ->
+          (operator == itemOpContain) == convertToEnglishChars(str).strip().toLowerCase().contains(queryText));
       }
     };
   }

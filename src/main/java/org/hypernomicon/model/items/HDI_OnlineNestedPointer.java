@@ -91,12 +91,13 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
    */
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
-    String str = "";
+    if ((searchLinkedRecords == false) || (target == null))
+      return;
 
-    if (searchLinkedRecords && (target != null))
-      str = target.listName();
+    String str = target.listName();
 
-    list.add(engChar ? convertToEnglishChars(str) : str);
+    if (strNotNullOrEmpty(str))
+      list.add(engChar ? convertToEnglishChars(str) : str);
   }
 
 //---------------------------------------------------------------------------

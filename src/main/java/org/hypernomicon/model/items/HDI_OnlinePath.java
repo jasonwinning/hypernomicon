@@ -121,12 +121,13 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
    */
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
-    String str = "";
+    if (hyperPath.isEmpty())
+      return;
 
-    if (hyperPath.isNotEmpty())
-      str = hyperPath.getFileName().getNameOnly().toString();
+    String str = hyperPath.getFileName().getNameOnly().toString();
 
-    list.add(engChar ? convertToEnglishChars(str) : str);
+    if (strNotNullOrEmpty(str))
+      list.add(engChar ? convertToEnglishChars(str) : str);
   }
 
 //---------------------------------------------------------------------------

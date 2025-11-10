@@ -621,7 +621,7 @@ public abstract class HDT_RecordBase implements HDT_Record
       }
 
       if (tag == type.getNameTag())
-        list.add(engChar ? this.getNameEngChar() : name());
+        list.add(engChar ? getNameEngChar() : name());
       else
         item.getStrings(list, tag, searchLinkedRecords, engChar);
     });
