@@ -62,12 +62,20 @@ public class HDT_Concept extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 
   @Override public String name()                           { return term.isNull() ? "" : term.get().name(); }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override public String getCBText()                      { return extendedName(true); }
   @Override public String getXMLObjectName()               { return extendedName(true); }
-  @Override public String getNameEngChar()                 { return term.get().getNameEngChar(); }
-  @Override public String firstActiveKeyWord()             { return term.get().firstActiveKeyWord(); }
-  @Override public void setName(String str)                { term.get().setName(str); }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override public String listName()                       { return extendedName(false); }
+  @Override public String getNameEngChar()                 { return term.isNull() ? "" : term.get().getNameEngChar(); }
+  @Override public String firstActiveKeyWord()             { return term.isNull() ? "" : term.get().firstActiveKeyWord(); }
+  @Override public void setName(String str)                { if (term.isNotNull()) term.get().setName(str); }
   @Override public final boolean isUnitable()              { return true; }
 
 //---------------------------------------------------------------------------
@@ -86,6 +94,8 @@ public class HDT_Concept extends HDT_RecordWithMainText
 
   public String extendedName(boolean includeGlossary)
   {
+    if (term.isNull()) return "";
+
     String glossaryText = (includeGlossary == false) || glossary.isNull() || ((glossary.get().getID() == 1) && (term.get().getGlossaries().size() == 1)) ?
       ""
     :

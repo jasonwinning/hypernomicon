@@ -48,10 +48,6 @@ public class HDT_Investigation extends HDT_RecordWithMainText
   }
 
 //---------------------------------------------------------------------------
-
-  @Override public String listName() { return name(); }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public Stream<HDT_RecordWithAuthors<? extends RecordAuthors>> worksAndMiscFilesStream()

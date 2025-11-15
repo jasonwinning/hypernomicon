@@ -220,7 +220,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       row.setCellValue(0, subInst, subInst.name());
 
       if (subInst.instType.isNotNull())
-        row.setCellValue(1, subInst.instType.get(), subInst.instType.get().name());
+        row.setCellValue(1, subInst.instType.get());
 
       row.setCellValue(3, subInst, subInst.getURL());
     });
@@ -236,13 +236,13 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     htPersons.buildRows(peopleMap.keySet(), (row, person) ->
     {
-      row.setCellValue(0, person, person.listName());
+      row.setCellValue(0, person);
 
       if (person.rank.isNotNull())
-        row.setCellValue(1, person.rank.get(), person.rank.get().name());
+        row.setCellValue(1, person.rank.get());
 
       if (person.field.isNotNull())
-        row.setCellValue(2, person.field.get(), person.field.get().name());
+        row.setCellValue(2, person.field.get());
 
       List<HDT_Institution> instList = Ordering.from(Comparator.comparing(HDT_Record::name)).immutableSortedCopy(peopleMap.get(person));
 
@@ -281,7 +281,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     :
       subInst -> addPersonsFromInst(nearestChildInst, subInst, peopleMap));
 
-    inst.persons.forEach(person -> peopleMap.computeIfAbsent(person, _person -> new HashSet<>()).add(nearestChildInst));
+    inst.persons.forEach(person -> peopleMap.computeIfAbsent(person, _ -> new HashSet<>()).add(nearestChildInst));
   }
 
 //---------------------------------------------------------------------------

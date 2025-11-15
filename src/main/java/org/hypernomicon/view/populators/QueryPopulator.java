@@ -46,7 +46,7 @@ public class QueryPopulator extends Populator
 
   public QueryPopulator()
   {
-    rowToChoices = new HashMap<>();
+    rowToChoices   = new HashMap<>();
     rowToQueryType = new HashMap<>();
   }
 
@@ -55,9 +55,7 @@ public class QueryPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    rowToChoices.putIfAbsent(row, new ArrayList<>());
-
-    return rowToChoices.get(row);
+    return rowToChoices.computeIfAbsent(row, _ -> new ArrayList<>());
   }
 
 //---------------------------------------------------------------------------
@@ -84,9 +82,8 @@ public class QueryPopulator extends Populator
 
     if (newType == oldType) return;
 
-    rowToChoices.putIfAbsent(row, new ArrayList<>());
+    rowToChoices.computeIfAbsent(row, _ -> new ArrayList<>()).clear();
 
-    rowToChoices.get(row).clear();
     addQueriesToPopulator(this, row, newType);
   }
 
@@ -95,7 +92,7 @@ public class QueryPopulator extends Populator
 
   @Override public void clear()
   {
-    rowToChoices.clear();
+    rowToChoices  .clear();
     rowToQueryType.clear();
   }
 
@@ -126,11 +123,7 @@ public class QueryPopulator extends Populator
 
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
-    HyperTableCell cell = new QueryCell(id, text, getRecordType(row));
-
-    rowToChoices.putIfAbsent(row, new ArrayList<>());
-
-    return addEntryToList(rowToChoices.get(row), cell);
+    return addEntryToList(rowToChoices.computeIfAbsent(row, _ -> new ArrayList<>()), new QueryCell(id, text, getRecordType(row)));
   }
 
 //---------------------------------------------------------------------------
@@ -138,11 +131,8 @@ public class QueryPopulator extends Populator
 
   public QueryCell addQuery(HyperTableRow row, Query<?> query)
   {
-    QueryCell cell = new QueryCell(query, getRecordType(row));
+    return (QueryCell) addEntryToList(rowToChoices.computeIfAbsent(row, _ -> new ArrayList<>()), new QueryCell(query, getRecordType(row)));
 
-    rowToChoices.putIfAbsent(row, new ArrayList<>());
-
-    return (QueryCell) addEntryToList(rowToChoices.get(row), cell);
   }
 
 //---------------------------------------------------------------------------

@@ -61,6 +61,8 @@ public class RecordByTypePopulator extends RecordPopulator
     super(idFilter, displayKind);
   }
 
+//---------------------------------------------------------------------------
+
   @Override public CellValueType getValueType() { return cvtRecord; }
 
 //---------------------------------------------------------------------------
@@ -84,9 +86,7 @@ public class RecordByTypePopulator extends RecordPopulator
   {
     rowToRecordType.putIfAbsent(row, hdtNone);
 
-    rowToChoices.putIfAbsent(row, new ArrayList<>());
-
-    List<HyperTableCell> choices = rowToChoices.get(row);
+    List<HyperTableCell> choices = rowToChoices.computeIfAbsent(row, _ -> new ArrayList<>());
 
     if ((hasChanged(row) == false) && (force == false))
       return choices;
@@ -111,9 +111,10 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    if (hasChanged(row) == false) return matchFromList(row, cell);
-
-    return match(row, HyperTableCell.getCellID(cell), HyperTableCell.getCellType(cell), false);
+    return hasChanged(row) ?
+      match(row, HyperTableCell.getCellID(cell), HyperTableCell.getCellType(cell), false)
+    :
+      matchFromList(row, cell);
   }
 
 //---------------------------------------------------------------------------
@@ -121,9 +122,10 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)
   {
-    if (hasChanged(row) == false) return super.getChoiceByID(row, id);
-
-    return match(row, id, hdtNone, true);
+    return hasChanged(row) ?
+      match(row, id, hdtNone, true)
+    :
+      super.getChoiceByID(row, id);
   }
 
 //---------------------------------------------------------------------------
@@ -131,9 +133,7 @@ public class RecordByTypePopulator extends RecordPopulator
 
   private HyperTableCell match(HyperTableRow row, int id, RecordType recordType, boolean ignoreRecordType)
   {
-    rowToRecordType.putIfAbsent(row, hdtNone);
-
-    RecordType rowRecordType = rowToRecordType.get(row);
+    RecordType rowRecordType =rowToRecordType.computeIfAbsent(row, _ -> hdtNone);
 
     return ((rowRecordType == hdtNone) ||
             (id < 1) ||
@@ -148,8 +148,8 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override protected boolean hasChanged(HyperTableRow row)
   {
-    rowToChanged.putIfAbsent(row, true);
-    return rowToChanged.get(row);
+    return rowToChanged.computeIfAbsent(row, _ -> true);
+
   }
 
 //---------------------------------------------------------------------------
@@ -172,8 +172,8 @@ public class RecordByTypePopulator extends RecordPopulator
 
   @Override public void clear()
   {
-    rowToChanged.clear();
-    rowToChoices.clear();
+    rowToChanged   .clear();
+    rowToChoices   .clear();
     rowToRecordType.clear();
   }
 

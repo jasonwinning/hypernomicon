@@ -496,7 +496,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         updateInvInWorkRow(row, work);
 
-        row.setCellValue(4, work, work.name());
+        row.setCellValue(4, work);
 
         if (work.getAuthors().size() > 1)
         {
@@ -517,20 +517,20 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       }
     });
 
-    htWorks.buildRows(curPerson.miscFiles.stream().filter(Predicate.not(htWorks::containsRecord)), (row, file) ->
+    htWorks.buildRows(curPerson.miscFiles.stream().filter(Predicate.not(htWorks::containsRecord)), (row, miscFile) ->
     {
-      if (file.work.isNotNull())
-        row.setCellValue(0, new BibDateHTC(file, file.work.get().getBibDate()));
+      if (miscFile.work.isNotNull())
+        row.setCellValue(0, new BibDateHTC(miscFile, miscFile.work.get().getBibDate()));
       else
-        row.setCellValue(0, file, "");
+        row.setCellValue(0, miscFile, "");
 
-      row.setCellValue(1, file, "File" + (file.fileType.isNull() ? "" : " (" + file.fileType.get().name() + ')'));
+      row.setCellValue(1, miscFile, "File" + (miscFile.fileType.isNull() ? "" : " (" + miscFile.fileType.get().name() + ')'));
 
-      row.setCellValue(2, file, "");
+      row.setCellValue(2, miscFile, "");
 
-      updateInvInWorkRow(row, file);
+      updateInvInWorkRow(row, miscFile);
 
-      row.setCellValue(4, file, file.name());
+      row.setCellValue(4, miscFile);
     });
 
  // Add topic records to be populated to sets
@@ -671,7 +671,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         nullSwitch(argument.getPosVerdict(position), verdict -> row.setCellValue(3, argument, verdict.listName()));
 
-        row.setCellValue(4, argument, argument.listName());
+        row.setCellValue(4, argument);
       });
     }
     else
@@ -685,7 +685,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
         otherToAdd.remove(debate);
       });
 
-      row.setCellValue(4, argument, argument.listName());
+      row.setCellValue(4, argument);
     }
 
     topicRecordsAdded.add(argument);
@@ -698,7 +698,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private static void addPosToTopicTable(HDT_Position position, HyperTableRow row, Set<HDT_Record> otherToAdd)
   {
-    row.setCellValue(2, position, position.listName());
+    row.setCellValue(2, position);
 
     nullSwitch(position.getLargerDebate(), debate ->
     {
@@ -712,7 +712,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private static void addOtherToTopicTable(HDT_Record displayer, HyperTableRow row)
   {
-    row.setCellValue(1, displayer, displayer.getType() == hdtWorkLabel ? ((HDT_WorkLabel) displayer).extendedText() : displayer.listName());
+    row.setCellValue(1, displayer, (displayer.getType() == hdtWorkLabel) || (displayer.getType() == hdtConcept) ? displayer.getCBText() : displayer.listName());
   }
 
 //---------------------------------------------------------------------------

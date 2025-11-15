@@ -106,7 +106,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public void setDOI(String str)                    { updateTagString(tagDOI, matchDOI(str)); }
   public void setURL(String str)                    { updateTagString(tagWebURL, str); }
 
-  @Override public String listName()                { return name(); }
   @Override public HyperPath getPath()              { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.getFirst().getPath(); }
   @Override public WorkAuthors getAuthors()         { return authors; }
 
@@ -247,6 +246,9 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * {@inheritDoc}
+   */
   @Override public String getCBText()
   {
     String authorStr = getShortAuthorsStr(false),

@@ -213,7 +213,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     hyperTable.addChangeOrderMenuItem(true, this::refreshExample);
 
-    hyperTable.addRemoveMenuItem(row -> row != hyperTable.getRows().getLast(), row -> refreshExample());
+    hyperTable.addRemoveMenuItem(row -> row != hyperTable.getLastRow(), row -> refreshExample());
 
     lblExample.setOnMouseClicked(event -> refreshExample());
 

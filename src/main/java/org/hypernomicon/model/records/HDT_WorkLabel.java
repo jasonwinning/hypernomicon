@@ -50,7 +50,9 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
 
 //---------------------------------------------------------------------------
 
-  @Override public String listName()          { return name(); }
+  /**
+   * {@inheritDoc}
+   */
   @Override public String getCBText()         { return extendedText(); }
   @Override public final boolean isUnitable() { return true; }
 

@@ -301,7 +301,7 @@ public final class ContentsWindow extends NonmodalWindow
       row.setCellValue(0, authorID, authStr, hdtPerson);
 
       if (workType != null)
-        row.setCellValue(1, workType, workType.listName());
+        row.setCellValue(1, workType);
 
       row.setCellValue(2, work, title);
       row.setCellValue(3, new BibDateHTC(work, bibDate));

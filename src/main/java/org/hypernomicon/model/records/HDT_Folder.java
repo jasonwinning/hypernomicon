@@ -74,8 +74,6 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   @Override public HyperPath getPath() { return path; }
   @Override public String name()       { return path.getNameStr(); }
-  @Override public String getCBText()  { return path.getNameStr(); }
-  @Override public String listName()   { return path.getNameStr(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

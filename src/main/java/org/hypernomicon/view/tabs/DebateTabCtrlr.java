@@ -118,18 +118,18 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
     htParents.buildRows(curDebate.largerDebates, (row, otherDebate) ->
     {
       row.setCellValue(2, getTypeName(hdtDebate), hdtDebate);
-      row.setCellValue(3, otherDebate, otherDebate.listName());
+      row.setCellValue(3, otherDebate);
     });
 
     htParents.buildRows(curDebate.largerPositions, (row, pos) ->
     {
       row.setCellValue(2, getTypeName(hdtPosition), hdtPosition);
-      row.setCellValue(3, pos, pos.listName());
+      row.setCellValue(3, pos);
     });
 
  // -----------------------
 
-    htSubdebates.buildRows(curDebate.subDebates, (row, subDebate) -> row.setCellValue(1, subDebate, subDebate.name()));
+    htSubdebates.buildRows(curDebate.subDebates, (row, subDebate) -> row.setCellValue(1, subDebate));
 
     htSubdebates.sortAscending(1);
 
@@ -142,7 +142,7 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
       else
         row.setCellValue(1, authStr, hdtPerson);
 
-      row.setCellValue(2, position, position.name());
+      row.setCellValue(2, position);
     });
   }
 

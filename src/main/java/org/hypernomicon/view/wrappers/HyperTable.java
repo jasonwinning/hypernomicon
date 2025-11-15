@@ -79,7 +79,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   private final TableView<HyperTableRow> tv;
   private final List<HyperTableColumn> cols = new ArrayList<>();
   private final ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
-  private final List<HyperTableRow> unmodRows = Collections.unmodifiableList(rows);
   private final FilteredList<HyperTableRow> filteredRows;
   private final Map<Integer, HyperTableCell> colNdxToDefaultValue = new HashMap<>();
 
@@ -98,7 +97,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public TableView<HyperTableRow> getTV()                       { return tv; }
   public List<HyperTableColumn> getColumns()                    { return Collections.unmodifiableList(cols); }
-  public List<HyperTableRow> getRows()                          { return unmodRows; }
+  public HyperTableRow getLastRow()                             { return rows.getLast(); }
+  public HyperTableRow getRow(int rowNdx)                       { return rows.get(rowNdx); }
   public HyperTableColumn getColumn(int colNdx)                 { return cols.get(colNdx); }
   public <Pop extends Populator> Pop getPopulator(int colNdx)   { return cols.get(colNdx).getPopulator(); }
   public void clearFilter()                                     { filteredRows.setPredicate(row -> true); }

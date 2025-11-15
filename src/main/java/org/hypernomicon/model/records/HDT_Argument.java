@@ -62,8 +62,6 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
 //---------------------------------------------------------------------------
 
-  @Override public String listName()                      { return name(); }
-
   public String pagesInWork(HDT_Work work)                { return db.getNestedString(this, work, tagPages); }
   public void setPagesInWork(HDT_Work work, String pages) { db.updateNestedString(this, work, tagPages, pages); }
   public Ternary getIsArgument()                          { return getTagTernary(tagIsArgument); }

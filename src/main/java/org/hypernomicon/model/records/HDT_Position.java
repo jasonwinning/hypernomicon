@@ -56,7 +56,6 @@ public class HDT_Position extends HDT_RecordWithMainText
 
 //---------------------------------------------------------------------------
 
-  @Override public String listName()          { return name(); }
   @Override public final boolean isUnitable() { return true; }
 
   public boolean setLargerPositions(List<HDT_Position> list) { return updateObjectsFromList(rtParentPosOfPos   , list); }

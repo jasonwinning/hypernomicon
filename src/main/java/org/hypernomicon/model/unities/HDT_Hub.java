@@ -103,11 +103,6 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName() { return name(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public final void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions)
   {
     if (newKey.length() > 0)

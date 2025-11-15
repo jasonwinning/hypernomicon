@@ -97,9 +97,19 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
   void setFirstNameInternal(String newStr, boolean update) { setNameInternal(getLastName() + '|' + newStr.replace("|", ""), update); }
   void setLastNameInternal(String newStr, boolean update)  { setNameInternal(newStr.replace("|", "") + '|' + getFirstName(), update); }
 
-  @Override public void setName(String str) { internalErrorPopup(19982); }
-  @Override public String listName()        { return getNameLastFirst(false); }
-  @Override public HyperPath getPath()      { return picture; }
+  @Override public void setName(String str)  { internalErrorPopup(19982); }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override public String listName()         { return getNameLastFirst(false); }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override public String getCBText()        { return listName(); }
+  @Override public String getXMLObjectName() { return listName(); }
+  @Override public HyperPath getPath()       { return picture; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

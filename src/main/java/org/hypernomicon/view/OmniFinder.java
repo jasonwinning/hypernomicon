@@ -584,6 +584,7 @@ public class OmniFinder
         {
           case tierPersonMatch, tierPersonMatchStart, tierNameContains ->
             recordToPersonList.computeIfAbsent(record, _record -> List.of(new PersonForDupCheck((HDT_Person) _record)));
+
           default -> null;
         };
 
@@ -591,6 +592,7 @@ public class OmniFinder
         {
           case tierAuthorContains, tierAuthorMatch, tierAuthorYear, tierAuthorKeyword, tierAuthorMatchStart ->
             recordToPersonList.computeIfAbsent(record, _record -> ((HDT_RecordWithAuthors<?>) _record).getAuthors().stream().map(PersonForDupCheck::new).toList());
+
           default -> null;
         };
 

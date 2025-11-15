@@ -61,9 +61,28 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
 //---------------------------------------------------------------------------
 
-  @Override public HyperPath getPath()                 { return path; }
-  @Override public String listName()                   { return path.getNameStr(); }
-  @Override protected String makeSortKeyTypeSpecific() { return path.getNameStr(); }
+  /* ************************************************************* */
+  /*                                                               */
+  /*   The name item for HDT_WorkFile consists only of the         */
+  /*   user-entered description from the work files table in the   */
+  /*   Works tab. Addtional text functions add the actual          */
+  /*   file name.                                                  */
+  /*                                                               */
+  /* ************************************************************* */
+
+ @Override public HyperPath getPath()                 { return path; }
+ @Override public String getXMLObjectName()           { return listName(); }
+
+ /**
+  * {@inheritDoc}
+  */
+ @Override public String getCBText()                  { return listName(); }
+
+ /**
+  * {@inheritDoc}
+  */
+ @Override public String listName()                   { return strNotNullOrEmpty(name()) ? (path.getNameStr() + " (" + name() + ')') : path.getNameStr(); }
+ @Override protected String makeSortKeyTypeSpecific() { return strNotNullOrEmpty(name()) ? (path.getNameStr() + '\u0000' + name()) : path.getNameStr(); }
 
   public boolean getAnnotated()         { return getTagBoolean(tagAnnotated); }
   public void setAnnotated(boolean val) { updateTagBoolean(tagAnnotated, val); }

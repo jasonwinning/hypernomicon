@@ -80,12 +80,21 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final HDI_Schema getSchema(Tag tag)     { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
   @Override public final RecordType getType()              { return type; }
 
-  @Override public Instant getModifiedDate()               { return type.getDisregardDates() ? null : modifiedDate; }
   @Override public String name()                           { return name.get(); }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override public String listName()                       { return name(); }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override public String getCBText()                      { return name(); }
+  @Override public String getXMLObjectName()               { return name(); }
+  @Override public Instant getModifiedDate()               { return type.getDisregardDates() ? null : modifiedDate; }
   @Override public void setName(String str)                { setNameInternal(str, true); }
   @Override public String getNameEngChar()                 { return name.getEngChar(); }
-  @Override public String getCBText()                      { return listName(); }
-  @Override public String getXMLObjectName()               { return listName(); }
   @Override public boolean isUnitable()                    { return false; }
   @Override public boolean hasMainText()                   { return false; }
   @Override public boolean hasDesc()                       { return false; }

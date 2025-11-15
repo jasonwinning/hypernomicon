@@ -93,8 +93,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   int getSubjectNdx(HDT_Obj obj, HDT_Subj subj)           { return objToSubjList.get(obj).indexOf(subj); }
   int getObjectNdx(HDT_Subj subj, HDT_Obj obj)            { return subjToObjList.get(subj).indexOf(obj); }
   HDT_Obj getObject(HDT_Subj subj, int ndx)               { return subjToObjList.get(subj).get(ndx); }
-  long getObjListSizeModCount(HDT_Subj subj)              { return objListSizeModCount .computeIfAbsent(subj, _subj -> 0L); }
-  long getSubjListSizeModCount(HDT_Obj obj)               { return subjListSizeModCount.computeIfAbsent(obj , _obj  -> 0L); }
+  long getObjListSizeModCount(HDT_Subj subj)              { return objListSizeModCount .computeIfAbsent(subj, _ -> 0L); }
+  long getSubjListSizeModCount(HDT_Obj obj)               { return subjListSizeModCount.computeIfAbsent(obj , _ -> 0L); }
 
   boolean alreadyHasAsObject(HDT_Subj subj, HDT_Obj obj)  { return subjToObjList.containsEntry(subj, obj); }
   boolean alreadyHasAsSubject(HDT_Obj obj, HDT_Subj subj) { return objToSubjList.containsEntry(obj, subj); }
@@ -143,7 +143,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     typeMappingsWithKeyWork.put(subjType, objType, type);
 
     if (trackOrphans)
-      orphanTypeToRelSets.computeIfAbsent(subjType, _subjType -> new HashSet<>()).add(this);
+      orphanTypeToRelSets.computeIfAbsent(subjType, _ -> new HashSet<>()).add(this);
 
     for (HDI_Schema nestedSchema : nestedSchemas)
     {

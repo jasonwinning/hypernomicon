@@ -99,7 +99,7 @@ public class FilenameMap<T> implements Map<String, T>
     String key = (String) keyObj;
     T oldVal = get(key);
 
-    List<String> list = lowerToList.computeIfAbsent(key.toLowerCase(), keyLowerCase -> new ArrayList<>());
+    List<String> list = lowerToList.computeIfAbsent(key.toLowerCase(), _ -> new ArrayList<>());
 
     String realKey = findKey(key);
 

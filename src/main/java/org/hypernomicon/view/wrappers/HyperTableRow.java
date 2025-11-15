@@ -49,18 +49,18 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
 //---------------------------------------------------------------------------
 
-  public HyperTableCell getCell(int ndx)      { return cells.get(ndx); }
+  public HyperTableCell getCell(int colNdx)   { return cells.get(colNdx); }
   public HyperTableCell getCell()             { return cells.get(table.getMainColNdx()); }
-  public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID  (cells.get(ndx)) : -1; }
-  public String getText(int ndx)              { return cells.size() > ndx ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
-  public RecordType getRecordType(int ndx)    { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
+  public int getID(int colNdx)                { return cells.size() > colNdx ? HyperTableCell.getCellID  (cells.get(colNdx)) : -1; }
+  public String getText(int colNdx)           { return cells.size() > colNdx ? HyperTableCell.getCellText(cells.get(colNdx)) : ""; }
+  public RecordType getRecordType(int colNdx) { return cells.size() > colNdx ? HyperTableCell.getCellType(cells.get(colNdx)) : hdtNone; }
   public boolean getCheckboxValue(int colNdx) { return getID(colNdx) == 1; }
 
   @Override public RecordType getRecordType() { return getRecordType(table.getMainColNdx()); }
   @Override public int getRecordID()          { return getID(table.getMainColNdx()); }
 
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return HyperTableCell.getRecord(getCell()); }
-  public <HDT_T extends HDT_Record> HDT_T getRecord(int ndx)    { return HyperTableCell.getRecord(getCell(ndx)); }
+  public <HDT_T extends HDT_Record> HDT_T getRecord(int colNdx) { return HyperTableCell.getRecord(getCell(colNdx)); }
 
   public <Pop extends Populator> Pop getPopulator(int colNdx)   { return table.getPopulator(colNdx); }
 
@@ -119,6 +119,9 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
   public boolean setCellValue(int colNdx, int id, String text, RecordType type) {
     return setCellValue(colNdx, new RecordHTC(id, text, type)); }
+
+  public boolean setCellValue(int colNdx, HDT_Record record) {
+    return setCellValue(colNdx, record == null ? GenericNonRecordHTC.blankCell : new RecordHTC(record, record.listName())); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

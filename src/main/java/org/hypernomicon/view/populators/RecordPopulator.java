@@ -119,13 +119,13 @@ abstract class RecordPopulator extends Populator
     return (record == null) || ((idFilter != null) && (idFilter.test(record.getID()) == false)) ?
       GenericNonRecordHTC.blankCell
     :
-      new RecordHTC(record, getCellText(record));
+      new RecordHTC(record, generateCellText(record));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String getCellText(HDT_Record record)
+  private String generateCellText(HDT_Record record)
   {
     return record == null ? "" : switch (displayKind)
     {
@@ -148,7 +148,7 @@ abstract class RecordPopulator extends Populator
     :
       new GenericNonRecordHTC(id, text, type);
 
-    return addEntryToList(rowToChoices.computeIfAbsent(row, _row -> new ArrayList<>()), cell);
+    return addEntryToList(rowToChoices.computeIfAbsent(row, _ -> new ArrayList<>()), cell);
   }
 
 //---------------------------------------------------------------------------

@@ -161,13 +161,13 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htParents.buildRows(curPosition.largerPositions, (row, otherPos) ->
     {
       row.setCellValue(2, getTypeName(hdtPosition), hdtPosition);
-      row.setCellValue(3, otherPos, otherPos.listName());
+      row.setCellValue(3, otherPos);
     });
 
     htParents.buildRows(curPosition.largerDebates, (row, debate) ->
     {
       row.setCellValue(2, getTypeName(hdtDebate), hdtDebate);
-      row.setCellValue(3, debate, debate.listName());
+      row.setCellValue(3, debate);
     });
 
  // Populate arguments/stances
@@ -189,7 +189,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
       if (work != null)
       {
         row.setCellValue(3, new BibDateHTC(argument, work.getBibDate()));
-        row.setCellValue(4, work, work.name());
+        row.setCellValue(4, work);
       }
       else
         row.setCellValue(3, argument, "");
@@ -198,7 +198,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
       if (verdict != null)
         row.setCellValue(2, argument, verdict.listName());
 
-      row.setCellValue(5, argument, argument.listName());
+      row.setCellValue(5, argument);
     });
 
  // Populate sub-positions and sub-debates
@@ -207,7 +207,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htRightChildren.buildRows(curPosition.subPositions, (row, subPos) ->
     {
       row.setIconCellValue(1, subPos);
-      row.setCellValue(2, subPos, subPos.getCBText());
+      row.setCellValue(2, subPos);
 
       String authStr = Author.getShortAuthorsStr(subPos.getPeople().stream().map(ArgumentAuthor::getAuthObj), true, true);
       PositionSource ps = subPos.getWorkWithAuthor();
@@ -220,7 +220,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htRightChildren.buildRows(curPosition.subDebates, (row, subDebate) ->
     {
       row.setIconCellValue(1, subDebate);
-      row.setCellValue(2, subDebate, subDebate.getCBText());
+      row.setCellValue(2, subDebate);
     });
   }
 

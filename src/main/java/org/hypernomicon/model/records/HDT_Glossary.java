@@ -50,8 +50,6 @@ public class HDT_Glossary extends HDT_RecordBase
 
 //---------------------------------------------------------------------------
 
-  @Override public String listName()      { return name(); }
-
   public boolean getActive()              { return getTagBoolean(tagActive); }
   public void setActive(boolean newValue) { updateTagBoolean(tagActive, newValue); }
 

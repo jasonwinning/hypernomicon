@@ -57,7 +57,6 @@ public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public HDT_Note getAncestorWithFolder()            { return folder.isNotNull() ? this : findFirstHaving(parentNotes, HDT_Note::getAncestorWithFolder); }
 
   @Override public HyperPath getPath()               { return folder.isNull() ? null : folder.get().getPath(); }
-  @Override public String listName()                 { return name(); }
   @Override public final boolean isUnitable()        { return true; }
 
 //---------------------------------------------------------------------------

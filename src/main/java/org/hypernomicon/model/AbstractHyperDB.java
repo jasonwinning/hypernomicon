@@ -1616,7 +1616,7 @@ public abstract class AbstractHyperDB
 
   private void addRootFolder()
   {
-    filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), rootFolderName -> ConcurrentHashMap.newKeySet()).add(getRootFolder().getPath());
+    filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), _ -> ConcurrentHashMap.newKeySet()).add(getRootFolder().getPath());
   }
 
 //---------------------------------------------------------------------------
@@ -2590,7 +2590,7 @@ public abstract class AbstractHyperDB
   public void handleKeyWork(HDT_RecordWithMainText record, HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord, boolean affirm)
   {
     if (affirm)
-      keyWorkIndex.computeIfAbsent(keyWorkRecord, _keyWorkRecord -> new HashSet<>()).add(record);
+      keyWorkIndex.computeIfAbsent(keyWorkRecord, _ -> new HashSet<>()).add(record);
     else
       nullSwitch(keyWorkIndex.get(keyWorkRecord), set -> set.remove(record));
 

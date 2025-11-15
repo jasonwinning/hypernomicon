@@ -66,7 +66,7 @@ public class SortOrderDlgCtrlr extends ModalDialog
     htRecords.buildRows(iterable, (row, record) ->
     {
       row.setCellValue(0, record, String.valueOf(record.getID()));
-      row.setCellValue(1, record, record.listName());
+      row.setCellValue(1, record);
       row.setCellValue(2, record, record.getSortKeyAttr());
     });
   }

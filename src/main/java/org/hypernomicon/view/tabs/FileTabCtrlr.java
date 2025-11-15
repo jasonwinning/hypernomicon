@@ -215,7 +215,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     if (curMiscFile == null) return;
 
     htAuthors.buildRows(work == null ? curMiscFile.authorRecords() : work.authorRecords,
-      (row, author) -> row.setCellValue(1, author, author.getCBText()));
+      (row, author) -> row.setCellValue(1, author));
   }
 
 //---------------------------------------------------------------------------

@@ -38,7 +38,9 @@ public abstract class HDT_Verdict extends HDT_RecordBase
     super(xmlState, dataset);
   }
 
-  @Override public String getCBText() { return name(); }
+  /**
+   * {@inheritDoc}
+   */
   @Override public String listName()  { return shortName(); }
 
   public Ternary isInFavor()          { return getTagTernary(tagInFavor); }

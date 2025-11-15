@@ -45,8 +45,6 @@ public final class SimpleRecordTypes
       super(xmlState, dataset);
     }
 
-    @Override public String listName() { return name(); }
-
     @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError
     {
       setNameInternal(backupState.simpleName, false);

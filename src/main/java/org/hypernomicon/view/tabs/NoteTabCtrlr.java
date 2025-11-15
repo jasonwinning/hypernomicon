@@ -255,14 +255,14 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     htParents.buildRows(curNote.parentNotes, (row, parentNote) ->
     {
-      row.setCellValue(2, parentNote, parentNote.name());
+      row.setCellValue(2, parentNote);
 
       updateRelativeRow(row, parentNote, 3, true);
     });
 
     htSubnotes.buildRows(curNote.subNotes, (row, subNote) ->
     {
-      row.setCellValue(1, subNote, subNote.name());
+      row.setCellValue(1, subNote);
 
       updateRelativeRow(row, subNote, 2, false);
     });

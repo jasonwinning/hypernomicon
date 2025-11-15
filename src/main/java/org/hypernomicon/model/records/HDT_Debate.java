@@ -50,7 +50,6 @@ public class HDT_Debate extends HDT_RecordWithMainText
 
 //---------------------------------------------------------------------------
 
-  @Override public String listName()          { return name(); }
   @Override public final boolean isUnitable() { return true; }
 
   public boolean setLargerDebates  (List<HDT_Debate> list) { return updateObjectsFromList(rtParentDebateOfDebate, list); }

@@ -263,7 +263,7 @@ public abstract class BibFieldCtrlr
           }
           else
           {
-            row.setCellValue(0, authorRecord, authorRecord.listName());
+            row.setCellValue(0, authorRecord);
             row.setCheckboxValue(1, true);
           }
 

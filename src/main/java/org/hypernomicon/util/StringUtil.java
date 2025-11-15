@@ -792,7 +792,7 @@ public final class StringUtil
       String s = cp == 0x2014 ?            // Preserve em dash
         new String(Character.toChars(cp))
       :
-        codePointCache.computeIfAbsent(cp, cp_ -> TRANS.transliterate(new String(Character.toChars(cp_))));
+        codePointCache.computeIfAbsent(cp, _cp -> TRANS.transliterate(new String(Character.toChars(_cp))));
 
       output.append(s);
 

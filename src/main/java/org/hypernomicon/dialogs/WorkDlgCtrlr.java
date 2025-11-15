@@ -1124,7 +1124,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     if (person != null)
     {
-      row.setCellValue(0, person, person.listName());
+      row.setCellValue(0, person);
       row.setCheckboxValue(1, true);
     }
     else

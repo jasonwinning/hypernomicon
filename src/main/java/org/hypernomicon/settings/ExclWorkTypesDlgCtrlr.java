@@ -58,7 +58,7 @@ public class ExclWorkTypesDlgCtrlr extends ModalDialog
     hyperTable.buildRows(db.workTypes.stream().filter(workType -> workType.enumVal() != WorkTypeEnum.wtUnenteredSet), (row, workType) ->
     {
       row.setCheckboxValue(0, set.contains(workType));
-      row.setCellValue(1, workType, workType.name());
+      row.setCellValue(1, workType);
     });
   }
 

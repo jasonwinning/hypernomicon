@@ -239,7 +239,7 @@ public class HyperTableColumn
 
       if (table.getCanAddRows())
       {
-        HyperTableRow lastRow = table.getRows().getLast();
+        HyperTableRow lastRow = table.getLastRow();
 
         if (lastRow.getCell(colNdx) == cell1)
           return tc.getSortType() == SortType.ASCENDING ? 1 : -1;

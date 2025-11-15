@@ -50,8 +50,9 @@ public class HDT_Region extends HDT_RecordBase
 
 //---------------------------------------------------------------------------
 
-  @Override public String getCBText()        { return name(); }
-  @Override public String getXMLObjectName() { return name(); }
+  /**
+   * {@inheritDoc}
+   */
   @Override public String listName()         { return getAbbreviation(); }
 
   public String getAbbreviation()            { return getTagString(tagAbbreviation); }

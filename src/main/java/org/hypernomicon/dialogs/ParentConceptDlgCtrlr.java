@@ -75,7 +75,7 @@ public class ParentConceptDlgCtrlr extends ModalDialog
     hyperTable.addColAltPopulatorWithUpdateHandler(hdtConcept, ctEditableLimitedDropDown, pop, (row, cellVal, nextColNdx, nextPop) ->
     {
       if (cellVal.isEmpty() == false)
-        hyperTable.edit(hyperTable.getRows().get(hyperTable.dataRowCount()), 0);
+        hyperTable.edit(hyperTable.getRow(hyperTable.dataRowCount()), 0);
     });
 
     btnMoveUp.setOnAction(event ->
@@ -105,11 +105,11 @@ public class ParentConceptDlgCtrlr extends ModalDialog
 
     pop.populate(false);
 
-    hyperTable.buildRows(childConcept.parentConcepts, (row, parentConcept) -> row.setCellValue(0, parentConcept, parentConcept.extendedName(false)));
+    hyperTable.buildRows(childConcept.parentConcepts, (row, parentConcept) -> row.setCellValue(0, parentConcept));
 
     Platform.runLater(() -> updateButtons(tv.getSelectionModel().getSelectedItem()));
 
-    hyperTable.edit(hyperTable.getRows().get(hyperTable.dataRowCount()), 0);
+    hyperTable.edit(hyperTable.getRow(hyperTable.dataRowCount()), 0);
   }
 
 //---------------------------------------------------------------------------

@@ -124,9 +124,7 @@ public class SubjectPopulator extends RecordPopulator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    rowToChoices.putIfAbsent(row, new ArrayList<>());
-
-    List<HyperTableCell> choices = rowToChoices.get(row);
+    List<HyperTableCell> choices = rowToChoices.computeIfAbsent(row, _ -> new ArrayList<>());
 
     if ((hasChanged(row) == false) && (force == false))
       return choices;
@@ -160,8 +158,7 @@ public class SubjectPopulator extends RecordPopulator
 
   @Override protected boolean hasChanged(HyperTableRow row)
   {
-    rowToChanged.putIfAbsent(row, true);
-    return rowToChanged.get(row);
+    return rowToChanged.computeIfAbsent(row, _ -> true);
   }
 
 //---------------------------------------------------------------------------

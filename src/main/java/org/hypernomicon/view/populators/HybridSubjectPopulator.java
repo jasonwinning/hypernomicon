@@ -59,7 +59,7 @@ public class HybridSubjectPopulator extends Populator
   public HybridSubjectPopulator(RelationType relType, Predicate<Integer> idFilter)
   {
     rowToChanged = new HashMap<>();
-    rowToPop = new HashMap<>();
+    rowToPop     = new HashMap<>();
 
     standardPop = new StandardPopulator(db.getSubjType(relType), idFilter);
     subjPop = new SubjectPopulator(relType, true, idFilter);
@@ -123,8 +123,7 @@ public class HybridSubjectPopulator extends Populator
   {
     rowToChanged.put(row, false);
 
-    rowToPop.putIfAbsent(row, standardPop);
-    return rowToPop.get(row).populate(row, force);
+    return rowToPop.computeIfAbsent(row, _ -> standardPop).populate(row, force);
   }
 
 //---------------------------------------------------------------------------
@@ -132,10 +131,8 @@ public class HybridSubjectPopulator extends Populator
 
   @Override protected boolean hasChanged(HyperTableRow row)
   {
-    rowToChanged.putIfAbsent(row, true);
-    rowToPop.putIfAbsent(row, standardPop);
-
-    return rowToChanged.get(row) || rowToPop.get(row).hasChanged(row);
+    return rowToChanged.computeIfAbsent(row, _ -> true) ||
+           rowToPop    .computeIfAbsent(row, _ -> standardPop).hasChanged(row);
   }
 
 //---------------------------------------------------------------------------
@@ -145,8 +142,7 @@ public class HybridSubjectPopulator extends Populator
   {
     rowToChanged.put(row, true);
 
-    rowToPop.putIfAbsent(row, standardPop);
-    rowToPop.get(row).setChanged(row);
+    rowToPop.computeIfAbsent(row, _ -> standardPop).setChanged(row);
   }
 
 //---------------------------------------------------------------------------
@@ -155,9 +151,9 @@ public class HybridSubjectPopulator extends Populator
   @Override public void clear()
   {
     rowToChanged.clear();
-    rowToPop.clear();
+    rowToPop    .clear();
 
-    subjPop.clear();
+    subjPop    .clear();
     standardPop.clear();
   }
 

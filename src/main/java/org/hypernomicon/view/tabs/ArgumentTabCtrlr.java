@@ -246,7 +246,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htParents.buildRows(curArgument.positions, (row, position) ->
     {
       row.setCellValue(2, getTypeName(hdtPosition), hdtPosition);
-      row.setCellValue(3, position, position.listName());
+      row.setCellValue(3, position);
 
       nullSwitch(curArgument.getPosVerdict(position), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
     });
@@ -254,7 +254,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htParents.buildRows(curArgument.targetArgs, (row, targetArg) ->
     {
       row.setCellValue(2, getTypeName(hdtArgument), hdtArgument);
-      row.setCellValue(3, targetArg, targetArg.listName());
+      row.setCellValue(3, targetArg);
 
       nullSwitch(curArgument.getArgVerdict(targetArg), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
     });
@@ -291,7 +291,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
       nullSwitch(responseArg.getArgVerdict(curArgument), verdict -> row.setCellValue(2, responseArg, verdict.listName()));
 
-      row.setCellValue(3, responseArg, responseArg.listName());
+      row.setCellValue(3, responseArg);
     });
 
     lowerCtrlr.tabResponses.setText("Counter/Response Arguments (" + curArgument.responseArgs.size() + ')');

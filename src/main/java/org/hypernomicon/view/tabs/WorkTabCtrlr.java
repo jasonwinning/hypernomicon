@@ -732,7 +732,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         row.setCellValue(1, author.nameLastFirst(), hdtPerson);
       }
       else
-        row.setCellValue(1, authorRecord, authorRecord.listName());
+        row.setCellValue(1, authorRecord);
 
       row.setCheckboxValue(2, author.getIsEditor());
       row.setCheckboxValue(3, author.getIsTrans());
@@ -755,7 +755,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       else
         row.setCellValue(0, subWork, subWork.getLongAuthorsStr());
 
-      row.setCellValue(1, subWork, subWork.name());
+      row.setCellValue(1, subWork);
       row.setCellValue(2, new BibDateHTC(subWork, subWork.getBibDate()));
     });
 
@@ -768,20 +768,20 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         HDT_Position target = arg.positions.getFirst();
         row.setIconCellValue(0, target);
-        row.setCellValue(1, target, target.listName());
+        row.setCellValue(1, target);
 
-        nullSwitch(arg.getPosVerdict(target), verdict -> row.setCellValue(2, verdict, verdict.listName()));
+        nullSwitch(arg.getPosVerdict(target), verdict -> row.setCellValue(2, verdict));
       }
       else if (arg.targetArgs.size() > 0)
       {
         HDT_Argument target = arg.targetArgs.getFirst();
         row.setIconCellValue(0, target);
-        row.setCellValue(1, target, target.listName());
+        row.setCellValue(1, target);
 
-        nullSwitch(arg.getArgVerdict(target), verdict -> row.setCellValue(2, verdict, verdict.listName()));
+        nullSwitch(arg.getArgVerdict(target), verdict -> row.setCellValue(2, verdict));
       }
 
-      row.setCellValue(3, arg, arg.listName());
+      row.setCellValue(3, arg);
       row.setCellValue(4, new PageRangeHTC(arg, arg.pagesInWork(curWork)));
     });
 
@@ -793,7 +793,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   // Populate miscellaneous files
   // ----------------------------
 
-    htMiscFiles.buildRows(curWork.miscFiles, (row, miscFile) -> row.setCellValue(2, miscFile, miscFile.name()));
+    htMiscFiles.buildRows(curWork.miscFiles, (row, miscFile) -> row.setCellValue(2, miscFile));
 
   // Populate displayers, key mentioners, and investigations
   // -------------------------------------------------------
@@ -873,31 +873,31 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htWorkFiles.clearKeepSortOrder();
 
-    for (HDT_WorkFile file : curWork.workFiles)
+    for (HDT_WorkFile workFile : curWork.workFiles)
     {
-      if (file.parentFolder() != null)
+      if (workFile.parentFolder() != null)
       {
         if (folder == null)
-          folder = file.parentFolder();
-        else if (folder != file.parentFolder())
+          folder = workFile.parentFolder();
+        else if (folder != workFile.parentFolder())
           notInSame = true;
       }
 
       HyperTableRow row = htWorkFiles.newDataRow();
-      row.setCheckboxValue(1, file.getAnnotated());
-      row.setCellValue(2, file, file.getPath().getNameStr());
+      row.setCheckboxValue(1, workFile.getAnnotated());
+      row.setCellValue(2, workFile, workFile.getPath().getNameStr());
 
-      int pageNum = curWork.getStartPageNum(file);
+      int pageNum = curWork.getStartPageNum(workFile);
       if (pageNum > -1)
-        row.setCellValue(3, file, String.valueOf(pageNum));
+        row.setCellValue(3, workFile, String.valueOf(pageNum));
 
-      pageNum = curWork.getEndPageNum(file);
+      pageNum = curWork.getEndPageNum(workFile);
       if (pageNum > -1)
-        row.setCellValue(4, file, String.valueOf(pageNum));
+        row.setCellValue(4, workFile, String.valueOf(pageNum));
 
-      row.setCellValue(5, file, file.name());
+      row.setCellValue(5, workFile, workFile.name());
 
-      file.viewNow();
+      workFile.viewNow();
     }
 
     if (inNormalMode == false)

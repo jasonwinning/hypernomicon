@@ -1420,7 +1420,7 @@ public final class FileManager extends NonmodalWindow
 
         HyperTableRow row = recordTable.newDataRow();
         row.setCellValue(0, fileRecord, getTypeName(fileRecord.getType()));
-        row.setCellValue(1, fileRecord, fileRecord.listName());
+        row.setCellValue(1, fileRecord);
       }
     }
 
@@ -1440,7 +1440,7 @@ public final class FileManager extends NonmodalWindow
       {
         HyperTableRow row = recordTable.newDataRow();
         row.setCellValue(0, relative, getTypeName(relative.getType()));
-        row.setCellValue(1, relative, relative.listName());
+        row.setCellValue(1, relative);
       }
     }
 

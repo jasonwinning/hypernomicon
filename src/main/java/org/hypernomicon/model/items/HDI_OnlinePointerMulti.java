@@ -178,7 +178,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
       if (db.relationHasNestedValues(relType))
       {
-        Map<Tag, HDI_OfflineBase> tagToNestedItem = val.objIDtoMaps.computeIfAbsent(objRecord.getID(), objRecordID -> new LinkedHashMap<>());
+        Map<Tag, HDI_OfflineBase> tagToNestedItem = val.objIDtoMaps.computeIfAbsent(objRecord.getID(), _ -> new LinkedHashMap<>());
 
         db.saveNestedValuesToOfflineMap(record, objRecord, tagToNestedItem, val.recordState);
       }

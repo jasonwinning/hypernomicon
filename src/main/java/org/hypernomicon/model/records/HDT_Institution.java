@@ -74,6 +74,14 @@ public class HDT_Institution extends HDT_RecordBase
   public void setURL(String newURL)   { updateTagString(tagWebURL, newURL); }
   public String getURL()              { return getTagString(tagWebURL); }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override public String getCBText()                  { return listName(); }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override public String listName()                   { return extendedName(false); }
   @Override public String getXMLObjectName()           { return extendedName(true ); }
   @Override protected String makeSortKeyTypeSpecific() { return extendedName(true ); }
