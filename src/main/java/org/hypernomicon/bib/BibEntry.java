@@ -201,7 +201,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getCBText()
+  public String getCellText()
   {
     String authorStr = getAuthors().getStr(),
            yearStr = getDate().getYearStr(),

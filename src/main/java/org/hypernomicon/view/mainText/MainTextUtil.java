@@ -430,7 +430,7 @@ public final class MainTextUtil
         HDT_Work work = (HDT_Work) record;
 
         if (work.workType.isNotNull())
-          typeName = work.workType.get().listName();
+          typeName = work.workType.get().name();
 
         StringBuilder tooltip = new StringBuilder("(").append(typeName).append(')');
 
@@ -458,7 +458,7 @@ public final class MainTextUtil
         HDT_MiscFile miscFile = (HDT_MiscFile) record;
 
         if (miscFile.fileType.isNotNull())
-          typeName = typeName + " - " + miscFile.fileType.get().listName();
+          typeName = typeName + " - " + miscFile.fileType.get().name();
 
         if (miscFile.pathNotEmpty())
           return htmlEscaper.escape('(' + typeName + ") " + miscFile.getPath().getNameStr());
@@ -467,7 +467,7 @@ public final class MainTextUtil
 
       default :
 
-        return htmlEscaper.escape('(' + typeName + ") " + record.getCBText());
+        return htmlEscaper.escape('(' + typeName + ") " + record.defaultChoiceText());
     }
   }
 

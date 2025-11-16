@@ -52,8 +52,8 @@ public class MergeTermDlgCtrlr extends ModalDialog
     this.term1 = term1;
     this.term2 = term2;
 
-    String name1 = term1.listName(),
-           name2 = term2.listName(),
+    String name1 = term1.defaultCellText(),
+           name2 = term2.defaultCellText(),
            key1  = term1.getSearchKey(),
            key2  = term2.getSearchKey();
 

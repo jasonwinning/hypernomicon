@@ -102,14 +102,14 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
   /**
    * {@inheritDoc}
    */
-  @Override public String listName()         { return getNameLastFirst(false); }
+  @Override public String defaultCellText()   { return getNameLastFirst(false); }
 
   /**
    * {@inheritDoc}
    */
-  @Override public String getCBText()        { return listName(); }
-  @Override public String getXMLObjectName() { return listName(); }
-  @Override public HyperPath getPath()       { return picture; }
+  @Override public String defaultChoiceText() { return defaultCellText(); }
+  @Override public String getXMLObjectName()  { return defaultCellText(); }
+  @Override public HyperPath getPath()        { return picture; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

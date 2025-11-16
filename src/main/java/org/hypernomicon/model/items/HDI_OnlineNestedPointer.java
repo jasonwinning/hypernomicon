@@ -51,7 +51,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
   public HDT_Record get()            { return target; }
   public void set(HDT_Record target) { this.target = target; }
 
-  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items) { return nullSwitch(target, "", HDT_Record::listName); }
+  @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items) { return nullSwitch(target, "", HDT_Record::defaultCellText); }
   @Override public int getResultCount(Tag tag)                                 { return target == null ? 0 : 1; }
   @Override public void expire()                                               { target = null; }
 
@@ -94,7 +94,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
     if ((searchLinkedRecords == false) || (target == null))
       return;
 
-    String str = target.listName();
+    String str = target.defaultCellText();
 
     if (strNotNullOrEmpty(str))
       list.add(engChar ? convertToEnglishChars(str) : str);

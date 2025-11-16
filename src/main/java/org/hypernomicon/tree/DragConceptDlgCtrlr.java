@@ -67,15 +67,15 @@ public class DragConceptDlgCtrlr extends ModalDialog
       newGlossary = (HDT_Glossary) newParent;
     }
 
-    lblMove.setText("Move definition \"" + childConcept.listName() +
+    lblMove.setText("Move definition \"" + childConcept.defaultCellText() +
                     "\" from Glossary \"" + oldGlossary.name() + "\" to Glossary \"" + newGlossary.name() + '"');
 
-    lblMoveInfo.setText("In this case, the Concept \"" + childConcept.listName() + "\" will no longer appear in the Glossary \"" +
+    lblMoveInfo.setText("In this case, the Concept \"" + childConcept.defaultCellText() + "\" will no longer appear in the Glossary \"" +
                         oldGlossary.name() + "\". Its definition in Glossary \"" + newGlossary.name() +
                         "\" will be the same as what it was in Glossary \"" + oldGlossary.name() +
                         "\". Parent/Child relations for this Concept in Glossary \"" + oldGlossary.name() + "\" will be lost.");
 
-    lblAdd.setText("Add an entry (Concept) for \"" + childConcept.listName() + "\" to Glossary \"" + newGlossary.name() + '"');
+    lblAdd.setText("Add an entry (Concept) for \"" + childConcept.defaultCellText() + "\" to Glossary \"" + newGlossary.name() + '"');
 
     lblAddInfo.setText("In this case, the existing entry (Concept) in Glossary \"" + oldGlossary.name() +
                        "\" and its definition will remain intact. The definition for the new entry (Concept) in Glossary \"" + newGlossary.name() +

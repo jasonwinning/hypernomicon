@@ -121,7 +121,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     return setCellValue(colNdx, new RecordHTC(id, text, type)); }
 
   public boolean setCellValue(int colNdx, HDT_Record record) {
-    return setCellValue(colNdx, record == null ? GenericNonRecordHTC.blankCell : new RecordHTC(record, record.listName())); }
+    return setCellValue(colNdx, RecordHTC.of(record)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

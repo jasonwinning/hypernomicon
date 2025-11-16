@@ -71,17 +71,17 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
   /* ************************************************************* */
 
  @Override public HyperPath getPath()                 { return path; }
- @Override public String getXMLObjectName()           { return listName(); }
+ @Override public String getXMLObjectName()           { return defaultCellText(); }
 
  /**
   * {@inheritDoc}
   */
- @Override public String getCBText()                  { return listName(); }
+ @Override public String defaultChoiceText()          { return defaultCellText(); }
 
  /**
   * {@inheritDoc}
   */
- @Override public String listName()                   { return strNotNullOrEmpty(name()) ? (path.getNameStr() + " (" + name() + ')') : path.getNameStr(); }
+ @Override public String defaultCellText()            { return strNotNullOrEmpty(name()) ? (path.getNameStr() + " (" + name() + ')') : path.getNameStr(); }
  @Override protected String makeSortKeyTypeSpecific() { return strNotNullOrEmpty(name()) ? (path.getNameStr() + '\u0000' + name()) : path.getNameStr(); }
 
   public boolean getAnnotated()         { return getTagBoolean(tagAnnotated); }

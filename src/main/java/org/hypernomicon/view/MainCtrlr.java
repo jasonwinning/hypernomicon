@@ -1954,7 +1954,7 @@ public final class MainCtrlr
       :
         "Are you sure you want to delete this record?";
 
-      String name = record.getCBText();
+      String name = record.defaultChoiceText();
       if (name.isBlank())
         name = activeTab().recordName();
 
@@ -2273,14 +2273,14 @@ public final class MainCtrlr
     lblStatus.setText("");
 
     if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
-                   new GenericNonRecordHTC("", type), new RecordHTC(record, ""), "Mentions: " + record.listName()))
+                   new GenericNonRecordHTC("", type), new RecordHTC(record, ""), "Mentions: " + record.defaultCellText()))
     {
       List<ResultRow> resultRows = queryHyperTab().results();
 
       if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.getFirst().getRecord() != record)))
         return;
 
-      lblStatus.setText("No mentioners: " + getTypeName(type).toLowerCase() + " \"" + record.listName() + '"');
+      lblStatus.setText("No mentioners: " + getTypeName(type).toLowerCase() + " \"" + record.defaultCellText() + '"');
     }
 
     discardLastQuery(backClick);
@@ -2308,8 +2308,8 @@ public final class MainCtrlr
       return activeRecord;
     }
 
-    DialogResult result = new PopupDialog("Which record?\n\n" + getTypeName(activeRecord.getType()) + ": " + activeRecord.getCBText() +
-                                                         "\n" + getTypeName(viewRecord  .getType()) + ": " + viewRecord  .getCBText())
+    DialogResult result = new PopupDialog("Which record?\n\n" + getTypeName(activeRecord.getType()) + ": " + activeRecord.defaultChoiceText() +
+                                                         "\n" + getTypeName(viewRecord  .getType()) + ": " + viewRecord  .defaultChoiceText())
 
       .addDefaultButton(getTypeName(activeRecord.getType()), mrYes   )
       .addButton       (getTypeName(viewRecord  .getType()), mrNo    )
@@ -2394,7 +2394,7 @@ public final class MainCtrlr
       default : break;
     }
 
-    String name = record.getCBText();
+    String name = record.defaultChoiceText();
     if (name.isBlank())
       name = activeTab().recordName();
 

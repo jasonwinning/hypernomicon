@@ -236,7 +236,7 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     {
       BibEntry<?, ?> entry = row.getEntry();
 
-      String entryStr = entry.getCBText() + ' ' + entry.getStr(bfContainerTitle) + ' ' + entry.getStr(bfPublisher);
+      String entryStr = entry.getCellText() + ' ' + entry.getStr(bfContainerTitle) + ' ' + entry.getStr(bfPublisher);
 
       return matcher.isMatch(entryStr);
     });

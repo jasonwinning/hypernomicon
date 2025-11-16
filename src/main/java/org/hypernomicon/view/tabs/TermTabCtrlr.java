@@ -536,7 +536,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     htDisplayers.buildRows(db.displayerStream(curConcept), (row, displayer) ->
     {
       row.setIconCellValue(0, displayer);
-      row.setCellValue(1, displayer, displayer.getCBText());
+      row.setCellValue(1, displayer, displayer.defaultChoiceText());
       row.setCellValue(2, displayer, displayer.getMainText().getPlainForDisplay());
     });
 

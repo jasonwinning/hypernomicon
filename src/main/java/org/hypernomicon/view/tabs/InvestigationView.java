@@ -98,7 +98,7 @@ public final class InvestigationView
       ui.personHyperTab().updateInvInWorkTable();
     });
 
-    tfName.setText(record.listName());
+    tfName.setText(record.name());
 
     tab.setContent(bPane);
   }

@@ -270,7 +270,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public void clear(boolean rstRec)  { tree.clear(); }
   @Override public HDT_Record activeRecord()   { return tree.selectedRecord(); }
   @Override public HDT_Record viewRecord()     { return activeRecord(); }
-  @Override public String recordName()         { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
+  @Override public String recordName()         { return nullSwitch(activeRecord(), "", HDT_Record::defaultChoiceText); }
   @Override public void setDividerPositions()  { }
   @Override public void getDividerPositions()  { }
 

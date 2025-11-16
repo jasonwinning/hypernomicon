@@ -66,13 +66,13 @@ public class HDT_Concept extends HDT_RecordWithMainText
   /**
    * {@inheritDoc}
    */
-  @Override public String getCBText()                      { return extendedName(true); }
+  @Override public String defaultChoiceText()              { return extendedName(true); }
   @Override public String getXMLObjectName()               { return extendedName(true); }
 
   /**
    * {@inheritDoc}
    */
-  @Override public String listName()                       { return extendedName(false); }
+  @Override public String defaultCellText()                { return extendedName(false); }
   @Override public String getNameEngChar()                 { return term.isNull() ? "" : term.get().getNameEngChar(); }
   @Override public String firstActiveKeyWord()             { return term.isNull() ? "" : term.get().firstActiveKeyWord(); }
   @Override public void setName(String str)                { if (term.isNotNull()) term.get().setName(str); }
@@ -236,7 +236,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
       return falseWithInternalErrorPopup(48327);
 
     if ((parentConcepts.isEmpty() == false) || (subConcepts.isEmpty() == false))
-      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + listName() + "\", Glossary \"" + glossary.get().name() + "\". Proceed?", false) == false)
+      if (confirmDialog("This will unassign any parent or child concepts for Term \"" + defaultCellText() + "\", Glossary \"" + glossary.get().name() + "\". Proceed?", false) == false)
         return false;
 
     glossary.set(newGlossary);

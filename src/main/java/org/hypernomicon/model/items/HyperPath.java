@@ -410,7 +410,7 @@ public class HyperPath
           if (hyperPath.getRecordType() != recordType) return;
 
           if (val.length() > 0) val.append("; ");
-          val.append(getTypeName(recordType)).append(": ").append(hyperPath.getRecord().listName());
+          val.append(getTypeName(recordType)).append(": ").append(hyperPath.getRecord().defaultCellText());
         });
 
         break;
@@ -428,7 +428,7 @@ public class HyperPath
       if (relative.getType() == hdtFolder) return;
 
       if (val.length() > 0) val.append("; ");
-      val.append(getTypeName(relative.getType())).append(": ").append(relative.listName());
+      val.append(getTypeName(relative.getType())).append(": ").append(relative.defaultCellText());
     });
 
     if (val.isEmpty() && (getRecordType() == hdtFolder))

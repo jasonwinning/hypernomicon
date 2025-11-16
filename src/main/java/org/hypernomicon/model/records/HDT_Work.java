@@ -249,7 +249,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   /**
    * {@inheritDoc}
    */
-  @Override public String getCBText()
+  @Override public String defaultChoiceText()
   {
     String authorStr = getShortAuthorsStr(false),
            yearStr = getYearStr(),

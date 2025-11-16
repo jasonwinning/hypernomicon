@@ -108,7 +108,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
     if (searchLinkedRecords)
-      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(engChar ? convertToEnglishChars(objRecord.listName()) : objRecord.listName()));
+      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(engChar ? convertToEnglishChars(objRecord.defaultCellText()) : objRecord.defaultCellText()));
   }
 
 //---------------------------------------------------------------------------
@@ -120,7 +120,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 
     if (objList.isEmpty()) return "";
 
-    return db.getObjType(relType) == RecordType.hdtWork ? objList.getFirst().getCBText() : objList.getFirst().listName();
+    return db.getObjType(relType) == RecordType.hdtWork ? objList.getFirst().defaultChoiceText() : objList.getFirst().defaultCellText();
   }
 
 //---------------------------------------------------------------------------

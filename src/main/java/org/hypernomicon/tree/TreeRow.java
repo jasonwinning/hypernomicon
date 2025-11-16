@@ -76,12 +76,12 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 //---------------------------------------------------------------------------
 
   TreeCellValue getNameCell() { return new TreeCellValue(this); }
-  String getCBText()          { return record == null ? text : '(' + getTypeName(getRecordType()) + ") " + getName(); }
-  String getName()            { return record == null ? text : (record.getType() == hdtWork ? record.getCBText() : record.listName()); }
+  String getDisplayText()     { return record == null ? text : '(' + getTypeName(getRecordType()) + ") " + getName(); }
+  String getName()            { return record == null ? text : (record.getType() == hdtWork ? record.defaultChoiceText() : record.defaultCellText()); }
 
   String getDescString()      { return (record != null) && record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getPlainForDisplay() : ""; }
 
-  @Override public String toString() { return getCBText(); }
+  @Override public String toString() { return getDisplayText(); }
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return (HDT_T) record; }

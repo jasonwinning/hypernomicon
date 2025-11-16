@@ -77,12 +77,12 @@ public class HDT_Institution extends HDT_RecordBase
   /**
    * {@inheritDoc}
    */
-  @Override public String getCBText()                  { return listName(); }
+  @Override public String defaultChoiceText()          { return defaultCellText(); }
 
   /**
    * {@inheritDoc}
    */
-  @Override public String listName()                   { return extendedName(false); }
+  @Override public String defaultCellText()            { return extendedName(false); }
   @Override public String getXMLObjectName()           { return extendedName(true ); }
   @Override protected String makeSortKeyTypeSpecific() { return extendedName(true ); }
 

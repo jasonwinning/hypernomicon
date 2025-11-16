@@ -290,7 +290,7 @@ public class PictureDlgCtrlr extends ModalDialog
 
     if (cantUseName(fileName)) fileName = makeFileName(personHyperTab.tfLast.getText() + personHyperTab.tfFirst.getText(), ext);
     if (cantUseName(fileName)) fileName = makeFileName(person.getLastName(), ext);
-    if (cantUseName(fileName)) fileName = makeFileName(person.listName(), ext);
+    if (cantUseName(fileName)) fileName = makeFileName(person.defaultCellText(), ext);
     if (cantUseName(fileName)) return;
 
     tfName.setText(fileName);

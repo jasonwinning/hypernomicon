@@ -53,10 +53,10 @@ public class HDT_Region extends HDT_RecordBase
   /**
    * {@inheritDoc}
    */
-  @Override public String listName()         { return getAbbreviation(); }
+  @Override public String defaultCellText() { return getAbbreviation(); }
 
-  public String getAbbreviation()            { return getTagString(tagAbbreviation); }
-  public void   setAbbreviation(String str)  { updateTagString(tagAbbreviation, str); }
+  public String getAbbreviation()           { return getTagString(tagAbbreviation); }
+  public void   setAbbreviation(String str) { updateTagString(tagAbbreviation, str); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

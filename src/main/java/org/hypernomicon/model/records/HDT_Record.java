@@ -93,24 +93,24 @@ public interface HDT_Record
    * The original primary intended use case of this function is to return the text that should show in HyperTable
    * cells where the rows are a list of records, and the column is indicating to the user which record it is.
    * <p>Typically, this will be the same as what is returned for name() or an abbreviation, and assumes the
-   * surrounding context of the table can help the user to know which record is being indicated, unlike getCBText().</p>
-   * @see #getCBText()
+   * surrounding context of the table can help the user to know which record is being indicated, unlike defaultChoiceText().</p>
+   * @see #defaultChoiceText()
    * @return
    */
-  String listName();
+  String defaultCellText();
   String getNameEngChar();
 
   /**
    * The original primary intended use case of this function is to return the text that should show in ComboBoxes,
    * when showing the selected item and the choices in the dropdown.
-   * <p>In some cases, this will contain more context information than name() or listName(), for example it
+   * <p>In some cases, this will contain more context information than name() or defaultCellText(), for example it
    * includes the glossary in the case of concept records.</p>
-   * @see #listName()
-   * @see ResultRow#getCBText
+   * @see #defaultCellText()
+   * @see ResultRow#defaultChoiceText
    * @see RecordPopulator#generateCellText(HyperTableRow row, HDT_Record record)
    * @return The choice text so the user knows which record is selected or which record they are choosing
    */
-  String getCBText();
+  String defaultChoiceText();
 
   String getXMLObjectName();
   String getSortKey();

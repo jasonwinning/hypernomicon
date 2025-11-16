@@ -327,7 +327,7 @@ public class HyperTableColumn
 
               if (work.workType.isNotNull())
               {
-                setToolTip(this, work.workType.get().getCBText());
+                setToolTip(this, work.workType.get().defaultChoiceText());
                 return;
               }
             }

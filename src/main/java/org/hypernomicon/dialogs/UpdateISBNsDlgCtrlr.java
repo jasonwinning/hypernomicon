@@ -49,7 +49,7 @@ public class UpdateISBNsDlgCtrlr extends ModalDialog
       this.work = work;
     }
 
-    @Override public String toString()               { return work.getCBText(); }
+    @Override public String toString()               { return work.defaultChoiceText(); }
 
     private boolean getSelected()                    { return selected.get(); }
     private HDT_Work getWork()                       { return work; }
@@ -67,7 +67,7 @@ public class UpdateISBNsDlgCtrlr extends ModalDialog
   {
     super("UpdateISBNsDlg", "Update ISBNs", true);
 
-    lblOrigWork.setText("Should the following related works be updated to have the same ISBN(s) as the work: " + origWork.getCBText());
+    lblOrigWork.setText("Should the following related works be updated to have the same ISBN(s) as the work: " + origWork.defaultChoiceText());
 
     listView.setItems(FXCollections.observableArrayList(works.stream().map(UpdateISBNSetting::new).toList()));
     listView.setCellFactory(CheckBoxListCell.forListView(UpdateISBNSetting::selectedProperty));

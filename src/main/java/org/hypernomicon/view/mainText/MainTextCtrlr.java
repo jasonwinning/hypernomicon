@@ -214,7 +214,7 @@ public class MainTextCtrlr
         {
           case diDescription -> "This record's description";
           case diKeyWorks    -> "Key works";
-          case diRecord      -> getTypeName(item.record.getType()) + ": " + item.record.getCBText();
+          case diRecord      -> getTypeName(item.record.getType()) + ": " + item.record.defaultChoiceText();
         });
       }
     });

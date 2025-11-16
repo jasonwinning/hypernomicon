@@ -85,12 +85,12 @@ public abstract class HDT_RecordBase implements HDT_Record
   /**
    * {@inheritDoc}
    */
-  @Override public String listName()                       { return name(); }
+  @Override public String defaultCellText()                { return name(); }
 
   /**
    * {@inheritDoc}
    */
-  @Override public String getCBText()                      { return name(); }
+  @Override public String defaultChoiceText()              { return name(); }
   @Override public String getXMLObjectName()               { return name(); }
   @Override public Instant getModifiedDate()               { return type.getDisregardDates() ? null : modifiedDate; }
   @Override public void setName(String str)                { setNameInternal(str, true); }
@@ -642,7 +642,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public String resultTextForTag(Tag tag, boolean limitTo20Items, boolean engChar)
   {
     String str = (tag == type.getNameTag()) || (tag == tagName) ?
-      listName()
+      defaultCellText()
     :
       nullSwitch(items.get(tag), "", item -> item.getResultTextForTag(tag, limitTo20Items));
 
@@ -655,7 +655,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public int resultCount(Tag tag)
   {
     return (tag == type.getNameTag()) || (tag == tagName) ?
-      (listName().isBlank() ? 0 : 1)
+      (defaultCellText().isBlank() ? 0 : 1)
     :
       nullSwitch(items.get(tag), -1, item -> item.getResultCount(tag));
   }

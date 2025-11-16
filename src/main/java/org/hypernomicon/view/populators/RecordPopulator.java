@@ -71,7 +71,7 @@ abstract class RecordPopulator extends Populator
     List<HDT_Record> recordsSortedByViewDate = new ArrayList<>(),
                      recordsSortedByKey = new ArrayList<>();
 
-    Comparator<HyperTableCell> comparator = (recordType == hdtWork) && (displayKind == DisplayKind.cbText) ?
+    Comparator<HyperTableCell> comparator = (recordType == hdtWork) && (displayKind == DisplayKind.defaultChoiceText) ?
       (cell1, cell2) -> HyperTableCell.compareCells(cell1, cell2, smWork)
     :
       HyperTableCell::compareTo;
@@ -129,10 +129,10 @@ abstract class RecordPopulator extends Populator
   {
     return record == null ? "" : switch (displayKind)
     {
-      case cbText   -> record.getCBText();
-      case listName -> record.listName();
-      case custom   -> textFunction.apply(record);
-      default       -> record.name();
+      case defaultChoiceText -> record.defaultChoiceText();
+      case defaultCellText   -> record.defaultCellText();
+      case custom            -> textFunction.apply(record);
+      default                -> record.name();
     };
   }
 

@@ -270,7 +270,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
     case tagDisplayRecord -> getMainText().getDisplayItemsString();
     case tagKeyWork       ->
     {
-      Stream<String> stream = getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().getCBText())
+      Stream<String> stream = getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().defaultChoiceText())
                                                              .filter(Predicate.not(String::isBlank));
 
       yield limitTo20Items ?

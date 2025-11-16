@@ -400,7 +400,7 @@ public class OmniFinder
           cellLists.get(rowNdx);
 
         cells.set(0, new RecordIconHTC(record));
-        cells.set(1, new RecordHTC    (record, record.listName()));
+        cells.set(1, RecordHTC.of(record));
 
         switch (record.getType())
         {
@@ -415,7 +415,7 @@ public class OmniFinder
             else if ((work.getAuthors().size() == 1) && (work.authorRecords.size() == 1))
             {
               HDT_Person author = work.authorRecords.getFirst();
-              cells.set(3, new RecordHTC(author, author.getCBText()));
+              cells.set(3, RecordHTC.of(author));
             }
             else
               cells.set(3, new RecordHTC(work.authorRecords.getFirst(), work.getShortAuthorsStr(true)));
@@ -438,7 +438,7 @@ public class OmniFinder
             else if (authorRecords.size() == 1)
             {
               HDT_Person author = authorRecords.getFirst();
-              cells.set(3, new RecordHTC(author, author.getCBText()));
+              cells.set(3, RecordHTC.of(author));
             }
             else
               cells.set(3, new RecordHTC(authorRecords.getFirst(), miscFile.getShortAuthorsStr(true)));
@@ -451,7 +451,7 @@ public class OmniFinder
             HDT_Person person = inv.person.get();
 
             cells.set(2, new RecordHTC(inv, ""));
-            cells.set(3, new RecordHTC(person, person.getCBText()));
+            cells.set(3, RecordHTC.of(person));
 
             break;
 
@@ -468,7 +468,7 @@ public class OmniFinder
 
             HDT_Concept concept = (HDT_Concept) record;
             cells.set(2, new RecordHTC(concept, ""));
-            cells.set(3, new RecordHTC(concept, "Glossary: " + concept.glossary.get().listName()));
+            cells.set(3, new RecordHTC(concept, "Glossary: " + concept.glossary.get().name()));
 
             break;
 

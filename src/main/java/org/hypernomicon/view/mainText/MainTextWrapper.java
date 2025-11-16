@@ -568,7 +568,7 @@ public final class MainTextWrapper
 
           if (innerHtml.length() > 0) innerHtml.append("<br>");
 
-          String cbText = htmlEscaper.escape(item.record.getCBText());
+          String cbText = htmlEscaper.escape(item.record.defaultChoiceText());
 
           if (firstOpen.isTrue())
           {
@@ -622,7 +622,7 @@ public final class MainTextWrapper
       db.displayerStream(curRecord).filter(Predicate.not(this::displayerIsAlreadyShowing)).forEachOrdered(displayer ->
       {
         relRecordsHtml.append(relRecordsHtml.isEmpty() ? "<b " + NO_LINKS_ATTR + "=true>Displayers: </b>" : "; ");
-        relRecordsHtml.append(getGoToRecordAnchor(displayer, "", displayer.getCBText()));
+        relRecordsHtml.append(getGoToRecordAnchor(displayer, "", displayer.defaultChoiceText()));
       });
     }
 

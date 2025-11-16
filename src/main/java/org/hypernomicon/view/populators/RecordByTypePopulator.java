@@ -48,7 +48,7 @@ public class RecordByTypePopulator extends RecordPopulator
 
   public RecordByTypePopulator()
   {
-    super(null, DisplayKind.cbText);
+    super(null, DisplayKind.defaultChoiceText);
   }
 
   public RecordByTypePopulator(Predicate<Integer> idFilter, Function<HDT_Record, String> textFunction)

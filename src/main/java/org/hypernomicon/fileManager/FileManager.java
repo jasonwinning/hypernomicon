@@ -607,7 +607,7 @@ public final class FileManager extends NonmodalWindow
             set.stream().filter(hyperPath -> hyperPath.getRecordType() != hdtNone).forEach(hyperPath ->
               confirmMessage.append(getTypeName(hyperPath.getRecord().getType())).append(" ID ")
                             .append(hyperPath.getRecord().getID()).append(": ")
-                            .append(hyperPath.getRecord().getCBText()).append('\n'));
+                            .append(hyperPath.getRecord().defaultChoiceText()).append('\n'));
 
             confirmMessage.append("\nOkay to overwrite the file with \"").append(entry.getKey()).append("\"?");
 

@@ -57,7 +57,7 @@ public class StandardPopulator extends Populator
 
   public StandardPopulator(RecordType objType, Predicate<Integer> filter)
   {
-    this(objType, filter, DisplayKind.cbText);
+    this(objType, filter, DisplayKind.defaultChoiceText);
   }
 
   public StandardPopulator(RecordType objType, Predicate<Integer> filter, DisplayKind displayKind)
