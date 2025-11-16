@@ -52,7 +52,7 @@ public class VerdictDlgCtrlr extends ModalDialog
   {
     super("VerdictDlg", title, false);
 
-    lblParentName.setText(parent.getCBText());
+    lblParentName.setText(parent.defaultChoiceText());
 
     if (parent.getType() == hdtPosition)
     {

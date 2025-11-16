@@ -926,7 +926,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htKeyMentioners.buildRows(Stream.concat(invSet.stream(), set.stream()), (row, mentioner) ->
     {
       row.setIconCellValue(0, mentioner);
-      row.setCellValue(1, mentioner, mentioner.getCBText());
+      row.setCellValue(1, mentioner, mentioner.defaultChoiceText());
       row.setCellValue(2, mentioner, mentioner.getMainText().getPlainForDisplay());
     });
   }

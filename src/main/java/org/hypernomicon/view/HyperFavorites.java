@@ -64,7 +64,7 @@ public class HyperFavorites
 
     private static String getRecordText(HDT_Record record)
     {
-      return getTypeName(record.getType()) + ": " + record.getCBText();
+      return getTypeName(record.getType()) + ": " + record.defaultChoiceText();
     }
 
   //---------------------------------------------------------------------------

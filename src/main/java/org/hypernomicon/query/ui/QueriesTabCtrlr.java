@@ -119,7 +119,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public void getDividerPositions()        { }
   @Override public HDT_Record activeRecord()         { return curQueryCtrlr == null ? null : curQueryCtrlr.getRecord(); }
   @Override public HDT_Record viewRecord()           { return activeRecord(); }
-  @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
+  @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::defaultChoiceText); }
   @Override public int recordNdx()                   { return recordCount() > 0 ? curQueryCtrlr.getResultsTV().getSelectionModel().getSelectedIndex() : -1; }
   @Override public void findWithinDesc()             { if ((activeRecord() != null) || inReportMode()) highlighter.hilite(); }
   @Override public void nextSearchResult()           { highlighter.nextSearchResult    (); }

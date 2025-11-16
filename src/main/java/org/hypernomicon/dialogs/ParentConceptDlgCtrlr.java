@@ -70,7 +70,7 @@ public class ParentConceptDlgCtrlr extends ModalDialog
       if ((id < 1) || HDT_Record.isEmpty(curTerm, false)) return false;
 
       return curTerm.concepts.contains(db.concepts.getByID(id)) == false;
-    }, DisplayKind.listName);
+    }, DisplayKind.defaultCellText);
 
     hyperTable.addColAltPopulatorWithUpdateHandler(hdtConcept, ctEditableLimitedDropDown, pop, (row, cellVal, nextColNdx, nextPop) ->
     {

@@ -66,7 +66,7 @@ class TreeCB
       changeIsProgrammatic = true;
 
       comboBox.setItems(null);
-      rows.sort(Comparator.comparing(row -> row.getCBText().toLowerCase()));
+      rows.sort(Comparator.comparing(row -> row.getDisplayText().toLowerCase()));
       comboBox.setItems(rows);
 
       changeIsProgrammatic = false;
@@ -101,7 +101,7 @@ class TreeCB
     {
       @Override public String toString(TreeRow row)
       {
-        return nullSwitch(row, "", TreeRow::getCBText);
+        return nullSwitch(row, "", TreeRow::getDisplayText);
       }
 
       @Override public TreeRow fromString(String string)
@@ -109,7 +109,7 @@ class TreeCB
         return comboBox.getItems() == null ?
           new TreeRow(string)
         :
-          nullSwitch(findFirst(comboBox.getItems(), row -> string.equals(row.getCBText())), new TreeRow(string));
+          nullSwitch(findFirst(comboBox.getItems(), row -> string.equals(row.getDisplayText())), new TreeRow(string));
       }
     });
 

@@ -103,7 +103,14 @@ public final class GeneralQueries
 
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        return (queryText.isEmpty() == false) && convertToEnglishChars(record.listName()).toLowerCase().contains(queryText);
+        String name = switch (record.getType())
+        {
+          case hdtPerson, hdtWorkFile -> record.defaultCellText();
+
+          default -> record.name();
+        };
+
+        return (queryText.isEmpty() == false) && convertToEnglishChars(name).toLowerCase().contains(queryText);
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }

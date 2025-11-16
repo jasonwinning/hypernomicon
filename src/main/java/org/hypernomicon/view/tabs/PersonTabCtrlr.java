@@ -482,7 +482,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
         HDT_WorkType workType = work.workType.get();
 
         if (workType != null)
-          typeName = work.workType.get().listName();
+          typeName = work.workType.get().name();
 
         typeName = HDT_Work.addFileIndicator(typeName, work);
 
@@ -669,7 +669,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         row.setIconCellValue(0, argument, position);
 
-        nullSwitch(argument.getPosVerdict(position), verdict -> row.setCellValue(3, argument, verdict.listName()));
+        nullSwitch(argument.getPosVerdict(position), verdict -> row.setCellValue(3, argument, verdict.defaultCellText()));
 
         row.setCellValue(4, argument);
       });
@@ -712,7 +712,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private static void addOtherToTopicTable(HDT_Record displayer, HyperTableRow row)
   {
-    row.setCellValue(1, displayer, (displayer.getType() == hdtWorkLabel) || (displayer.getType() == hdtConcept) ? displayer.getCBText() : displayer.listName());
+    row.setCellValue(1, displayer, (displayer.getType() == hdtWorkLabel) || (displayer.getType() == hdtConcept) ? displayer.defaultChoiceText() : displayer.defaultCellText());
   }
 
 //---------------------------------------------------------------------------

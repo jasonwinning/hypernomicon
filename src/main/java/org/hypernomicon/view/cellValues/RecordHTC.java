@@ -68,4 +68,12 @@ public class RecordHTC extends AbstractHTC
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static HyperTableCell of(HDT_Record record)
+  {
+    return record == null ? GenericNonRecordHTC.blankCell : new RecordHTC(record, record.defaultCellText());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

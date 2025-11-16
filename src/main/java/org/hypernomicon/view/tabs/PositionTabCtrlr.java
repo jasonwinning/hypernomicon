@@ -103,7 +103,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
     htArguments = new HyperTable(tvLeftChildren, 5, true, TablePrefKey.POS_ARG);
 
     htArguments.addGoNewCol(hdtArgument, 5)
-      .setGoTooltipBasedOnTarget(record -> "Go to Argument/Stance: " + record.listName())
+      .setGoTooltipBasedOnTarget(record -> "Go to Argument/Stance: " + record.defaultCellText())
       .setButtonTooltip(ButtonAction.baNew, "Add new Argument/Stance responding to this Position");
 
     htArguments.addLabelCol(hdtPerson);                        // Author(s) of work
@@ -196,7 +196,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
       HDT_PositionVerdict verdict = argument.getPosVerdict(curPosition);
       if (verdict != null)
-        row.setCellValue(2, argument, verdict.listName());
+        row.setCellValue(2, argument, verdict.defaultCellText());
 
       row.setCellValue(5, argument);
     });

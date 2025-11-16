@@ -181,7 +181,7 @@ public class HDI_OfflineMainTextAndHub extends HDI_OfflineBase
 
         keyWorks.forEach(keyWork ->
         {
-          String text = recordState.type == hdtInvestigation ? keyWork.getRecord().getCBText() : keyWork.getSearchKey(false);
+          String text = recordState.type == hdtInvestigation ? keyWork.getRecord().defaultChoiceText() : keyWork.getSearchKey(false);
           writePointerTag(xml, tag, keyWork.getRecordID(), keyWork.getRecordType(), text);
         });
 

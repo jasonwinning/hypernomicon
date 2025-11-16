@@ -41,12 +41,12 @@ public abstract class HDT_Verdict extends HDT_RecordBase
   /**
    * {@inheritDoc}
    */
-  @Override public String listName()  { return shortName(); }
+  @Override public String defaultCellText() { return shortName(); }
 
-  public Ternary isInFavor()          { return getTagTernary(tagInFavor); }
-  public String shortName()           { return getTagString(tagShortName); }
+  public Ternary isInFavor()                { return getTagTernary(tagInFavor); }
+  public String shortName()                 { return getTagString(tagShortName); }
 
-  private void setInFavor(Ternary newVal) { updateTagTernary(tagInFavor, newVal); }
+  private void setInFavor(Ternary newVal)   { updateTagTernary(tagInFavor, newVal); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -50,7 +50,7 @@ public class CustomPopulator extends RecordPopulator
 
   public CustomPopulator(CellValueType cellValueType, PopulateHandler handler)
   {
-    super(null, DisplayKind.cbText);
+    super(null, DisplayKind.defaultChoiceText);
 
     this.recordType = RecordType.hdtNone;
     this.handler = Objects.requireNonNull(handler, "handler cannot be null");
@@ -59,7 +59,7 @@ public class CustomPopulator extends RecordPopulator
 
   public CustomPopulator(RecordType recordType, RecordPopulateHandler handler)
   {
-    super(null, DisplayKind.cbText);
+    super(null, DisplayKind.defaultChoiceText);
 
     this.recordType = Objects.requireNonNull(recordType, "recordType cannot be null");
     this.handler = (row, force) -> handler.handle(row, force).map(this::generateCell);

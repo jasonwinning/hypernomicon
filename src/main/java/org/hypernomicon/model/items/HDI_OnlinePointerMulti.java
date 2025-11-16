@@ -134,7 +134,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords, boolean engChar)
   {
     if (searchLinkedRecords)
-      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(engChar ? convertToEnglishChars(objRecord.listName()) : objRecord.listName()));
+      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(engChar ? convertToEnglishChars(objRecord.defaultCellText()) : objRecord.defaultCellText()));
   }
 
 //---------------------------------------------------------------------------
@@ -158,7 +158,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
   public static String recordStreamResultText(RecordType objType, Stream<HDT_Record> stream, boolean limitTo20Items)
   {
-    Function<? super HDT_Record, String> strFunction = objType == RecordType.hdtWork ? HDT_Record::getCBText : HDT_Record::listName;
+    Function<? super HDT_Record, String> strFunction = objType == RecordType.hdtWork ? HDT_Record::defaultChoiceText : HDT_Record::defaultCellText;
 
     Stream<String> strStream = stream.map(strFunction).filter(Predicate.not(String::isBlank));
 

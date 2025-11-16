@@ -393,10 +393,10 @@ public class HyperViewSequence
       {
         HDT_Work work = (HDT_Work) record;
         if (work.workType.isNotNull())
-          typeName = work.workType.get().listName();
+          typeName = work.workType.get().name();
       }
 
-      item = new MenuItem(beforePart + typeName + ": " + record.getCBText());
+      item = new MenuItem(beforePart + typeName + ": " + record.defaultChoiceText());
     }
 
     item.setOnAction(event ->

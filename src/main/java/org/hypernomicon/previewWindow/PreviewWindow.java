@@ -646,7 +646,7 @@ public final class PreviewWindow extends NonmodalWindow
 
       if (record.getType() == hdtWork)
       {
-        String recStr = record.getCBText();
+        String recStr = record.defaultChoiceText();
         lblRecord.setText(recStr);
         setToolTip(lblRecord, recStr);
 
@@ -678,7 +678,7 @@ public final class PreviewWindow extends NonmodalWindow
       }
       else
       {
-        String label = record.listName();
+        String label = record.defaultCellText();
 
         lblRecord.setText(label);
         setToolTip(lblRecord, label);

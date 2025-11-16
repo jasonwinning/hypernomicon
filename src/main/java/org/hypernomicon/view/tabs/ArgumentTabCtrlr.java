@@ -88,7 +88,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htParents = new HyperTable(tvParents, 3, true, TablePrefKey.ARG_PARENTS);
 
     htParents.addActionCol(ctGoBtn, 3)
-      .setGoTooltipBasedOnTarget(record -> "Go to " + getTypeName(record.getType()) + ": " + record.listName());
+      .setGoTooltipBasedOnTarget(record -> "Go to " + getTypeName(record.getType()) + ": " + record.defaultCellText());
 
     htParents.addActionCol(ctBrowseBtn, 3).setButtonTooltip(ButtonAction.baBrowse, "Select a record from the Tree");
 
@@ -162,7 +162,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htResponses = new HyperTable(lowerCtrlr.tvResponses, 3, true, TablePrefKey.ARG_RESPONSES);
 
     htResponses.addActionCol(ctGoNewBtn, 3)
-      .setGoTooltipBasedOnTarget(record -> "Go to Argument: " + record.listName())
+      .setGoTooltipBasedOnTarget(record -> "Go to Argument: " + record.defaultCellText())
       .setButtonTooltip(ButtonAction.baNew, "Add new Argument responding to this Argument");
 
     htResponses.addLabelCol(hdtPerson);
@@ -248,7 +248,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       row.setCellValue(2, getTypeName(hdtPosition), hdtPosition);
       row.setCellValue(3, position);
 
-      nullSwitch(curArgument.getPosVerdict(position), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
+      nullSwitch(curArgument.getPosVerdict(position), verdict -> row.setCellValue(4, verdict, verdict.defaultChoiceText()));
     });
 
     htParents.buildRows(curArgument.targetArgs, (row, targetArg) ->
@@ -256,7 +256,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       row.setCellValue(2, getTypeName(hdtArgument), hdtArgument);
       row.setCellValue(3, targetArg);
 
-      nullSwitch(curArgument.getArgVerdict(targetArg), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
+      nullSwitch(curArgument.getArgVerdict(targetArg), verdict -> row.setCellValue(4, verdict, verdict.defaultChoiceText()));
     });
 
   // Populate the authors, works, and years
@@ -269,7 +269,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       else
         row.setCellValue(1, work.getLongAuthorsStr(), hdtPerson);
 
-      row.setCellValue(2, work, work.getCBText());
+      row.setCellValue(2, work, work.defaultChoiceText());
       row.setCellValue(3, new PageRangeHTC(work, curArgument.pagesInWork(work)));
       row.setCellValue(4, new BibDateHTC(work, work.getBibDate()));
     });
@@ -289,7 +289,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
           row.setCellValue(1, responseArg, work.getLongAuthorsStr());
       }
 
-      nullSwitch(responseArg.getArgVerdict(curArgument), verdict -> row.setCellValue(2, responseArg, verdict.listName()));
+      nullSwitch(responseArg.getArgVerdict(curArgument), verdict -> row.setCellValue(2, responseArg, verdict.defaultCellText()));
 
       row.setCellValue(3, responseArg);
     });

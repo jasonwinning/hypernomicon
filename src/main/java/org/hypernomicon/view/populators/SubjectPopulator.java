@@ -58,12 +58,12 @@ public class SubjectPopulator extends RecordPopulator
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow, Predicate<Integer> idFilter)
   {
-    this(relType, trackObjByRow, idFilter, DisplayKind.cbText);
+    this(relType, trackObjByRow, idFilter, DisplayKind.defaultChoiceText);
   }
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow)
   {
-    this(relType, trackObjByRow, null, DisplayKind.cbText);
+    this(relType, trackObjByRow, null, DisplayKind.defaultChoiceText);
   }
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow, Predicate<Integer> idFilter, DisplayKind displayKind)

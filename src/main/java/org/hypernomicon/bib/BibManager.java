@@ -196,11 +196,11 @@ public final class BibManager extends NonmodalWindow
       {
         borderPane.setTop(apSelecting);
 
-        String workStr = newValue.getCBText();
+        String workStr = newValue.defaultChoiceText();
 
         lblSelecting.setText("Select an entry that is not already assigned to a work and click the Assign to Work Record button to assign to " + workStr + ". Or, select an entry type below and click the Create New button.");
 
-        lblSelect.setText("Assigning to work record: " + newValue.getCBText());
+        lblSelect.setText("Assigning to work record: " + newValue.defaultChoiceText());
         setAllVisible(true, lblSelect, btnCreateNew, cbNewType);
       }
       else
@@ -635,7 +635,7 @@ public final class BibManager extends NonmodalWindow
     {
       row.setCellValue(0, relative.entry.getWork(), relative.relation.name());
       row.setIconCellValue(1, relative.entry.getWork());
-      row.setCellValue(2, relative.entry.getWork(), relative.entry.getWork().getCBText());
+      row.setCellValue(2, relative.entry.getWork(), relative.entry.getWork().defaultChoiceText());
     });
   }
 

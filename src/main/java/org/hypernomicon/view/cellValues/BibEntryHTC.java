@@ -45,7 +45,7 @@ public class BibEntryHTC extends AbstractHTC
 //---------------------------------------------------------------------------
 
   @Override public int getID()                { return bibEntry.numericID(); }
-  @Override public String getText()           { return bibEntry.getCBText(); }
+  @Override public String getText()           { return bibEntry.getCellText(); }
   @Override public RecordType getRecordType() { return hdtNone; }
   @Override public boolean isEmpty()          { return bibEntry == null; }
 

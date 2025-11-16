@@ -337,7 +337,7 @@ public final class SelectTermDlgCtrlr extends ModalDialog
 
       return (concept.glossary.get() == getGlossary()) ||
              (concept.parentConcepts.isEmpty() && concept.subConcepts.isEmpty()) ||
-             confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.listName() + "\", Glossary \"" + concept.glossary.get().name() + "\" since the conept is being moved to a different glossary. Proceed?", false);
+             confirmDialog("This will unassign any parent or child concepts for Term \"" + concept.defaultCellText() + "\", Glossary \"" + concept.glossary.get().name() + "\" since the conept is being moved to a different glossary. Proceed?", false);
     }
 
     glossaryToUse = glossary;
@@ -361,7 +361,7 @@ public final class SelectTermDlgCtrlr extends ModalDialog
     conceptProp   .setValue(concept);
 
     if (creatingNewTerm)
-      concept.term.get().setName(otherSpoke.listName());
+      concept.term.get().setName(otherSpoke.defaultCellText());
 
     return true;
   }

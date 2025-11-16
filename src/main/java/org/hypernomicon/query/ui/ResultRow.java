@@ -47,10 +47,10 @@ public final class ResultRow extends AbstractRow<HDT_Record, ResultRow> implemen
 //---------------------------------------------------------------------------
 
   String getRecordIDStr()   { return record == null ? "" : String.valueOf(record.getID()); }
-  String getRecordName()    { return record == null ? "" : (record.getType() == hdtPerson ? record.listName() : record.name()); }
+  String getRecordName()    { return record == null ? "" : (record.getType() == hdtPerson ? record.defaultCellText() : record.name()); }
   String getSearchKey()     { return record == null ? "" : record.getSearchKey(); }
   String getSortKey()       { return record == null ? "" : record.getSortKey(); }
-  public String getCBText() { return record == null ? cbText : record.listName(); }
+  public String getCBText() { return record == null ? cbText : record.defaultCellText(); }
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return (HDT_T) record; }

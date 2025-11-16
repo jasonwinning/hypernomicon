@@ -114,7 +114,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
   private static HyperTableCell getWorkCell(RecordAuthor author)
   {
-    return nullSwitch(author.getWork(), new GenericNonRecordHTC("", hdtWork), work -> new RecordHTC(work, work.getCBText()));
+    return nullSwitch(author.getWork(), new GenericNonRecordHTC("", hdtWork), work -> new RecordHTC(work, work.defaultChoiceText()));
   }
 
 //---------------------------------------------------------------------------
