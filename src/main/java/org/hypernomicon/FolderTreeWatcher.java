@@ -644,7 +644,7 @@ public class FolderTreeWatcher
     if (HyperThread.isRunning(watcherThread))
     {
       stopRequested = true;
-      try { watcherThread.join(); } catch (InterruptedException e) { noOp(); }
+      try { watcherThread.join(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 
     if ((watcher != null) && (stopped == false))

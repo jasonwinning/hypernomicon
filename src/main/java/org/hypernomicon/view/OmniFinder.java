@@ -323,6 +323,41 @@ public class OmniFinder
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
+    private boolean nameMatch(HDT_Record record, TierEnum tier)
+    {
+      return switch(record.getType())
+      {
+        case hdtPerson -> (tier == tierNameContains) && authorMatch(getPersonList(record).getFirst(), "", tierAuthorContains);
+
+        case hdtWork ->
+            individualNameMatch(record.getNameEngChar(), tier)
+        ||
+            ((HDT_Work) record).workFiles.stream().anyMatch(workFile -> individualNameMatch(convertToEnglishChars(workFile.defaultCellText()), tier));
+
+        default -> individualNameMatch(record.getNameEngChar(), tier);
+      };
+    }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+    private boolean individualNameMatch(String name, TierEnum tier)
+    {
+      name = name.toLowerCase();
+
+      return switch(tier)
+      {
+        case tierExactName      -> name.equals    (queryLC);
+        case tierNameStartExact -> name.startsWith(queryLC);
+        case tierNameContains   -> name.contains  (queryLC);
+
+        default -> false;
+      };
+    }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
     // Similar to AutoCompleteCBHelper.selectedCellOrCells
 
     private boolean isMatch(HDT_Record record)
@@ -335,20 +370,13 @@ public class OmniFinder
       return switch (curTier)
       {
         case tierKeywordStart     -> true;
-        case tierExactName        -> (record.getType() != hdtPerson) && record.getNameEngChar().toLowerCase().equals(queryLC);
-        case tierNameStartExact   -> (record.getType() != hdtPerson) && record.getNameEngChar().toLowerCase().startsWith(queryLC);
         case tierKeyword          -> linkList.stream().anyMatch(keyLink -> keyLink.key().record == record);
         case tierKeywordContains  -> record.getSearchKey().toLowerCase().contains(queryLC);
+        case tierExactName,
+             tierNameStartExact,
+             tierNameContains     -> nameMatch(record, curTier);
         case tierPersonMatch,
              tierPersonMatchStart -> authorMatch(getPersonList(record).getFirst(), "", curTier);
-
-        case tierNameContains ->
-
-          switch (record.getType())
-          {
-            case hdtPerson -> authorMatch(getPersonList(record).getFirst(), "", tierAuthorContains);
-            default        -> record.getNameEngChar().toLowerCase().contains(queryLC);
-          };
 
         case tierAuthorContains, tierAuthorMatch, tierAuthorYear, tierAuthorKeyword, tierAuthorMatchStart ->
 
@@ -643,7 +671,7 @@ public class OmniFinder
     {
       stopRequested.set(true);
 
-      try { finderThread.join(); } catch (InterruptedException e) { noOp(); }
+      try { finderThread.join(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 
     finderThread = null;

@@ -129,7 +129,7 @@ public class AsyncHttpClient
         request.abort();
       }
 
-      try { requestThread.join(); } catch (InterruptedException e) { noOp(); }
+      try { requestThread.join(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
 
       request = null;
     }
