@@ -20,8 +20,7 @@ package org.hypernomicon.view.tabs;
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.MainCtrlr;
-import org.hypernomicon.view.cellValues.AbstractHTC;
-import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.cellValues.*;
 import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellTestHandler;
@@ -29,6 +28,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyEvent;
 
 import static org.hypernomicon.App.*;
@@ -53,6 +53,11 @@ import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.Exceptions.SearchKeyTooShortException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ConceptSense;
+import org.hypernomicon.testTools.FXTestSequencer;
+import org.hypernomicon.util.PopupDialog.DialogResult;
+import org.hypernomicon.util.PopupRobot;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 //---------------------------------------------------------------------------
 
@@ -231,10 +236,10 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int GLOSSARY_COL_NDX = 2,
-              SENSE_COL_NDX = 3,
-              PARENTS_COL_NDX = 4,
-              SEARCHKEY_COL_NDX = 5;
+  private final int GLOSSARY_COL_NDX = 2,
+                    SENSE_COL_NDX = 3,
+                    PARENTS_COL_NDX = 4,
+                    SEARCHKEY_COL_NDX = 5;
 
   private final HyperTable htConcepts, htSubConcepts, htDisplayers;
   private final TabPane tpConcepts;
@@ -367,6 +372,10 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       row -> ui.goToTreeRecord(row.getRecord(GLOSSARY_COL_NDX))
     );
 
+    htConcepts.addContextMenuItem("Move this concept to a different term",
+      row -> (nullSwitch(conceptRows.get(row), null, conceptRow -> conceptRow.concept) != null) && (curTerm.concepts.size() > 1),
+      row -> moveConcept(conceptRows.get(row).concept));
+
     htConcepts.addContextMenuItem("Change order of concepts",
       row -> (row.getRecord(GLOSSARY_COL_NDX) != null) && (curTerm.concepts.size() > 1),
 
@@ -409,8 +418,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     htConcepts.addContextMenuItem("Remove this row",
       row -> (conceptRows.get(row) != null) && ((curTerm.concepts.size() > 1) || conceptRows.get(row).isDuplicate),
-
-      row -> removeRow(conceptRows.get(row), row));
+      this::removeRow);
 
     htSubConcepts = new HyperTable(tvLeftChildren, 2, true, TablePrefKey.CONCEPT_SUB);
 
@@ -551,6 +559,11 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  private boolean removeRow(HyperTableRow selectedRow)
+  {
+    return removeRow(conceptRows.get(selectedRow), selectedRow);
+  }
 
   private boolean removeRow(ConceptRow conceptRow)
   {
@@ -936,6 +949,11 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   void moveConcept()
   {
+    moveConcept(curConcept);
+  }
+
+  private void moveConcept(HDT_Concept concept)
+  {
     if (curTerm.concepts.size() < 2)
     {
       if (confirmDialog("There is only one definition for this Term. Do you want to choose another Term to merge with this one?", false))
@@ -945,8 +963,6 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     }
 
     if (ui.cantSaveRecord()) return;
-
-    HDT_Concept concept = curConcept;
 
     SelectTermDlgCtrlr selectTermDlgCtrlr = SelectTermDlgCtrlr.showPopupToMoveConceptToADifferentTerm(concept);
 
@@ -1114,6 +1130,889 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     getDividerPosition(spMain    , DividerPositionPrefKey.TERM_TOP_VERT    , 0);
     getDividerPosition(spMain    , DividerPositionPrefKey.TERM_BOTTOM_VERT , 1);
     getDividerPosition(spChildren, DividerPositionPrefKey.TERM_BOTTOM_HORIZ, 0);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void runTests()
+  {
+    if (db.isOffline())
+    {
+      errorPopup("No database is currently loaded.");
+      return;
+    }
+
+    if (db.terms     .isEmpty() == false) { errorPopup("The tests can only be run if there are no Term records."); return; }
+    if (db.concepts  .isEmpty() == false) { errorPopup("There should not be any Concept records since there are no Term records."); return; }
+    if (db.glossaries.isEmpty())          { errorPopup("There should be at least one Glossary."); return; }
+
+    while (db.glossaries.size() > 1)
+      db.deleteRecord(findFirst(db.glossaries, glossary -> glossary.getID() != 1));
+
+    HDT_Glossary generalGlossary = db.glossaries.getByID(1);
+
+    if (generalGlossary == null) { errorPopup("General glossary does not exist."); return; }
+
+    if ("General".equals(generalGlossary.name()) == false) { errorPopup("Name of General glossary should be \"General\"."); return; }
+
+    if (ui.cantSaveRecord()) return;
+
+    HDT_Glossary physicsGlossary = db.createNewBlankRecord(hdtGlossary);
+    physicsGlossary.setActive(true);
+    physicsGlossary.setName("Physics");
+    physicsGlossary.parentGlossaries.add(generalGlossary);
+
+    HDT_Term term1 = HDT_Term.create(generalGlossary),
+             term2 = HDT_Term.create(generalGlossary);
+
+    term1.setName("Term 1");
+    term2.setName("Term 2");
+
+    try
+    {
+      term1.setSearchKey("Term 1");
+      term2.setSearchKey("Term 2");
+    }
+    catch (SearchKeyException e)
+    {
+      e.printStackTrace();
+      return;
+    }
+
+    ui.goToRecord(term1, false);
+
+    PopupRobot.setActive(true);
+
+    FXTestSequencer queue = new FXTestSequencer();
+
+    queue.setFinalizer(() -> runDelayedInFXThread(1, 1000, () -> PopupRobot.setActive(false)));
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    /* ************************************************************************ */
+    /*                                                                          */
+    /*   Tests start here.                                                      */
+    /*                                                                          */
+    /* ************************************************************************ */
+
+    queue
+      .setDelayMS(400)
+
+      .thenRun(() -> htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(2).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Now 2 additional rows have been added with General as the glossary.    */
+      /*   Sense is blank on all 3.                                               */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Try editing the parent concepts on the first duplicate row and         */
+      /*   get an error popup.                                                    */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() -> htConcepts.edit(htConcepts.getRow(1), PARENTS_COL_NDX))
+
+      .thenExpectPopupAfterDelay("Enter a Sense first.", AlertType.ERROR)
+
+      .thenRun(htConcepts::cancelEditing)
+
+      //---------------------------------------------------------------------------
+      //---------------------------------------------------------------------------
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Try editing the search key on the second duplicate row and             */
+      /*   get an error popup.                                                    */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() -> htConcepts.edit(htConcepts.getRow(2), SEARCHKEY_COL_NDX))
+
+      .thenExpectPopupAfterDelay("Enter a Sense first.", AlertType.ERROR)
+
+      .thenRun(htConcepts::cancelEditing)
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(3, htConcepts.dataRowCount(), "Data row count not 3.");
+
+        ui.btnSaveClick();
+      })
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Click "Accept Edits". That should remove the 2 duplicate rows.         */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(1, htConcepts.dataRowCount(), "Data row count not 1 after clicking \"Accept Edits\".");
+
+        htConcepts.getRow(0).setCellValue(GLOSSARY_COL_NDX, GenericNonRecordHTC.blankCell);
+      })
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Now just the original row remains. Try clearing the glossary. It       */
+      /*   should restore the value; there has to be at least one                 */
+      /*   concept/glossary.                                                      */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertSame(generalGlossary, htConcepts.getRow(0).getRecord(GLOSSARY_COL_NDX), "If you clear out the glossary on the last remaining row, it should restore the value.");
+
+        assertDoesNotThrow(() -> term1.concepts.getFirst().addParentConcept(term2.concepts.getFirst()));
+
+        ui.btnSaveClick();
+      })
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Set glossary to General on second row after adding parent concept for  */
+      /*   first row.                                                             */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Set sense on first row.                                                */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(0).setCellValue(SENSE_COL_NDX, "New sense", hdtConceptSense))
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Verify that there are now 2 concepts; one with the new sense and one   */
+      /*   without.                                                               */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals ("New sense"    , htConcepts.getRow(0).getText      (SENSE_COL_NDX), "Sense should be populated in first row.");
+        assertEquals (hdtConceptSense, htConcepts.getRow(0).getRecordType(SENSE_COL_NDX), "Sense should be populated in first row.");
+        assertNotEquals(-1           , htConcepts.getRow(0).getID        (SENSE_COL_NDX), "Sense should be populated in first row.");
+
+        assertEquals (""             , htConcepts.getRow(1).getText      (SENSE_COL_NDX), "Sense should not be populated in second row.");
+        assertEquals (hdtNone        , htConcepts.getRow(1).getRecordType(SENSE_COL_NDX), "Sense should not be populated in second row.");
+        assertEquals (-1             , htConcepts.getRow(1).getID        (SENSE_COL_NDX), "Sense should not be populated in second row.");
+
+        assertEquals(2, term1.concepts.size(), "Term 1 should now have 2 concepts.");
+        assertEquals(2, tpConcepts.getTabs().size(), "Term 1 should now have 2 concepts.");
+        assertEquals("New sense", tpConcepts.getTabs().get(0).getText(), "First concept tab should say \"New sense\"");
+        assertEquals("General", tpConcepts.getTabs().get(1).getText(), "Second concept tab should say \"General\"");
+
+        PopupRobot.setDefaultResponse(DialogResult.mrNo);
+
+        htConcepts.getRow(0).setCellValue(GLOSSARY_COL_NDX, physicsGlossary, physicsGlossary.name());
+      })
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Try changing glossary on row that has one or more parent concepts. Get */
+      /*   confirmation popup.                                                    */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenExpectPopupAfterDelay("This will unassign any parent or child concepts for Term \"Term 1 (New sense)\", Glossary \"General\". Proceed?", AlertType.CONFIRMATION)
+
+      .thenRun(() ->
+      {
+        assertEquals(2, term1.concepts.size(), "Term 1 should now have 2 concepts.");
+
+        term1.concepts.getFirst().removeParent(term2.concepts.getFirst());
+        assertDoesNotThrow(() -> term2.concepts.getFirst().addParentConcept(term1.concepts.getFirst()));
+
+        ui.btnSaveClick();
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(0).setCellValue(GLOSSARY_COL_NDX, physicsGlossary))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Try changing glossary on row where the concept has one or more         */
+      /*   sub-concepts. Get confirmation popup.                                  */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenExpectPopupAfterDelay("This will unassign any parent or child concepts for Term \"Term 1 (New sense)\", Glossary \"General\". Proceed?", AlertType.CONFIRMATION)
+
+      .thenRun(() ->
+      {
+        assertEquals(2, term1.concepts.size(), "Term 1 should now have 2 concepts.");
+
+        term2.concepts.getFirst().removeParent(term1.concepts.getFirst());
+
+        term1.concepts.getFirst().getMainText().setHtml("Here is my text.");
+
+        ui.update();
+      })
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   Try clearing glossary on row where the concept has a non-blank main    */
+      /*   text. Get confirmation popup (and click yes).                          */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() ->
+      {
+        PopupRobot.setDefaultResponse(DialogResult.mrYes);
+
+        htConcepts.getRow(0).setCellValue(GLOSSARY_COL_NDX, GenericNonRecordHTC.blankCell);
+      })
+
+      .thenExpectPopupAfterDelay("Are you sure you want to remove the concept definition associated with the glossary \"General\", sense \"New sense\"?", AlertType.CONFIRMATION)
+
+      .thenRun(() ->
+      {
+        assertEquals(1, term1.concepts.size(), "Term 1 should now have 1 concept.");
+        assertEquals(1, htConcepts.dataRowCount(), "Term 1 should now have 1 concept.");
+
+        assertEquals (""     , htConcepts.getRow(0).getText      (SENSE_COL_NDX), "Sense should not be populated in first row.");
+        assertEquals (hdtNone, htConcepts.getRow(0).getRecordType(SENSE_COL_NDX), "Sense should not be populated in first row.");
+        assertEquals  (-1     , htConcepts.getRow(0).getID        (SENSE_COL_NDX), "Sense should not be populated in first row.");
+
+        htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, physicsGlossary);
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(2).setCellValue(GLOSSARY_COL_NDX, physicsGlossary))
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(2).setCellValue(GLOSSARY_COL_NDX, GenericNonRecordHTC.blankCell))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   If you clear out the glossary for a duplicate row, the original row    */
+      /*   should remain and the original concept should still be there.          */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(2, term1.concepts.size(), "Term 1 should now have 2 concepts.");
+        assertEquals(2, htConcepts.dataRowCount(), "There should now be 2 concept rows.");
+
+        htConcepts.getRow(2).setCellValue(GLOSSARY_COL_NDX, physicsGlossary);
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, GenericNonRecordHTC.blankCell))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   There is a concept in General and a concept in Physics. A duplicate    */
+      /*   row of the Physics row is added. If the glossary is cleared out on the */
+      /*   original Physics row, that Physics concept and its duplicate row       */
+      /*   should be removed, leaving only the remaining General concept row.     */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(1, term1.concepts.size(), "Term 1 should now have 1 concept.");
+        assertSame(generalGlossary, term1.concepts.getFirst().glossary.get(), "The concept in the General glossary should remain.");
+        assertEquals(1, htConcepts.dataRowCount(), "There should now be 1 concept row.");
+        assertEquals(generalGlossary.name(), htConcepts.getRow(0).getText(GLOSSARY_COL_NDX), "The concept in the General glossary should remain.");
+
+        htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, physicsGlossary);
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   If the glossary was previously populated, but is changed such that the */
+      /*   row is now a match for an existing row (blank sense), it should show   */
+      /*   an error message and revert the row.                                   */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenExpectPopupAfterDelay("This term already has a concept in the same glossary with a blank sense.", AlertType.ERROR)
+
+      .thenRun(() ->
+      {
+        assertEquals(physicsGlossary.name(), htConcepts.getRow(1).getText(GLOSSARY_COL_NDX), "Second row should still have \"Physics\" as the glossary.");
+        assertEquals(2, term1.concepts.size(), "Term 1 should now have 2 concepts.");
+        assertSame(generalGlossary, term1.concepts.get(0).glossary.get(), "First concept should be General");
+        assertSame(physicsGlossary, term1.concepts.get(1).glossary.get(), "Second concept should be Physics");
+
+        assertTrue(db.conceptSenses.isEmpty(), "No sense records should exist.");
+
+        htConcepts.getRow(0).setCellValue(SENSE_COL_NDX, "Sense 1", hdtConceptSense);
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(1).setCellValue(SENSE_COL_NDX, term1.concepts.getFirst().sense.get()))
+
+      .thenExpectLackOfPopupAfterDelay()
+
+      .thenRun(() -> htConcepts.getRow(0).setCellValue(GLOSSARY_COL_NDX, physicsGlossary))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   If the glossary was previously populated, but is changed such that the */
+      /*   row is now a match for an existing row (non-blank sense), it should    */
+      /*   show an error message and revert the row.                              */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenExpectPopupAfterDelay("This term already has a concept in the same glossary with the same sense.", AlertType.ERROR)
+
+      .thenRun(() ->
+      {
+        assertEquals(2, term1.concepts.size(), "Term 1 should now have 2 concepts");
+        assertSame(generalGlossary, term1.concepts.get(0).glossary.get(), "First concept should be General");
+        assertSame(physicsGlossary, term1.concepts.get(1).glossary.get(), "Second concept should be Physics");
+
+        db.deleteRecord(term1.concepts.get(1));
+        term1.concepts.getFirst().sense.set(null);
+
+        ui.update();
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(2).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(1, term1.concepts.size());
+
+        htConcepts.getRow(2).setCellValue(GLOSSARY_COL_NDX, physicsGlossary);
+      })
+
+      /* ************************************************************************** */
+      /*                                                                            */
+      /*   If the row was previously a duplicate, and the glossary was changed so   */
+      /*   that the row is no longer a duplicate, a new concept should be created   */
+      /*   and other duplicate rows should be removed.                              */
+      /*                                                                            */
+      /* ************************************************************************** */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(2, htConcepts.dataRowCount());
+        assertEquals(2, term1.concepts.size());
+
+        db.deleteRecord(term1.concepts.get(1));
+
+        ui.update();
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(1, term1.concepts.size());
+
+        htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, generalGlossary);
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(2).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(0).setCellValue(GLOSSARY_COL_NDX, physicsGlossary))
+
+      /* **************************************************************************** */
+      /*                                                                              */
+      /*   If the row being edited (changed from one glossary to another) previously  */
+      /*   had a duplicate, verify that the duplicate row now has its own distinct    */
+      /*   concept record. If there were additional duplicates, those rows should be  */
+      /*   removed.                                                                   */
+      /*                                                                              */
+      /* **************************************************************************** */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(2, htConcepts.dataRowCount(), "There should be 2 concept rows");
+        assertEquals(2, term1.concepts.size(), "There should be 2 concepts for Term 1");
+
+        PopupRobot.setDefaultResponse(DialogResult.mrNo);
+        assertTrue(removeRow(htConcepts.getRow(0)), "Removing the first row should succeed");
+      })
+
+      .thenExpectLackOfPopupAfterDelay()
+
+      .thenRun(() ->
+      {
+        assertEquals(0, db.conceptSenses.size(), "No sense records should exist");
+        assertEquals(2, db.terms.size(), "2 terms should exist");
+        assertEquals(2, db.concepts.size(), "2 total concepts should exist in the database");
+        assertEquals(1, htConcepts.dataRowCount(), "There should be 1 concept row");
+        assertEquals(1, term1.concepts.size(), "There should be 1 concept for Term 1");
+
+        htConcepts.getRow(0).setCellValue(SENSE_COL_NDX, "New sense", hdtConceptSense);
+      })
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*                    SENSE UPDATE TESTING STARTS HERE.                     */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(1).setCellValue(SENSE_COL_NDX, "nEw SeNsE", hdtConceptSense))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User edits the sense for a blank row. If there is already a concept    */
+      /*   in the General glossary with the same (ignoring case) sense, show      */
+      /*   error popup and back out the change.                                   */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenExpectPopupAfterDelay("This term already has a concept in the General glossary with the same sense.", AlertType.ERROR)
+
+      .thenRun(() ->
+      {
+        assertEquals(1, htConcepts.dataRowCount(), "There should be 1 concept row");
+
+        term1.concepts.getFirst().sense.set(null);
+
+        htConcepts.getRow(1).setCellValue(SENSE_COL_NDX, "Ordinary", hdtConceptSense);
+      })
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User enters a non-blank sense (for which there isn't a record yet)     */
+      /*   in a blank row. If there is already a concept in the General glossary  */
+      /*   with a blank sense, use General for this row and create a concept.     */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(2, htConcepts.dataRowCount(), "There should be 2 concept rows");
+        assertEquals(2, db.terms.size(), "2 terms should exist");
+        assertEquals(3, db.concepts.size(), "3 total concepts should exist");
+        assertEquals(1, db.conceptSenses.size(), "One sense record should exist");
+        assertEquals("Ordinary", term1.concepts.get(1).sense.get().name(), "The Ordinary sense should be assigned to the second concept");
+        assertSame(generalGlossary, term1.concepts.get(1).glossary.get(), "The General glossary should be assigned to the second concept");
+
+        htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, physicsGlossary);
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(2, htConcepts.dataRowCount(), "There should be 2 concept rows");
+        assertEquals(2, db.terms.size(), "2 terms should exist");
+        assertEquals(3, db.concepts.size(), "3 total concepts should exist");
+        assertEquals(1, db.conceptSenses.size(), "One sense record should exist");
+        assertEquals("Ordinary", term1.concepts.get(1).sense.get().name(), "The Ordinary sense should be assigned to the second concept");
+        assertSame(physicsGlossary, term1.concepts.get(1).glossary.get(), "The Physics glossary should be assigned to the second concept");
+
+        htConcepts.getRow(2).setCellValue(SENSE_COL_NDX, term1.concepts.get(1).sense.get());
+      })
+
+      /* ************************************************************************** */
+      /*                                                                            */
+      /*   User enters a non-blank sense (for which there already exists a record)  */
+      /*   in a blank row. If there is already a concept in the General glossary    */
+      /*   with a blank sense, use General for this row and create a concept.       */
+      /*                                                                            */
+      /* ************************************************************************** */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(3, htConcepts.dataRowCount(), "There should be 3 concept rows");
+        assertEquals(4, db.concepts.size(), "4 total concepts should exist");
+        assertEquals(1, db.conceptSenses.size(), "One sense record should exist");
+        assertEquals("Ordinary", term1.concepts.get(2).sense.get().name(), "The Ordinary sense should be assigned to the third concept");
+        assertSame(physicsGlossary, term1.concepts.get(1).glossary.get(), "The Physics glossary should be assigned to the second concept");
+        assertSame(generalGlossary, term1.concepts.get(2).glossary.get(), "The General glossary should be assigned to the third concept");
+
+        assertTrue(removeRow(htConcepts.getRow(0)), "Removing the first row should succeed");
+      })
+
+      .thenRunAfterDelay(() -> assertTrue(removeRow(htConcepts.getRow(0)), "Removing the first row should succeed"))
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(1, htConcepts.dataRowCount(), "There should be 1 concept row");
+        assertEquals(1, term1.concepts.size(), "There should be 1 concept for Term 1");
+        assertEquals(1, db.conceptSenses.size(), "There should only be 1 sense record in the database");
+        assertEquals("Ordinary", term1.concepts.getFirst().sense.get().name(), "The Ordinary sense should be assigned to the only remaining concept");
+
+        htConcepts.getRow(1).setCellValue(SENSE_COL_NDX, "Enlightened", hdtConceptSense);
+      })
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User enters a non-blank sense (for which there isn't a record yet)     */
+      /*   in a blank row. If there is already a concept in the General glossary  */
+      /*   with a different (non-blank) sense, use General for this row and       */
+      /*   create a concept.                                                      */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(2, htConcepts.dataRowCount(), "There should be 2 concept rows");
+        assertEquals(2, term1.concepts.size(), "Term 1 should have 2 concepts");
+        assertEquals(2, db.conceptSenses.size(), "There should be 2 sense records in the database");
+        assertEquals("Enlightened", term1.concepts.get(1).sense.get().name(), "The Enlightened sense should be assigned to the second concept");
+        assertSame(generalGlossary, term1.concepts.get(1).glossary.get(), "The General glossary should be assigned to the second concept");
+
+        term2.concepts.getFirst().sense.set(term1.concepts.get(1).sense.get());  // Set non-active term's concept to be Enlightened so that sense doesn't get deleted in the next operation
+
+        assertTrue(removeRow(htConcepts.getRow(1)), "Removing the second row should succeed");
+      })
+
+      .thenExpectLackOfPopupAfterDelay()
+
+      .thenRun(() ->
+      {
+        assertEquals(1, htConcepts.dataRowCount(), "There should be 1 concept row");
+        assertEquals(1, term1.concepts.size(), "There should be 1 concept for Term 1");
+        assertEquals(2, db.conceptSenses.size(), "There should only be 2 sense records in the database");
+        assertEquals("Ordinary", term1.concepts.getFirst().sense.get().name(), "The Ordinary sense should be assigned to the only remaining concept");
+
+        htConcepts.getRow(1).setCellValue(SENSE_COL_NDX, term2.concepts.getFirst().sense.get());
+      })
+
+      /* ************************************************************************** */
+      /*                                                                            */
+      /*   User enters a non-blank sense (for which there already exists a record)  */
+      /*   in a blank row. If there is already a concept in the General glossary    */
+      /*   with a different (non-blank) sense, use General for this row and create  */
+      /*   a concept.                                                               */
+      /*                                                                            */
+      /* ************************************************************************** */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(2, htConcepts.dataRowCount(), "There should be 2 concept rows");
+        assertEquals(2, term1.concepts.size(), "Term 1 should have 2 concepts");
+        assertEquals(2, db.conceptSenses.size(), "There should be 2 sense records in the database");
+        assertEquals("Enlightened", term1.concepts.get(1).sense.get().name(), "The Enlightened sense should be assigned to the second concept");
+        assertSame(generalGlossary, term1.concepts.get(1).glossary.get(), "The General glossary should be assigned to the second concept");
+
+        assertTrue(removeRow(htConcepts.getRow(1)), "Removing the second row should succeed");
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(1, htConcepts.dataRowCount(), "There should be 1 concept row");
+        assertEquals(1, term1.concepts.size(), "There should be 1 concept for Term 1");
+        assertEquals(2, db.conceptSenses.size(), "There should be 2 sense records in the database");
+        assertEquals("Ordinary", term1.concepts.getFirst().sense.get().name(), "The Ordinary sense should be assigned to the only remaining concept");
+
+        htConcepts.getRow(0).setCellValue(GLOSSARY_COL_NDX, physicsGlossary);
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        assertSame(physicsGlossary, term1.concepts.getFirst().glossary.get(), "The last remaining concept should be in the Physics glossary");
+
+        htConcepts.getRow(1).setCellValue(SENSE_COL_NDX, term2.concepts.getFirst().sense.get());
+      })
+
+      /* ************************************************************************** */
+      /*                                                                            */
+      /*   User enters a non-blank sense (for which there already exists a record)  */
+      /*   in a blank row. If the term is not in the General glossary, and no       */
+      /*   existing concept (first or otherwise) has the same glossary/sense        */
+      /*   combination, use the same glossary as the first concept and create a     */
+      /*   concept.                                                                 */
+      /*                                                                            */
+      /* ************************************************************************** */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(2, htConcepts.dataRowCount(), "There should be 2 concept rows");
+        assertEquals(2, term1.concepts.size(), "2 concepts should exist for Term 1");
+        assertEquals(2, db.conceptSenses.size(), "There should be 2 sense records in the database");
+        assertEquals("Enlightened", term1.concepts.get(1).sense.get().name(), "The Enlightened sense should be assigned to the second concept");
+        assertSame(physicsGlossary, term1.concepts.get(1).glossary.get(), "The Physics glossary should be assigned to the second concept");
+
+        assertTrue(removeRow(htConcepts.getRow(1)), "Removing the second row should succeed");
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        db.deleteRecord(term2.concepts.getFirst().sense.get());
+
+        assertEquals(1, htConcepts.dataRowCount(), "There should be 1 concept row");
+        assertEquals(1, term1.concepts.size(), "There should be 1 concept for Term 1");
+        assertEquals(1, db.conceptSenses.size(), "There should only be 1 sense record in the database");
+        assertEquals("Ordinary", term1.concepts.getFirst().sense.get().name(), "The Ordinary sense should be assigned to the only remaining concept");
+        assertSame(physicsGlossary, term1.concepts.getFirst().glossary.get(), "The last remaining concept should be in the Physics glossary");
+
+        htConcepts.getRow(1).setCellValue(SENSE_COL_NDX, "Enlightened", hdtConceptSense);
+      })
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User enters a non-blank sense (for which there isn't a record yet)     */
+      /*   in a blank row. If the term is not in the General glossary, and no     */
+      /*   existing concept (first or otherwise) has the same glossary/sense      */
+      /*   combination, use the same glossary as the first concept and create a   */
+      /*   concept.                                                               */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(2, htConcepts.dataRowCount(), "There should be 2 concept rows");
+        assertEquals(2, term1.concepts.size(), "2 concepts should exist for Term 1");
+        assertEquals(2, db.conceptSenses.size(), "There should be 2 sense records in the database");
+        assertEquals("Enlightened", term1.concepts.get(1).sense.get().name(), "The Enlightened sense should be assigned to the second concept");
+        assertSame(physicsGlossary, term1.concepts.get(1).glossary.get(), "The Physics glossary should be assigned to the second concept");
+
+        htConcepts.getRow(2).setCellValue(SENSE_COL_NDX, term1.concepts.get(1).sense.get());
+      })
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User edits the sense for a blank row. If the term is not in the        */
+      /*   General glossary, and there is an existing concept (first or           */
+      /*   otherwise) that has the same glossary/sense combination, use the       */
+      /*   General glossary and create a concept.                                 */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenExpectLackOfPopupAfterDelay()
+
+      .thenRun(() ->
+      {
+        assertEquals(3, htConcepts.dataRowCount(), "There should be 3 concept rows");
+        assertEquals(3, term1.concepts.size(), "3 concepts should exist for Term 1");
+        assertEquals(2, db.conceptSenses.size(), "There should be 2 sense records in the database");
+        assertEquals("Enlightened", term1.concepts.get(2).sense.get().name(), "The Enlightened sense should be assigned to the third concept");
+        assertSame(term1.concepts.get(1).sense.get(), term1.concepts.get(2).sense.get(), "The second and third concepts should have the same sense record");
+        assertSame(generalGlossary, term1.concepts.get(2).glossary.get(), "The General glossary should be assigned to the third concept");
+
+        htConcepts.getRow(0).setCellValue(SENSE_COL_NDX, GenericNonRecordHTC.blankCell);
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(1).setCellValue(SENSE_COL_NDX, GenericNonRecordHTC.blankCell))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User edits the sense for an existing concept row, clearing out the     */
+      /*   existing text so that this row will match another row's glossary and   */
+      /*   blank sense. There should be an error popup and the row should be      */
+      /*   reverted.                                                              */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenExpectPopupAfterDelay("This term already has a concept in the same glossary with a blank sense.", AlertType.ERROR)
+
+      .thenRun(() ->
+      {
+        assertNotNull(htConcepts.getRow(1).getRecord(SENSE_COL_NDX), "The Enlightened sense should have been reverted in the second row");
+        assertEquals("Enlightened", term1.concepts.get(1).sense.get().name(), "The Enlightened sense should be assigned to the second concept");
+
+        htConcepts.getRow(0).setCellValue(SENSE_COL_NDX, term1.concepts.get(1).sense.get());
+      })
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User edits the sense for an existing concept row, so that this row     */
+      /*   will match another row's glossary and sense. There should be an        */
+      /*   error popup and the row should be reverted.                            */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenExpectPopupAfterDelay("This term already has a concept in the same glossary with the same sense.", AlertType.ERROR)
+
+      .thenRun(() ->
+      {
+        assertEquals("", htConcepts.getRow(0).getText(SENSE_COL_NDX), "Sense should not be populated in first row.");
+        assertEquals(-1, htConcepts.getRow(0).getID  (SENSE_COL_NDX), "Sense should not be populated in first row.");
+
+        htConcepts.getRow(3).setCellValue(GLOSSARY_COL_NDX, physicsGlossary);
+      })
+
+      .thenExpectLackOfPopupAfterDelay()
+
+      .thenRun(() -> htConcepts.getRow(3).setCellValue(SENSE_COL_NDX, term1.concepts.get(1).sense.get()))
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User edits the sense for a duplicate row, so that this row will        */
+      /*   match another row's glossary and sense. There should be an error       */
+      /*   popup and the row should be reverted.                                  */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenExpectPopupAfterDelay("This term already has a concept in the same glossary with the same sense.", AlertType.ERROR)
+
+      .thenRun(() ->
+      {
+        assertEquals("", htConcepts.getRow(3).getText(SENSE_COL_NDX), "Sense should not be populated in fourth row.");
+        assertEquals(-1, htConcepts.getRow(3).getID  (SENSE_COL_NDX), "Sense should not be populated in fourth row.");
+
+        db.deleteRecord(term1.concepts.get(1));
+        db.deleteRecord(term1.concepts.get(1));
+
+        ui.update();
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(1).setCellValue(GLOSSARY_COL_NDX, physicsGlossary))
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(0, db.conceptSenses.size(), "There should not be any sense records");
+
+        htConcepts.getRow(1).setCellValue(SENSE_COL_NDX, "Strict", hdtConceptSense);
+      })
+
+      .thenExpectLackOfPopupAfterDelay()
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User enters a non-blank sense (where a new sense will need to be       */
+      /*   created) for a duplicate row. A new concept should be created for      */
+      /*   this row.                                                              */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRun(() ->
+      {
+        assertEquals(2, htConcepts.dataRowCount());
+        assertEquals(2, term1.concepts.size());
+        assertEquals(1, db.conceptSenses.size());
+        assertEquals("Strict", htConcepts.getRow(1).getText(SENSE_COL_NDX), "Sense should be populated in second row.");
+        assertNotEquals(-1, htConcepts.getRow(1).getID(SENSE_COL_NDX), "Sense should be populated in second row.");
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(2).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(3).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(3, term1.concepts.size());
+        assertFalse(conceptRows.get(htConcepts.getRow(2)).isDuplicate);
+        assertTrue (conceptRows.get(htConcepts.getRow(3)).isDuplicate);
+
+        htConcepts.getRow(2).setCellValue(SENSE_COL_NDX, "Relaxed", hdtConceptSense);
+      })
+
+      .thenExpectLackOfPopupAfterDelay()
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User enters a non-blank sense (where a new sense will need to be       */
+      /*   created) for a row that has a duplicate. The new sense should be       */
+      /*   assigned to the original concept, and a new concept should be created  */
+      /*   for the duplicate row.                                                 */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRun(() ->
+      {
+        assertEquals(4, term1.concepts.size());
+        assertEquals(2, db.conceptSenses.size());
+        assertEquals("Relaxed", term1.concepts.get(2).sense.get().name());
+        assertEquals("Relaxed", htConcepts.getRow(2).getText(SENSE_COL_NDX), "Sense should be populated in third row.");
+        assertNotEquals(-1, htConcepts.getRow(2).getID(SENSE_COL_NDX), "Sense should be populated in third row.");
+        assertEquals("", htConcepts.getRow(3).getText(SENSE_COL_NDX), "Sense should not be populated in fourth row.");
+        assertEquals(-1, htConcepts.getRow(3).getID  (SENSE_COL_NDX), "Sense should not be populated in fourth row.");
+
+        db.deleteRecord(term1.concepts.get(2));
+        db.deleteRecord(term1.concepts.get(2));
+
+        ui.update();
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(2).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(3).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(3, term1.concepts.size());
+        assertFalse(conceptRows.get(htConcepts.getRow(2)).isDuplicate);
+        assertTrue (conceptRows.get(htConcepts.getRow(3)).isDuplicate);
+
+        htConcepts.getRow(3).setCellValue(SENSE_COL_NDX, term1.concepts.get(1).sense.get());
+      })
+
+      .thenExpectLackOfPopupAfterDelay()
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User enters a non-blank sense (where there is an existing sense        */
+      /*   record) for a duplicate row. A new concept should be created for       */
+      /*   this row.                                                              */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRun(() ->
+      {
+        assertEquals(4, htConcepts.dataRowCount());
+        assertEquals(4, term1.concepts.size());
+        assertEquals(1, db.conceptSenses.size());
+        assertEquals("Strict", htConcepts.getRow(3).getText(SENSE_COL_NDX), "Sense should be populated in fourth row.");
+        assertNotEquals(-1, htConcepts.getRow(3).getID(SENSE_COL_NDX), "Sense should be populated in fourth row.");
+        assertEquals(htConcepts.getRow(1).getID(SENSE_COL_NDX), htConcepts.getRow(3).getID(SENSE_COL_NDX), "Sense in second and fourth rows should be the same");
+
+        assertTrue(removeRow(htConcepts.getRow(3)), "Removing the fourth row should succeed");
+      })
+
+      .thenRunAfterDelay(() -> htConcepts.getRow(3).setCellValue(GLOSSARY_COL_NDX, generalGlossary))
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(3, term1.concepts.size());
+        assertFalse(conceptRows.get(htConcepts.getRow(2)).isDuplicate);
+        assertTrue (conceptRows.get(htConcepts.getRow(3)).isDuplicate);
+
+        htConcepts.getRow(2).setCellValue(SENSE_COL_NDX, term1.concepts.get(1).sense.get());
+      })
+
+      .thenExpectLackOfPopupAfterDelay()
+
+      /* ************************************************************************ */
+      /*                                                                          */
+      /*   User enters a non-blank sense (where there is an existing sense        */
+      /*   record) for a row that has a duplicate. The new sense should be        */
+      /*   assigned to the original concept, and a new concept should be created  */
+      /*   for the duplicate row.                                                 */
+      /*                                                                          */
+      /* ************************************************************************ */
+
+      .thenRun(() ->
+      {
+        assertEquals(4, term1.concepts.size());
+        assertEquals(1, db.conceptSenses.size());
+        assertNotEquals(-1, htConcepts.getRow(2).getID(SENSE_COL_NDX), "Sense should be populated in third row.");
+        assertEquals("", htConcepts.getRow(3).getText(SENSE_COL_NDX), "Sense should not be populated in fourth row.");
+        assertEquals(-1, htConcepts.getRow(3).getID  (SENSE_COL_NDX), "Sense should not be populated in fourth row.");
+      });
+
+    queue.start();
   }
 
 //---------------------------------------------------------------------------

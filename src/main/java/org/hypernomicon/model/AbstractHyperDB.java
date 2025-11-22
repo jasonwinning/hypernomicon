@@ -25,6 +25,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
@@ -150,8 +151,6 @@ public abstract class AbstractHyperDB
    */
   protected abstract void checkWhetherFoldersExist();
   protected abstract void loadMainTextTemplates();
-  protected abstract void warningMessage(String msg);
-  protected abstract void errorMessage(String msg);
 
   protected abstract void loadSettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException;
   protected abstract boolean loadFromXMLFiles(List<FilePath> xmlFileList, boolean creatingNew, EnumMap<RecordType, VersionNumber> recordTypeToDataVersion, SetMultimap<Integer, Integer> workIDtoInvIDs);
@@ -636,25 +635,6 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final boolean falseWithErrorMessage(String msg)
-  {
-    errorMessage(msg);
-    return false;
-  }
-
-  protected final void errorMessage(Throwable e)
-  {
-    errorMessage(getThrowableMessage(e));
-  }
-
-  protected final void internalErrorMessage(int num)
-  {
-    errorMessage(new HDB_InternalError(num));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void addItem(RecordType recordType, HyperDataCategory dataCat, RelationType relType, Tag... tags)
   {
     HDI_Schema schema;
@@ -897,8 +877,8 @@ public abstract class AbstractHyperDB
     }
     catch (IOException | BackingStoreException e)
     {
-      errorMessage("An error occurred while attempting to save database options to " + SETTINGS_FILE_NAME +
-                   ". Record data has been saved to XML files, however." + System.lineSeparator() + getThrowableMessage(e));
+      errorPopup("An error occurred while attempting to save database options to " + SETTINGS_FILE_NAME +
+                 ". Record data has been saved to XML files, however." + System.lineSeparator() + getThrowableMessage(e));
 
       return true;
     }
@@ -978,7 +958,7 @@ public abstract class AbstractHyperDB
     }
     catch (HDB_InternalError e)
     {
-      errorMessage(e);
+      errorPopup(e);
 
       close(null);
       return false;
@@ -1002,7 +982,7 @@ public abstract class AbstractHyperDB
     }
     catch (HyperDataException e)
     {
-      errorMessage(e);
+      errorPopup(e);
 
       close(null);
       return false;
@@ -1050,7 +1030,7 @@ public abstract class AbstractHyperDB
     }
     catch (IOException e)
     {
-      warningMessage("An error occurred while writing lock file: " + getThrowableMessage(e));
+      warningPopup("An error occurred while writing lock file: " + getThrowableMessage(e));
     }
 
     return true;
@@ -1325,19 +1305,19 @@ public abstract class AbstractHyperDB
 
     if ((record instanceof HDT_Hub hub) && hub.getSpokes().findAny().isPresent())
     {
-      internalErrorMessage(58372);
+      internalErrorPopup(58372);
       return;
     }
 
     if (record.isExpired())
     {
-      errorMessage("The record has already been deleted.");
+      errorPopup("The record has already been deleted.");
       return;
     }
 
     if (HDT_Record.isEmpty(record, false) || isProtectedRecord(record, true))
     {
-      errorMessage("Unable to delete record.");
+      errorPopup("Unable to delete record.");
       return;
     }
 
@@ -1391,7 +1371,7 @@ public abstract class AbstractHyperDB
     }
     catch (HDB_InternalError e)
     {
-      errorMessage(e);
+      errorPopup(e);
     }
 
     deletionInProgress = false;
@@ -1819,7 +1799,7 @@ public abstract class AbstractHyperDB
     }
     catch (HDB_InternalError e)
     {
-      errorMessage(e);
+      errorPopup(e);
     }
     catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { throw newAssertionError(e); }
 
@@ -1876,7 +1856,7 @@ public abstract class AbstractHyperDB
           newestTooOldAppVersion = entry.getKey();
     }
 
-    warningMessage("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with Hypernomicon v" + newestTooOldAppVersion + " or older.");
+    warningPopup("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with Hypernomicon v" + newestTooOldAppVersion + " or older.");
   }
 
 //---------------------------------------------------------------------------

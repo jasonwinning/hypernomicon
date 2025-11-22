@@ -351,9 +351,6 @@ public final class HyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void errorMessage  (String msg)           { errorPopup  (msg); }
-  @Override protected void warningMessage(String msg)           { warningPopup(msg); }
-
   @Override protected void loadSettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException
   {
     try (InputStream is = Files.newInputStream(xmlPath(SETTINGS_FILE_NAME).toPath()))

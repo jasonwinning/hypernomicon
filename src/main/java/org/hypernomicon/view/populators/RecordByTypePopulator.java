@@ -133,7 +133,7 @@ public class RecordByTypePopulator extends RecordPopulator
 
   private HyperTableCell match(HyperTableRow row, int id, RecordType recordType, boolean ignoreRecordType)
   {
-    RecordType rowRecordType =rowToRecordType.computeIfAbsent(row, _ -> hdtNone);
+    RecordType rowRecordType = rowToRecordType.computeIfAbsent(row, _ -> hdtNone);
 
     return ((rowRecordType == hdtNone) ||
             (id < 1) ||

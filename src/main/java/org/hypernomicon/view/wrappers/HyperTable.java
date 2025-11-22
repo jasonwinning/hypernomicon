@@ -803,7 +803,11 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void cancelEditing()
   {
-    runDelayedInFXThread(1, 200, () -> tv.edit(-1, null));
+    runDelayedInFXThread(1, 200, () ->
+    {
+      tv.edit(-1, null);
+      tv.refresh();
+    });
   }
 
 //---------------------------------------------------------------------------

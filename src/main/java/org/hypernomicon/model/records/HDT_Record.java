@@ -95,7 +95,7 @@ public interface HDT_Record
    * <p>Typically, this will be the same as what is returned for name() or an abbreviation, and assumes the
    * surrounding context of the table can help the user to know which record is being indicated, unlike defaultChoiceText().</p>
    * @see #defaultChoiceText()
-   * @return
+   * @return The default text that should show in a table cell for this record
    */
   String defaultCellText();
   String getNameEngChar();
@@ -103,7 +103,7 @@ public interface HDT_Record
   /**
    * The original primary intended use case of this function is to return the text that should show in ComboBoxes,
    * when showing the selected item and the choices in the dropdown.
-   * <p>In some cases, this will contain more context information than name() or defaultCellText(), for example it
+   * <p>In some cases, this will contain more context information than name() or defaultCellText(). For example, it
    * includes the glossary in the case of concept records.</p>
    * @see #defaultCellText()
    * @see ResultRow#defaultChoiceText

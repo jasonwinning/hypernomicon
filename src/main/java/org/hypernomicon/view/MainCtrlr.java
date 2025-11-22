@@ -187,8 +187,7 @@ public final class MainCtrlr
   private TextField tfSelector = null;
 
   private boolean selectorTabChangeIsProgrammatic   = false, dontShowOmniTable     = false, maximized    = false,
-                  btnTextSearchToggleIsProgrammatic = false, internetNotCheckedYet = true , shuttingDown = false,
-                  dontInteract = false;
+                  btnTextSearchToggleIsProgrammatic = false, internetNotCheckedYet = true , shuttingDown = false;
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
   private Instant lastImportTime = Instant.EPOCH;
   private FilePath lastImportFilePath = null;
@@ -215,7 +214,6 @@ public final class MainCtrlr
   public TreeWrapper tree()                   { return treeHyperTab().getTree(); }
   public Stage getStage()                     { return stage; }
   public boolean isShuttingDown()             { return shuttingDown; }
-  public boolean dontInteract()               { return dontInteract; }
 
   @FXML private void mnuExitClick()           { shutDown(ShutDownMode.Normal      ); }
   @FXML private void mnuExitNoSaveClick()     { shutDown(ShutDownMode.NormalNoSave); }
@@ -1362,6 +1360,8 @@ public final class MainCtrlr
     if (db.getState() == DBState.UNRECOVERABLE_ERROR)
       shutDownMode = ShutDownMode.UnrecoverableInternalError;
 
+    boolean popupRobotWasActive = PopupRobot.isActive();
+
     if (db.getState() != DBState.CLOSED)
     {
       if (shutDownMode == ShutDownMode.NormalNoSave)
@@ -1374,14 +1374,14 @@ public final class MainCtrlr
         if (shutDownMode == ShutDownMode.FromOtherComputer)
         {
           shuttingDown = true;
-          dontInteract = true; // Don't show popup messages while saving current record; just decline confirmations and fail
+          PopupRobot.setActive(true); // Don't show popup messages while saving current record; just decline confirmations and fail
         }
 
         if (cantSaveRecord(shutDownMode == ShutDownMode.Normal) && (shutDownMode == ShutDownMode.Normal))
           if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?", false))
             return;
 
-        dontInteract = false;
+        PopupRobot.setActive(popupRobotWasActive);
 
         if ((shuttingDown == false) && app.prefs.getBoolean(PrefKey.CHECK_INTERNET, true) && (checkInternet() == false))
           return;
@@ -1393,7 +1393,13 @@ public final class MainCtrlr
         }
       }
       else if (shutDownMode == ShutDownMode.UnrecoverableInternalError)
-        dontInteract = true;
+        PopupRobot.setActive(true);
+
+      /* ********************************************** */
+      /*                                                */
+      /*               Point of no return               */
+      /*                                                */
+      /* ********************************************** */
 
       shuttingDown = true;
       forEachHyperTab(hyperTab -> hyperTab.clear(true));
@@ -2309,7 +2315,7 @@ public final class MainCtrlr
     }
 
     DialogResult result = new PopupDialog("Which record?\n\n" + getTypeName(activeRecord.getType()) + ": " + activeRecord.defaultChoiceText() +
-                                                         "\n" + getTypeName(viewRecord  .getType()) + ": " + viewRecord  .defaultChoiceText())
+                                                         '\n' + getTypeName(viewRecord  .getType()) + ": " + viewRecord  .defaultChoiceText())
 
       .addDefaultButton(getTypeName(activeRecord.getType()), mrYes   )
       .addButton       (getTypeName(viewRecord  .getType()), mrNo    )

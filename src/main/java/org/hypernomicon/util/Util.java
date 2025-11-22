@@ -493,7 +493,7 @@ public final class Util
    *         paused, stopped, or queried by the caller
    * @throws IllegalArgumentException if cycles is less than 1 or delayMS is negative
    */
-  public static Timeline runDelayedInFXThread(int cycles, int delayMS, Runnable runnable)
+  public static Timeline runDelayedInFXThread(int cycles, long delayMS, Runnable runnable)
   {
     Objects.requireNonNull(runnable, "Runnable must not be null");
 

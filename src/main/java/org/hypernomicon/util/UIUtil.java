@@ -799,7 +799,15 @@ public final class UIUtil
 
   public static DialogResult abortRetryIgnoreDialog(String msg)
   {
-    if (ui.dontInteract()) return mrIgnore;
+    if (PopupRobot.isActive())
+    {
+      // If the robot is not anticipating this dialog, default to Ignore.
+
+      PopupRobot.record(msg, AlertType.CONFIRMATION);
+      DialogResult response = PopupRobot.getDefaultResponse();
+
+      return (response == mrAbort) || (response == mrRetry) || (response == mrIgnore) ? response : mrIgnore;
+    }
 
     return new PopupDialog(msg)
 
@@ -815,7 +823,15 @@ public final class UIUtil
 
   public static DialogResult yesNoCancelDialog(String msg)
   {
-    if (ui.dontInteract()) return mrCancel;
+    if (PopupRobot.isActive())
+    {
+      // If the robot is not anticipating this dialog, default to Cancel.
+
+      PopupRobot.record(msg, AlertType.CONFIRMATION);
+      DialogResult response = PopupRobot.getDefaultResponse();
+
+      return (response == mrYes) || (response == mrNo) || (response == mrCancel) ? response : mrCancel;
+    }
 
     return new PopupDialog(msg)
 
@@ -831,7 +847,15 @@ public final class UIUtil
 
   public static DialogResult seriesConfirmDialog(String msg)
   {
-    if (ui.dontInteract()) return mrNoToAll;
+    if (PopupRobot.isActive())
+    {
+      // If the robot is not anticipating this dialog, default to No To All.
+
+      PopupRobot.record(msg, AlertType.CONFIRMATION);
+      DialogResult response = PopupRobot.getDefaultResponse();
+
+      return (response == mrYes) || (response == mrNo) || (response == mrYesToAll) || (response == mrNoToAll) ? response : mrNoToAll;
+    }
 
     return new PopupDialog(msg)
 
@@ -855,7 +879,15 @@ public final class UIUtil
 
   public static boolean confirmDialog(String msg, String yesCaption, String noCaption, boolean yesIsDefault)
   {
-    if (ui.dontInteract()) return false;
+    if (PopupRobot.isActive())
+    {
+      // If the robot is not anticipating this dialog, default to No (return false).
+
+      PopupRobot.record(msg, AlertType.CONFIRMATION);
+      DialogResult response = PopupRobot.getDefaultResponse();
+
+      return response == mrYes;
+    }
 
     PopupDialog popupDialog = new PopupDialog(msg);
 
@@ -950,7 +982,11 @@ public final class UIUtil
     Objects.requireNonNull(type, "Popup type");
     Objects.requireNonNull(msg , "Popup msg" );
 
-    if ((ui != null) && ui.dontInteract()) return;
+    if (PopupRobot.isActive())
+    {
+      PopupRobot.record(msg, type);
+      return;
+    }
 
     runInFXThread(() ->
     {

@@ -145,19 +145,15 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       {
         HDT_Work work = db.works.getByID(HyperTableCell.getCellID(cellVal));
         row.setCellValue(3, work, curArgument.pagesInWork(work));
-        row.setCellValue(4, work, work.getYearStr());
       }
       else
       {
         row.setCellValue(3, "", hdtWork);
-        row.setCellValue(4, "", hdtWork);
       }
     });
 
     htWhereMade.addTextEditCol(hdtWork, false)  // Pages column
                .setValueType(cvtPageRange);
-
-    htWhereMade.addLabelCol(hdtArgument);       // Date column
 
     htResponses = new HyperTable(lowerCtrlr.tvResponses, 3, true, TablePrefKey.ARG_RESPONSES);
 
@@ -271,7 +267,6 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
       row.setCellValue(2, work, work.defaultChoiceText());
       row.setCellValue(3, new PageRangeHTC(work, curArgument.pagesInWork(work)));
-      row.setCellValue(4, new BibDateHTC(work, work.getBibDate()));
     });
 
   // Populate the response arguments

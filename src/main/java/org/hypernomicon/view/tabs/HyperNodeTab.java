@@ -182,7 +182,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   private MenuItem makeMoveConceptItem()
   {
     MenuItem miMove = new MenuItem();
-    miMove.setText("Move this definition to a different term");
+    miMove.setText("Move the definition currently showing to a different term");
     miMove.setOnAction(event -> ((TermTabCtrlr) this).moveConcept());
 
     return miMove;
@@ -213,7 +213,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     if (nodeRecordType == hdtConcept)
     {
-      setToolTip(lblMergeTerms, "Use right/secondary button to move this definition to a different term");
+      setToolTip(lblMergeTerms, "Use right/secondary button to move the definition currently showing to a different term");
       lblMergeTerms.setContextMenu(new ContextMenu(makeMoveConceptItem()));
       lblMergeTerms.setOnMouseClicked(mouseEvent ->
       {

@@ -45,6 +45,7 @@ import org.hypernomicon.model.unities.MainText;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.query.personMatch.PersonForDupCheck;
 import org.hypernomicon.query.personMatch.PersonMatcher;
+import org.hypernomicon.util.PopupRobot;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -876,7 +877,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private boolean saveNameToRecord(PersonName personName)
   {
-    if (db.viewTestingInProgress || ui.dontInteract())
+    if (db.viewTestingInProgress || PopupRobot.isActive())
     {
       curPerson.setName(personName);
       return true;

@@ -60,7 +60,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   @FXML private Tab tabLinkGen;
   @FXML private TextField tfParent, tfLinkGenParent, tfFolderName, tfRefMgrUserID;
   @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest,
-                       btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter;
+                       btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter, btnTermsTabTests;
   @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private ToggleGroup tgLink;
 
@@ -77,17 +77,12 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     initTextField(app.prefs, tfFolderName   , PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
     initTextField(app.prefs, tfLinkGenParent, PrefKey.LINK_GENERATION_LOG_FOLDER, "", null);
 
-    enableAllIff(db.isOnline(), btnFromExisting, btnCloseDB);
+    enableAllIff(db.isOnline(), btnFromExisting, btnCloseDB, btnZoteroItemTemplates, btnZoteroCreatorTypes, btnNukeTest, btnTermsTabTests, tabLinkGen);
 
     toggleToLibraryType = Map.of(rbZotero, ltZotero, rbMendeley, ltMendeley);
 
     setToolTip(btnClose, "Close this window");
 
-    btnZoteroItemTemplates.setDisable(db.isOffline());
-    btnZoteroCreatorTypes .setDisable(db.isOffline());
-
-    btnNukeTest           .setDisable(db.isOffline());
-    tabLinkGen            .setDisable(db.isOffline());
     btnSaveRefMgrSecrets  .setDisable(db.isOffline() || (db.bibLibraryIsLinked() == false));
     btnRemoveRefMgrSecrets.setDisable(db.isOffline() || (db.bibLibraryIsLinked() == false));
     btnUseMendeleyID      .setDisable(db.isOffline() || (db.bibLibraryIsLinked() == false) || (db.getBibLibrary().type() != ltMendeley));
@@ -677,6 +672,16 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return;
 
     tfLinkGenParent.setText(filePath.toString());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnTermsTabTestClick()
+  {
+    stage.hide();
+
+    Platform.runLater(() -> ui.termHyperTab().runTests());
   }
 
 //---------------------------------------------------------------------------

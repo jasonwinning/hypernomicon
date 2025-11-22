@@ -246,7 +246,7 @@
       </Tab>
       <Tab fx:id="tabDBSpecific" text="Database">
         <AnchorPane minHeight="0.0" minWidth="0.0">
-          <VBox layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="908.0" spacing="4.0"
+          <VBox layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="908.0" spacing="6.0"
                 AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                 AnchorPane.topAnchor="0.0">
             <padding>
@@ -254,12 +254,12 @@
             </padding>
             <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false"
                       text="Use sentence case instead of title case for titles"/>
-            <HBox alignment="CENTER_LEFT" spacing="8.0">
+            <HBox alignment="BASELINE_LEFT" spacing="8.0">
               <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false"
                         text="Default work type when reference manager entry type is Book Section:"/>
-              <ComboBox fx:id="cbDefaultChapterWorkType" prefHeight="25.0" prefWidth="197.0">
+              <ComboBox fx:id="cbDefaultChapterWorkType" prefWidth="197.0">
                 <HBox.margin>
-                  <Insets top="4.0"/>
+                  <Insets/>
                 </HBox.margin>
               </ComboBox>
             </HBox>

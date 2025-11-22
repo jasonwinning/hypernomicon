@@ -19,6 +19,7 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -72,8 +73,9 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public boolean isSpecial(boolean checkSubfolders) { return db.isSpecialFolder(getID(), checkSubfolders); }
 
-  @Override public HyperPath getPath() { return path; }
-  @Override public String name()       { return path.getNameStr(); }
+  @Override public HyperPath getPath()     { return path; }
+  @Override public String name()           { return path.getNameStr(); }
+  @Override public String getNameEngChar() { return convertToEnglishChars(name()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

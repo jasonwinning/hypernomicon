@@ -20,6 +20,7 @@ package org.hypernomicon.model;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.ByteArrayInputStream;
@@ -38,6 +39,7 @@ import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.util.PopupRobot;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
@@ -97,6 +99,8 @@ public final class TestHyperDB extends AbstractHyperDB
       return (TestHyperDB) HyperDB.db;
     }
 
+    PopupRobot.setActive(true);
+
     TestHyperDB db = new TestHyperDB();
 
     db.open();
@@ -126,9 +130,6 @@ public final class TestHyperDB extends AbstractHyperDB
   @Override protected FolderTreeWatcher getFolderTreeWatcher() { return null; }
 
   @Override MentionsIndex createMentionsIndex(List<Runnable> completeHandlers) { return new MentionsIndex(completeHandlers, false); }
-
-  @Override protected void warningMessage(String msg) { System.out.println("Warning: " + msg); }
-  @Override protected void errorMessage  (String msg) { System.out.println("Error: "   + msg); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -174,7 +175,7 @@ public final class TestHyperDB extends AbstractHyperDB
     }
     catch (IOException | HyperDataException e)
     {
-      errorMessage("Unable to load database. Reason: " + getThrowableMessage(e));
+      errorPopup("Unable to load database. Reason: " + getThrowableMessage(e));
       return false;
     }
 
@@ -209,7 +210,7 @@ public final class TestHyperDB extends AbstractHyperDB
     }
     catch (HyperDataException e)
     {
-      errorMessage(e);
+      errorPopup(e);
       return false;
     }
 
@@ -219,7 +220,7 @@ public final class TestHyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void open()
+  private void open()
   {
     if (isOnline())
       throw new AssertionError("Already open");
