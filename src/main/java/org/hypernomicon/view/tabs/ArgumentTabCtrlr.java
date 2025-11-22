@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.SequencedMap;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -56,11 +57,13 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private final AnchorPane apLowerTabs, apWhereMade, apResponses;
   private final ArgumentLowerPaneCtrlr lowerCtrlr;
   private final HyperTable htParents, htWhereMade, htResponses;
   private final ComboBox<Ternary> cbArgOrStance;
 
   private HDT_Argument curArgument;
+  private Ternary isConfiguredForTabs = Ternary.Unset;
 
 //---------------------------------------------------------------------------
 
@@ -81,9 +84,14 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/tabs/ArgumentLowerPane.fxml"));
 
-    spMain.getItems().set(2, loader.load());
-
+    apLowerTabs = loader.load();
     lowerCtrlr = loader.getController();
+    apWhereMade = (AnchorPane) lowerCtrlr.tvWhereMade.getParent();
+    apResponses = (AnchorPane) lowerCtrlr.tvResponses.getParent();
+
+    Platform.runLater(() -> configureLowerPaneBasedOnWidth(spMain.getWidth()));
+
+    spMain.widthProperty().addListener((obs, oldWidth, newWidth) -> configureLowerPaneBasedOnWidth(newWidth));
 
     htParents = new HyperTable(tvParents, 3, true, TablePrefKey.ARG_PARENTS);
 
@@ -175,6 +183,55 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
   @Override protected RecordType type()                { return hdtArgument; }
   @Override protected void setRecord(HDT_Argument arg) { curArgument = arg; }
   @Override protected HDT_Argument getNodeRecord()     { return curArgument; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void configureLowerPaneBasedOnWidth(Number newWidth)
+  {
+    double width = newWidth.doubleValue();
+
+    if (width < scalePropertyValueForDPI(1000))
+      configureLowerPaneForTabs();
+    else
+      configureLowerPaneForDivider();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void configureLowerPaneForDivider()
+  {
+    if (isConfiguredForTabs.isFalse()) return;
+
+    lowerCtrlr.tabWhereMade.setContent(null);
+    removeFromParent(apResponses);
+    removeFromParent(apLowerTabs);
+
+    spChildren.getItems().set(0, apWhereMade);
+    spChildren.getItems().set(1, apResponses);
+    spMain.getItems().set(2, apLowerPane);
+
+    isConfiguredForTabs = Ternary.False;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void configureLowerPaneForTabs()
+  {
+    if (isConfiguredForTabs.isTrue()) return;
+
+    removeFromParent(apWhereMade);
+    removeFromParent(apResponses);
+    removeFromParent(apLowerPane);
+
+    lowerCtrlr.tabWhereMade.setContent(apWhereMade);
+    lowerCtrlr.bpResponses.setCenter(apResponses);
+    spMain.getItems().set(2, apLowerTabs);
+
+    isConfiguredForTabs = Ternary.True;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

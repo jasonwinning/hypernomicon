@@ -21,6 +21,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 
 //---------------------------------------------------------------------------
 
@@ -30,9 +31,10 @@ public class ArgumentLowerPaneCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FXML BorderPane bpResponses;
+  @FXML Tab tabWhereMade, tabResponses;
   @FXML TableView<HyperTableRow> tvWhereMade, tvResponses;
   @FXML TabPane tabPane;
-  @FXML Tab tabWhereMade, tabResponses;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
