@@ -185,6 +185,42 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This is the text that is intended to represent the work in a single table cell.
+   * <p>It can optionally include authors, and always includes the year and title.</p>
+   * <p>Example with includeAuthors=true, longAuthors=true: Dennett, Daniel C. (1991) Real Patterns</p>
+   * <p>Example wtih includeAuthors=true, longAuthors=false: Dennett, D. C. (1991) Real Patterns</p>
+   * <p>Example with includeAuthors=false: (1991) Real Patterns</p>
+   * @param includeAuthors Whether authors should be included
+   * @param longAuthors If true, first names will be shown. Otherwise, first initials will be shown.
+   * @return The composed text
+   */
+  public String getCellText(boolean includeAuthors, boolean longAuthors)
+  {
+    String authorStr = (includeAuthors == false) ? "" : (longAuthors ?
+      Author.getLongAuthorsStr(getAuthors().stream())
+    :
+      Author.getShortAuthorsStr(getAuthors().stream(), false, false));
+
+    String yearStr = getDate().getYearStr(),
+           titleStr = getStr(bfTitle),
+           cellText = "";
+
+    if (strNotNullOrEmpty(authorStr))
+      cellText = authorStr + ' ';
+
+    if (strNotNullOrEmpty(yearStr))
+      cellText += '(' + yearStr + ") ";
+
+    if (strNotNullOrEmpty(titleStr))
+      cellText += titleStr;
+
+    return cellText.strip();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void addStrToReport(BibFieldEnum bibFieldEnum, ReportGenerator report)
   {
     String fieldName = bibFieldEnum.getUserFriendlyName();

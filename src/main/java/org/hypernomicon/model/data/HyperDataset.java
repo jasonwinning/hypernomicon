@@ -20,7 +20,6 @@ package org.hypernomicon.model.data;
 import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.HyperTask;
@@ -267,7 +266,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
     {
       ndx++;
 
-      if (isUnstoredRecord(record .getID(), type) || ((record.getType() == hdtFolder) && ((HDT_Folder)record).hasNoNonFolderRecordDependencies()))
+      if (isUnstoredRecord(record.getID(), type) || ((record instanceof HDT_Folder folder) && (folder.getPath().isInUse() == false)))
         continue;
 
       record.saveToStoredState();

@@ -22,7 +22,6 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.StringUtil.*;
 
 import java.util.*;
 
@@ -196,28 +195,6 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
       JsonArray.toStrArrayList(collArray)
     :
       new ArrayList<>();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getCellText()
-  {
-    String authorStr = getAuthors().getStr(),
-           yearStr = getDate().getYearStr(),
-           titleStr = getStr(bfTitle),
-           cbStr = "";
-
-    if (strNotNullOrEmpty(authorStr))
-      cbStr = authorStr + ' ';
-
-    if (strNotNullOrEmpty(yearStr))
-      cbStr += '(' + yearStr + ") ";
-
-    if (strNotNullOrEmpty(titleStr))
-      cbStr += titleStr;
-
-    return cbStr;
   }
 
 //---------------------------------------------------------------------------

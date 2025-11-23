@@ -96,7 +96,7 @@ public final class FXTestSequencer
    */
   public FXTestSequencer setDelayMS(long delayMS)
   {
-    this.delayMS= delayMS;
+    this.delayMS = delayMS;
     return this;
   }
 
@@ -294,7 +294,7 @@ public final class FXTestSequencer
     {
       running = true;
 
-      stepTotal = queue.stream().filter(entry -> entry.printStep).count();
+      stepTotal = queue.stream().filter(QueueEntry::printStep).count();
 
       scheduleNext();
     }

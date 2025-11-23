@@ -45,10 +45,6 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   public final List<HDT_Folder> childFolders;
   public final List<HDT_Note> notes;
 
-  private final List<HDT_MiscFile> miscFiles;
-  private final List<HDT_WorkFile> workFiles;
-  private final List<HDT_Person> picturePeople;
-
   private final HyperPath path;
   private boolean checkedForExistence;
 
@@ -61,10 +57,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     checkedForExistence = false;
 
     childFolders  = getSubjList(rtParentFolderOfFolder );
-    miscFiles     = getSubjList(rtFolderOfMiscFile     );
-    workFiles     = getSubjList(rtFolderOfWorkFile     );
-    notes         = getSubjList(rtFolderOfNote         );
-    picturePeople = getSubjList(rtPictureFolderOfPerson);
+    notes         = getSubjList(rtFolderOfNote);
 
     path = new HyperPath(getObjPointer(rtParentFolderOfFolder), this);
   }
@@ -213,33 +206,11 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     if (getID() != ROOT_FOLDER_ID)
       if (filePath().exists() == false)
-        if (isSpecial(false) || (path.getRecordsString().length() > 0))
+        if (isSpecial(false) || path.isInUseByRecords())
           warningPopup("The folder: \"" + filePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
                        "Next time, only use the " + appTitle + " File Manager to make changes to move, rename, or delete database folders.");
 
     childFolders.forEach(HDT_Folder::checkExists);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean containsFilesThatAreInUse()
-  {
-    if ((workFiles.size() > 0) || (picturePeople.size() > 0) || (miscFiles.size() > 0) || isSpecial(true)) return true;
-
-    return childFolders.stream().anyMatch(childFolder -> childFolder.path.getRecordsString().length() > 0);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean hasNoNonFolderRecordDependencies()
-  {
-    if ( ! (notes.isEmpty() && picturePeople.isEmpty() && workFiles.isEmpty() && miscFiles.isEmpty())) return false;
-
-    if (db.isProtectedRecord(this, false)) return false;
-
-    return childFolders.stream().allMatch(HDT_Folder::hasNoNonFolderRecordDependencies);
   }
 
 //---------------------------------------------------------------------------

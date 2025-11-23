@@ -145,7 +145,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       hsPop.setObj(row, obj);
       row.setCellValue(nextColNdx, "", hsPop.getRecordType(row));
 
-    }).setTextHndlr(row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), HDT_RecordWithAuthors::getLongAuthorsStr));
+    }).setTextHndlr(row -> nullSwitch((HDT_Work) row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), HDT_RecordWithAuthors::getLongAuthorsStr));
 
     htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctEditableLimitedDropDown, new HybridSubjectPopulator(rtAuthorOfWork), (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -158,7 +158,9 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       {
         row.setCellValue(3, "", hdtWork);
       }
-    });
+
+    }).setTextHndlr(row -> nullSwitch(row.getRecord(2), "", HDT_Work::yearTitleText))
+      .setCellToolTipHndlr(row -> nullSwitch((HDT_Work) row.getRecord(2), null, work -> makeTooltip(work.defaultChoiceText())));
 
     htWhereMade.addTextEditCol(hdtWork, false)  // Pages column
                .setValueType(cvtPageRange);

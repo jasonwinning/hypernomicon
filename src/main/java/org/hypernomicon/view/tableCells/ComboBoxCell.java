@@ -158,6 +158,17 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void setNotEditingTooltip(String text)
+  {
+    if (cellToolTipHndlr != null)
+      setTooltip(cellToolTipHndlr.apply(getTableRow().getItem()));
+    else
+      setToolTip(this, text);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void updateItem(HyperTableCell item, boolean empty)
   {
     super.updateItem(item, empty);
@@ -183,8 +194,9 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
     else
     {
       setItem(item);
-      setText(getString());
-      setTooltip(cellToolTipHndlr == null ? null : cellToolTipHndlr.apply(getTableRow().getItem()));
+      String text = getString();
+      setText(text);
+      setNotEditingTooltip(text);
       setGraphic(null);
     }
   }

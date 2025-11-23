@@ -1007,14 +1007,13 @@ public final class FileManager extends NonmodalWindow
     boolean isDir = filePath.isDirectory();
 
     HyperPath hyperPath = item.getHyperPath();
-    HDT_RecordWithPath fileRecord = hyperPath == null ? null : hyperPath.getRecord();
 
     if (db.isProtectedFile(filePath, true))
       return falseWithInfoPopup((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
 
     if (deleting == false) return true;
 
-    if (isDir && ((HDT_Folder) fileRecord).containsFilesThatAreInUse())
+    if (isDir && HyperPath.isInUse(hyperPath))
       return falseWithInfoPopup("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
 
     return true;
@@ -1407,6 +1406,7 @@ public final class FileManager extends NonmodalWindow
     else
     {
       HDT_RecordWithPath fileRecord = fileRow.getRecord();
+
       if (fileRecord == null)
       {
         clearRecordDesc();
@@ -1440,15 +1440,12 @@ public final class FileManager extends NonmodalWindow
       {
         HyperTableRow row = recordTable.newDataRow();
         row.setCellValue(0, relative, getTypeName(relative.getType()));
-        row.setCellValue(1, relative);
+        row.setCellValue(1, relative, relative.defaultChoiceText());
       }
     }
 
-    if (folderRecord != null)
-    {
-      if (selectNonBlankRecordRow() == false)
-        PreviewWindow.setPreview(pvsManager, folderRecord.filePath());
-    }
+    if ((folderRecord != null) && (selectNonBlankRecordRow() == false))
+      PreviewWindow.setPreview(pvsManager, folderRecord.filePath());
   }
 
 //---------------------------------------------------------------------------

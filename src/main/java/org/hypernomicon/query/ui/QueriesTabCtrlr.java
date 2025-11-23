@@ -477,7 +477,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     HDT_Folder resultsFolder = db.getResultsFolder();
 
-    if ((resultsFolder.getPath().getRecordsString().length() > 0) ||
+    if (resultsFolder.getPath().isInUseByRecords() ||
         resultsFolder.childFolders.stream().anyMatch(childFolder -> childFolder.isSpecial(true)))
     {
       errorPopup("One or more file(s)/folder(s) in the search results folder are in use by the database.");

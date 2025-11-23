@@ -20,9 +20,6 @@ package org.hypernomicon.fileManager;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.util.filePath.FilePath;
 
-import static org.hypernomicon.util.StringUtil.*;
-import static org.hypernomicon.util.Util.*;
-
 //---------------------------------------------------------------------------
 
 abstract class AbstractEntityWithPath
@@ -46,7 +43,7 @@ abstract class AbstractEntityWithPath
   {
     if (relatedSet == false)
     {
-      related = nullSwitch(getHyperPath(), false, hyperPath -> strNotNullOrEmpty(hyperPath.getRecordsString()));
+      related = HyperPath.isInUseByRecords(getHyperPath());
 
       relatedSet = true;
     }

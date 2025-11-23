@@ -20,6 +20,7 @@ package org.hypernomicon.model.items;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -410,7 +411,7 @@ public class HyperPath
           if (hyperPath.getRecordType() != recordType) return;
 
           if (val.length() > 0) val.append("; ");
-          val.append(getTypeName(recordType)).append(": ").append(hyperPath.getRecord().defaultCellText());
+          val.append(getTypeName(recordType)).append(": ").append(hyperPath.getRecord().defaultChoiceText());
         });
 
         break;
@@ -428,14 +429,12 @@ public class HyperPath
       if (relative.getType() == hdtFolder) return;
 
       if (val.length() > 0) val.append("; ");
-      val.append(getTypeName(relative.getType())).append(": ").append(relative.defaultCellText());
+      val.append(getTypeName(relative.getType())).append(": ").append(relative.defaultChoiceText());
     });
 
     if (val.isEmpty() && (getRecordType() == hdtFolder))
-    {
-      if (((HDT_Folder) getRecord()).childFolders.stream().anyMatch(subFolder -> subFolder.getPath().getRecordsString().length() > 0))
+      if (((HDT_Folder) getRecord()).childFolders.stream().anyMatch(subFolder -> subFolder.getPath().isInUseByRecords()))
         return "(Subfolders have associated records)";
-    }
 
     return val.toString();
   }
@@ -443,11 +442,40 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns true if either getRecordsString() returns non-empty, or this is the path for a DB special folder.
+   * @return The return value just described
+   */
   public boolean isInUse()
   {
-    if (getRecordsString().isEmpty() == false) return true;
+    return isInUseByRecords() || ((getRecordType() == hdtFolder) && ((HDT_Folder) getRecord()).isSpecial(true));
+  }
 
-    return (getRecordType() == hdtFolder) && db.isSpecialFolder(getRecord().getID(), true);
+  /**
+   * Returns true if getRecordsString() returns non-empty.
+   * @return The return value just described
+   */
+  public boolean isInUseByRecords()
+  {
+    return strNotNullOrEmpty(getRecordsString());
+  }
+
+  /**
+   * Returns true if non-null and either getRecordsString() returns non-empty, or this is the path for a DB special folder.
+   * @return The return value just described
+   */
+  public static boolean isInUse(HyperPath hyperPath)
+  {
+    return (hyperPath != null) && hyperPath.isInUse();
+  }
+
+  /**
+   * Returns true if non-null and getRecordsString() returns non-empty.
+   * @return The return value just described
+   */
+  public static boolean isInUseByRecords(HyperPath hyperPath)
+  {
+    return (hyperPath != null) && hyperPath.isInUseByRecords();
   }
 
 //---------------------------------------------------------------------------

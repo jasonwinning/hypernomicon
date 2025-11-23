@@ -358,7 +358,7 @@ public class FolderTreeWatcher
           {
             HyperPath hyperPath = oldPathInfo.getHyperPath();
             boolean untrackedFile = ((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
-                                    ((hyperPath == null) || hyperPath.getRecordsString().isBlank());
+                                    (HyperPath.isInUseByRecords(hyperPath) == false);
 
             if (untrackedFile)
             {
@@ -370,7 +370,7 @@ public class FolderTreeWatcher
                 doImport(newPath);
               }
             }
-            else if ((hyperPath != null) && (hyperPath.getRecordsString().length() > 0))
+            else if (HyperPath.isInUseByRecords(hyperPath))
             {
               if (watcherEvent.isDirectory())
                 warningPopup(changedFolderMsg());

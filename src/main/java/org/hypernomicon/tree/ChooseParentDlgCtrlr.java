@@ -69,6 +69,9 @@ public class ChooseParentDlgCtrlr extends ModalDialog
     tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell  ()));
     tcDesc.setCellValueFactory(row -> new SimpleStringProperty  (row.getValue().getValue().getDescString()));
 
+    addTooltipToStringColumn(tcName);
+    addTooltipToStringColumn(tcDesc);
+
     tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
     tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
 

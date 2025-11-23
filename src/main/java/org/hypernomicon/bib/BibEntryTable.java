@@ -45,6 +45,7 @@ import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -105,6 +106,11 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 
       return new SimpleObjectProperty<>(new ObjectCellValue<>(bibDate.displayToUser(), bibDate));
     });
+
+    addTooltipToStringColumn(tcAuthors);
+    addTooltipToStringColumn(tcTitle);
+    addTooltipToStringColumn(tcPublishedIn);
+    addTooltipToStringColumn(tcPublisher);
 
     tcTitle.setComparator(Comparator.comparing(str -> makeSortKeyByType(str, hdtWork)));
 
@@ -236,7 +242,7 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     {
       BibEntry<?, ?> entry = row.getEntry();
 
-      String entryStr = entry.getCellText() + ' ' + entry.getStr(bfContainerTitle) + ' ' + entry.getStr(bfPublisher);
+      String entryStr = entry.getCellText(true, true) + ' ' + entry.getStr(bfContainerTitle) + ' ' + entry.getStr(bfPublisher);
 
       return matcher.isMatch(entryStr);
     });

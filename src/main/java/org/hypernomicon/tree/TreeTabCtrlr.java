@@ -339,6 +339,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     treeCtrlr.tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell()));
     treeCtrlr.tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
 
+    addTooltipToStringColumn(treeCtrlr.tcName);
+    addTooltipToStringColumn(treeCtrlr.tcDesc);
+
     treeCtrlr.tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
     treeCtrlr.tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
 

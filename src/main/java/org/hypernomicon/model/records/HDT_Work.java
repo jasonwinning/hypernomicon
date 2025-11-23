@@ -99,6 +99,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public String getURL()                            { return getTagString(tagWebURL); }
   public boolean canLaunch()                        { return ! (getPath().isEmpty() && getURL().isEmpty()); }
 
+
   public void setWorkType(WorkTypeEnum val)         { workType.set(HDT_WorkType.get(val)); }
   public void setBibDate(BibliographicDate bibDate) { updateBibDate(bibDate); }
   public void setBibEntryKey(String str)            { updateBibEntryKey(str); }
@@ -108,6 +109,14 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
 
   @Override public HyperPath getPath()              { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.getFirst().getPath(); }
   @Override public WorkAuthors getAuthors()         { return authors; }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String defaultChoiceText() { return getBibData().getCellText(true , false); }
+
+  public String yearTitleText    () { return getBibData().getCellText(false, false); }
 
 //---------------------------------------------------------------------------
 
@@ -241,31 +250,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     if (theSame) return;
 
     authors.update(newGroups);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override public String defaultChoiceText()
-  {
-    String authorStr = getShortAuthorsStr(false),
-           yearStr = getYearStr(),
-           titleStr = name(),
-           cbStr = "";
-
-    if (strNotNullOrEmpty(authorStr))
-      cbStr = authorStr + ' ';
-
-    if (strNotNullOrEmpty(yearStr))
-      cbStr += '(' + yearStr + ") ";
-
-    if (strNotNullOrEmpty(titleStr))
-      cbStr += titleStr;
-
-    return cbStr;
   }
 
 //---------------------------------------------------------------------------

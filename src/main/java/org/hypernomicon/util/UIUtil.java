@@ -175,6 +175,7 @@ public final class UIUtil
 
     Tooltip tooltip = new Tooltip(str); // Font size is set in css file
 
+    tooltip.setWrapText(true);
     tooltip.setMaxWidth(MAX_TOOLTIP_WIDTH);
 
     return tooltip;
@@ -1242,6 +1243,58 @@ public final class UIUtil
     return splitPane.lookupAll(".split-pane-divider").stream().filter(node -> (node instanceof StackPane stackPane) && (stackPane.getParent() == splitPane))
                                                               .map(node -> (StackPane) node)
                                                               .findFirst().orElse(null);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static <S, T> void addTooltipToStringColumn(TableColumnBase<S, T> column)
+  {
+    if (column instanceof TableColumn<S, T> tc)
+    {
+      tc.setCellFactory(col -> new TableCell<>()
+      {
+        @Override protected void updateItem(T item, boolean empty)
+        {
+          super.updateItem(item, empty);
+          applyTooltipToCell(this, item, empty);
+        }
+      });
+    }
+    else if (column instanceof TreeTableColumn<?, ?>)
+    {
+      @SuppressWarnings("unchecked")
+      TreeTableColumn<S, T> ttc = (TreeTableColumn<S, T>) column;
+
+      ttc.setCellFactory(col -> new TreeTableCell<>()
+      {
+        @Override
+        protected void updateItem(T item, boolean empty)
+        {
+          super.updateItem(item, empty);
+          applyTooltipToCell(this, item, empty);
+        }
+      });
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static <T> void applyTooltipToCell(Labeled cell, T item, boolean empty)
+  {
+    if (empty || (item == null))
+    {
+      cell.setText(null);
+      cell.setTooltip(null);
+    }
+    else
+    {
+      String text = item.toString();
+
+      cell.setText(text);
+      cell.setTooltip(makeTooltip(text));
+    }
   }
 
 //---------------------------------------------------------------------------
