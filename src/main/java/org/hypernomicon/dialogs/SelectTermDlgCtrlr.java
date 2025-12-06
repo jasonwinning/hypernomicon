@@ -236,9 +236,9 @@ public final class SelectTermDlgCtrlr extends ModalDialog
 
   private void btnCreateClick()
   {
-    if (tfSearchKey.getText().isBlank())
+    if (tfSearchKey.getText().isBlank() && ((concept == null) || concept.getSearchKey().isBlank()))
     {
-      falseWithErrorPopup("Unable to create term record: search key of term cannot be blank.", tfSearchKey);
+      falseWithErrorPopup("Unable to create term record: Search key cannot be blank.", tfSearchKey);
       return;
     }
 

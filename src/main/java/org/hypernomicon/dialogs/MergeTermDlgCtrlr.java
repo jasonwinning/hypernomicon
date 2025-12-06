@@ -19,6 +19,8 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.view.MainCtrlr.*;
 
+import java.util.stream.Stream;
+
 import org.hypernomicon.dialogs.base.ModalDialog;
 
 import static org.hypernomicon.util.UIUtil.*;
@@ -108,7 +110,7 @@ public class MergeTermDlgCtrlr extends ModalDialog
     if (nameField.getText().isBlank())
       return falseWithErrorPopup("Unable to merge terms: Term cannot be blank.", nameField);
 
-    if (keyField.getText().isBlank())
+    if (keyField.getText().isBlank() && Stream.concat(term1.concepts.stream(), term2.concepts.stream()).anyMatch(concept -> concept.getSearchKey().isBlank()))
       return falseWithErrorPopup("Unable to merge terms: Search key cannot be blank.", keyField);
 
     try

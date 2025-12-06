@@ -691,8 +691,8 @@ public class WorkDlgCtrlr extends ModalDialog
     if (dontRegenerateFilename) return;
 
     String ext = FilenameUtils.getExtension(tfOrigFile.getText());
-    if (ext.isEmpty())
-      ext = FilenameUtils.getExtension(tfNewFile.getText());
+    if (ext.isEmpty() && (oldWorkFile != null))
+      ext = oldWorkFile.filePath().getExtensionOnly();
 
     List<FileNameAuthor> authors = new ArrayList<>();
 

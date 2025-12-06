@@ -422,15 +422,15 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   {
     HDT_CT nodeRecord = getNodeRecord();
 
-    if (nodeRecord instanceof HDT_Concept concept)
+    if (nodeRecord instanceof HDT_Concept curConcept)
     {
-      if (tfSearchKey.getText().isBlank())
-        return falseWithErrorPopup("Unable to modify record: search key of term cannot be blank.", tfSearchKey);
+      if (tfSearchKey.getText().isBlank() && curConcept.term.get().concepts.stream().anyMatch(concept -> concept.getSearchKey().isBlank()))
+        return falseWithErrorPopup("Unable to modify record: Enter a search key for the Term or for each Concept.", tfSearchKey);
 
       if (saveNameIfBlank && tfName.getText().isBlank())
-        return falseWithErrorPopup("Unable to modify record: term cannot be zero-length.", tfName);
+        return falseWithErrorPopup("Unable to modify record: Term cannot be zero-length.", tfName);
 
-      if (saveSearchKey(concept.term.get(), tfSearchKey) == false)
+      if (saveSearchKey(curConcept.term.get(), tfSearchKey) == false)
         return false;
     }
     else

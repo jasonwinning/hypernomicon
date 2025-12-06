@@ -1268,8 +1268,7 @@ public final class UIUtil
 
       ttc.setCellFactory(col -> new TreeTableCell<>()
       {
-        @Override
-        protected void updateItem(T item, boolean empty)
+        @Override protected void updateItem(T item, boolean empty)
         {
           super.updateItem(item, empty);
           applyTooltipToCell(this, item, empty);

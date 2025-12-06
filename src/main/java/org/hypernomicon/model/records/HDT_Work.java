@@ -99,7 +99,6 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
   public String getURL()                            { return getTagString(tagWebURL); }
   public boolean canLaunch()                        { return ! (getPath().isEmpty() && getURL().isEmpty()); }
 
-
   public void setWorkType(WorkTypeEnum val)         { workType.set(HDT_WorkType.get(val)); }
   public void setBibDate(BibliographicDate bibDate) { updateBibDate(bibDate); }
   public void setBibEntryKey(String str)            { updateBibEntryKey(str); }
