@@ -236,10 +236,10 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final int GLOSSARY_COL_NDX = 2,
-                    SENSE_COL_NDX = 3,
-                    PARENTS_COL_NDX = 4,
-                    SEARCHKEY_COL_NDX = 5;
+  private static final int GLOSSARY_COL_NDX = 2,
+                           SENSE_COL_NDX = 3,
+                           PARENTS_COL_NDX = 4,
+                           SEARCHKEY_COL_NDX = 5;
 
   private final HyperTable htConcepts, htSubConcepts, htDisplayers;
   private final TabPane tpConcepts;
@@ -891,17 +891,12 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     try
     {
-      concept.setSearchKey(newText);
+      concept.setSearchKey(newText, true);
     }
     catch (SearchKeyException e)
     {
-      if (ui.isShuttingDown() == false)
-      {
-        errorPopup(e instanceof SearchKeyTooShortException ?
-          "Search key must be at least 3 characters: " + e.getKey()
-        :
-          "Search key already exists: " + e.getKey());
-      }
+      if ((ui.isShuttingDown() == false) && (e instanceof SearchKeyTooShortException))
+        errorPopup("Search key must be at least 3 characters: " + e.getKey());
 
       oldConceptRow.populateTableRow(editedRow);
       return;
@@ -1171,8 +1166,8 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     try
     {
-      term1.setSearchKey("Term 1");
-      term2.setSearchKey("Term 2");
+      term1.setSearchKey("Term 1", false);
+      term2.setSearchKey("Term 2", false);
     }
     catch (SearchKeyException e)
     {

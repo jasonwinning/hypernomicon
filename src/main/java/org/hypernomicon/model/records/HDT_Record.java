@@ -26,10 +26,10 @@ import java.util.*;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.*;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.model.searchKeys.KeywordBinding;
 import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.model.Tag;
 
@@ -119,12 +119,12 @@ public interface HDT_Record
   void setSortKeyAttr(String sortKeyAttr);
   String getSearchKey();
   String firstActiveKeyWord();
-  void setSearchKey(String newKey) throws DuplicateSearchKeyException, SearchKeyTooShortException;
-  void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws DuplicateSearchKeyException, SearchKeyTooShortException;
+  void setSearchKey(String newKey, boolean confirmDup) throws DuplicateSearchKeyException, SearchKeyTooShortException;
+  void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions, boolean confirmDup) throws DuplicateSearchKeyException, SearchKeyTooShortException;
 
   void resolvePointers() throws HDB_InternalError;
   void updateSortKey();
-  Iterable<SearchKeyword> getSearchKeys();
+  Iterable<KeywordBinding> getSearchKeys();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

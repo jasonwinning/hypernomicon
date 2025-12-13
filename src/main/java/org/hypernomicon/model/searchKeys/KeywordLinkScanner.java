@@ -15,43 +15,51 @@
  *
  */
 
-package org.hypernomicon.model;
+package org.hypernomicon.model.searchKeys;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.regex.Pattern;
-
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.StringUtil.*;
 
 //---------------------------------------------------------------------------
 
-public final class KeywordLinkList
+/**
+ * Scans raw prose text to identify keywords and produce {@link KeywordLink} objects
+ * representing linkable spans. This class performs the initial parsing and analysis
+ * of text, applying keyword binding rules and boundary checks, but does not generate
+ * markup itself.
+ *
+ * <p>Responsibilities include:
+ * <ul>
+ *   <li>Scanning text character by character to detect keyword prefixes.</li>
+ *   <li>Applying binding rules (start-only, end-only) and longest-match logic
+ *       to resolve overlapping keywords.</li>
+ *   <li>Extending matches to consume entire tokens (whole words or hyphenated compounds).</li>
+ *   <li>Mapping normalized text positions back to original source indices
+ *       for accurate link placement.</li>
+ * </ul>
+ *
+ * <p>The result is a list of {@link KeywordLink} objects that downstream components
+ * can use to insert hyperlinks into rendered text.</p>
+ */
+public final class KeywordLinkScanner
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public record KeywordLink(int offset, int length, SearchKeyword key) { }
+  private KeywordLinkScanner() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
 //---------------------------------------------------------------------------
 
-  private KeywordLinkList() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
-
-//---------------------------------------------------------------------------
-
-  private static final Pattern INITIALS_PATTERN     = Pattern.compile("[a-zA-Z]\\.[a-zA-Z]"),
-                               MIDDLE_INITIALS_RULE = Pattern.compile(".*[^a-zA-Z][a-zA-Z]\\.[a-zA-Z].*"),
-                               START_INITIALS_RULE  = Pattern.compile("^[a-zA-Z]\\.[a-zA-Z].*");
-
-  public static List<KeywordLink> generate(String text)
+  public static List<KeywordLink> scan(String text)
   {
-    return generate(text, db::getKeysByPrefix);
+    return scan(text, db::getKeywordsByPrefix);
   }
 
-  public static List<KeywordLink> generate(String text, Function<String, Iterable<SearchKeyword>> prefixToKeys)
+  public static List<KeywordLink> scan(String text, Function<String, Iterable<Keyword>> prefixToKeys)
   {
     List<KeywordLink> keywordLinks = new ArrayList<>();
 
@@ -60,12 +68,7 @@ public final class KeywordLinkList
     ArrayList<Integer> posMap = new ArrayList<>();
     text = convertToEnglishCharsWithMap(text, posMap);  // posMap maps output position (key) to input position (value)
 
-    boolean checkPeriods = false;
-
-    if (INITIALS_PATTERN.matcher(text).find())
-      if (MIDDLE_INITIALS_RULE.matcher(text).matches()  ||
-          START_INITIALS_RULE .matcher(text).matches())
-        checkPeriods = true;
+    boolean checkPeriods = KeywordBinding.needsPeriodNormalization(text);
 
     int ndx = 0;
 
@@ -98,50 +101,72 @@ public final class KeywordLinkList
         prefix = safeSubstring(prefix, 0, 3);
       }
 
-      SearchKeyword curKey = null;
+      Keyword curKey = null;
+      KeywordBinding curBinding = null;
+      Set<KeywordBinding> curBindings = null;
       int curMatchLen = 0;
 
-      for (SearchKeyword key : prefixToKeys.apply(prefix))
+      for (Keyword key : prefixToKeys.apply(prefix))
       {
         int matchLen;
 
         if (checkPeriods)
-          matchLen = matchNormalizedLength(text, ndx, key.text);
-        else if ((text.length() - ndx) >= key.text.length())
-          matchLen = text.regionMatches(true, ndx, key.text, 0, key.text.length()) ? key.text.length() : -1;
+          matchLen = matchNormalizedLength(text, ndx, key.normalizedText);
+        else if ((text.length() - ndx) >= key.normalizedText.length())
+          matchLen = text.regionMatches(true, ndx, key.normalizedText, 0, key.normalizedText.length()) ? key.normalizedText.length() : -1;
         else
           matchLen = -1;
 
         if (matchLen > 0)
         {
-          boolean addOK = true;
-
-          if (key.startOnly && (ndx > 0))
+          for (KeywordBinding binding : key.getAllBindings())
           {
-            char c = text.charAt(ndx - 1);
-            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
-              addOK = false;
-          }
+            boolean addOK = true;
 
-          if (key.endOnly && ((ndx + matchLen) < text.length()))
-          {
-            char c = text.charAt(ndx + matchLen);
-            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
-              addOK = false;
-          }
+            if (binding.isStartOnly() && (ndx > 0))
+            {
+              char c = text.charAt(ndx - 1);
+              if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
+                addOK = false;
+            }
 
-          if (addOK && ((curKey == null) || (matchLen > curKey.text.length())))
-          {
-            curKey = key;
-            curMatchLen = matchLen;
+            if (binding.isEndOnly() && ((ndx + matchLen) < text.length()))
+            {
+              char c = text.charAt(ndx + matchLen);
+              if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
+                addOK = false;
+            }
+
+            if (addOK)
+            {
+              if (key == curKey)
+              {
+                if (curBindings == null)
+                {
+                  curBindings = new HashSet<>();
+                  curBindings.add(curBinding);
+                  curBinding = null;
+                }
+
+                curBindings.add(binding);
+                curMatchLen = Math.max(matchLen, curMatchLen);
+              }
+              else if ((curKey == null) || (matchLen > curMatchLen))
+              {
+                curBinding = binding;
+                curBindings = null;
+                curKey = key;
+                curMatchLen = matchLen;
+              }
+            }
           }
         }
       }
 
       if (curKey != null)
-        ndx = add(keywordLinks, text, ndx, curMatchLen, curKey, posMap);
-
-      ndx++;
+        ndx = add(keywordLinks, text, ndx, curMatchLen, curBinding, curBindings, posMap);
+      else
+        ndx++;
     }
 
     return keywordLinks;
@@ -224,6 +249,31 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Determines whether the character at the specified index should be considered
+   * part of a keyword link during text scanning.
+   *
+   * <p>This method is used by the keyword matching logic to decide whether a
+   * matched keyword should be extended forward to consume additional characters
+   * as part of the same link. The rules are:
+   * <ul>
+   *   <li>Alphabetic characters (A–Z, a–z) are always considered part of a link.</li>
+   *   <li>A hyphen ('-') is considered part of a link only if it is followed by
+   *       another alphabetic character. In that case, the following letter is
+   *       treated as the effective character for the check.</li>
+   *   <li>All other characters (digits, punctuation, whitespace, end of string)
+   *       terminate the link.</li>
+   * </ul>
+   *
+   * <p>By enforcing these rules, links naturally extend to cover entire words in
+   * English prose (including hyphenated compounds), while stopping cleanly at
+   * punctuation or non-letter boundaries.</p>
+   *
+   * @param text the character sequence being scanned
+   * @param ndx the index of the character to evaluate
+   * @return {@code true} if the character at {@code ndx} is part of a keyword link
+   *         according to the rules above; {@code false} otherwise
+   */
   private static boolean charIsPartOfKeywordLink(CharSequence text, int ndx)
   {
     char c = text.charAt(ndx);
@@ -241,7 +291,29 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static int add(Collection<KeywordLink> keywordLinks, CharSequence text, int ndx, int matchLen, SearchKeyword key, List<Integer> posMap)
+  /**
+   * Adds a new {@link KeywordLink} to the collection based on a matched keyword span
+   * in normalized text, extending the match to consume the entire token and mapping
+   * positions back to the original source.
+   *
+   * <p>The return value advances the scanning index to the first character after the
+   * consumed token, allowing the caller to continue scanning without re-examining
+   * boundary characters.</p>
+   *
+   * @param keywordLinks the collection to which the new {@link KeywordLink} is added
+   * @param text the normalized text being scanned
+   * @param ndx the starting index of the keyword match in {@code text}
+   * @param matchLen the length of the initial keyword match before extension
+   * @param binding the single binding associated with the keyword, or {@code null}
+   *                if multiple bindings apply
+   * @param bindings the collection of bindings associated with the keyword, used
+   *                 when {@code binding} is {@code null}
+   * @param posMap a mapping from normalized text indices to original source indices,
+   *               used to compute correct offsets and lengths
+   * @return the index of the first character after the consumed token, to be used
+   *         as the next scanning position
+   */
+  private static int add(Collection<KeywordLink> keywordLinks, CharSequence text, int ndx, int matchLen, KeywordBinding binding, Collection<KeywordBinding> bindings, List<Integer> posMap)
   {
     int right = ndx + matchLen;
 
@@ -257,7 +329,7 @@ public final class KeywordLinkList
     int realNdx = posMap.get(ndx),
         realLen = (posMap.get(ndx + replaceLen - 1) - realNdx) + 1;
 
-    keywordLinks.add(new KeywordLink(realNdx, realLen, key));
+    keywordLinks.add(binding == null ? new KeywordLink(realNdx, realLen, bindings) : new KeywordLink(realNdx, realLen, binding));
 
     return ndx + replaceLen;
   }

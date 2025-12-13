@@ -251,14 +251,12 @@ public final class SelectTermDlgCtrlr extends ModalDialog
                                         // old concept gets attached to Term record in HDT_Concept.moveToDifferentTerm
     try
     {
-      term.setSearchKey(tfSearchKey.getText(), true, true);
+      term.setSearchKey(tfSearchKey.getText(), true, true, true);
     }
     catch (SearchKeyException e)
     {
-      errorPopup(e instanceof SearchKeyTooShortException ?
-        "Unable to create term record. Search key must be at least 3 characters: " + e.getKey()
-      :
-        "Unable to create term record. Search key already exists: " + e.getKey());
+      if (e instanceof SearchKeyTooShortException)
+        errorPopup("Unable to create term record. Search key must be at least 3 characters: " + e.getKey());
 
       db.deleteRecord(term);
       term = null;

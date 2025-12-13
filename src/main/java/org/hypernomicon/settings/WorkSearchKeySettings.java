@@ -25,9 +25,9 @@ import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import org.hypernomicon.model.SearchKeys;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.searchKeys.Keyword;
+import org.hypernomicon.model.searchKeys.SearchKeys;
 
 import com.google.common.collect.ForwardingList;
 
@@ -342,9 +342,9 @@ public class WorkSearchKeySettings extends ForwardingList<org.hypernomicon.setti
         if (entry.getValue() != multipleAuthors)
           continue;
 
-        SearchKeyword hyperKey = db.getKeyByKeyword(entry.getKey().replace(year, (year + keyLetter).strip()));
+        Keyword keyword = db.getKeyByKeyword(entry.getKey().replace(year, (year + keyLetter).strip()));
 
-        if ((hyperKey != null) && (hyperKey.record != work))
+        if ((keyword != null) && (keyword.getAllRecords().contains(work) == false))
         {
           keyTaken = true;
 

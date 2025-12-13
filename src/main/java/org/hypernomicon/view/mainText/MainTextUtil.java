@@ -20,13 +20,11 @@ package org.hypernomicon.view.mainText;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.KeywordLinkList.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
-import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -39,10 +37,9 @@ import static org.apache.commons.text.StringEscapeUtils.*;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 
-import org.hypernomicon.model.KeywordLinkList;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.filePath.FilePath;
@@ -279,7 +276,7 @@ public final class MainTextUtil
   static void addLinks(HtmlTextNodeList nodes, Set<HDT_Record> recordsToHilite)
   {
     String entirePlainText = nodes.toString();
-    Iterator<KeywordLink> keywordLinkIterator = KeywordLinkList.generate(entirePlainText).iterator();
+    Iterator<KeywordLink> keywordLinkIterator = KeywordLinkScanner.scan(entirePlainText).iterator();
 
     KeywordLink keywordLink = keywordLinkIterator.hasNext() ? keywordLinkIterator.next() : null;
 
@@ -289,12 +286,12 @@ public final class MainTextUtil
 
       if ("http".equalsIgnoreCase(safeSubstring(entirePlainText, curMatchNdx, curMatchNdx + 4)))
         kind = LinkKind.web;
-      else if ((keywordLink != null) && (curMatchNdx == keywordLink.offset()))
+      else if ((keywordLink != null) && (curMatchNdx == keywordLink.getOffset()))
         kind = LinkKind.keyword;
 
       if (kind != LinkKind.none) // Got a match
       {
-        int linkTextLen = kind == LinkKind.web ? getWebLinkLen(curMatchNdx, entirePlainText) : keywordLink.length();
+        int linkTextLen = kind == LinkKind.web ? getWebLinkLen(curMatchNdx, entirePlainText) : keywordLink.getLength();
 
         for (HtmlTextNode node : nodes.getLinkNodes(curMatchNdx, curMatchNdx + linkTextLen)) // 1. Get list of node objects corresponding to matching text
         {
@@ -311,7 +308,7 @@ public final class MainTextUtil
           }
           else
           {
-            String klass = (recordsToHilite != null) && recordsToHilite.contains(keywordLink.key().record) ? "hypernomiconHilite" : "";
+            String klass = (recordsToHilite != null) && keywordLink.recordStream().anyMatch(recordsToHilite::contains) ? "hypernomiconHilite" : "";
 
             textNode.before(getKeywordLink(displayText, keywordLink, "", klass));  // 4. Insert anchor
           }
@@ -361,30 +358,22 @@ public final class MainTextUtil
 
   private static String getKeywordLink(String html, KeywordLink link, String style, String klass)
   {
-    HDT_Record record = link.key().record;
-
-    if (record == null) return html;
-
-    if (record.getType() == hdtHub)
-    {
-      record = ((HDT_Hub)record).mainSpoke();
-
-      if (record == null)
-      {
-        internalErrorPopup(28587);
-        return html;
-      }
-    }
-
     if (style.length() > 0) style = " style=\"" + style + '"';
 
     if (klass.length() > 0) klass = " class=\"" + klass + '"';
 
-    if (record.getType() == hdtMiscFile)
-      return getGoToRecordAnchor(record, style + klass, html) + "&nbsp;" +
-        "<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(record) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/view-form.png") + "\"></img></a>";
+    if (link.isSingle())
+    {
+      HDT_Record record = link.getRecord();
 
-    return getGoToRecordAnchor(record, style + klass, html);
+      if (record.getType() == hdtMiscFile)
+        return getGoToRecordAnchor(record, style + klass, html) + "&nbsp;" +
+          "<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(record) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/view-form.png") + "\"></img></a>";
+
+      return getGoToRecordAnchor(record, style + klass, html);
+    }
+
+    return html;
   }
 
 //---------------------------------------------------------------------------
@@ -661,7 +650,7 @@ public final class MainTextUtil
 
     String recordName = htmlEscaper.escape(uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).extendedName(true) : uRecord.name());
 
-    return getKeywordLink(recordName, new KeywordLink(0, uRecord.name().length(), new SearchKeyword(uRecord.name(), uRecord)), "text-decoration: none;");
+    return getKeywordLink(recordName, new KeywordLink(0, uRecord.name().length(), new KeywordBinding(uRecord.name(), uRecord)), "text-decoration: none;");
   }
 
 //---------------------------------------------------------------------------
@@ -758,7 +747,7 @@ public final class MainTextUtil
     {
       String searchKeyHtml = htmlEscaper.escape(keyWork.getSearchKey(true)).replace(" ", "&nbsp;");
 
-      linkMap.put(searchKeyHtml, getKeywordLink(searchKeyHtml, new KeywordLink(0, searchKeyHtml.length(), new SearchKeyword(searchKeyHtml, keyWork.getRecord()))));
+      linkMap.put(searchKeyHtml, getKeywordLink(searchKeyHtml, new KeywordLink(0, searchKeyHtml.length(), new KeywordBinding(searchKeyHtml, keyWork.getRecord()))));
       keyToKeyWork.put(searchKeyHtml, keyWork);
       sortedKeys.add(searchKeyHtml);
     });

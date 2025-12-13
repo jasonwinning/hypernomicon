@@ -101,17 +101,17 @@ class MentionsAndDisplayIndexTest
   void testFirstMentionsSecond()
   {
     HDT_Person person = db.createNewBlankRecord(hdtPerson);
-    assertDoesNotThrow(() -> person.setSearchKey("abcde"));
+    assertDoesNotThrow(() -> person.setSearchKey("abcde", true));
 
     assertFalse(firstMentionsSecond(person, person, false), "A record should not automatically be considered as \"mentioning\" itself.");
     assertFalse(firstMentionsSecond(person, person, true ), "A record should not automatically be considered as \"mentioning\" itself.");
 
-    assertDoesNotThrow(() -> person.setSearchKey(""));
+    assertDoesNotThrow(() -> person.setSearchKey("", true));
 
     person.getMainText().setHtml("abcdefg");
 
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
-    assertDoesNotThrow(() -> term.setSearchKey("abcde"));
+    assertDoesNotThrow(() -> term.setSearchKey("abcde", true));
 
     HDT_Concept concept = term.concepts.getFirst();
 
@@ -134,14 +134,14 @@ class MentionsAndDisplayIndexTest
 
     assertTrue(db.getMentionerSet(term, false).contains(person));
 
-    assertDoesNotThrow(() -> term.setSearchKey("abcdef"));
+    assertDoesNotThrow(() -> term.setSearchKey("abcdef", true));
     assertFalse(firstMentionsSecond(person, term, false));
 
     assertFalse(db.getMentionerSet(term, false).contains(person));
 
     // Cleanup
 
-    assertDoesNotThrow(() -> term.setSearchKey(""));
+    assertDoesNotThrow(() -> term.setSearchKey("", true));
     person.getMainText().setHtml("");
   }
 
@@ -175,7 +175,7 @@ class MentionsAndDisplayIndexTest
 
     person.getMainText().setHtml("abcdefg");
 
-    assertDoesNotThrow(() -> term.setSearchKey("abcde"));
+    assertDoesNotThrow(() -> term.setSearchKey("abcde", true));
 
     assertTrue(firstMentionsSecond(person, term, false));
 
@@ -183,7 +183,7 @@ class MentionsAndDisplayIndexTest
 
     // Cleanup
 
-    assertDoesNotThrow(() -> term.setSearchKey(""));
+    assertDoesNotThrow(() -> term.setSearchKey("", true));
     person.getMainText().setHtml("");
   }
 
@@ -306,7 +306,7 @@ class MentionsAndDisplayIndexTest
     assertEquals(1, miscFile.investigationSet().size());
     assertSame(inv, miscFile.investigationSet().iterator().next());
 
-    assertDoesNotThrow(() -> person.setSearchKey("abcde"));
+    assertDoesNotThrow(() -> person.setSearchKey("abcde", true));
 
     HDT_Note note = db.createNewBlankRecord(hdtNote);
 
@@ -315,8 +315,8 @@ class MentionsAndDisplayIndexTest
     assertFalse(firstMentionsSecond(note, inv, true ), "An investigation's mentioners should not include mentioners of its person.");
     assertFalse(firstMentionsSecond(note, inv, false), "An investigation's mentioners should not include mentioners of its person.");
 
-    assertDoesNotThrow(() -> person.setSearchKey(""));
-    assertDoesNotThrow(() -> inv.setSearchKey("abcde"));
+    assertDoesNotThrow(() -> person.setSearchKey("", true));
+    assertDoesNotThrow(() -> inv.setSearchKey("abcde", true));
 
     assertTrue(firstMentionsSecond(note, person, true ), "An persons's mentioners should include mentioners of its investigations.");
     assertTrue(firstMentionsSecond(note, person, false), "An persons's mentioners should include mentioners of its investigations.");
@@ -324,7 +324,7 @@ class MentionsAndDisplayIndexTest
     // Cleanup
 
     note.getMainText().setHtml("");
-    assertDoesNotThrow(() -> inv.setSearchKey(""));
+    assertDoesNotThrow(() -> inv.setSearchKey("", true));
   }
 
 //---------------------------------------------------------------------------
@@ -377,7 +377,7 @@ class MentionsAndDisplayIndexTest
     person.getMainText().setHtml("abcdefg");
 
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
-    assertDoesNotThrow(() -> term.setSearchKey("abcde"));
+    assertDoesNotThrow(() -> term.setSearchKey("abcde", true));
 
     assertTrue(firstMentionsSecond(person, term, false));
 
@@ -389,7 +389,7 @@ class MentionsAndDisplayIndexTest
     // Cleanup
 
     person.getMainText().setHtml("");
-    assertDoesNotThrow(() -> term.setSearchKey(""));
+    assertDoesNotThrow(() -> term.setSearchKey("", true));
   }
 
 //---------------------------------------------------------------------------
@@ -438,7 +438,7 @@ class MentionsAndDisplayIndexTest
     note.getMainText().setHtml("abcdefg");
 
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
-    assertDoesNotThrow(() -> term.setSearchKey("abcde"));
+    assertDoesNotThrow(() -> term.setSearchKey("abcde", true));
 
     assertTrue(db.firstMentionsSecond(note, term, false, new MutableBoolean(false)));
 
@@ -458,7 +458,7 @@ class MentionsAndDisplayIndexTest
 
     // Cleanup
 
-    assertDoesNotThrow(() -> term.setSearchKey(""));
+    assertDoesNotThrow(() -> term.setSearchKey("", true));
   }
 
 //---------------------------------------------------------------------------

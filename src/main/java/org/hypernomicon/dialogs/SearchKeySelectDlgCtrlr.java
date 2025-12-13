@@ -134,8 +134,8 @@ public class SearchKeySelectDlgCtrlr extends ModalDialog
     SequencedMap<String, String> strMap = new LinkedHashMap<>();
 
     if (record != null)
-      for (var keyword : record.getSearchKeys())
-        strMap.put(keyword.text, keyword.text);
+      for (var binding : record.getSearchKeys())
+        strMap.put(binding.getUserText(), binding.getUserText());
 
     SimpleSelector.init(cbKey, strMap);
 

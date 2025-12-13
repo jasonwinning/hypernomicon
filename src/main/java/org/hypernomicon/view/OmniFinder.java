@@ -27,11 +27,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
-import org.hypernomicon.model.KeywordLinkList;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.query.personMatch.PersonForDupCheck;
 import org.hypernomicon.view.cellValues.*;
@@ -58,18 +56,19 @@ public class OmniFinder
   private final List<HyperTableRow> rows = new ArrayList<>();
   private final EnumSet<TierEnum> tierSet;
   private final EnumMap<TierEnum, ImmutableSet<RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
-  private final Set<HDT_Record> records = new HashSet<>();
+  private final Set<HDT_Record> results = new HashSet<>();
   private final RecordType typeFilter;
   private final AtomicBoolean stopRequested = new AtomicBoolean(false);
   private final boolean incremental;
 
   private volatile String query = "";
-  private volatile Iterator<HDT_Record> source = null;
+  private volatile Iterator<HDT_Record> altSource = null;
+  private volatile List<HDT_Record> tierRecords = null;
   private FinderThread finderThread = null;
   private volatile boolean showingMore = false;
   public Runnable doneHndlr = null;
 
-  public boolean noResults()  { return collEmpty(records); }
+  public boolean noResults()  { return collEmpty(results); }
   private boolean isRunning() { return HyperThread.isRunning(finderThread); }
 
 //---------------------------------------------------------------------------
@@ -79,13 +78,13 @@ public class OmniFinder
   {
     tierExactName,
     tierAuthorYear,
+    tierKeywordStart,
     tierPersonMatchStart,
     tierAuthorMatchStart,
     tierPersonMatch,
     tierAuthorMatch,
     tierNameStartExact,
     tierKeyword,
-    tierKeywordStart,
     tierAuthorKeyword,
     tierNameContains,
     tierAuthorContains,
@@ -186,13 +185,13 @@ public class OmniFinder
       buffer.clear();
       firstBuffer = true;
 
-      linkList = KeywordLinkList.generate(query);
+      linkList = KeywordLinkScanner.scan(query);
 
       tierIt = tierSet.iterator();
       curTier = tierIt.next();
       typeIt = tierToTypeSet.get(curTier).iterator();
       recordIt = db.records(typeIt.next()).iterator();
-      records.clear();
+      results.clear();
 
       done = false;
 
@@ -209,18 +208,11 @@ public class OmniFinder
 
     private HDT_Record nextRecord()
     {
-      if (source != null)
+      if (altSource != null)
       {
-        if (source.hasNext()) return source.next();
+        if (altSource.hasNext()) return altSource.next();
         done = true;
         return null;
-      }
-
-      if (curTier == tierKeywordStart)
-      {
-        curTier = tierIt.next();
-        typeIt = tierToTypeSet.get(curTier).iterator();
-        recordIt = db.records(typeIt.next()).iterator();
       }
 
       while (recordIt.hasNext() == false)
@@ -237,18 +229,20 @@ public class OmniFinder
 
           if (curTier == tierKeywordStart)
           {
-            for (SearchKeyword key : db.getKeysByPrefix(safeSubstring(query, 0, 3).toLowerCase()))
+            tierRecords = new ArrayList<>();
+
+            String normalizedQueryText = KeywordBinding.normalizeText(query, true);
+
+            for (Keyword key : db.getKeywordsByPrefix(safeSubstring(normalizedQueryText, 0, 3).toLowerCase()))
+              for (KeywordBinding binding : key.getAllBindings())
+                if (key.normalizedText.startsWith(normalizedQueryText))
+                  tierRecords.add(getResultRecord(binding.getRecord()));
+
+            if (tierRecords.size() > 0)
             {
-              if (key.endOnly)
-              {
-                if (key.text.equalsIgnoreCase(query))
-                  return getResultRecord(key.record);
-              }
-              else
-              {
-                if (query.toLowerCase().startsWith(key.text.toLowerCase()))
-                  return getResultRecord(key.record);
-              }
+              typeIt = Collections.emptyIterator();
+              recordIt = tierRecords.iterator();
+              return recordIt.next();
             }
 
             curTier = tierIt.next();  // Start of query did not match a keyword
@@ -304,7 +298,7 @@ public class OmniFinder
 
             if (otherPersonRecord != null)
               for (KeywordLink keyLink : linkList)
-                if (keyLink.key().record == otherPersonRecord)
+                if (keyLink.isSingle() ? (keyLink.getRecord() == otherPersonRecord) : keyLink.recordStream().anyMatch(record -> record == otherPersonRecord))
                   return true;
           }
 
@@ -362,15 +356,15 @@ public class OmniFinder
 
     private boolean isMatch(HDT_Record record)
     {
-      if (source != null) return true;
+      if (altSource != null) return true;
       if ((typeFilter != hdtNone) && (record.getType() != typeFilter)) return false;
 
-      if (records.contains(record)) return false;
+      if (results.contains(record)) return false;
 
       return switch (curTier)
       {
         case tierKeywordStart     -> true;
-        case tierKeyword          -> linkList.stream().anyMatch(keyLink -> keyLink.key().record == record);
+        case tierKeyword          -> linkList.stream().anyMatch(keyLink -> keyLink.isSingle() ? keyLink.getRecord() == record : keyLink.recordStream().anyMatch(linkRecord -> linkRecord == record));
         case tierKeywordContains  -> record.getSearchKey().toLowerCase().contains(queryLC);
         case tierExactName,
              tierNameStartExact,
@@ -402,7 +396,7 @@ public class OmniFinder
     private boolean addRecord(HDT_Record record)
     {
       buffer .add(record);
-      records.add(record);
+      results.add(record);
 
       return (showingMore == false) &&
              ((buffer.size() + rowNdx) >= ROWS_TO_SHOW); // rowNdx should be the number of rows currently in the
@@ -638,7 +632,7 @@ public class OmniFinder
       stop();
 
     this.query = "";
-    this.source = source;
+    this.altSource = source;
     this.showingMore = showingMore;
 
     (finderThread = new FinderThread()).start();
@@ -655,7 +649,7 @@ public class OmniFinder
       stop();
 
     this.query = query;
-    this.source = null;
+    this.altSource = null;
     this.showingMore = showingMore;
 
     if (newThread)

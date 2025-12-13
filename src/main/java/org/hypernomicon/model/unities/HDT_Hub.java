@@ -103,7 +103,7 @@ public class HDT_Hub extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions)
+  @Override public final void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions, boolean confirmDup)
   {
     if (newKey.length() > 0)
       internalErrorPopup(72950);

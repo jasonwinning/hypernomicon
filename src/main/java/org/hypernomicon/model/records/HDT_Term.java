@@ -171,15 +171,15 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 
     try
     {
-      term2.setSearchKey("");
-      term1.setSearchKey(newKey);
+      term2.setSearchKey("", false);
+      term1.setSearchKey(newKey, true);
     }
     catch (SearchKeyException e)
     {
       try
       {
-        term1.setSearchKey(oldKey1);
-        term2.setSearchKey(oldKey2);
+        term1.setSearchKey(oldKey1, false);
+        term2.setSearchKey(oldKey2, false);
       }
       catch (SearchKeyException e1)
       {

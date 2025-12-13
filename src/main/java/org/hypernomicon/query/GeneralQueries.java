@@ -32,10 +32,8 @@ import org.apache.commons.lang3.mutable.MutableInt;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
-import org.hypernomicon.model.KeywordLinkList;
-import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.query.Query.FilteredRecordQuery;
 import org.hypernomicon.query.Query.RecordQuery;
@@ -246,7 +244,7 @@ public final class GeneralQueries
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-    allQueries.add(new FilteredRecordQuery(QUERY_ASSOCIATED_WITH_PHRASE, "show the record this phrase would link to")
+    allQueries.add(new FilteredRecordQuery(QUERY_ASSOCIATED_WITH_PHRASE, "show the record(s) this phrase would link to")
     {
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
@@ -261,9 +259,9 @@ public final class GeneralQueries
 
       @Override protected void runFilter(LinkedHashSet<HDT_Record> records, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        List<KeywordLink> linkList = KeywordLinkList.generate(getCellText(op1));
+        List<KeywordLink> linkList = KeywordLinkScanner.scan(getCellText(op1));
         if (linkList.size() > 0)
-          records.add(linkList.getFirst().key().record);
+          records.addAll(linkList.stream().flatMap(KeywordLink::recordStream).toList());
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }
@@ -440,7 +438,7 @@ public final class GeneralQueries
 
         searchDummy = db.createNewRecordFromState(new RecordState(hdtPerson, -1, "", "", "", true), true);
 
-        dummySearchKeys.setSearchKey(searchDummy, getCellText(op1), true, false);
+        dummySearchKeys.setSearchKey(searchDummy, getCellText(op1), true, false, false);
       }
 
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
@@ -450,7 +448,7 @@ public final class GeneralQueries
         List<String> list = new ArrayList<>();
         record.getAllStrings(list, true, true, false);
 
-        return list.stream().anyMatch(str -> KeywordLinkList.generate(str.toLowerCase(), dummySearchKeys::getKeywordsByPrefix).size() > 0);
+        return list.stream().anyMatch(str -> KeywordLinkScanner.scan(str, dummySearchKeys::getKeywordsByPrefix).size() > 0);
       }
 
       @Override public void cleanup(State state)

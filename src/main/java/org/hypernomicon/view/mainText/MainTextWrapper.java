@@ -28,9 +28,9 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.searchKeys.KeywordBinding;
+import org.hypernomicon.model.searchKeys.KeywordLink;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
@@ -579,7 +579,7 @@ public final class MainTextWrapper
             innerHtml.append(detailsTag(makeElementID(item.record), textViewInfo, false)).append("<summary><b>");
 
           innerHtml.append(getTypeName(item.record.getType())).append(": ")
-                   .append(getKeywordLink(cbText, new KeywordLink(0, cbText.length(), new SearchKeyword(cbText, item.record)), "text-decoration: none;"))
+                   .append(getKeywordLink(cbText, new KeywordLink(0, cbText.length(), new KeywordBinding(cbText, item.record)), "text-decoration: none;"))
                    .append("</b>&nbsp;");
 
           renderKeyWorkDisplayOptions(innerHtml, sortByName, haventRenderedKeyWorkDisplayOptionsYet);

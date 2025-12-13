@@ -49,10 +49,10 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.authors.RecordAuthors;
-import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.searchKeys.KeywordLinkScanner;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
@@ -927,22 +927,20 @@ public class MainTextCtrlr
     Set<HDT_RecordWithPath> keyWorkRecords = new HashSet<>();
     String kwText = subDoc.text();
 
-    KeywordLinkList.generate(kwText).forEach(link ->
+    KeywordLinkScanner.scan(kwText).forEach(link -> link.recordStream().forEach(record ->
     {
-      HDT_Record record = link.key().record;
-
       if ((record.getType() == hdtWork) || (record.getType() == hdtMiscFile))
       {
         HDT_RecordWithPath keyWorkRecord = (HDT_RecordWithPath) record;
 
         if (keyWorkRecords.contains(keyWorkRecord) == false)
         {
-          String str = kwText.substring(link.offset(), link.offset() + link.length());
+          String str = kwText.substring(link.getOffset(), link.getOffset() + link.getLength());
           keyWorksArg.add(new KeyWork(keyWorkRecord.getType(), keyWorkRecord.getID(), str, true));
           keyWorkRecords.add(keyWorkRecord);
         }
       }
-    });
+    }));
   }
 
 //---------------------------------------------------------------------------

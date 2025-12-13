@@ -119,10 +119,10 @@ public class MergeTermDlgCtrlr extends ModalDialog
     }
     catch (SearchKeyException e)
     {
-      return falseWithErrorPopup(e instanceof SearchKeyTooShortException ?
-        "Unable to merge terms. Search key must have at least 3 characters: " + e.getKey()
-      :
-        "Unable to merge terms. Search key already exists: " + e.getKey(), keyField);
+      if (e instanceof SearchKeyTooShortException)
+        return falseWithErrorPopup("Unable to merge terms. Search key must have at least 3 characters: " + e.getKey());
+
+      return false;
     }
 
     return true;

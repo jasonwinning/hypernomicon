@@ -24,13 +24,13 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.*;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
-import org.hypernomicon.model.authors.HDI_OnlineAuthors;
-import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
+import org.hypernomicon.model.authors.HDI_OnlineAuthors;
+import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.relations.RelationSet.*;
+import org.hypernomicon.model.searchKeys.KeywordBinding;
 import org.hypernomicon.model.unities.*;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -90,24 +90,24 @@ public abstract class HDT_RecordBase implements HDT_Record
   /**
    * {@inheritDoc}
    */
-  @Override public String defaultChoiceText()              { return name(); }
-  @Override public String getXMLObjectName()               { return name(); }
-  @Override public Instant getModifiedDate()               { return type.getDisregardDates() ? null : modifiedDate; }
-  @Override public void setName(String str)                { setNameInternal(str, true); }
-  @Override public String getNameEngChar()                 { return name.getEngChar(); }
-  @Override public boolean isUnitable()                    { return false; }
-  @Override public boolean hasMainText()                   { return false; }
-  @Override public boolean hasDesc()                       { return false; }
-  @Override public String getSearchKey()                   { return db.getSearchKey(this); }
-  @Override public Iterable<SearchKeyword> getSearchKeys() { return db.getKeysByRecord(this); }
-  @Override public String firstActiveKeyWord()             { return db.firstActiveKeyWord(this); }
+  @Override public String defaultChoiceText()               { return name(); }
+  @Override public String getXMLObjectName()                { return name(); }
+  @Override public Instant getModifiedDate()                { return type.getDisregardDates() ? null : modifiedDate; }
+  @Override public void setName(String str)                 { setNameInternal(str, true); }
+  @Override public String getNameEngChar()                  { return name.getEngChar(); }
+  @Override public boolean isUnitable()                     { return false; }
+  @Override public boolean hasMainText()                    { return false; }
+  @Override public boolean hasDesc()                        { return false; }
+  @Override public String getSearchKey()                    { return db.getSearchKey(this); }
+  @Override public Iterable<KeywordBinding> getSearchKeys() { return db.getKeysByRecord(this); }
+  @Override public String firstActiveKeyWord()              { return db.firstActiveKeyWord(this); }
 
   @Override public final void writeStoredStateToXML(StringBuilder xml)        { xmlState.writeToXML(xml); }
-  @Override public void setSearchKey(String newKey) throws DuplicateSearchKeyException, SearchKeyTooShortException
-  { setSearchKey(newKey, false, true); }
+  @Override public void setSearchKey(String newKey, boolean confirmDup) throws DuplicateSearchKeyException, SearchKeyTooShortException
+  { setSearchKey(newKey, false, true, confirmDup); }
 
-  @Override public void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws DuplicateSearchKeyException, SearchKeyTooShortException
-  { db.setSearchKey(this, newKey, noMod, rebuildMentions); }
+  @Override public void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions, boolean confirmDup) throws DuplicateSearchKeyException, SearchKeyTooShortException
+  { db.setSearchKey(this, newKey, noMod, rebuildMentions, confirmDup); }
 
   @SuppressWarnings("unchecked")
   protected final <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> HyperObjList<HDT_SubjType, HDT_ObjType> getObjList(RelationType relType)
@@ -328,7 +328,7 @@ public abstract class HDT_RecordBase implements HDT_Record
         liveValue.setFromOfflineValue(backupValue, tag);
     }
 
-    setSearchKey(backupState.searchKey, true, rebuildMentions);
+    setSearchKey(backupState.searchKey, true, rebuildMentions, false);
   }
 
 //---------------------------------------------------------------------------
@@ -611,7 +611,7 @@ public abstract class HDT_RecordBase implements HDT_Record
    */
   @Override public void getAllStrings(List<String> list, boolean searchLinkedRecords, boolean includeMainText, boolean engChar)
   {
-    getSearchKeys().forEach(key -> list.add(key.text));
+    getSearchKeys().forEach(binding -> list.add(binding.getUserText()));
 
     items.forEach((tag, item) ->
     {

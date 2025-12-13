@@ -61,22 +61,21 @@ public class HDT_Concept extends HDT_RecordWithMainText
 
 //---------------------------------------------------------------------------
 
-  @Override public String name()                           { return term.isNull() ? "" : term.get().name(); }
+  @Override public String name()               { return term.isNull() ? "" : term.get().name(); }
 
   /**
    * {@inheritDoc}
    */
-  @Override public String defaultChoiceText()              { return extendedName(true); }
-  @Override public String getXMLObjectName()               { return extendedName(true); }
+  @Override public String defaultChoiceText()  { return extendedName(true); }
+  @Override public String getXMLObjectName()   { return extendedName(true); }
 
   /**
    * {@inheritDoc}
    */
-  @Override public String defaultCellText()                { return extendedName(false); }
-  @Override public String getNameEngChar()                 { return term.isNull() ? "" : term.get().getNameEngChar(); }
-  @Override public String firstActiveKeyWord()             { return term.isNull() ? "" : term.get().firstActiveKeyWord(); }
-  @Override public void setName(String str)                { if (term.isNotNull()) term.get().setName(str); }
-  @Override public final boolean isUnitable()              { return true; }
+  @Override public String defaultCellText()    { return extendedName(false); }
+  @Override public String getNameEngChar()     { return term.isNull() ? "" : term.get().getNameEngChar(); }
+  @Override public void setName(String str)    { if (term.isNotNull()) term.get().setName(str); }
+  @Override public final boolean isUnitable()  { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

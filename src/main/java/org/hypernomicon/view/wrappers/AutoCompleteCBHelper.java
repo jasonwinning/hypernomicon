@@ -42,8 +42,8 @@ import org.hypernomicon.dialogs.ValueSelectDlgCtrlr;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.KeywordLinkList;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
+import org.hypernomicon.model.searchKeys.KeywordLink;
+import org.hypernomicon.model.searchKeys.KeywordLinkScanner;
 
 //---------------------------------------------------------------------------
 
@@ -242,7 +242,7 @@ public class AutoCompleteCBHelper
     boolean containsNum = Pattern.compile("\\d").matcher(str).find();
     PersonName personName = null;
 
-    List<KeywordLink> linkList = KeywordLinkList.generate(str);
+    List<KeywordLink> linkList = KeywordLinkScanner.scan(str);
 
     cbItemsLoop: for (HyperTableCell cell : cb.getItems())
     {
@@ -288,7 +288,7 @@ public class AutoCompleteCBHelper
 
         if (linkList.size() > 0)
           for (KeywordLink keyLink : linkList)
-            if (keyLink.key().record == record)
+            if (keyLink.isSingle() ? (keyLink.getRecord() == record) : keyLink.recordStream().anyMatch(linkRecord -> linkRecord == record))
             {
               cells.add(cell);
               continue cbItemsLoop;

@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model;
+package org.hypernomicon.model.searchKeys;
 
 import static org.hypernomicon.model.HyperDB.*;
 
@@ -29,6 +29,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.util.SplitString;
 
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -39,61 +40,8 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class SearchKeyword
-  {
-    public final String text;
-    public final boolean startOnly, endOnly;
-    public final HDT_Record record;
-
-  //---------------------------------------------------------------------------
-
-    public SearchKeyword(String newKeyword, HDT_Record record)
-    {
-      this.record = record;
-
-      newKeyword = newKeyword.strip();
-
-      if (newKeyword.isEmpty())
-      {
-        text = "";
-        startOnly = false;
-        endOnly = false;
-        return;
-      }
-
-      if (newKeyword.startsWith("^"))
-      {
-        startOnly = true;
-        newKeyword = newKeyword.substring(1);
-      }
-      else
-        startOnly = false;
-
-      if (newKeyword.endsWith("$"))
-      {
-        endOnly = true;
-        newKeyword = newKeyword.substring(0, newKeyword.length() - 1);
-      }
-      else
-        endOnly = false;
-
-      text = newKeyword;
-    }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-    @Override public String toString()  { return (startOnly ? '^' + text : text) + (endOnly ? '$' : ""); }
-    private String getPrefix()          { return text.substring(0, 3).toLowerCase(); }
-    private HDT_Record getRecord()      { return record; }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  }
-
-  private final Map<String    , Map<String, SearchKeyword>> prefixStrToKeywordStrToKeywordObj;
-  private final Map<HDT_Record, Map<String, SearchKeyword>> recordToKeywordStrToKeywordObj;
+  private final Map<String    , Map<String, Keyword>>        prefixStrToKeywordStrToKeywordObj;
+  private final Map<HDT_Record, Map<String, KeywordBinding>> recordToKeywordStrToBinding;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -101,7 +49,7 @@ public final class SearchKeys
   public SearchKeys()
   {
     prefixStrToKeywordStrToKeywordObj = new ConcurrentHashMap<>();
-    recordToKeywordStrToKeywordObj    = new ConcurrentHashMap<>();
+    recordToKeywordStrToBinding       = new ConcurrentHashMap<>();
   }
 
 //---------------------------------------------------------------------------
@@ -110,13 +58,25 @@ public final class SearchKeys
   public void removeAll()
   {
     prefixStrToKeywordStrToKeywordObj.clear();
-    recordToKeywordStrToKeywordObj   .clear();
+    recordToKeywordStrToBinding      .clear();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Iterable<SearchKeyword> getKeywordsByPrefix(String prefix)
+  public Keyword getKeywordObjByKeywordStr(String str)
+  {
+    String keywordStr = KeywordBinding.normalizeText(str, true);
+
+    if (keywordStr.length() < 3) return null;
+
+    return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(keywordStr.substring(0, 3)), null, map -> map.get(keywordStr));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Iterable<Keyword> getKeywordsByPrefix(String prefix)
   {
     return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase()), Collections.emptyList(), map -> Collections.unmodifiableCollection(map.values()));
   }
@@ -124,9 +84,9 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  Iterable<SearchKeyword> getKeysByRecord(HDT_Record record)
+  public Iterable<KeywordBinding> getKeysByRecord(HDT_Record record)
   {
-    return nullSwitch(recordToKeywordStrToKeywordObj.get(record), Collections.emptyList(), map -> Collections.unmodifiableCollection(map.values()));
+    return nullSwitch(recordToKeywordStrToBinding.get(record), Collections.emptyList(), map -> Collections.unmodifiableCollection(map.values()));
   }
 
 //---------------------------------------------------------------------------
@@ -142,46 +102,62 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions) throws DuplicateSearchKeyException, SearchKeyTooShortException
+  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions, boolean confirmDup) throws DuplicateSearchKeyException, SearchKeyTooShortException
   {
     newKey = prepSearchKey(newKey);
-
-    if (newKey.equals(getStringForRecord(record))) return;
 
     if ((newKey.length() == 1) || (newKey.length() == 2))
       throw new SearchKeyTooShortException(record, newKey);
 
-    LinkedHashSet<SearchKeyword> oldKeywordObjs = unassignKeywordsFromRecord(record);
+    String otherStr = getStringForRecord(record);
+
+    if (sameSearchKeys(newKey, otherStr))
+      return;
+
+    LinkedHashSet<KeywordBinding> oldBindings = unassignBindingsFromRecord(record);
 
   // Loop through new substrings
   // ---------------------------
     for (String subStr : new SplitString(newKey, ';'))
     {
-      SearchKeyword keyword = new SearchKeyword(subStr.strip(), record);
+      KeywordBinding binding = new KeywordBinding(subStr, record);
 
-      if (keyword.text.isEmpty()) continue;
+      if (binding.getUserText().isBlank()) continue;
 
   // If the substring is too short, error out
   // ----------------------------------------
-      if (keyword.text.length() < 3)
+      if (binding.getUserText().length() < 3)
       {
-        assignKeywordsToRecord(record, oldKeywordObjs);
-        throw new SearchKeyTooShortException(record, keyword.text);
+        assignBindingsToRecord(record, oldBindings);
+        throw new SearchKeyTooShortException(record, binding.getUserText());
       }
 
-      HDT_Record existingRecord = nullSwitch(getKeywordObjByKeywordStr(keyword.text), null, SearchKeyword::getRecord);
+      if (confirmDup)
+      {
+        Keyword existingKeyObj = getKeywordObjByKeywordStr(binding.getNormalizedText());
 
   // If the substring was already a key for a different record, error out
   // --------------------------------------------------------------------
-      if ((existingRecord != null) && (existingRecord != record))
-      {
-        assignKeywordsToRecord(record, oldKeywordObjs);
-        throw new DuplicateSearchKeyException(record, keyword.text);
+        if ((existingKeyObj != null) && (existingKeyObj.getAllRecords().contains(record) == false) &&
+            oldBindings.stream().noneMatch(oldBinding -> oldBinding.getNormalizedText().equals(binding.getNormalizedText())))
+        {
+          HDT_Record existingRecord = existingKeyObj.getAllRecords().iterator().next();
+
+          if (confirmDialog("The search keyword \"" + binding.getUserText() + "\" is already in use by record:\n\n" +
+                            "Type: " + getTypeName(existingRecord.getType()) + '\n' +
+                            "Name: " + existingRecord.name() + '\n' +
+                            "ID: " + existingRecord.getID() + "\n\n" +
+                            "Continue assigning keyword to the current record?", false) == false)
+          {
+            assignBindingsToRecord(record, oldBindings);
+            throw new DuplicateSearchKeyException(record, binding.getUserText());
+          }
+        }
       }
 
   // Add new substring
   // -----------------
-      addKeyword(keyword);
+      addKeywordBinding(binding);
     }
 
     if (noMod == false)
@@ -194,88 +170,120 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  SearchKeyword getKeywordObjByKeywordStr(CharSequence str)
+  public String firstActiveKeyword(HDT_Record record)
   {
-    String keywordStr = convertToEnglishChars(str).toLowerCase();
+    Map<String, KeywordBinding> keywordStrToBinding = recordToKeywordStrToBinding.get(record);
+    if (keywordStrToBinding == null) return "";
 
-    if (keywordStr.length() < 3) return null;
-
-    return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(keywordStr.substring(0, 3)), null, map -> map.get(keywordStr));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  String firstActiveKeyword(HDT_Record record)
-  {
-    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
-    if (keywordStrToKeywordObj == null) return "";
-
-    synchronized (keywordStrToKeywordObj)
+    synchronized (keywordStrToBinding)
     {
-      Collection<SearchKeyword> values = keywordStrToKeywordObj.values();
-      return values.isEmpty() ? "" : values.iterator().next().text;
+      Collection<KeywordBinding> values = keywordStrToBinding.values();
+      return values.isEmpty() ? "" : values.iterator().next().getUserText();
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getStringForRecord(HDT_Record record)
+  public String getStringForRecord(HDT_Record record)
   {
-    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
-    if (keywordStrToKeywordObj == null) return "";
+    Map<String, KeywordBinding> keywordStrToBinding = recordToKeywordStrToBinding.get(record);
+    if (keywordStrToBinding == null) return "";
 
-    synchronized (keywordStrToKeywordObj)
+    synchronized (keywordStrToBinding)
     {
-      return keywordStrToKeywordObj.values().stream().map(SearchKeyword::toString).collect(Collectors.joining("; "));
+      return keywordStrToBinding.values().stream().map(KeywordBinding::toString).collect(Collectors.joining("; "));
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addKeyword(SearchKeyword keyword)
+  private void addKeywordBinding(KeywordBinding binding)
   {
-    String lcText = keyword.text.toLowerCase();
+    String normalizedText = binding.getNormalizedText();
 
-    recordToKeywordStrToKeywordObj   .computeIfAbsent(keyword.record     , _ -> Collections.synchronizedMap(new LinkedHashMap<>())).put(lcText, keyword);
-    prefixStrToKeywordStrToKeywordObj.computeIfAbsent(keyword.getPrefix(), _ -> Collections.synchronizedMap(new LinkedHashMap<>())).put(lcText, keyword);
+    recordToKeywordStrToBinding
+      .computeIfAbsent(binding.getRecord(), _ -> Collections.synchronizedMap(new LinkedHashMap<>()))
+      .put(normalizedText, binding);
+
+    Map<String, Keyword> map = prefixStrToKeywordStrToKeywordObj.computeIfAbsent(binding.getPrefix(), _ -> Collections.synchronizedMap(new LinkedHashMap<>()));
+
+    if (map.containsKey(normalizedText))
+      map.get(normalizedText).addBinding(binding);
+    else
+      map.put(normalizedText, new Keyword(binding));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void assignKeywordsToRecord(HDT_Record record, Iterable<SearchKeyword> oldKeywordObjs)
+  private void assignBindingsToRecord(HDT_Record record, Iterable<KeywordBinding> oldBindings)
   {
-    unassignKeywordsFromRecord(record);
-    oldKeywordObjs.forEach(this::addKeyword);
+    unassignBindingsFromRecord(record);
+    oldBindings.forEach(this::addKeywordBinding);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private LinkedHashSet<SearchKeyword> unassignKeywordsFromRecord(HDT_Record record)
+  private LinkedHashSet<KeywordBinding> unassignBindingsFromRecord(HDT_Record record)
   {
-    LinkedHashSet<SearchKeyword> oldKeywordObjs = new LinkedHashSet<>();
+    LinkedHashSet<KeywordBinding> oldBindings = new LinkedHashSet<>();
 
-    nullSwitch(recordToKeywordStrToKeywordObj.get(record), map -> { synchronized (map) { map.entrySet().removeIf(entry ->
+    Map<String, KeywordBinding> map = recordToKeywordStrToBinding.get(record);
+    if (map == null) return oldBindings;
+
+    synchronized (map)
     {
-      SearchKeyword keyword = entry.getValue();
-      oldKeywordObjs.add(keyword);
+      map.entrySet().removeIf(entry ->
+      {
+        KeywordBinding binding = entry.getValue();
+        oldBindings.add(binding);
 
-      String prefix = keyword.getPrefix();
+        String prefix         = binding.getPrefix(),
+               normalizedText = binding.getNormalizedText();
 
-      Map<String, SearchKeyword> map2 = prefixStrToKeywordStrToKeywordObj.get(prefix);
-      map2.remove(keyword.text.toLowerCase());
+        Map<String, Keyword> map2 = prefixStrToKeywordStrToKeywordObj.get(prefix);
+        Keyword keyword = map2.get(normalizedText);
 
-      if (map2.isEmpty())
-        prefixStrToKeywordStrToKeywordObj.remove(prefix);
+        if (keyword.removeBinding(record))
+        {
+          map2.remove(normalizedText);
 
+          if (map2.isEmpty())
+            prefixStrToKeywordStrToKeywordObj.remove(prefix);
+        }
+
+        return true;
+      });
+    }
+
+    return oldBindings;
+  }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean sameSearchKeys(String s1, String s2)
+  {
+    if (strNullOrBlank(s1) && strNullOrBlank(s2))
       return true;
-    }); }});
 
-    return oldKeywordObjs;
+    if (strNullOrBlank(s1) || strNullOrBlank(s2))
+      return false;
+
+    if (s1.equals(s2))
+      return true;
+
+    Set<String> set1 = Arrays.stream(s1.split(";"))
+      .map(token -> token.strip().toLowerCase())
+      .collect(Collectors.toSet());
+
+    Set<String> set2 = Arrays.stream(s2.split(";"))
+      .map(token -> token.strip().toLowerCase())
+      .collect(Collectors.toSet());
+
+    return set1.equals(set2);
   }
 
 //---------------------------------------------------------------------------

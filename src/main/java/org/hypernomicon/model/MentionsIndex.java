@@ -35,8 +35,8 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
 import org.hypernomicon.util.filePath.FilePath;
@@ -143,43 +143,33 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void reindexMentioner(HDT_Record record)
+  private void reindexMentioner(HDT_Record mentioner)
   {
-    if (record == null) return;
+    if (mentioner == null) return;
 
     strList.clear();
 
-    record.getAllStrings(strList, true, false, false);
+    mentioner.getAllStrings(strList, true, false, false);
 
-    mentionedAnywhereToMentioners.removeReverseKey(record);
-    mentionedInDescToMentioners  .removeReverseKey(record);
+    mentionedAnywhereToMentioners.removeReverseKey(mentioner);
+    mentionedInDescToMentioners  .removeReverseKey(mentioner);
 
-    strList.forEach(str ->
+    strList.stream().map(KeywordLinkScanner::scan).forEach(linkList ->
     {
-      List<KeywordLink> linkList = KeywordLinkList.generate(str.toLowerCase());
-
-      logLinkList(record, linkList);
+      logLinkList(mentioner, linkList);
 
       linkList.forEach(link ->
       {
-        HDT_Record otherRecord = link.key().record;
-
-        // A record should not be considered as "mentioning" itself, and a term should not
-        // be considered as "mentioning" its concepts or vice versa. This happens because
-        // getAllStrings for concepts includes the term's search key.
-
-        if ((record == otherRecord) ||
-            ((record.getType() == hdtTerm   ) && ((HDT_Term    ) record).concepts.contains(otherRecord)) ||
-            ((record.getType() == hdtConcept) && (((HDT_Concept) record).term.get() == otherRecord)))
-          return;
-
-        mentionedAnywhereToMentioners.addForward(link.key().record, record);
+        if (link.isSingle())
+          reindexStringItemMentioner(link.getRecord(), mentioner);
+        else
+          link.recordStream().forEach(mentioned -> reindexStringItemMentioner(mentioned, mentioner));
       });
     });
 
-    if (record.hasMainText())
+    if (mentioner.hasMainText())
     {
-      MainText mainText = ((HDT_RecordWithMainText)record).getMainText();
+      MainText mainText = ((HDT_RecordWithMainText) mentioner).getMainText();
 
       MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
       Property<Element> elementProp = new SimpleObjectProperty<>();
@@ -192,8 +182,8 @@ class MentionsIndex
         {
           HDT_MiscFile miscFile = optMiscFile.get();
 
-          mentionedAnywhereToMentioners.addForward(miscFile, record);
-          mentionedInDescToMentioners  .addForward(miscFile, record);
+          mentionedAnywhereToMentioners.addForward(miscFile, mentioner);
+          mentionedInDescToMentioners  .addForward(miscFile, mentioner);
         }
 
         startNdx.add(1);
@@ -204,14 +194,24 @@ class MentionsIndex
 
       if (strNotNullOrBlank(plainText))
       {
-        List<KeywordLink> linkList = KeywordLinkList.generate(plainText);
+        List<KeywordLink> linkList = KeywordLinkScanner.scan(plainText);
 
-        logLinkList(record, linkList);
+        logLinkList(mentioner, linkList);
 
         linkList.forEach(link ->
         {
-          mentionedAnywhereToMentioners.addForward(link.key().record, record);
-          mentionedInDescToMentioners  .addForward(link.key().record, record);
+          if (link.isSingle())
+          {
+            HDT_Record mentioned = link.getRecord();
+
+            mentionedAnywhereToMentioners.addForward(mentioned, mentioner);
+            mentionedInDescToMentioners  .addForward(mentioned, mentioner);
+          }
+          else link.recordStream().forEach(mentioned ->
+          {
+            mentionedAnywhereToMentioners.addForward(mentioned, mentioner);
+            mentionedInDescToMentioners  .addForward(mentioned, mentioner);
+          });
         });
       }
 
@@ -219,19 +219,36 @@ class MentionsIndex
       {
         if (displayItem.type == diRecord)
         {
-          mentionedAnywhereToMentioners.addForward(displayItem.record, record);
-          mentionedInDescToMentioners  .addForward(displayItem.record, record);
+          mentionedAnywhereToMentioners.addForward(displayItem.record, mentioner);
+          mentionedInDescToMentioners  .addForward(displayItem.record, mentioner);
         }
         else if (displayItem.type == diKeyWorks)
         {
           mainText.keyWorksStream().map(KeyWork::getRecord).forEach(keyWorkRecord ->
           {
-            mentionedAnywhereToMentioners.addForward(keyWorkRecord, record);
-            mentionedInDescToMentioners  .addForward(keyWorkRecord, record);
+            mentionedAnywhereToMentioners.addForward(keyWorkRecord, mentioner);
+            mentionedInDescToMentioners  .addForward(keyWorkRecord, mentioner);
           });
         }
       });
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void reindexStringItemMentioner(HDT_Record mentioned, HDT_Record mentioner)
+  {
+    // A record should not be considered as "mentioning" itself, and a term should not
+    // be considered as "mentioning" its concepts or vice versa. This happens because
+    // getAllStrings for concepts includes the term's search key.
+
+    if ((mentioner == mentioned) ||
+        ((mentioner.getType() == hdtTerm   ) && ((HDT_Term    ) mentioner).concepts.contains(mentioned)) ||
+        ((mentioner.getType() == hdtConcept) && (((HDT_Concept) mentioner).term.get() == mentioned)))
+      return;
+
+    mentionedAnywhereToMentioners.addForward(mentioned, mentioner);
   }
 
 //---------------------------------------------------------------------------
@@ -244,16 +261,30 @@ class MentionsIndex
     if (logRows.isEmpty())
       logRows.add(List.of("Mentioner Type","Mentioner ID","Offset","Length","Search Key","Mentioned Type","Mentioned ID"));
 
-    linkList.forEach(link -> logRows.add(List.of
+    linkList.forEach(link ->
+    {
+      if (link.isSingle())
+        logBinding(record, link, link.getBinding());
+      else
+        link.getAllBindings().forEach(binding -> logBinding(record, link, binding));
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void logBinding(HDT_Record record, KeywordLink link, KeywordBinding binding)
+  {
+    logRows.add(List.of
     (
       Tag.getTypeTagStr(record.getType()),
       String.valueOf(record.getID()),
-      String.valueOf(link.offset()),
-      String.valueOf(link.length()),
-      link.key().toString(),
-      Tag.getTypeTagStr(link.key().record.getType()),
-      String.valueOf(link.key().record.getID())
-    )));
+      String.valueOf(link.getOffset()),
+      String.valueOf(link.getLength()),
+      binding.toString(),
+      Tag.getTypeTagStr(binding.getRecord().getType()),
+      String.valueOf(binding.getRecord().getID())
+    ));
   }
 
 //---------------------------------------------------------------------------

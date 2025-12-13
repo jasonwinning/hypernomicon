@@ -1214,15 +1214,16 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
       try
       {
-        inv.setSearchKey(iV.tfSearchKey.getText());
+        inv.setSearchKey(iV.tfSearchKey.getText(), true);
       }
       catch (SearchKeyException e)
       {
         tpPerson.getSelectionModel().select(iV.tab);
 
-        String msg = "Unable to save investigation \"" + iV.tfName.getText() + "\". Search key " + (e instanceof SearchKeyTooShortException ? "must be at least 3 characters: " : "already exists: ") + e.getKey();
+        if (e instanceof DuplicateSearchKeyException)
+          return false;
 
-        return falseWithErrorPopup(msg, iV.tfSearchKey);
+        return falseWithErrorPopup("Unable to save investigation \"" + iV.tfName.getText() + "\". Search key must be at least 3 characters: " + e.getKey(), iV.tfSearchKey);
       }
 
       inv.setName(invName);

@@ -18,15 +18,15 @@
 package org.hypernomicon.model.records;
 
 import org.hypernomicon.model.DatasetAccessor;
-import org.hypernomicon.model.SearchKeys;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjList;
+import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.SplitString;
+
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -184,20 +184,20 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
   private static HDT_Person addSearchKey(StringBuilder keys, String key, HDT_Person person)
   {
-    SearchKeyword keyObj = new SearchKeyword(key, person);
-    if (keyObj.text.length() < 3) return null;
+    KeywordBinding binding = new KeywordBinding(key, person);
+    if (binding.getUserText().length() < 3) return null;
 
-    SearchKeyword existingKeyObj = db.getKeyByKeyword(keyObj.text);
+    Keyword existingKeyObj = db.getKeyByKeyword(binding.getNormalizedText());
 
-    if ((existingKeyObj != null) && (existingKeyObj.record != person))
-      return existingKeyObj.record.getType() == hdtPerson ? (HDT_Person) existingKeyObj.record : null;
+    if ((existingKeyObj != null) && (existingKeyObj.getAllRecords().contains(person) == false))
+      return (HDT_Person) findFirst(existingKeyObj.getAllRecords(), record -> record.getType() == hdtPerson);
 
     for (String val : new SplitString(keys.toString(), ';'))
-      if (val.strip().equalsIgnoreCase(keyObj.text))
+      if (val.strip().equalsIgnoreCase(binding.getUserText()))
         return null;
 
     if (keys.length() > 0) keys.append("; ");
-    keys.append(key);
+    keys.append(binding.getUserText());
 
     return null;
   }

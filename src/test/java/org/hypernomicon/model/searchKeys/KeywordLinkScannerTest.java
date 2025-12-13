@@ -15,12 +15,11 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.model.searchKeys;
 
-import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.TestHyperDB;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
+import org.hypernomicon.model.records.HDT_Person;
+import org.hypernomicon.model.records.HDT_Record;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -39,12 +39,12 @@ import com.google.common.collect.Multimap;
 //---------------------------------------------------------------------------
 
 /**
- * Unit tests for the KeywordLinkList.generate function covering various edge
+ * Unit tests for the KeywordLinkScanner.scan function covering various edge
  * cases. This class also (indirectly) provides effective unit testing for
  * convertToEnglishCharsWithMap, and contains a couple of direct unit tests
  * for it.
  */
-class KeywordLinkListTest
+class KeywordLinkScannerTest
 {
 
 //---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ class KeywordLinkListTest
   /**
    * Helper to create a Keyword with a dummy Record.
    */
-  private static SearchKeyword createKeyword(String text, boolean startOnly, boolean endOnly)
+  private static Keyword createKeyword(String text, boolean startOnly, boolean endOnly)
   {
     if (startOnly)
       text = '^' + text;
@@ -76,7 +76,7 @@ class KeywordLinkListTest
     if (endOnly)
       text = text + '$';
 
-    return new SearchKeyword(text, db.createNewBlankRecord(hdtWork));
+    return new Keyword(new KeywordBinding(text, db.createNewBlankRecord(hdtWork)));
   }
 
 //---------------------------------------------------------------------------
@@ -85,17 +85,32 @@ class KeywordLinkListTest
   /**
    * Helper to build a prefix Multimap from Keywords using their first 3 letters.
    */
-  private static Function<String, Iterable<SearchKeyword>> mapOf(SearchKeyword... keywords)
+  private static Function<String, Iterable<Keyword>> mapOf(Keyword... keywords)
   {
-    Multimap<String, SearchKeyword> map = ArrayListMultimap.create();
+    Multimap<String, Keyword> map = ArrayListMultimap.create();
 
-    for (SearchKeyword kw : keywords)
-    {
-      String key = kw.text.substring(0, Math.min(3, kw.text.length())).toLowerCase();
-      map.put(key, kw);
-    }
+    Arrays.stream(keywords).forEach(kw -> map.put(safeSubstring(kw.normalizedText, 0, 3), kw));
 
     return prefix -> map.get(prefix.toLowerCase());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void assertSameBindings(Collection<KeywordBinding> expected, Collection<KeywordBinding> actual)
+  {
+    assertSameBindings(expected, actual, (String) null);
+  }
+
+  private static void assertSameBindings(Collection<KeywordBinding> expected, Collection<KeywordBinding> actual, String message)
+  {
+    Map<HDT_Record, KeywordBinding> expectedMap = expected.stream().collect(Collectors.toMap(KeywordBinding::getRecord, Function.identity())),
+                                    actualMap   = actual  .stream().collect(Collectors.toMap(KeywordBinding::getRecord, Function.identity()));
+
+    assertEquals(expectedMap.keySet(), actualMap.keySet());
+
+    for (HDT_Record record : expectedMap.keySet())
+      assertSame(expectedMap.get(record), actualMap.get(record), message);
   }
 
 //---------------------------------------------------------------------------
@@ -105,18 +120,18 @@ class KeywordLinkListTest
   void testSimpleAsciiMatch()
   {
     String text = "This is a test string.";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should find one link");
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.indexOf("test"), link.offset(), "Offset should point to the start of 'test'");
-    assertEquals("test".length(), link.length(), "Length should match keyword length");
+    assertEquals(text.indexOf("test"), link.getOffset(), "Offset should point to the start of 'test'");
+    assertEquals("test".length(), link.getLength(), "Length should match keyword length");
 
-    assertSame(kw, link.key(), "Linked Keyword should match");
+    assertSameBindings(kw.getAllBindings(), link.getAllBindings(), "Linked Keyword should match");
   }
 
 //---------------------------------------------------------------------------
@@ -126,12 +141,12 @@ class KeywordLinkListTest
   void testCaseInsensitiveMatching()
   {
     String text = "This TEST is important.";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size());
-    assertEquals(text.toLowerCase().indexOf("test"), links.getFirst().offset());
+    assertEquals(text.toLowerCase().indexOf("test"), links.getFirst().getOffset());
   }
 
 //---------------------------------------------------------------------------
@@ -141,16 +156,16 @@ class KeywordLinkListTest
   void testLinkAtStartOfInput()
   {
     String text = "test-case example here.";
-    SearchKeyword kw = createKeyword("test-case", true, false);
+    Keyword kw = createKeyword("test-case", true, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should match keyword at very start");
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(0, link.offset());
-    assertEquals("test-case".length(), link.length());
+    assertEquals(0, link.getOffset());
+    assertEquals("test-case".length(), link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -160,16 +175,16 @@ class KeywordLinkListTest
   void testLinkAtEndOfInput()
   {
     String text = "Here is an example test";
-    SearchKeyword kw = createKeyword("test", false, true);
+    Keyword kw = createKeyword("test", false, true);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should match keyword at end of input");
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.lastIndexOf("test"), link.offset());
-    assertEquals("test".length(), link.length());
+    assertEquals(text.lastIndexOf("test"), link.getOffset());
+    assertEquals("test".length(), link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -179,16 +194,16 @@ class KeywordLinkListTest
   void testEndOnlyMatchesAtWordEnd()
   {
     String text = "We will protest later.";
-    SearchKeyword kw = createKeyword("test", false, true);
+    Keyword kw = createKeyword("test", false, true);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should match 'test' at the end of 'protest' when endOnly=true");
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.indexOf("test"), link.offset());
-    assertEquals("test".length(), link.length());
+    assertEquals(text.indexOf("test"), link.getOffset());
+    assertEquals("test".length(), link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -198,16 +213,16 @@ class KeywordLinkListTest
   void testExactWordMatchWithStartAndEndOnly()
   {
     String text = "A test-case example.";
-    SearchKeyword kw = createKeyword("test-case", true, true);
+    Keyword kw = createKeyword("test-case", true, true);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size());
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.indexOf("test-case"), link.offset());
-    assertEquals("test-case".length(), link.length());
+    assertEquals(text.indexOf("test-case"), link.getOffset());
+    assertEquals("test-case".length(), link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -217,9 +232,9 @@ class KeywordLinkListTest
   void testEmDash()
   {
     String text = "A test\u2014case example.";
-    SearchKeyword kw = createKeyword("test-case", true, true);
+    Keyword kw = createKeyword("test-case", true, true);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(0, links.size(), "Em-dash is preserved by convertToEnglishChars");
   }
@@ -231,16 +246,16 @@ class KeywordLinkListTest
   void testUnicodeTransliterationOffset()
   {
     String text = "Here is 你好 world.";
-    SearchKeyword kw = createKeyword("nihao", false, false);
+    Keyword kw = createKeyword("nihao", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size());
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.indexOf('你'), link.offset(), "Offset should use original unicode index");
-    assertEquals(2, link.length(), "Length should match original unicode length");
+    assertEquals(text.indexOf('你'), link.getOffset(), "Offset should use original unicode index");
+    assertEquals(2, link.getLength(), "Length should match original unicode length");
   }
 
 //---------------------------------------------------------------------------
@@ -261,31 +276,31 @@ class KeywordLinkListTest
   void testUnicodeTransliterationLengths()
   {
     String text = "Hello " + ELEVE_NFD + "r " + MANANA_NFD + " 你好 goodbye.";
-    SearchKeyword kw1 = createKeyword("nihao" , false, false),
-                  kw2 = createKeyword("eleve" , false, false),
-                  kw3 = createKeyword("manana", false, false);
+    Keyword kw1 = createKeyword("nihao" , false, false),
+            kw2 = createKeyword("eleve" , false, false),
+            kw3 = createKeyword("manana", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw1, kw2, kw3));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw1, kw2, kw3));
 
     assertEquals(3, links.size());
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(6, link.offset());
-    assertEquals(8, link.length());
-    assertSame(kw2, link.key());
+    assertEquals(6, link.getOffset());
+    assertEquals(8, link.getLength());
+    assertSameBindings(kw2.getAllBindings(), link.getAllBindings());
 
     link = links.get(1);
 
-    assertEquals(15, link.offset());
-    assertEquals(7, link.length());
-    assertSame(kw3, link.key());
+    assertEquals(15, link.getOffset());
+    assertEquals(7, link.getLength());
+    assertSameBindings(kw3.getAllBindings(), link.getAllBindings());
 
     link = links.get(2);
 
-    assertEquals(23, link.offset());
-    assertEquals(2, link.length());
-    assertSame(kw1, link.key());
+    assertEquals(23, link.getOffset());
+    assertEquals(2, link.getLength());
+    assertSameBindings(kw1.getAllBindings(), link.getAllBindings());
   }
 
 //---------------------------------------------------------------------------
@@ -334,12 +349,12 @@ class KeywordLinkListTest
   void testSkipExistingHtmlLink()
   {
     String text = "Click <a href=\"http://example.com\">example</a> test.";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should only find link outside existing anchor");
-    assertEquals(text.lastIndexOf("test"), links.getFirst().offset());
+    assertEquals(text.lastIndexOf("test"), links.getFirst().getOffset());
   }
 
 //---------------------------------------------------------------------------
@@ -349,15 +364,15 @@ class KeywordLinkListTest
   void testLinkImmediatelyBeforeAnchor()
   {
     String text = "Check this test<a href='#'>link</a> rest.";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should link word immediately before an anchor");
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.indexOf("test"), link.offset());
+    assertEquals(text.indexOf("test"), link.getOffset());
   }
 
 //---------------------------------------------------------------------------
@@ -367,16 +382,16 @@ class KeywordLinkListTest
   void testLinkImmediatelyAfterAnchor()
   {
     String text = "Start <a href='#'>link</a>test-end.";
-    SearchKeyword kw = createKeyword("test-end", false, false);
+    Keyword kw = createKeyword("test-end", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should link word immediately after an anchor");
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.indexOf("test-end"), link.offset());
-    assertEquals("test-end".length(), link.length());
+    assertEquals(text.indexOf("test-end"), link.getOffset());
+    assertEquals("test-end".length(), link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -386,15 +401,15 @@ class KeywordLinkListTest
   void testSkipWebUrls()
   {
     String text = "Visit http://domain.com and test here.";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size());
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.indexOf("test"), link.offset());
+    assertEquals(text.indexOf("test"), link.getOffset());
   }
 
 //---------------------------------------------------------------------------
@@ -404,16 +419,16 @@ class KeywordLinkListTest
   void testUnicodeTransliterationLongerInternalLinkAtStart()
   {
     String text = "你好test here.";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size());
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.indexOf("test"), link.offset());
-    assertEquals("test".length(), link.length());
+    assertEquals(text.indexOf("test"), link.getOffset());
+    assertEquals("test".length(), link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -423,16 +438,16 @@ class KeywordLinkListTest
   void testUnicodeTransliterationLongerInternalLinkAtEnd()
   {
     String text = "some text test你好";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size());
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(text.indexOf("test"), link.offset());
-    assertEquals("test你好".length(), link.length());
+    assertEquals(text.indexOf("test"), link.getOffset());
+    assertEquals("test你好".length(), link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -443,18 +458,18 @@ class KeywordLinkListTest
   {
     String text = "This is testing code.";
 
-    SearchKeyword kwShort = createKeyword("test"   , false, false),
-                  kwLong  = createKeyword("testing", false, false);
+    Keyword kwShort = createKeyword("test"   , false, false),
+            kwLong  = createKeyword("testing", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kwShort, kwLong));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kwShort, kwLong));
 
     assertEquals(1, links.size(), "Should pick the longest matching keyword 'testing'");
 
     KeywordLink link = links.getFirst();
 
-    assertSame(kwLong, link.key());
-    assertEquals(text.indexOf("testing"), link.offset());
-    assertEquals("testing".length(), link.length());
+    assertSameBindings(kwLong.getAllBindings(), link.getAllBindings());
+    assertEquals(text.indexOf("testing"), link.getOffset());
+    assertEquals("testing".length(), link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -465,18 +480,18 @@ class KeywordLinkListTest
   {
     String text = "This is test code.";
 
-    SearchKeyword kwShort = createKeyword("test"   , false, false),
-                  kwLong  = createKeyword("testing", false, false);
+    Keyword kwShort = createKeyword("test"   , false, false),
+            kwLong  = createKeyword("testing", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kwShort, kwLong));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kwShort, kwLong));
 
     assertEquals(1, links.size(), "Should pick 'test' when only exact match fits");
 
     KeywordLink link = links.getFirst();
 
-    assertSame(kwShort, link.key());
-    assertEquals(text.indexOf("test"), link.offset());
-    assertEquals("test".length(), link.length());
+    assertSameBindings(kwShort.getAllBindings(), link.getAllBindings());
+    assertEquals(text.indexOf("test"), link.getOffset());
+    assertEquals("test".length(), link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -487,17 +502,17 @@ class KeywordLinkListTest
   {
     String text = "abcd";
 
-    SearchKeyword k1 = createKeyword("abc", false, false),
-                  k2 = createKeyword("bcd", false, false);
+    Keyword k1 = createKeyword("abc", false, false),
+            k2 = createKeyword("bcd", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(k1, k2));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(k1, k2));
 
     assertEquals(1, links.size(), "Should pick one non-overlapping link");
 
     KeywordLink link = links.getFirst();
 
-    assertEquals(0, link.offset());
-    assertEquals(4, link.length());
+    assertEquals(0, link.getOffset());
+    assertEquals(4, link.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -507,9 +522,9 @@ class KeywordLinkListTest
   void testMiddleOfWordExpandsEndOfWord()
   {
     String text = "Many protesters arrived.";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should link 'testers' when keyword in middle of word");
 
@@ -517,9 +532,9 @@ class KeywordLinkListTest
 
     int start = text.indexOf("testers");
 
-    assertEquals(start, link.offset(), "Offset should point to start of 'testers'");
-    assertEquals("testers".length(), link.length(), "Length should cover 'testers'");
-    assertSame(kw, link.key(), "Linked Keyword should match");
+    assertEquals(start, link.getOffset(), "Offset should point to start of 'testers'");
+    assertEquals("testers".length(), link.getLength(), "Length should cover 'testers'");
+    assertSameBindings(kw.getAllBindings(), link.getAllBindings(), "Linked Keyword should match");
   }
 
 //---------------------------------------------------------------------------
@@ -529,16 +544,16 @@ class KeywordLinkListTest
   void testAdjacentLinks()
   {
     String text = "foofoo bar";
-    SearchKeyword kw = createKeyword("foo", false, false);
+    Keyword kw = createKeyword("foo", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
-    assertEquals(1, links.size(), "Should one link for 'foofoo'");
+    assertEquals(1, links.size(), "Should have one link for 'foofoo'");
 
     KeywordLink first = links.getFirst();
 
-    assertEquals(0, first.offset());
-    assertEquals("foofoo".length(), first.length());
+    assertEquals(0, first.getOffset());
+    assertEquals("foofoo".length(), first.getLength());
   }
 
 //---------------------------------------------------------------------------
@@ -548,18 +563,18 @@ class KeywordLinkListTest
   void testReEnterKeywordWithAccentsExpandsToEndOfWord()
   {
     String text = "The user's password was pré-éntéréd into the field.";
-    SearchKeyword kw = createKeyword("Re-enter", false, false);
+    Keyword kw = createKeyword("Re-enter", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should link 'ré-éntéréd' when keyword 'Re-enter' appears in accented form");
     KeywordLink link = links.getFirst();
 
     int start = text.indexOf("ré-éntéréd");
 
-    assertEquals(start, link.offset(), "Offset should point to start of 'ré-éntéréd'");
-    assertEquals("ré-éntéréd".length(), link.length(), "Length should cover remainder of accented word");
-    assertSame(kw, link.key(), "Linked Keyword should match");
+    assertEquals(start, link.getOffset(), "Offset should point to start of 'ré-éntéréd'");
+    assertEquals("ré-éntéréd".length(), link.getLength(), "Length should cover remainder of accented word");
+    assertSameBindings(kw.getAllBindings(), link.getAllBindings(), "Linked Keyword should match");
   }
 
 //---------------------------------------------------------------------------
@@ -569,9 +584,9 @@ class KeywordLinkListTest
   void testNoSpaceAfterPeriod()
   {
     String text = "Check.Test here.";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should link 'Test' when no space after period");
 
@@ -579,9 +594,9 @@ class KeywordLinkListTest
 
     int start = text.toLowerCase().indexOf("test");
 
-    assertEquals(start, link.offset(), "Offset should account for no space after period");
-    assertEquals("Test".length(), link.length(), "Length should match keyword length regardless of spacing");
-    assertSame(kw, link.key(), "Linked Keyword should match");
+    assertEquals(start, link.getOffset(), "Offset should account for no space after period");
+    assertEquals("Test".length(), link.getLength(), "Length should match keyword length regardless of spacing");
+    assertSameBindings(kw.getAllBindings(), link.getAllBindings(), "Linked Keyword should match");
   }
 
 //---------------------------------------------------------------------------
@@ -591,9 +606,9 @@ class KeywordLinkListTest
   void testMultipleSpacesAfterPeriod()
   {
     String text = "Check.   Test here.";
-    SearchKeyword kw = createKeyword("test", false, false);
+    Keyword kw = createKeyword("test", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should link 'Test' when multiple spaces after period");
 
@@ -601,9 +616,9 @@ class KeywordLinkListTest
 
     int start = text.toLowerCase().indexOf("test");
 
-    assertEquals(start, link.offset(), "Offset should account for multiple spaces after period");
-    assertEquals("Test".length(), link.length(), "Length should match keyword length regardless of spacing");
-    assertSame(kw, link.key(), "Linked Keyword should match");
+    assertEquals(start, link.getOffset(), "Offset should account for multiple spaces after period");
+    assertEquals("Test".length(), link.getLength(), "Length should match keyword length regardless of spacing");
+    assertSameBindings(kw.getAllBindings(), link.getAllBindings(), "Linked Keyword should match");
   }
 
 //---------------------------------------------------------------------------
@@ -613,9 +628,9 @@ class KeywordLinkListTest
   void testInitialsAndLastNameNoSpaceBetweenInitials()
   {
     String text = "I love the works of J.R. Tolkien.";
-    SearchKeyword kw = createKeyword("J. R. Tolkien", false, false);
+    Keyword kw = createKeyword("J. R. Tolkien", false, false);
 
-    List<KeywordLink> links = KeywordLinkList.generate(text, mapOf(kw));
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
 
     assertEquals(1, links.size(), "Should link 'J.R. Tolkien' without space between initials");
 
@@ -623,9 +638,32 @@ class KeywordLinkListTest
 
     int start = text.indexOf("J.R. Tolkien");
 
-    assertEquals(start, link.offset());
-    assertEquals("J.R. Tolkien".length(), link.length());
-    assertSame(kw, link.key());
+    assertEquals(start, link.getOffset());
+    assertEquals("J.R. Tolkien".length(), link.getLength());
+    assertSameBindings(kw.getAllBindings(), link.getAllBindings());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testMultiBinding()
+  {
+    String text = "I love the works of J.R. Tolkien.";
+
+    HDT_Person person1 = db.createNewBlankRecord(hdtPerson),
+               person2 = db.createNewBlankRecord(hdtPerson),
+               person3 = db.createNewBlankRecord(hdtPerson);
+
+    Keyword kw = new Keyword(new KeywordBinding("J. R. Tolkien", person1));
+
+    kw.addBinding(new KeywordBinding("J.R. Tolkien", person2));
+    kw.addBinding(new KeywordBinding("J. R. Tolkien", person3));
+
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw));
+
+    assertEquals(1, links.size(), "All 3 records should link 'J.R. Tolkien' without space between initials");
+    assertEquals(3, links.getFirst().getAllBindings().size(), "All 3 records should link 'J.R. Tolkien' without space between initials");
   }
 
 //---------------------------------------------------------------------------

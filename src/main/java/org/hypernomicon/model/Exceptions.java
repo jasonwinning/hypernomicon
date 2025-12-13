@@ -159,7 +159,7 @@ public final class Exceptions
 
   public static class DuplicateSearchKeyException extends SearchKeyException
   {
-    DuplicateSearchKeyException(HDT_Record record, String key)
+    public DuplicateSearchKeyException(HDT_Record record, String key)
     {
       super("Duplicate search key: \"" + key + "\". Record type: " + getTypeName(record.getType()) + " ID: " + record.getID(), key);
     }
