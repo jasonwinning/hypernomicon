@@ -39,6 +39,7 @@ import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.tableCells.*;
 import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonUpdateHandler;
 
 import javafx.application.Platform;
 import javafx.beans.property.Property;
@@ -151,6 +152,8 @@ public class HyperTableColumn
 
   private final Property<CellSortMethod> sortMethod = new SimpleObjectProperty<>();
 
+  private final Property<ButtonUpdateHandler> buttonUpdateHandler = new SimpleObjectProperty<>();
+
   public final Property<CellTestHandler> beginEditHandler = new SimpleObjectProperty<>();
 
   private Supplier<HDT_Work> workSupplier;
@@ -170,10 +173,11 @@ public class HyperTableColumn
   public OverrunStyle getTextOverrunStyle() { return textOverrunStyle; }
   void clear()                              { if (populator != null) populator.clear(); }
 
-  HyperTableColumn setCanEditIfEmpty(boolean newVal)         { canEditIfEmpty.setValue(newVal); return this; }
-  HyperTableColumn setSortMethod(CellSortMethod newSM)       { sortMethod.setValue(newSM);      return this; }
-  HyperTableColumn setWorkSupplier(Supplier<HDT_Work> newWS) { workSupplier = newWS;            return this; }
-  HyperTableColumn setAlignment(Pos newAlignment)            { alignment = newAlignment;        return this; }
+  HyperTableColumn setCanEditIfEmpty(boolean newVal)                 { canEditIfEmpty.setValue(newVal);     return this; }
+  HyperTableColumn setSortMethod(CellSortMethod newSM)               { sortMethod.setValue(newSM);          return this; }
+  HyperTableColumn setWorkSupplier(Supplier<HDT_Work> newWS)         { workSupplier = newWS;                return this; }
+  HyperTableColumn setAlignment(Pos newAlignment)                    { alignment = newAlignment;            return this; }
+  HyperTableColumn setButtonUpdateHandler(ButtonUpdateHandler hndlr) { buttonUpdateHandler.setValue(hndlr); return this; }
 
   public HyperTableColumn setTextOverrunStyle(OverrunStyle style)                     { textOverrunStyle = style;             return this; }
   public HyperTableColumn setValueType(CellValueType newCellValueType)                { cellValueType = newCellValueType;     return this; }
@@ -265,7 +269,7 @@ public class HyperTableColumn
     {
       case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctUrlBtn : case ctCustomBtn : case ctLabelEdit :
 
-        htcCol.setCellFactory(tableCol -> new ButtonCell(table, this, this.targetCol, cellClickHandler, btnCaption));
+        htcCol.setCellFactory(tableCol -> new ButtonCell(table, this, this.targetCol, cellClickHandler, btnCaption, buttonUpdateHandler));
         break;
 
       case ctEdit :

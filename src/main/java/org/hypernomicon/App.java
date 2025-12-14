@@ -59,7 +59,6 @@ import java.util.jar.Manifest;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
@@ -351,7 +350,7 @@ public final class App extends Application
 
     }, Util::noOp);
 
-    if (db.viewTestingInProgress && hdbExists)
+    if (db.viewTestingInProgress && db.isOnline())
       testUpdatingAllRecords(1);
   }
 
@@ -370,7 +369,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void checkForNewVersionInThisThread(Consumer<VersionNumber> successHndlr, Runnable failHndlr)
+  static void checkForNewVersionInThisThread(Consumer<VersionNumber> successHndlr, Runnable failHndlr)
   {
     try
     {
@@ -430,9 +429,16 @@ public final class App extends Application
 
     total = types.stream().mapToInt(type -> db.records(type).size()).sum() * passes;
 
-    IntStream.rangeClosed(1, passes)
-             .forEach(pass -> types.forEach(this::testUpdatingRecords));
-
+    try
+    {
+      for (int pass = 1; pass <= passes; pass++)
+        for (RecordType type : types)
+          testUpdatingRecords(type);
+    }
+    catch (Throwable t)
+    {
+      t.printStackTrace();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -440,7 +446,7 @@ public final class App extends Application
 
   private void testUpdatingRecords(RecordType type)
   {
-    db.records(type).forEach(record ->
+    for (HDT_Record record : db.records(type))
     {
       ui.goToRecord(record, true);
 
@@ -459,7 +465,7 @@ public final class App extends Application
         System.out.println("Progress: " + curPercent + " %");
         lastPercent = curPercent;
       }
-    });
+    }
   }
 
 //---------------------------------------------------------------------------

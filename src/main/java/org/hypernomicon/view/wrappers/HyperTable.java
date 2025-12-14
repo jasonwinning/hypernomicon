@@ -48,6 +48,7 @@ import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
+import org.hypernomicon.view.tableCells.ButtonCell.ButtonUpdateHandler;
 import org.hypernomicon.view.tableCells.ReadOnlyCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.*;
 
@@ -173,7 +174,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     this.mainCol = mainCol;
     this.canAddRows = canAddRows;
 
-    if (safeStr(prefID).length() > 0)
+    if (strNotNullOrEmpty(prefID))
       registerTable(tv, prefID, dialog);
 
     filteredRows = new FilteredList<>(rows, row -> true);
@@ -440,6 +441,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, CellClickHandler clickHandler) {
     return addCol(new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, clickHandler, btnCaption)); }
+
+  public HyperTableColumn addCustomActionCol(int targetCol, ButtonUpdateHandler buttonUpdateHandler, CellClickHandler clickHandler) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, clickHandler, "")).setButtonUpdateHandler(buttonUpdateHandler); }
 
   public HyperTableColumn addLabelCol(RecordType objType) {
     return addLabelColWithAlignment(objType, null); }

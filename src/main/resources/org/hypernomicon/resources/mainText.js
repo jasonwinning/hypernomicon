@@ -24,6 +24,7 @@ var JS_EVENT_LAUNCH_FILE         = 4;
 var JS_EVENT_OPEN_FILE           = 5;
 var JS_EVENT_SET_SORT_KEY_METHOD = 6;
 var JS_EVENT_DETAILED_KEY_WORKS  = 7;
+var JS_EVENT_OPEN_CHOOSER        = 8;
 
 var ALPHA_SORTED_OUTER_CLASS   = "sortedKeyWorksAZ";
 var NUMERIC_SORTED_OUTER_CLASS = "sortedKeyWorks19";
@@ -46,6 +47,13 @@ function openPreview(recordType, recordID)
 function openURL(url)
 {
   jsToJava.url = url; callToJava(JS_EVENT_OPEN_URL);
+}
+
+function openChooser(records, searchKeyText)
+{
+  jsToJava.records = records;   // array of [type,id]
+  jsToJava.searchKeyText = searchKeyText;
+  callToJava(JS_EVENT_OPEN_CHOOSER);
 }
 
 function callToJava(eventType)

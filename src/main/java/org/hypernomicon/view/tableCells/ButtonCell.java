@@ -22,6 +22,7 @@ import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellClickHandler;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
+import javafx.beans.property.Property;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -43,12 +44,15 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FunctionalInterface public interface ButtonUpdateHandler { void handle(HyperTableRow row, Button btn); }
+
   private final Button btn;
   private final HyperTable ht;
   private final int colNdxOfTarget;
   private final HyperCtrlType ctrlType;
   private final HyperTableColumn col;
   private final CellClickHandler clickHandler;
+  private final Property<ButtonUpdateHandler> updateHandler;
   private final String caption;
 
   public static final String URL_BUTTON_TOOLTIP = "Search for website (if not entered) or navigate to website (if entered) in browser";
@@ -60,13 +64,14 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ButtonCell(HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, CellClickHandler clickHandler, String caption)
+  public ButtonCell(HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, CellClickHandler clickHandler, String caption, Property<ButtonUpdateHandler> updateHandler)
   {
     ht = newHT;
     this.colNdxOfTarget = colNdxOfTarget;
     this.ctrlType = col.getCtrlType();
     this.col = col;
     this.clickHandler = clickHandler;
+    this.updateHandler = updateHandler;
     this.caption = ctrlType == ctCustomBtn ? safeStr(caption) : ""; // Custom caption is only supported for ctCustomBtn
 
     btn = HyperTableColumn.makeButton(this);
@@ -206,6 +211,8 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
     btn.setDisable(false);
 
+    HyperTableRow row = nullSwitch(getTableRow(), null, TableRow::getItem);
+
     if (this.ctrlType == ctLabelEdit)
     {
       String text = HyperTableCell.getCellText(cell);
@@ -226,11 +233,15 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
       setToolTip(this, text);
     }
     else
+    {
+      if (updateHandler.getValue() != null)
+        updateHandler.getValue().handle(row, btn);
+
       setGraphic(btn);
+    }
 
     if (colNdxOfTarget < 0) return;
 
-    HyperTableRow row = nullSwitch(getTableRow(), null, TableRow::getItem);
     if (row == null) return;
 
     if (row.getID(ht.getMainColNdx()) > 0) // That's not a typo, it should be the main column ndx for the table, not the target ndx

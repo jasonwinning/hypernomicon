@@ -17,6 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -44,7 +45,7 @@ public class HelpDlgCtrlr extends ModalDialog
 
   public HelpDlgCtrlr()
   {
-    super("HelpDlg", "Hypernomicon", true);
+    super("HelpDlg", appTitle, true);
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 

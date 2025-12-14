@@ -36,7 +36,7 @@ import static org.apache.commons.text.StringEscapeUtils.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
-
+import org.hypernomicon.dialogs.MultiLinkActionDlgCtrlr;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.searchKeys.*;
@@ -113,6 +113,7 @@ public final class MainTextUtil
                            JS_EVENT_OPEN_FILE           = 5,    // May launch or open preview depending on user setting
                            JS_EVENT_SET_SORT_KEY_METHOD = 6;
   static final int         JS_EVENT_DETAILED_KEY_WORKS  = 7;
+  private static final int JS_EVENT_OPEN_CHOOSER        = 8;
 
   static void init() throws IOException
   {
@@ -175,8 +176,8 @@ public final class MainTextUtil
 
     if ((jsEvent == JS_EVENT_OPEN_RECORD) || (jsEvent == JS_EVENT_LAUNCH_FILE) || (jsEvent == JS_EVENT_OPEN_PREVIEW))
     {
-      recordID = (Integer)jsToJava.getMember("recordID");
-      int recordTypeOrd = (Integer)jsToJava.getMember("recordType");
+      recordID = (Integer) jsToJava.getMember("recordID");
+      int recordTypeOrd = (Integer) jsToJava.getMember("recordType");
       recordType = getEnumVal(recordTypeOrd, RecordType.class);
 
       if ((recordType == hdtNote) && (jsEvent == JS_EVENT_OPEN_PREVIEW))
@@ -187,15 +188,12 @@ public final class MainTextUtil
     {
       case JS_EVENT_OPEN_RECORD :
 
-        if (recordType == hdtWorkLabel)
-          ui.goToTreeRecord(db.records(recordType).getByID(recordID));
-        else
-          ui.goToRecord(db.records(recordType).getByID(recordID), true);
+        openRecordLinkAction(db.records(recordType).getByID(recordID));
         break;
 
       case JS_EVENT_OPEN_PREVIEW :
 
-        PreviewWindow.show(pvsOther, (HDT_RecordWithPath) db.records(recordType).getByID(recordID));
+        previewRecordLinkAction(db.records(recordType).getByID(recordID));
         break;
 
       case JS_EVENT_OPEN_URL :
@@ -205,21 +203,15 @@ public final class MainTextUtil
 
       case JS_EVENT_LAUNCH_FILE :
 
-        if (recordType == hdtMiscFile)
-        {
-          HDT_MiscFile file = db.miscFiles.getByID(recordID);
+        launchRecordLinkAction(db.records(recordType).getByID(recordID));
+        break;
 
-          if (file.getPath().isEmpty()) return;
+      case JS_EVENT_OPEN_CHOOSER :
 
-          launchFile(file.filePath());
-        }
-        else if (recordType == hdtNote)
-        {
-          HDT_Note note = db.notes.getByID(recordID); // If these two lines are combined into one, for some unknown reason there
-          launchFile(note.getPath().filePath());      // will be "The type HDT_Note is not visible" false-positive build errors
-        }
-        else
-          db.works.getByID(recordID).launch(-1);
+        Object recsObj = jsToJava.getMember("records");
+
+        if (recsObj instanceof JSObject jsArray)
+          showChooserPopup(jsArray, (String) jsToJava.getMember("searchKeyText"));
 
         break;
 
@@ -239,6 +231,75 @@ public final class MainTextUtil
 
         break;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void previewRecordLinkAction(HDT_Record target)
+  {
+    if (target instanceof HDT_RecordWithPath recordWithPath)
+      PreviewWindow.show(pvsOther, recordWithPath);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void launchRecordLinkAction(HDT_Record target)
+  {
+    switch (target.getType())
+    {
+      case hdtMiscFile : case hdtNote :
+
+        HDT_RecordWithPath recordWithPath = (HDT_RecordWithPath) target;
+
+        if (recordWithPath.pathNotEmpty())
+          launchFile(recordWithPath.filePath());
+
+        break;
+
+      case hdtWork :
+
+        ((HDT_Work) target).launch(-1);
+        break;
+
+      default : break;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void openRecordLinkAction(HDT_Record target)
+  {
+    if (target.getType() == hdtWorkLabel)
+      ui.goToTreeRecord(target);
+    else
+      ui.goToRecord(target, true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void showChooserPopup(JSObject jsArray, String searchKeyText)
+  {
+    List<HDT_Record> records = new ArrayList<>();
+
+    int len = (Integer) jsArray.getMember("length");
+
+    for (int ndx = 0; ndx < len; ndx++)
+    {
+      JSObject pair   = (JSObject) jsArray.getSlot(ndx);
+
+      int typeOrd     = (Integer) pair.getSlot(0),
+          id          = (Integer) pair.getSlot(1);
+
+      RecordType type = getEnumVal(typeOrd, RecordType.class);
+
+      records.add(db.records(type).getByID(id));
+    }
+
+    new MultiLinkActionDlgCtrlr(records, searchKeyText).showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -358,9 +419,9 @@ public final class MainTextUtil
 
   private static String getKeywordLink(String html, KeywordLink link, String style, String klass)
   {
-    if (style.length() > 0) style = " style=\"" + style + '"';
+    if (strNotNullOrEmpty(style)) style = " style=\"" + style + '"';
 
-    if (klass.length() > 0) klass = " class=\"" + klass + '"';
+    if (strNotNullOrEmpty(klass)) klass = " class=\"" + klass + '"';
 
     if (link.isSingle())
     {
@@ -373,7 +434,32 @@ public final class MainTextUtil
       return getGoToRecordAnchor(record, style + klass, html);
     }
 
-    return html;
+    // Collect record IDs/types into a JS array string
+
+    StringBuilder paramSB = new StringBuilder("["),
+                  tooltipSB = new StringBuilder();
+
+    link.recordStream().forEach(record ->
+    {
+      if (paramSB.length() > 1) paramSB.append(',');
+      paramSB.append('[').append(record.getType().ordinal()).append(',').append(record.getID()).append(']');
+
+      if (tooltipSB.length() > 1) tooltipSB.append('\n');
+      tooltipSB.append(recordTooltip(record));
+    });
+
+    paramSB.append(']');
+
+    String searchKeyText = link.getAllBindings().iterator().next().getUserText(),
+           handler = "javascript:openChooser(" + paramSB + ",'" + escapeEcmaScript(htmlEscaper.escape(searchKeyText)) + "'); return false;";
+
+    return "<a href=\"\""
+       +   " title=\"" + tooltipSB + '"'
+       +   " onclick=\"" + handler + '"'
+       +   " oncontextmenu=\"" + handler + '"'
+       +   style + klass + " hypncon=\"true\">"
+       +   html
+       +   "</a>";
   }
 
 //---------------------------------------------------------------------------
@@ -421,26 +507,7 @@ public final class MainTextUtil
         if (work.workType.isNotNull())
           typeName = work.workType.get().name();
 
-        StringBuilder tooltip = new StringBuilder("(").append(typeName).append(')');
-
-        if (work.getAuthors().size() == 1)
-          tooltip.append(' ').append(work.getAuthors().get(0).singleName());
-        else if (work.getAuthors().size() == 2)
-          tooltip.append(' ').append(work.getAuthors().get(0).singleName()).append(" & ").append(work.getAuthors().get(1).singleName());
-        else if (work.getAuthors().size() > 2)
-        {
-          for (int ndx = 0; ndx < (work.getAuthors().size() - 1); ndx++)
-            tooltip.append(' ').append(work.getAuthors().get(ndx).singleName()).append(',');
-
-          tooltip.append(" & ").append(work.getAuthors().get(work.getAuthors().size() - 1).singleName());
-        }
-
-        if (work.getYearStr().length() > 0)
-          tooltip.append(" (").append(work.getYearStr()).append(')');
-
-        tooltip.append(' ').append(work.name());
-
-        return htmlEscaper.escape(tooltip.toString());
+        break;
 
       case hdtMiscFile :
 
@@ -452,12 +519,12 @@ public final class MainTextUtil
         if (miscFile.pathNotEmpty())
           return htmlEscaper.escape('(' + typeName + ") " + miscFile.getPath().getNameStr());
 
-        // fall through
+        break;
 
-      default :
-
-        return htmlEscaper.escape('(' + typeName + ") " + record.defaultChoiceText());
+      default : break;
     }
+
+    return htmlEscaper.escape('(' + typeName + ") " + record.defaultChoiceText());
   }
 
 //---------------------------------------------------------------------------
@@ -539,7 +606,7 @@ public final class MainTextUtil
 
     secondaryHtml.append("</div>");
 
-    if ((convertToSingleLine(mainText.getPlain()).strip().length() > 0) || mainText.getHtml().contains("&lt;" + EMBEDDED_FILE_TAG + ' '))
+    if (strNotNullOrEmpty(convertToSingleLine(mainText.getPlain()).strip()) || mainText.getHtml().contains("&lt;" + EMBEDDED_FILE_TAG + ' '))
       secondaryHtml.append("<br>").append(embeddedHtml);
 
     return secondaryHtml.toString();
@@ -577,10 +644,10 @@ public final class MainTextUtil
           HDT_Work work = (HDT_Work) key.getRecord();
 
           authorBibStr = work.getShortAuthorsStr(true);
-          if (authorBibStr.length() > 0)
+          if (strNotNullOrEmpty(authorBibStr))
             innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(htmlEscaper.escape(authorBibStr)).append("</span>");
 
-          if (work.getYearStr().length() > 0)
+          if (strNotNullOrEmpty(work.getYearStr()))
             innerHtml.append("&nbsp;(").append(htmlEscaper.escape(work.getYearStr())).append(')');
 
           innerHtml.append("&nbsp;").append(getGoToRecordAnchor(work, "", htmlEscaper.escape(work.name())));
@@ -592,7 +659,7 @@ public final class MainTextUtil
           HDT_MiscFile miscFile = (HDT_MiscFile) key.getRecord();
 
           authorBibStr = miscFile.getShortAuthorsStr(true);
-          if (authorBibStr.length() > 0)
+          if (strNotNullOrEmpty(authorBibStr))
             innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(htmlEscaper.escape(authorBibStr)).append("</span>");
 
           innerHtml.append("&nbsp;").append(getGoToRecordAnchor(miscFile, "", htmlEscaper.escape(miscFile.name()))).append("&nbsp;")
@@ -963,7 +1030,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void updateZoomFromPref(WebView view, String prefID)
+  static void updateZoomFromPref(WebView view, String prefID)
   {
     view.setZoom(zoomFactors.get(app.prefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);
   }
@@ -993,7 +1060,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static Document jsoupParse(String html)
+  static Document jsoupParse(String html)
   {
     return Jsoup.parse(html);
   }
