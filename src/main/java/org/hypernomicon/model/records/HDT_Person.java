@@ -27,7 +27,6 @@ import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.util.SplitString;
 
-
 import java.util.*;
 import java.util.Map.Entry;
 

@@ -17,16 +17,18 @@
 
 package org.hypernomicon.dialogs;
 
+import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.MainCtrlr.*;
 
-import java.util.stream.Stream;
-
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.dialogs.base.ModalDialog;
-
-import static org.hypernomicon.util.UIUtil.*;
-
 import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Term;
+
+import java.util.stream.Stream;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
@@ -110,7 +112,7 @@ public class MergeTermDlgCtrlr extends ModalDialog
     if (nameField.getText().isBlank())
       return falseWithErrorPopup("Unable to merge terms: Term cannot be blank.", nameField);
 
-    if (keyField.getText().isBlank() && Stream.concat(term1.concepts.stream(), term2.concepts.stream()).anyMatch(concept -> concept.getSearchKey().isBlank()))
+    if (db.prefs.getBoolean(PrefKey.TERM_REQUIRE_SEARCH_KEY, true) && keyField.getText().isBlank() && HDT_Concept.conceptsDontAllHaveSearchKey(Stream.concat(term1.concepts.stream(), term2.concepts.stream())))
       return falseWithErrorPopup("Unable to merge terms: Search key cannot be blank.", keyField);
 
     try
@@ -120,7 +122,7 @@ public class MergeTermDlgCtrlr extends ModalDialog
     catch (SearchKeyException e)
     {
       if (e instanceof SearchKeyTooShortException)
-        return falseWithErrorPopup("Unable to merge terms. Search key must have at least 3 characters: " + e.getKey());
+        return falseWithErrorPopup("Unable to merge terms. Search key must have at least 3 characters" + (strNullOrBlank(e.getKey()) ? '.' : (": " + e.getKey())));
 
       return false;
     }

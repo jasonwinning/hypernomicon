@@ -162,6 +162,7 @@ public final class Const
       DEF_DESC_FONT_SIZE = "defDescFontSize",
       DEF_DESC_FONT_FAMILY = "defDescFontFamily",
       DONT_OPEN_EMPTY_KEY_WORKS = "openEmptyKeyWorks",
+      TERM_REQUIRE_SEARCH_KEY = "termRequireSearchKey",
 
       LOWER_CASE_TARGET_NAMES = "lowerCaseTargetNames",
       ARG_NAMING_MULTIPLE_AUTHORS = "multipleAuthorsInArgNames",

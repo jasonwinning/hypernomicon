@@ -26,6 +26,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
@@ -244,6 +245,26 @@ public class HDT_Concept extends HDT_RecordWithMainText
     List.copyOf(subConcepts).forEach(subConcept -> subConcept.removeParent(this));
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns true if the following is true for any of the concepts:
+   * <br>
+   * <ol>
+   * <li>The concept doesn't have a search key, and</li>
+   * <li>None of the concept's united records have a search key.</li>
+   * </ol>
+   * In other words, the concept is not reachable from a search key.
+   * @param conceptStream
+   * @return Stated above
+   */
+  public static boolean conceptsDontAllHaveSearchKey(Stream<HDT_Concept> conceptStream)
+  {
+    return conceptStream.anyMatch(concept ->
+      concept.getSearchKey().isBlank() && ((concept.hasHub() == false) || concept.getHub().getSpokes().allMatch(spoke -> spoke.getSearchKey().isBlank())));
   }
 
 //---------------------------------------------------------------------------

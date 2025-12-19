@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
@@ -236,7 +237,7 @@ public final class SelectTermDlgCtrlr extends ModalDialog
 
   private void btnCreateClick()
   {
-    if (tfSearchKey.getText().isBlank() && ((concept == null) || concept.getSearchKey().isBlank()))
+    if (db.prefs.getBoolean(PrefKey.TERM_REQUIRE_SEARCH_KEY, true) && tfSearchKey.getText().isBlank() && ((concept == null) || HDT_Concept.conceptsDontAllHaveSearchKey(Stream.of(concept))))
     {
       falseWithErrorPopup("Unable to create term record: Search key cannot be blank.", tfSearchKey);
       return;

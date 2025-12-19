@@ -252,19 +252,21 @@
             <padding>
               <Insets bottom="6.0" left="12.0" right="6.0" top="12.0"/>
             </padding>
-            <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false"
+            <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false" prefHeight="25.0"
                       text="Use sentence case instead of title case for titles"/>
             <HBox alignment="BASELINE_LEFT" spacing="8.0">
               <CheckBox fx:id="chkDefaultChapterWorkType" mnemonicParsing="false"
                         text="Default work type when reference manager entry type is Book Section:"/>
-              <ComboBox fx:id="cbDefaultChapterWorkType" prefWidth="197.0">
+              <ComboBox fx:id="cbDefaultChapterWorkType" prefHeight="25.0" prefWidth="197.0">
                 <HBox.margin>
                   <Insets/>
                 </HBox.margin>
               </ComboBox>
             </HBox>
-            <CheckBox fx:id="chkDBDontExpandKeyWorks" mnemonicParsing="false"
+            <CheckBox fx:id="chkDBDontExpandKeyWorks" mnemonicParsing="false" prefHeight="25.0"
                       text="Don't expand key works when editing record description and there are no key works yet"/>
+            <CheckBox fx:id="chkTermRequireSearchKey" mnemonicParsing="false" prefHeight="25.0"
+                      text="Require Terms/Concepts to be reachable by search keys"/>
           </VBox>
         </AnchorPane>
       </Tab>

@@ -29,6 +29,7 @@ import java.util.prefs.Preferences;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.dialogs.SelectTermDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
@@ -424,11 +425,11 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     if (nodeRecord instanceof HDT_Concept curConcept)
     {
-      boolean conceptsDontAllHaveSearchKey = curConcept.term.get().concepts.stream().anyMatch(concept ->
-        concept.getSearchKey().isBlank() && ((concept.hasHub() == false) || concept.getHub().getSpokes().allMatch(spoke -> spoke.getSearchKey().isBlank())));
-
-      if (tfSearchKey.getText().isBlank() && conceptsDontAllHaveSearchKey)
-        return falseWithErrorPopup("Unable to modify record: Enter a search key for the Term, or for each Concept or united records of each Concept.", tfSearchKey);
+      if (db.prefs.getBoolean(PrefKey.TERM_REQUIRE_SEARCH_KEY, true))
+      {
+        if (tfSearchKey.getText().isBlank() && HDT_Concept.conceptsDontAllHaveSearchKey(curConcept.term.get().concepts.stream()))
+          return falseWithErrorPopup("Unable to modify record: Enter a search key for the Term, or for each Concept or united records of each Concept.", tfSearchKey);
+      }
 
       if (saveNameIfBlank && tfName.getText().isBlank())
         return falseWithErrorPopup("Unable to modify record: Term cannot be zero-length.", tfName);

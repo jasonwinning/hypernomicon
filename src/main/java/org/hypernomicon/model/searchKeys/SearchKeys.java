@@ -207,12 +207,13 @@ public final class SearchKeys
       .computeIfAbsent(binding.getRecord(), _ -> Collections.synchronizedMap(new LinkedHashMap<>()))
       .put(normalizedText, binding);
 
-    Map<String, Keyword> map = prefixStrToKeywordStrToKeywordObj.computeIfAbsent(binding.getPrefix(), _ -> Collections.synchronizedMap(new LinkedHashMap<>()));
+    Map<String, Keyword> map = prefixStrToKeywordStrToKeywordObj
+      .computeIfAbsent(binding.getPrefix(), _ -> Collections.synchronizedMap(new LinkedHashMap<>()));
 
-    if (map.containsKey(normalizedText))
-      map.get(normalizedText).addBinding(binding);
-    else
-      map.put(normalizedText, new Keyword(binding));
+    synchronized (map)
+    {
+      map.merge(normalizedText, new Keyword(binding), (existing, newKeyword) -> { existing.addBinding(binding); return existing; });
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -261,6 +262,7 @@ public final class SearchKeys
 
     return oldBindings;
   }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

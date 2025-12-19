@@ -36,6 +36,7 @@ import static org.apache.commons.text.StringEscapeUtils.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
+
 import org.hypernomicon.dialogs.MultiLinkActionDlgCtrlr;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;

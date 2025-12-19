@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.items.HDI_OfflinePointerMulti;
@@ -163,7 +164,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
   {
     newKey = newKey.strip();
 
-    if (newKey.isBlank())
+    if (db.prefs.getBoolean(PrefKey.TERM_REQUIRE_SEARCH_KEY, true) && newKey.isBlank())
       throw new SearchKeyTooShortException(term1, newKey);
 
     String oldKey1 = term1.getSearchKey();

@@ -31,8 +31,7 @@ public final class KeywordBinding
 
   private final String userText, normalizedText, prefix;
   private final HDT_Record record;
-  private final boolean startOnly;
-  private final boolean endOnly;
+  private final boolean startOnly, endOnly;
 
 //---------------------------------------------------------------------------
 

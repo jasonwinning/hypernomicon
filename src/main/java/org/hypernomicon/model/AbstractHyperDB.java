@@ -2233,8 +2233,13 @@ public abstract class AbstractHyperDB
     if (bibLibrary != null)
       clearBibLinkData();
 
-    if (datasetsToKeep == null)
-      prefs = null;
+    if (prefs != null)
+    {
+      prefs.remove(PrefKey.TERM_REQUIRE_SEARCH_KEY);  // Remove setting so it can default to true for new database
+
+      if (datasetsToKeep == null)
+        prefs = null;
+    }
 
     try
     {
