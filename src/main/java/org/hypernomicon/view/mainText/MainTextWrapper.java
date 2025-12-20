@@ -300,6 +300,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("removal")
   public TextViewInfo getViewInfo(HDT_Record viewRecord)
   {
     if (curRecord == null)

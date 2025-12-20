@@ -68,7 +68,7 @@ final class FolderHistory
     {
       FolderHistoryItem item = history.get(ndx);
 
-      if (item.folder == folder)
+      if (item.folder() == folder)
       {
         // Update cursorNdx if it points to or follows the deleted entry
         if (ndx <= cursorNdx)
@@ -78,7 +78,7 @@ final class FolderHistory
         history.remove(ndx);
         ndx--; // Adjust index to recheck after removal
       }
-      else if ((ndx > 0) && (history.get(ndx - 1).folder == item.folder))
+      else if ((ndx > 0) && (history.get(ndx - 1).folder() == item.folder()))
       {
         // Remove adjacent duplicates
         history.remove(ndx);

@@ -188,7 +188,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
     Keyword existingKeyObj = db.getKeyByKeyword(binding.getNormalizedText());
 
-    if ((existingKeyObj != null) && (existingKeyObj.getAllRecords().contains(person) == false))
+    if ((existingKeyObj != null) && ((person == null) || (existingKeyObj.getAllRecords().contains(person) == false)))
       return (HDT_Person) findFirst(existingKeyObj.getAllRecords(), record -> record.getType() == hdtPerson);
 
     for (String val : new SplitString(keys.toString(), ';'))

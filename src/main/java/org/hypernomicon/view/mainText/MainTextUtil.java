@@ -151,6 +151,7 @@ public final class MainTextUtil
     handleJSEvent(htmlToUse, weToUse, null);
   }
 
+  @SuppressWarnings("removal")
   static void handleJSEvent(String htmlToUse, WebEngine weToUse, TextViewInfo textViewInfo)
   {
     int recordID = -1;
@@ -282,6 +283,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("removal")
   private static void showChooserPopup(JSObject jsArray, String searchKeyText)
   {
     List<HDT_Record> records = new ArrayList<>();

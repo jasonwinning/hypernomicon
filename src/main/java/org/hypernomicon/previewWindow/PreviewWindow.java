@@ -588,7 +588,7 @@ public final class PreviewWindow extends NonmodalWindow
     disableAll(tfPreviewPage, btnPreviewPrev, btnPreviewNext, btnHilitePrev, btnHiliteNext, btnPreviewBack, btnPreviewForward);
 
     sldPreview.setValue(1);
-    lblPreviewPages.setText("/ 0");
+    lblPreviewPages.setText("");
 
     ContentsWindow.clear();
   }

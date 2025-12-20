@@ -2268,7 +2268,16 @@ public final class MainCtrlr
       return;
     }
 
-    HDT_Record record = getSelectedRecordAskIfNeeded();
+    HDT_Record activeRecord  = activeRecord(),
+               focusedRecord = getFocusedRecord(),
+               record;
+
+    if ((activeRecord == focusedRecord) || strNullOrEmpty(focusedRecord.getSearchKey()))
+      record = activeRecord;
+    else if (strNullOrEmpty(activeRecord.getSearchKey()))
+      record = focusedRecord;
+    else
+      record = getSelectedRecordAskIfNeeded();
 
     if (record == null)
       return;
@@ -2297,16 +2306,10 @@ public final class MainCtrlr
 
   private HDT_Record getSelectedRecordAskIfNeeded()
   {
-    HDT_Record activeRecord = activeRecord();
+    HDT_Record activeRecord  = activeRecord(),
+               focusedRecord = getFocusedRecord();
 
-    HDT_Record viewRecord = switch (activeTabEnum())
-    {
-      case termTabEnum   -> viewRecord();
-      case personTabEnum -> personHyperTab().getCurInvestigation();
-      default            -> null;
-    };
-
-    if ((activeRecord == null) || (viewRecord == null) || (activeRecord == viewRecord))
+    if ((activeRecord == null) || (focusedRecord == null) || (activeRecord == focusedRecord))
     {
       if (activeRecord == null)
         errorPopup("No record is currently selected.");
@@ -2314,20 +2317,40 @@ public final class MainCtrlr
       return activeRecord;
     }
 
-    DialogResult result = new PopupDialog("Which record?\n\n" + getTypeName(activeRecord.getType()) + ": " + activeRecord.defaultChoiceText() +
-                                                         '\n' + getTypeName(viewRecord  .getType()) + ": " + viewRecord  .defaultChoiceText())
+    DialogResult result = new PopupDialog("Which record?\n\n" + getTypeName(activeRecord .getType()) + ": " + activeRecord .defaultChoiceText() +
+                                                         '\n' + getTypeName(focusedRecord.getType()) + ": " + focusedRecord.defaultChoiceText())
 
-      .addDefaultButton(getTypeName(activeRecord.getType()), mrYes   )
-      .addButton       (getTypeName(viewRecord  .getType()), mrNo    )
-      .addButton       ("Cancel"                           , mrCancel)
+      .addDefaultButton(getTypeName(activeRecord .getType()), mrYes   )
+      .addButton       (getTypeName(focusedRecord.getType()), mrNo    )
+      .addButton       ("Cancel"                            , mrCancel)
 
       .showModal();
 
     return switch (result)
     {
       case mrYes -> activeRecord;
-      case mrNo  -> viewRecord;
+      case mrNo  -> focusedRecord;
       default    -> null;
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Get the "innermost" record the user is currently focused on, which is usually
+   * the same record returned by activeRecord(), but would be the current HDT_Concept
+   * if the Terms tab is active, or the current HDT_Investigation if the Persons tab
+   * is active.
+   * @return The focused record
+   */
+  private HDT_Record getFocusedRecord()
+  {
+    return switch (activeTabEnum())
+    {
+      case termTabEnum   -> viewRecord();
+      case personTabEnum -> personHyperTab().getCurInvestigation();
+      default            -> activeRecord();
     };
   }
 

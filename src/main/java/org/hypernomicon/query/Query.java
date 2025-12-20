@@ -107,7 +107,7 @@ public abstract class Query<HDT_T extends HDT_Record>
    * @param op1 First query operand
    * @param op2 Second query operand
    * @param op3 Third query operand
-   * @throws HyperDataException
+   * @throws HyperDataException If an exception occurs
    */
   public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException { }
 

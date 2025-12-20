@@ -43,6 +43,10 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private record TreeTargetType(RelationType relType, RecordType targetType) { }
+
+//---------------------------------------------------------------------------
+
   private HDT_Record base, target;
   private final List<TreeTargetType> targetTypes = new ArrayList<>();
   private boolean baseIsSubj = true;
@@ -109,21 +113,6 @@ public class TreeSelector
   private RelationType getRelTypeForTargetType(RecordType targetType)
   {
     return findFirst(targetTypes, ttType -> ttType.targetType == targetType, rtNone, ttType -> ttType.relType);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static final class TreeTargetType
-  {
-    private TreeTargetType(RelationType relType, RecordType objType)
-    {
-      this.relType = relType;
-      this.targetType = objType;
-    }
-
-    private final RelationType relType;
-    private final RecordType targetType;
   }
 
 //---------------------------------------------------------------------------

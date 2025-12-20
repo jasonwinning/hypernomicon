@@ -22,23 +22,15 @@ import org.hypernomicon.util.filePath.FilePath;
 
 //---------------------------------------------------------------------------
 
-final class FolderHistoryItem
+record FolderHistoryItem(HDT_Folder folder, FilePath fileName, HDT_Record record)
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final HDT_Folder folder;
-  final FilePath fileName;
-  final HDT_Record record;
-
-//---------------------------------------------------------------------------
-
   FolderHistoryItem(FileRow folderRow, FileRow fileRow, HDT_Record record)
   {
-    folder = folderRow.getRecord();
-    fileName = fileRow == null ? null : fileRow.getFilePath().getNameOnly();
-    this.record = record;
+    this(folderRow.getRecord(), fileRow == null ? null : fileRow.getFilePath().getNameOnly(), record);
   }
 
 //---------------------------------------------------------------------------

@@ -258,7 +258,7 @@ public class HDT_Concept extends HDT_RecordWithMainText
    * <li>None of the concept's united records have a search key.</li>
    * </ol>
    * In other words, the concept is not reachable from a search key.
-   * @param conceptStream
+   * @param conceptStream Concepts to examine
    * @return Stated above
    */
   public static boolean conceptsDontAllHaveSearchKey(Stream<HDT_Concept> conceptStream)

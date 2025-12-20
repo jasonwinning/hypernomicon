@@ -1236,15 +1236,15 @@ public final class FileManager extends NonmodalWindow
   private void invokeHistoryItem(FolderHistoryItem item)
   {
     programmaticSelectionChange = true;
-    folderTree.selectRecord(item.folder, -1, false);
+    folderTree.selectRecord(item.folder(), -1, false);
     programmaticSelectionChange = false;
 
-    if (item.fileName != null)
-      fileTable.selectByFileName(item.fileName);
+    if (item.fileName() != null)
+      fileTable.selectByFileName(item.fileName());
 
-    if (HDT_Record.isEmpty(item.record, false) == false)
+    if (HDT_Record.isEmpty(item.record(), false) == false)
     {
-      HyperTableRow row = recordTable.selectRowByRecord(item.record);
+      HyperTableRow row = recordTable.selectRowByRecord(item.record());
       if (row != null)
       {
         recordTV.requestFocus();
@@ -1252,7 +1252,7 @@ public final class FileManager extends NonmodalWindow
       }
     }
 
-    if (item.fileName != null)
+    if (item.fileName() != null)
       fileTV.requestFocus();
   }
 
