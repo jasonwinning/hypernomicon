@@ -107,4 +107,13 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static boolean valueChanged(String oldValue, String newValue)
+  {
+    newValue = safeStr(newValue);
+    return oldValue.replace("\r", "").equalsIgnoreCase(newValue.replace("\r", "")) == false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

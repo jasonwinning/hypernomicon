@@ -19,6 +19,7 @@ package org.hypernomicon;
 
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.authors.RecordAuthors;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
@@ -102,16 +103,23 @@ class MentionsAndDisplayIndexTest
   {
     HDT_Person person = db.createNewBlankRecord(hdtPerson);
     assertDoesNotThrow(() -> person.setSearchKey("abcde", true));
+    person.setName(new PersonName("abcde"));
+
+    assertSame(person, HDT_Person.lookUpByName(new PersonName("abcde")), "lookUpByName should match the person record");
 
     assertFalse(firstMentionsSecond(person, person, false), "A record should not automatically be considered as \"mentioning\" itself.");
     assertFalse(firstMentionsSecond(person, person, true ), "A record should not automatically be considered as \"mentioning\" itself.");
 
     assertDoesNotThrow(() -> person.setSearchKey("", true));
 
-    person.getMainText().setHtml("abcdefg");
-
     HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
     assertDoesNotThrow(() -> term.setSearchKey("abcde", true));
+
+    assertTrue(firstMentionsSecond(person, term, false), "Person should mention the term because of the person name");
+    person.setName(new PersonName("", ""));
+    assertFalse(firstMentionsSecond(person, term, false), "Clearing the person name should update the mentions index");
+
+    person.getMainText().setHtml("abcdefg");
 
     HDT_Concept concept = term.concepts.getFirst();
 

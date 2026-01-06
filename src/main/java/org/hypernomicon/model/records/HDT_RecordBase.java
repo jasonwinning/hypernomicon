@@ -159,7 +159,10 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected void setNameInternal(String str, boolean update)
   {
-    name.set(update ? updateString(name.get(), str) : safeStr(str));
+    str = safeStr(str);
+    boolean changed = update && HDI_OnlineString.valueChanged(name.get(), str);
+    name.set(str);
+    if (changed) modifyNow();
     updateSortKey();
   }
 
@@ -401,18 +404,6 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String updateString(String dest, String val)
-  {
-    val = safeStr(val);
-    if (dest.replace("\r", "").equalsIgnoreCase(val.replace("\r", "")) == false)
-      modifyNow();
-
-    return val;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   protected final void updateBibEntryKey(String val) // No need to change modified date for record
   {
     ((HDI_OnlineBibEntryKey) items.get(tagBibEntryKey)).set(val);
@@ -421,12 +412,19 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final void updateTagString(Tag tag, String val)
+  protected final void updateTagString(Tag tag, String newValue)
   {
+    newValue = safeStr(newValue);
+
     if (tag == type.getNameTag())
-      setNameInternal(val, true);
-    else
-      ((HDI_OnlineString) items.get(tag)).set(updateString(getTagString(tag), val));
+    {
+      setNameInternal(newValue, true);
+      return;
+    }
+
+    boolean changed = HDI_OnlineString.valueChanged(name.get(), newValue);
+    ((HDI_OnlineString) items.get(tag)).set(newValue);
+    if (changed) modifyNow();
   }
 
 //---------------------------------------------------------------------------
@@ -462,8 +460,8 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     if (item.get().equals(newBibDate)) return;
 
-    modifyNow();
     item.set(newBibDate);
+    modifyNow();
   }
 
 //---------------------------------------------------------------------------
@@ -475,8 +473,8 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     if (item.get() == val) return;
 
-    modifyNow();
     item.set(val);
+    modifyNow();
   }
 
 //---------------------------------------------------------------------------
@@ -488,8 +486,8 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     if (item.get() == val) return;
 
-    modifyNow();
     item.set(val);
+    modifyNow();
   }
 
 //---------------------------------------------------------------------------
