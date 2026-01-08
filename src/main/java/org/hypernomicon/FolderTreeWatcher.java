@@ -223,7 +223,7 @@ public class FolderTreeWatcher
 
     private void doImport(FilePath filePath)
     {
-      if (alreadyImporting || (ui.windows.getOutermostModality() != Modality.NONE)) return;
+      if (alreadyImporting || App.dragInProgress || (ui.windows.getOutermostModality() != Modality.NONE)) return;
 
       Platform.runLater(() ->
       {

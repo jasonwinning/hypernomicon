@@ -109,6 +109,8 @@ public final class App extends Application
 
   public final Property<Table<ShortcutContext, ShortcutAction, Shortcut>> shortcuts = new SimpleObjectProperty<>();
 
+  public static volatile boolean dragInProgress = false;
+
   public static double displayScale;
   public static boolean jxBrowserInitialized = false,
                         jxBrowserDisabled    = false;

@@ -20,6 +20,7 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.tree.AbstractTreeRow;
 
@@ -81,6 +82,8 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
     dragMilliCtr = 0L;
     lastDragX = -1;
     lastDragY = -1;
+
+    App.dragInProgress = false;
   }
 
 //---------------------------------------------------------------------------
@@ -142,6 +145,8 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       {
         if ((cell.getItem() == null) || event.isBackButtonDown() || event.isForwardButtonDown()) return;
 
+        App.dragInProgress = true;
+
         Dragboard dragBoard = cell.startDragAndDrop(TransferMode.COPY, TransferMode.MOVE);
         startDrag(cell.getItem());
         ClipboardContent content = new ClipboardContent();
@@ -166,6 +171,8 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       {
         logThrowable(th);
       }
+
+      App.dragInProgress = false;
 
       event.consume();
     });
