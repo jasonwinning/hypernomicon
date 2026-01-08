@@ -22,7 +22,6 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import org.hypernomicon.bib.BibEntry;
-import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.reports.ReportGenerator;

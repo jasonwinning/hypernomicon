@@ -25,7 +25,6 @@ import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.*;
 
-import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.EntryType;
@@ -304,6 +303,43 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
       :
         makeSortKeyByType(e1.getStr(bfTitle), hdtWork).compareTo(makeSortKeyByType(e2.getStr(bfTitle), hdtWork));
     };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected enum BibEntryRelation { Parent, Sibling, Child }
+
+  protected record RelatedBibEntry(BibEntryRelation relation, BibEntry<?, ?> entry) { }
+
+//---------------------------------------------------------------------------
+
+  protected void updateRelative(RelatedBibEntry relative)
+  {
+    relative.entry.setStr(bfVolume   , getStr(bfVolume   ));
+    relative.entry.setStr(bfPublisher, getStr(bfPublisher));
+    relative.entry.setStr(bfPubLoc   , getStr(bfPubLoc   ));
+    relative.entry.setStr(bfEdition  , getStr(bfEdition  ));
+
+    switch (relative.relation)
+    {
+      case Child:
+
+        relative.entry.setMultiStr(bfContainerTitle, getMultiStr(bfTitle));
+        break;
+
+      case Parent:
+
+        relative.entry.setMultiStr(bfTitle, getMultiStr(bfContainerTitle));
+        break;
+
+      case Sibling:
+
+        relative.entry.setMultiStr(bfContainerTitle, getMultiStr(bfContainerTitle));
+        break;
+    }
+
+    syncBookAuthorsTo(relative);
   }
 
 //---------------------------------------------------------------------------

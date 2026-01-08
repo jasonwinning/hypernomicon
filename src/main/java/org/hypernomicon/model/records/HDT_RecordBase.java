@@ -422,7 +422,7 @@ public abstract class HDT_RecordBase implements HDT_Record
       return;
     }
 
-    boolean changed = HDI_OnlineString.valueChanged(name.get(), newValue);
+    boolean changed = HDI_OnlineString.valueChanged(getTagString(tag), newValue);
     ((HDI_OnlineString) items.get(tag)).set(newValue);
     if (changed) modifyNow();
   }

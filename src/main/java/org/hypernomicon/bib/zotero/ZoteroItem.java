@@ -20,7 +20,6 @@ package org.hypernomicon.bib.zotero;
 import java.util.*;
 
 import org.hypernomicon.bib.BibEntry;
-import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.BibField.BibFieldType;
 import org.hypernomicon.bib.reports.ReportGenerator;
@@ -120,7 +119,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   static ZoteroItem create(ZoteroWrapper zWrapper, JsonObj jObj)
   {
-    String itemTypeStr = jObj.getObj("data").getStrSafe("itemType").toLowerCase();
+    String itemTypeStr = jObj.getObj("data").getStrSafe(entryTypeKey).toLowerCase();
 
     return (strNullOrEmpty(itemTypeStr) || nonItemTypes.contains(itemTypeStr)) ? null : new ZoteroItem(zWrapper, jObj, false);
   }
@@ -359,7 +358,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   @Override public BibliographicDate getDateFromJson()
   {
-    // Don't use parsedDate from meta Json node for year because we may lose whether it is supposed to be a negative (BC) year
+    // Don't use parsedDate from meta JSON node for year because we may lose whether it is supposed to be a negative (BC) year
 
     int day = 0, month = 0;
 
@@ -984,6 +983,29 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   @Override protected String getUserID()
   {
     return jObj.condObj("library").condStrOrBlank("id");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected void updateRelative(RelatedBibEntry relative)
+  {
+    super.updateRelative(relative);
+
+    ZoteroItem otherItem = (ZoteroItem) relative.entry();
+
+    if (((getEntryType() != EntryType.etBook) && (getEntryType() != EntryType.etBookChapter)) ||
+        ((otherItem.getEntryType() != EntryType.etBook) && (otherItem.getEntryType() != EntryType.etBookChapter)))
+      return;
+
+    // Maybe should consider presenting the option to copy originalDate, originalPlace, and originalPublisher to the relative
+    // but this should not be done silently/automatically.
+
+    noOp();
+
+//    otherItem.jData.put("originalDate"     , jData.getStrSafe("originalDate"     ));
+//    otherItem.jData.put("originalPlace"    , jData.getStrSafe("originalPlace"    ));
+//    otherItem.jData.put("originalPublisher", jData.getStrSafe("originalPublisher"));
   }
 
 //---------------------------------------------------------------------------

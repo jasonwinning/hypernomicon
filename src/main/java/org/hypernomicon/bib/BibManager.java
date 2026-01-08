@@ -28,7 +28,6 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.bib.data.EntryType.*;
-import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
@@ -44,6 +43,8 @@ import java.util.stream.Stream;
 
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
+import org.hypernomicon.bib.BibEntry.BibEntryRelation;
+import org.hypernomicon.bib.BibEntry.RelatedBibEntry;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
@@ -600,12 +601,6 @@ public final class BibManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public enum BibEntryRelation { Parent, Sibling, Child }
-
-  public record RelatedBibEntry(BibEntryRelation relation, BibEntry<?, ?> entry) { }
-
-//---------------------------------------------------------------------------
-
   private void updateRightPane()
   {
     htRelatives.clear();
@@ -633,9 +628,11 @@ public final class BibManager extends NonmodalWindow
 
     htRelatives.buildRows(list, (row, relative) ->
     {
-      row.setCellValue(0, relative.entry.getWork(), relative.relation.name());
-      row.setIconCellValue(1, relative.entry.getWork());
-      row.setCellValue(2, relative.entry.getWork(), relative.entry.getWork().defaultChoiceText());
+      HDT_Work work = relative.entry().getWork();
+
+      row.setCellValue(0, work, relative.relation().name());
+      row.setIconCellValue(1, work);
+      row.setCellValue(2, work, work.defaultChoiceText());
     });
   }
 
@@ -654,41 +651,10 @@ public final class BibManager extends NonmodalWindow
 
     BibEntry<?, ?> entry = curRow.getEntry();
 
-    list.forEach(relative -> updateRelative(relative, entry));
+    list.forEach(entry::updateRelative);
 
     refresh();
     ui.update();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void updateRelative(RelatedBibEntry relative, BibEntry<?, ?> entry)
-  {
-    relative.entry.setStr(bfVolume   , entry.getStr(bfVolume   ));
-    relative.entry.setStr(bfPublisher, entry.getStr(bfPublisher));
-    relative.entry.setStr(bfPubLoc   , entry.getStr(bfPubLoc   ));
-    relative.entry.setStr(bfEdition  , entry.getStr(bfEdition  ));
-
-    switch (relative.relation)
-    {
-      case Child:
-
-        relative.entry.setMultiStr(bfContainerTitle, entry.getMultiStr(bfTitle));
-        break;
-
-      case Parent:
-
-        relative.entry.setMultiStr(bfTitle, entry.getMultiStr(bfContainerTitle));
-        break;
-
-      case Sibling:
-
-        relative.entry.setMultiStr(bfContainerTitle, entry.getMultiStr(bfContainerTitle));
-        break;
-    }
-
-    entry.syncBookAuthorsTo(relative);
   }
 
 //---------------------------------------------------------------------------
@@ -765,7 +731,7 @@ public final class BibManager extends NonmodalWindow
       BibEntry<?, ?> parentEntry = libraryWrapper.getEntryByKey(work.largerWork.get().getBibEntryKey());
 
       if (parentEntry.getEntryType().isParent())
-        updateRelative(new RelatedBibEntry(BibEntryRelation.Child, entry), parentEntry);
+        parentEntry.updateRelative(new RelatedBibEntry(BibEntryRelation.Child, entry));
     }
 
     workRecordToAssign.setValue(null);

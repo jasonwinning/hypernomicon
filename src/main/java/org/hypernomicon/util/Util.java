@@ -600,7 +600,7 @@ public final class Util
    * you can always break on it.
    * @return Always returns null
    */
-  public static Object noOp()
+  public static Object noOpReturnNull()
   {
     assert Boolean.TRUE;
     return null;
@@ -614,10 +614,34 @@ public final class Util
    * @param ignoredObj The object to which nothing will be done.
    * @return Always returns null
    */
-  public static Object noOp(Object ignoredObj)
+  public static Object noOpReturnNull(Object ignoredObj)
   {
     assert Boolean.TRUE;
     return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Operation having no side effects that the compiler will not know how to optimize away, so
+   * you can always break on it.
+   */
+  public static void noOp()
+  {
+    assert Boolean.TRUE;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Consume an object by doing nothing to it, to avoid compiler warnings and such.
+   * @param ignoredObj The object to which nothing will be done.
+   */
+  public static void noOp(Object ignoredObj)
+  {
+    assert Boolean.TRUE;
   }
 
 //---------------------------------------------------------------------------

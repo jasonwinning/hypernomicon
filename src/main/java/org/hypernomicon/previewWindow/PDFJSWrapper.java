@@ -814,17 +814,6 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void loadHtml(String html)
-  {
-    switchToPreviewDisplay();
-
-    cleanupPdfHtml();
-    browser.loadHTML(html);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   void loadFile(FilePath file, boolean isHtml) throws IOException
   {
     switchToPreviewDisplay();
@@ -858,10 +847,11 @@ public class PDFJSWrapper
     Runnable runnable = () ->
     {
       opened = false;
-      boolean readyToOpen = false;
 
       if (wasPdfjsMode == false)
       {
+        boolean readyToOpen = false;
+
         for (int ndx = 0; (ndx < 20) && (readyToOpen == false); ndx++)
         {
           readyToOpen = browser.executeJavaScriptAndReturnValue("'openPdfFile' in window").getBooleanValue();
