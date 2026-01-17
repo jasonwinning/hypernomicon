@@ -29,8 +29,6 @@ import org.controlsfx.control.BreadCrumbBar;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.*;
 
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
@@ -62,18 +60,11 @@ public class ChooseParentDlgCtrlr extends ModalDialog
   {
     super("tree/ChooseParentDlg", "Record Select", true, true);
 
-    popupTree = new TreeWrapper(bcbPath, false, new ComboBox<>());
+    popupTree = new TreeWrapper(bcbPath, false, null);
     this.child = child;
     parent = null;
 
-    tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell  ()));
-    tcDesc.setCellValueFactory(row -> new SimpleStringProperty  (row.getValue().getValue().getDescString()));
-
-    addTooltipToStringColumn(tcName);
-    addTooltipToStringColumn(tcDesc);
-
-    tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
-    tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
+    TreeWrapper.initTreeColumns(tcName, tcLinked, tcDesc);
 
     popupTree.reset(ttv, true, true);
 

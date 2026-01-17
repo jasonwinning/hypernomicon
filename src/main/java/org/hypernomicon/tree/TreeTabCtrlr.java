@@ -50,8 +50,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Worker;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -336,26 +334,21 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     ttv = treeCtrlr.ttv;
 
-    treeCtrlr.tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell()));
-    treeCtrlr.tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
-
-    addTooltipToStringColumn(treeCtrlr.tcName);
-    addTooltipToStringColumn(treeCtrlr.tcDesc);
-
-    treeCtrlr.tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
-    treeCtrlr.tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
+    TreeWrapper.initTreeColumns(treeCtrlr.tcName, treeCtrlr.tcLinked, treeCtrlr.tcDesc);
 
     ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
-      boolean clearWV = true, clearPreview = true;
-
       tree.setBreadCrumb(newValue);
+
+      boolean clearWV = true, clearPreview = true;
 
       if (newValue != null)
       {
-        ui.updateBottomPanel(true, false);
-
         TreeRow row = newValue.getValue();
+
+        tree.rowSelectionChanged(row);
+
+        ui.updateBottomPanel(true, false);
 
         HDT_Record record = row.getRecord();
         if (record != null)

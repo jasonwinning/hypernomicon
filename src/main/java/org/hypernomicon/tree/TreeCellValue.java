@@ -20,6 +20,8 @@ package org.hypernomicon.tree;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 
+import javafx.scene.control.TreeItem;
+
 import static org.hypernomicon.model.records.RecordType.*;
 
 //---------------------------------------------------------------------------
@@ -51,13 +53,13 @@ class TreeCellValue implements Comparable<TreeCellValue>
 
   @Override public int compareTo(TreeCellValue other)
   {
-    HDT_Record record1 = row == null ? null : row.getRecord();
-    HDT_Record record2 = other.row == null ? null : other.row.getRecord();
+    HDT_Record record1 = row == null ? null : row.getRecord(),
+               record2 = other.row == null ? null : other.row.getRecord();
 
     if ((HDT_Record.isEmpty(record1, false) == false) && (HDT_Record.isEmpty(record2, false) == false))
     {
       if ((record1.getType() == hdtWork) && (record2.getType() == hdtWork))
-        return ((HDT_Work)record1).compareTo((HDT_Work)record2);
+        return ((HDT_Work) record1).compareTo((HDT_Work) record2);
     }
 
     return key.compareTo(other.key);
@@ -97,6 +99,24 @@ class TreeCellValue implements Comparable<TreeCellValue>
     };
 
     return prefix + toString().toLowerCase();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  String buildPathStr()
+  {
+    StringBuilder sb = new StringBuilder();
+    TreeItem<TreeRow> current = row.getTreeItem().getParent();
+
+    while ((current != null) && (current.getValue() != null))
+    {
+      sb.insert(0, current.getValue().getName() + " > ");
+      current = current.getParent();
+    }
+
+    sb.append(row.getName());
+    return sb.toString();
   }
 
 //---------------------------------------------------------------------------

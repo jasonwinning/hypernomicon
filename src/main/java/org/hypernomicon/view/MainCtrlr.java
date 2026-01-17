@@ -239,14 +239,11 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final class CreateMenuItems
+  private record CreateMenuItems(List<MenuItem> list1, List<MenuItem> list2)
   {
-    private final List<MenuItem> list1, list2;
-
     private CreateMenuItems(MenuButton mb, SplitMenuButton smb)
     {
-      list1 = mb.getItems();
-      list2 = smb.getItems();
+      this(mb.getItems(), smb.getItems());
 
       list1.clear();
       list2.clear();
@@ -2272,9 +2269,9 @@ public final class MainCtrlr
                focusedRecord = getFocusedRecord(),
                record;
 
-    if ((activeRecord == focusedRecord) || strNullOrEmpty(focusedRecord.getSearchKey()))
+    if ((activeRecord == focusedRecord) || (focusedRecord == null) || strNullOrEmpty(focusedRecord.getSearchKey()))
       record = activeRecord;
-    else if (strNullOrEmpty(activeRecord.getSearchKey()))
+    else if ((activeRecord == null) || strNullOrEmpty(activeRecord.getSearchKey()))
       record = focusedRecord;
     else
       record = getSelectedRecordAskIfNeeded();

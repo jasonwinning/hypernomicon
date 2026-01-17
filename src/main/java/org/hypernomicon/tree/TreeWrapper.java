@@ -39,6 +39,8 @@ import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.view.MainCtrlr;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
@@ -71,7 +73,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     this.hasTerms = hasTerms;
     this.bcbPath = bcbPath;
 
-    tcb = new TreeCB(comboBox, this);
+    tcb = comboBox == null ? null : new TreeCB(comboBox, this);
 
     debateTree = new TreeModel<>(this, tcb);
     noteTree   = new TreeModel<>(this, tcb);
@@ -174,7 +176,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
         ttv.getRoot().getChildren().clear();
     }
 
-    tcb.clear();
+    if (tcb != null) tcb.clear();
 
     debateTree.clear();
     noteTree  .clear();
@@ -192,26 +194,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       clear();
 
       this.ttv = ttv;
-
-      //---------------------------------------------------------------------------
-
-      ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
-      {
-        if ((newValue != null) && (newValue.getValue() != null))
-        {
-          TreeRow row = newValue.getValue();
-          if (row.getRecordType() != hdtNone)
-          {
-            if (selectingFromCB == false)
-              tcb.select(row.getRecord());
-
-            return;
-          }
-        }
-
-        if (selectingFromCB == false)
-          tcb.clearSelection();
-      });
 
     //---------------------------------------------------------------------------
 
@@ -293,7 +275,20 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     else
       ttv.sort();
 
-    tcb.refresh();
+    if (tcb != null) tcb.refresh();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void rowSelectionChanged(TreeRow row)
+  {
+    if (tcb == null) throw newAssertionError(11815);
+
+    if ((row == null) || (row.getRecordType() == hdtNone))
+      tcb.clearSelection();
+    else if (selectingFromCB == false)
+      tcb.select(row.getRecord());
   }
 
 //---------------------------------------------------------------------------
@@ -317,6 +312,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   public void find(boolean forward, boolean nameOnly)
   {
+    if (tcb == null) throw newAssertionError(11812);
+
     HDT_Record record = tcb.selectedRecord();
     String text;
 
@@ -408,6 +405,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   public void findAgain()
   {
+    if (tcb == null) throw newAssertionError(11813);
+
     if (lastSearchTerm.isBlank())
     {
       ui.goToRecord(tcb.selectedRecord(), false);
@@ -419,6 +418,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   void findAgain(boolean down)
   {
+    if (tcb == null) throw newAssertionError(11814);
+
     find(lastSearchTerm, down, searchingNameOnly);
   }
 
@@ -614,6 +615,35 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     }
 
     bcbPath.setSelectedCrumb(head);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void initTreeColumns(TreeTableColumn<TreeRow, TreeCellValue> tcName, TreeTableColumn<TreeRow, TreeRow> tcLinked, TreeTableColumn<TreeRow, String> tcDesc)
+  {
+    tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell  ()));
+    tcDesc.setCellValueFactory(row -> new SimpleStringProperty  (row.getValue().getValue().getDescString()));
+
+    tcName.setCellFactory(col -> new TreeTableCell<>() { @Override protected void updateItem(TreeCellValue item, boolean empty)
+    {
+      super.updateItem(item, empty);
+
+      if (empty || (item == null))
+      {
+        setText(null);
+        setTooltip(null);
+        return;
+      }
+
+      setText(item.toString());
+      setTooltip(makeTooltip(item.buildPathStr()));
+    }});
+
+    addTooltipToStringColumn(tcDesc);
+
+    tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
+    tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
   }
 
 //---------------------------------------------------------------------------
