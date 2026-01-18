@@ -94,9 +94,8 @@ public class SettingsDlgCtrlr extends ModalDialog
   @FXML private TabPane tpMain;
   @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfLogPath, tfOffice, tfVerificationCode;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
+  @FXML private TreeView<SettingsPage> treeView;
   @FXML private VBox vbRefMgr;
-
-  @FXML TreeView<SettingsPage> treeView;
 
   private final HyperCB hcbDefaultChapterWorkType;
   private final StringProperty authUrl;

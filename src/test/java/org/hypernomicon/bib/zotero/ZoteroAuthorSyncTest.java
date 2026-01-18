@@ -15,24 +15,19 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.bib.zotero;
 
-import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 
-import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthorsStandalone;
 import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.bib.zotero.ZoteroItem;
-import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
@@ -100,30 +95,6 @@ class ZoteroAuthorSyncTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static HDT_Work createWorkForEntry(BibEntry<?, ?> entry)
-  {
-    return createWorkForEntry(db, entry);
-  }
-
-  static HDT_Work createWorkForEntry(TestHyperDB db, BibEntry<?, ?> entry)
-  {
-    assertThatThisIsUnitTestThread();
-
-    HDT_Work work = db.createNewBlankRecord(RecordType.hdtWork);
-
-    work.getBibData().copyAllFieldsFrom(entry, false, false);
-
-    entry.getAuthors().normalizedList(false).forEach(bibAuthor ->
-      work.getAuthors().add(new RecordAuthor(work, bibAuthor.getName(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), Ternary.Unset)));
-
-    work.setBibEntryKey(entry.getKey());
-
-    return work;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private static JsonArray exportCreatorsArray(ZoteroItem entry)
   {
     return assertDoesNotThrow(() -> JsonObj.parseJsonObj(entry.exportStandaloneJsonObj(false).toString()).getObj("data").getArray("creators"));
@@ -160,7 +131,7 @@ class ZoteroAuthorSyncTest
 
     ZoteroItem chapterEntry = ZoteroItem.createForUnitTest(zWrapper, jData);
 
-    HDT_Work work = createWorkForEntry(chapterEntry);
+    HDT_Work work = db.createWorkForEntry(chapterEntry);
 
     assertEquals(1, work.getAuthors().size());
     assertTrue(chapterEntry.isSynced());
@@ -212,7 +183,7 @@ class ZoteroAuthorSyncTest
 
     ZoteroItem magArtEntry = ZoteroItem.createForUnitTest(zWrapper, jData);
 
-    HDT_Work work = createWorkForEntry(magArtEntry);
+    HDT_Work work = db.createWorkForEntry(magArtEntry);
 
     assertEquals(2, work.getAuthors().size());
     assertTrue(magArtEntry.isSynced());

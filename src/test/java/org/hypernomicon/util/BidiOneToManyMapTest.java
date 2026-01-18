@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,7 +26,6 @@ import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.unities.MainText;
-import org.hypernomicon.util.BidiOneToManyMap;
 
 import org.junit.jupiter.api.*;
 

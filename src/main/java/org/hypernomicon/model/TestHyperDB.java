@@ -38,6 +38,9 @@ import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.authors.RecordAuthor;
+import org.hypernomicon.model.items.Ternary;
+import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.PopupRobot;
 import org.hypernomicon.util.VersionNumber;
@@ -292,6 +295,25 @@ public final class TestHyperDB extends AbstractHyperDB
     unlinkBibLibraryForUnitTest();
 
     works.forEach(work -> work.setBibEntryKey(""));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HDT_Work createWorkForEntry(BibEntry<?, ?> entry)
+  {
+    assertThatThisIsUnitTestThread();
+
+    HDT_Work work = createNewBlankRecord(RecordType.hdtWork);
+
+    work.getBibData().copyAllFieldsFrom(entry, false, false);
+
+    entry.getAuthors().normalizedList(false).forEach(bibAuthor ->
+      work.getAuthors().add(new RecordAuthor(work, bibAuthor.getName(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), Ternary.Unset)));
+
+    work.setBibEntryKey(entry.getKey());
+
+    return work;
   }
 
 //---------------------------------------------------------------------------

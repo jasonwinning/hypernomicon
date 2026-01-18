@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.model.unities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,7 +23,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.unities.HDT_Hub;
 
 import org.junit.jupiter.api.*;
 

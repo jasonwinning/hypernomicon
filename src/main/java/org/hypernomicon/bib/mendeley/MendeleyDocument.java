@@ -127,7 +127,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
    * @param newType Entry type
    * @return The new document
    */
-  public static MendeleyDocument createForUnitTest(MendeleyWrapper mWrapper, JsonObj jObj, EntryType newType)
+  static MendeleyDocument createForUnitTest(MendeleyWrapper mWrapper, JsonObj jObj, EntryType newType)
   {
     MendeleyDocument entry = new MendeleyDocument(mWrapper, jObj, newType);
 

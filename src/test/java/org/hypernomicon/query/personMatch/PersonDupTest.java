@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.query.personMatch;
 
 import java.util.*;
 
@@ -25,8 +25,6 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.query.personMatch.PersonForDupCheck;
-import org.hypernomicon.query.personMatch.PersonMatcher;
 
 import static org.hypernomicon.model.records.RecordType.*;
 
@@ -253,7 +251,7 @@ class PersonDupTest
 
     assertEquals(21, result.size(), "We should get exactly 21 matches; all the skip-criteria removed 8 candidates");
 
-    // B) None of the SKIPPED candidates’ authors appear:
+    // B) None of the SKIPPED candidates' authors appear:
 
     Set<Integer> skippedSet = new LinkedHashSet<>(List.of(0, 7, 16, 17, 19, 20, 22, 26));
 

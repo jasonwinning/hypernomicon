@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.model.relations;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +25,6 @@ import org.junit.jupiter.api.*;
 
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.relations.HyperObjSubList;
 
 import static org.hypernomicon.model.records.RecordType.*;
 

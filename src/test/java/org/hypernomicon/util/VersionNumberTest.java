@@ -15,11 +15,11 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.hypernomicon.util.VersionNumber;
+import org.hypernomicon.App;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

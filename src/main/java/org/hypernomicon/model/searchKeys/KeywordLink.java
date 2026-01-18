@@ -30,7 +30,7 @@ public class KeywordLink
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final int offset, length;
+  private final int offset, length;
   private final KeywordBinding binding;
   private final HDT_Record record;
   private Set<KeywordBinding> bindings;

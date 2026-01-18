@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.model.relations;
 
 import static org.hypernomicon.model.records.RecordType.*;
 
@@ -25,8 +25,6 @@ import java.util.*;
 
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.relations.HyperSubjList;
-import org.hypernomicon.model.relations.HyperSubjSubList;
 
 import org.junit.jupiter.api.*;
 

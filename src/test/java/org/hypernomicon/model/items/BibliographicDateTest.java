@@ -15,14 +15,11 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.model.items;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.commons.lang3.compare.ComparableUtils;
-
-import org.hypernomicon.model.items.BibliographicDate;
-import org.hypernomicon.model.items.BibliographicYear;
 
 import org.junit.jupiter.api.Test;
 

@@ -15,15 +15,13 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-
-import org.hypernomicon.util.PageRange;
 
 //---------------------------------------------------------------------------
 

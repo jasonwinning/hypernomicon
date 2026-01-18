@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.bib.data;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +27,6 @@ import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.StringUtil.*;
 
 import org.hypernomicon.bib.authors.BibAuthors;
-import org.hypernomicon.bib.data.RISBibData;
 import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.BibliographicYear;

@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.bib.zotero;
 
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.zotero.ZoteroAuthors.*;
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.EnumSet;
 
 import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.util.json.JsonArray;

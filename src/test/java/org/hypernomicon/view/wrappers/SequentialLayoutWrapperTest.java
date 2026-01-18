@@ -15,15 +15,13 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.view.wrappers;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
-
-import org.hypernomicon.view.wrappers.SequentialLayoutWrapper;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.FxTestUtil.*;

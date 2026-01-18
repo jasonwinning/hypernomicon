@@ -15,11 +15,10 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.bib.authors;
 
 import java.util.List;
 
-import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.AuthorStandalone;

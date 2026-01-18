@@ -38,13 +38,13 @@ import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
-public class ZoteroAuthors extends BibAuthors
+class ZoteroAuthors extends BibAuthors
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final ImmutableTable<EntryType, String, AuthorType> creatorTypes = buildCreatorTypes();
+  static final ImmutableTable<EntryType, String, AuthorType> creatorTypes = buildCreatorTypes();
 
   private final JsonArray creatorsArr;
   private final EntryType entryType;

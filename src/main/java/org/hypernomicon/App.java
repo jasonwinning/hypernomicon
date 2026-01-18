@@ -371,7 +371,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void checkForNewVersionInThisThread(Consumer<VersionNumber> successHndlr, Runnable failHndlr)
+  public static void checkForNewVersionInThisThread(Consumer<VersionNumber> successHndlr, Runnable failHndlr)
   {
     try
     {

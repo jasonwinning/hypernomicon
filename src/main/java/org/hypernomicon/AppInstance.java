@@ -25,7 +25,7 @@ import org.hypernomicon.util.filePath.FilePath;
 
 //---------------------------------------------------------------------------
 
-public class AppInstance
+class AppInstance
 {
 
 //---------------------------------------------------------------------------

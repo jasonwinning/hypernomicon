@@ -1,6 +1,7 @@
 *~
 .DS_Store
 .settings
+.claude
 sh.exe.stackdump
 qodana.yaml
 .classpath

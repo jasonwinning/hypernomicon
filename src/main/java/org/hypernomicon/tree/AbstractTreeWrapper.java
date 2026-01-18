@@ -51,8 +51,8 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
   public final TreeItem<RowType> selectedItem() { return getSelectionModel().getSelectedItem(); }
   public final HDT_Record selectedRecord()      { return nullSwitch(selectedItem(), null, treeItem -> nullSwitch(treeItem.getValue(), null, RowType::getRecord)); }
 
-  public final void selectRow(TreeRow row, boolean fromCB) { selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), fromCB); }
-  protected TreeItem<RowType> getTreeItem(RowType treeRow) { return treeRow.getTreeItem(); }
+  protected final void selectRow(TreeRow row, boolean fromCB) { selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), fromCB); }
+  protected TreeItem<RowType> getTreeItem(RowType treeRow)    { return treeRow.getTreeItem(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

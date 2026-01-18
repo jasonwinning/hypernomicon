@@ -63,7 +63,7 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void clearCollapseBufferForTest()
+  static void clearCollapseBufferForTest()
   {
     assertThatThisIsUnitTestThread();
 

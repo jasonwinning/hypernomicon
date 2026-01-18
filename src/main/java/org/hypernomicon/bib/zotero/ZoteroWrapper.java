@@ -108,8 +108,6 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
   static JsonObj getTemplate(EntryType type)   { return templates.get(type); }
 
-  public static ZoteroWrapper createForTesting() throws HyperDataException { return new ZoteroWrapper(null, "", ""); }
-
   @Override public LibraryType type()          { return LibraryType.ltZotero; }
   @Override public String entryFileNode()      { return "items"; }
   @Override public String collectionFileNode() { return "collections"; }
@@ -136,12 +134,21 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static ZoteroWrapper createForTesting() throws HyperDataException
+  {
+    assertThatThisIsUnitTestThread();
+    return new ZoteroWrapper(null, "", "");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static JsonObj getTemplateInitIfNecessary(EntryType type) throws IOException, ParseException, HDB_InternalError
   {
     if (templates == null)
       initTemplates();
 
-    return templates.get(type);
+    return templates.get(type).deepCopy();
   }
 
 //---------------------------------------------------------------------------

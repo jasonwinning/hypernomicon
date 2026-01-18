@@ -15,11 +15,10 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.bib.zotero;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.hypernomicon.bib.zotero.ZoteroDate;
 import org.hypernomicon.model.items.BibliographicDate;
 
 import org.junit.jupiter.api.Test;

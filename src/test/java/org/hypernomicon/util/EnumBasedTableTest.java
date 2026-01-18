@@ -15,13 +15,11 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.Table;
-
-import org.hypernomicon.util.EnumBasedTable;
 
 import org.junit.jupiter.api.Test;
 

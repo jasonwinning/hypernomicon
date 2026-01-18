@@ -15,18 +15,15 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.bib.mendeley;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
-import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthorsStandalone;
 import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.bib.mendeley.MendeleyDocument;
-import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.authors.Author.AuthorType;
 import org.hypernomicon.model.authors.RecordAuthor;
@@ -85,14 +82,6 @@ class MendeleyAuthorSyncTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static HDT_Work createWorkForEntry(BibEntry<?, ?> entry)
-  {
-    return ZoteroAuthorSyncTest.createWorkForEntry(db, entry);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private static JsonObj exportJsonObj(MendeleyDocument entry)
   {
     return assertDoesNotThrow(() -> JsonObj.parseJsonObj(entry.exportStandaloneJsonObj(false).toString()));
@@ -123,7 +112,7 @@ class MendeleyAuthorSyncTest
 
     MendeleyDocument chapterEntry = MendeleyDocument.createForUnitTest(mWrapper, originalEntryJson, EntryType.etBookChapter);
 
-    HDT_Work work = createWorkForEntry(chapterEntry);
+    HDT_Work work = db.createWorkForEntry(chapterEntry);
 
     assertEquals(2, work.getAuthors().size());
     assertTrue(chapterEntry.isSynced());
@@ -168,7 +157,7 @@ class MendeleyAuthorSyncTest
 
     MendeleyDocument jrnArtEntry = MendeleyDocument.createForUnitTest(mWrapper, originalEntryJson, EntryType.etJournalArticle);
 
-    HDT_Work work = createWorkForEntry(jrnArtEntry);
+    HDT_Work work = db.createWorkForEntry(jrnArtEntry);
 
     assertEquals(2, work.getAuthors().size());
     assertTrue(jrnArtEntry.isSynced());

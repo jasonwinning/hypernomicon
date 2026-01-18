@@ -134,7 +134,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
    * @param jData Customized template
    * @return The new item
    */
-  public static ZoteroItem createForUnitTest(ZoteroWrapper zWrapper, JsonObj jData)
+  static ZoteroItem createForUnitTest(ZoteroWrapper zWrapper, JsonObj jData)
   {
     ZoteroItem zItem = new ZoteroItem(zWrapper, jData);
 

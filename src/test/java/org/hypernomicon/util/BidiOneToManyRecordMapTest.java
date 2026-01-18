@@ -15,12 +15,11 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.util;
 
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
-import org.hypernomicon.util.BidiOneToManyRecordMap;
 
 import static org.hypernomicon.model.records.RecordType.*;
 

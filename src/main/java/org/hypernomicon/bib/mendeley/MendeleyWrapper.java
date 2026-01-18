@@ -101,8 +101,6 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
 //---------------------------------------------------------------------------
 
-  public static MendeleyWrapper createForTesting(String userID) throws HyperDataException { return new MendeleyWrapper(null, userID, ""); }
-
   @Override public LibraryType type()          { return LibraryType.ltMendeley; }
   @Override public String entryFileNode()      { return "documents"; }
   @Override public String collectionFileNode() { return "folders"; }
@@ -146,6 +144,15 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
     }, ex -> noOp());
 
     return wrapper;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static MendeleyWrapper createForTesting(String userID) throws HyperDataException
+  {
+    assertThatThisIsUnitTestThread();
+    return new MendeleyWrapper(null, userID, "");
   }
 
 //---------------------------------------------------------------------------

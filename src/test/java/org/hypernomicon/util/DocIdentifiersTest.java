@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.bib.mendeley;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,8 +23,8 @@ import java.util.prefs.Preferences;
 
 import static org.hypernomicon.util.StringUtil.*;
 
+import org.hypernomicon.App;
 import org.hypernomicon.Const.PrefKey;
-import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;

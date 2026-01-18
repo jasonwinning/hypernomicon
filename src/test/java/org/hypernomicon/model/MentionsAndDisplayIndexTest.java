@@ -15,9 +15,8 @@
  *
  */
 
-package org.hypernomicon;
+package org.hypernomicon.model;
 
-import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.authors.RecordAuthors;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.*;
