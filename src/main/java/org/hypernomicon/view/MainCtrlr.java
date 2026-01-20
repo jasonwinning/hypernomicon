@@ -844,14 +844,27 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    // Override CTRL-H for textfields and text areas, which for some reason is mapped to act like Backspace
-
     if (IS_OS_MAC == false) stage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
+      // Override CTRL-H for textfields and text areas, which for some reason is mapped to act like Backspace
+
       if ((event.getCode() == KeyCode.H) && event.isShortcutDown())
       {
         if (db.isOnline()) chbBack.showMenu();
         event.consume();
+        return;
+      }
+
+      // This is a workaround for: https://bugs.openjdk.org/browse/JDK-8287424
+      // When a letter is pressed with ALT + another modifier, fire ESCAPE to clear mnemonic state.
+
+      if (event.getCode().isLetterKey() && event.isAltDown() && (event.isControlDown() || event.isShiftDown() || event.isMetaDown()))
+      {
+        Platform.runLater(() ->
+        {
+          KeyEvent escapeEvent = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE, false, false, false, false);
+          stage.getScene().getRoot().fireEvent(escapeEvent);
+        });
       }
     });
 
