@@ -26,6 +26,8 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 
@@ -94,6 +96,112 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public enum UrlOpenAction
+  {
+    BROWSE_WEB,   // Open in browser via Desktop.browse or openSystemSpecific
+    LAUNCH_FILE,  // Open as file via launchFile
+    INVALID       // Do not proceed; show error if errorMessage is non-null
+  }
+
+  /**
+   * Result of processing a URL/path string for opening.
+   *
+   * @param action      the action to take (BROWSE_WEB, LAUNCH_FILE, or INVALID)
+   * @param urlString   the URL/path string (or file path for LAUNCH_FILE)
+   * @param uri         the constructed URI (Windows/Mac BROWSE_WEB only; null for Linux or other actions)
+   * @param errorMessage error message for INVALID action (null otherwise)
+   */
+  record UrlOpenResult(UrlOpenAction action, String urlString, URI uri, String errorMessage) { }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Processes a URL/path string and determines how it should be opened.
+   * This method contains all the business logic for URL transformation and URI construction,
+   * without any side effects, making it fully unit-testable.
+   *
+   * @param url the URL or path string to process
+   * @param extPathAvailable whether the external file path is configured (db.extPath() != null)
+   * @return a UrlOpenResult indicating the action to take, the URL string, constructed URI, and any error message
+   */
+  static UrlOpenResult processWebLink(String url, boolean extPathAvailable)
+  {
+    url = url.strip();
+
+    if (url.isEmpty())
+      return new UrlOpenResult(UrlOpenAction.INVALID, null, null, null);
+
+    if (url.startsWith(EXT_1) && (extPathAvailable == false))
+      return new UrlOpenResult(UrlOpenAction.INVALID, null, null, WorkTabCtrlr.NO_EXT_PATH_MESSAGE);
+
+    // Check for Unix-style absolute paths on Mac/Linux (before checking for colons,
+    // since colons are valid in Unix filenames like "/path/to/Meeting: Notes.txt")
+    // Exclude "//" which could be a protocol-relative URL
+
+    if ((IS_OS_MAC || IS_OS_LINUX) && url.startsWith("/") && (url.startsWith("//") == false))
+      return new UrlOpenResult(UrlOpenAction.LAUNCH_FILE, url, null, null);
+
+    // Check for tilde paths (home directory) on Mac/Linux
+
+    if ((IS_OS_MAC || IS_OS_LINUX) && url.startsWith("~"))
+    {
+      String relativePart = url.startsWith("~/") ? url.substring(2) : url.substring(1),
+             expandedPath = homeDir().resolve(relativePart).toString();
+
+      return new UrlOpenResult(UrlOpenAction.LAUNCH_FILE, expandedPath, null, null);
+    }
+
+    if (url.contains(":"))
+    {
+      if (IS_OS_WINDOWS)
+      {
+        // Check to see if it is a file system path
+
+        boolean validFileSystemPath = true;
+
+        try
+        {
+          Paths.get(url);
+        }
+        catch (InvalidPathException e)
+        {
+          validFileSystemPath = false;
+        }
+
+        if (validFileSystemPath)
+          return new UrlOpenResult(UrlOpenAction.LAUNCH_FILE, url, null, null);
+      }
+    }
+    else if (url.startsWith("\\\\"))
+      url = "file:" + url.replace('\\', '/');  // Universal Naming Convention (UNC) path
+    else
+      url = "http://" + url;
+
+    // For BROWSE_WEB action: construct URI on Windows/Mac, skip on Linux
+
+    if (IS_OS_WINDOWS || IS_OS_MAC)
+    {
+      try
+      {
+        URI uri = new URI(escapeIllegalUriChars(url));
+        return new UrlOpenResult(UrlOpenAction.BROWSE_WEB, url, uri, null);
+      }
+      catch (URISyntaxException e)
+      {
+        String errorMsg = "An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e);
+        return new UrlOpenResult(UrlOpenAction.INVALID, url, null, errorMsg);
+      }
+    }
+
+    // Linux: return URL string without constructing URI
+
+    return new UrlOpenResult(UrlOpenAction.BROWSE_WEB, url, null, null);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static void openSystemSpecific(String pathStr)
   {
     StringBuilder sb = new StringBuilder();
@@ -113,77 +221,87 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void browseDesktop(String url)
+  private static void browseDesktop(String urlString, URI uri)
   {
     try
     {
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)))
       {
-        errorPopup("An error occurred while trying to browse to: " + url + '.');
+        errorPopup("An error occurred while trying to browse to: " + urlString + '.');
         return;
       }
 
-      Desktop.getDesktop().browse(makeURI(url));
+      Desktop.getDesktop().browse(uri);
     }
-    catch (IOException | URISyntaxException e)
+    catch (IOException e)
     {
-      errorPopup("An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e));
+      errorPopup("An error occurred while trying to browse to: " + urlString + ". " + getThrowableMessage(e));
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("deprecation")
-  private static URI makeURI(String url) throws URISyntaxException
+  /**
+   * RFC 3986 Appendix B regex for parsing URI components
+   */
+  private static final Pattern URI_PATTERN = Pattern.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+
+  /**
+   * Escapes all illegal printable ASCII characters in URIs per RFC 3986.
+   * <p>
+   * RFC 3986 Section 2 defines valid URI characters as:
+   * <ul>
+   *   <li>unreserved: A-Z a-z 0-9 - . _ ~</li>
+   *   <li>reserved: : / ? # [ ] @ ! $ &amp; ' ( ) * + , ; =</li>
+   *   <li>percent-encoded: %XX</li>
+   * </ul>
+   * All other printable ASCII characters are illegal: {@code space " < > [ ] \ ^ ` { | }}
+   * <p>
+   * Note: {@code [ ]} are reserved and only legal in the host portion for IPv6 addresses.
+   * They are escaped only in the path/query/fragment portion, not in the host.
+   * <p>
+   * Pre-escaping these allows the single-string URI constructor to succeed,
+   * preserving already-encoded characters like %20 (avoiding double-encoding).
+   */
+  private static String escapeIllegalUriChars(String url)
   {
-    if (url.contains(":") == false)
-      return new URI(url);
+    // Escape characters that are illegal everywhere in URIs
+    url = url.replace(" ", "%20")
+             .replace("{", "%7B")
+             .replace("}", "%7D")
+             .replace("|", "%7C")
+             .replace("\\", "%5C")
+             .replace("^", "%5E")
+             .replace("`", "%60")
+             .replace("<", "%3C")
+             .replace(">", "%3E")
+             .replace("\"", "%22");
 
-    int pos = url.indexOf(':');
-    String scheme = url.substring(0, pos),
-           ssp = safeSubstring(url, pos + 1, url.length());
+    // Brackets are only legal in the host portion (for IPv6).
+    // Use RFC 3986 regex to properly parse URI structure and escape brackets only in path/query/fragment.
 
-    if (ssp.contains("#") == false)
+    Matcher m = URI_PATTERN.matcher(url);
+    if (m.matches())
     {
-      try
-      {
-        return new URI(url);
-      }
-      catch (URISyntaxException e)
-      {
-        try
-        {
-          URL urlObj = new URL(url);
-          return new URI(urlObj.getProtocol(), urlObj.getUserInfo(), urlObj.getHost(), urlObj.getPort(), urlObj.getPath(), urlObj.getQuery(), urlObj.getRef());
-        }
-        catch (URISyntaxException | MalformedURLException e1)
-        {
-          return new URI(scheme, ssp, "");
-        }
-      }
+      String scheme    = m.group(1) != null ? m.group(1) : "";  // "http:" or ""
+      String authority = m.group(3) != null ? m.group(3) : "";  // "//host" or ""
+      String path      = m.group(5) != null ? m.group(5) : "";  // "/path" or ""
+      String query     = m.group(6) != null ? m.group(6) : "";  // "?query" or ""
+      String fragment  = m.group(8) != null ? m.group(8) : "";  // "#fragment" or ""
+
+      // Escape brackets only in path, query, and fragment, not in authority (IPv6)
+
+      path     = path.replace("[", "%5B").replace("]", "%5D");
+      query    = query.replace("[", "%5B").replace("]", "%5D");
+      fragment = fragment.replace("[", "%5B").replace("]", "%5D");
+
+      return scheme + authority + path + query + fragment;
     }
 
-    try
-    {
-      return new URI(url);  // Try this first because it doesn't do any escaping.
-    }
-    catch (URISyntaxException e)  // If that failed, try using URL class which is more lenient.
-    {
-      try
-      {
-        URL urlObj = new URL(url);
-        return urlObj.toURI();  // Preserves encoding without re-escaping
-      }
-      catch (MalformedURLException | URISyntaxException e1)
-      {
-        pos = ssp.indexOf('#');
-        String fragment = safeSubstring(ssp, pos + 1, ssp.length());
-        ssp = ssp.substring(0, pos);
+    // Fallback: escape brackets everywhere
 
-        return new URI(scheme, ssp, fragment);
-      }
-    }
+    return url.replace("[", "%5B").replace("]", "%5D");
   }
 
 //---------------------------------------------------------------------------
@@ -331,62 +449,26 @@ public final class DesktopUtil
 
   public static void openWebLink(String url)
   {
-    url = url.strip();
+    UrlOpenResult result = processWebLink(url, db.extPath() != null);
 
-    if (url.isEmpty()) return;
-
-    if (url.startsWith(EXT_1) && (db.extPath() == null))
+    switch (result.action())
     {
-      warningPopup(WorkTabCtrlr.NO_EXT_PATH_MESSAGE);
-      return;
-    }
-
-    if (url.contains(":"))
-    {
-      if (IS_OS_WINDOWS)
+      case INVALID ->
       {
-        // Check to see if it is a file system path
+        if (result.errorMessage() != null)
+          warningPopup(result.errorMessage());
+      }
 
-        boolean validFileSystemPath = true;
+      case LAUNCH_FILE -> launchFile(new FilePath(result.urlString()));
 
-        try
-        {
-          Paths.get(url);
-        }
-        catch (InvalidPathException e)
-        {
-          validFileSystemPath = false;
-        }
-
-        if (validFileSystemPath)
-        {
-          launchFile(new FilePath(url));
-          return;
-        }
+      case BROWSE_WEB ->
+      {
+        if (result.uri() != null)
+          browseDesktop(result.urlString(), result.uri());
+        else
+          openSystemSpecific(result.urlString());  // Linux
       }
     }
-    else if (url.startsWith("\\\\"))
-      url = "file:" + url.replace('\\', '/');  // Universal Naming Convention (UNC) path
-    else
-      url = "http://" + url;
-
-    if (IS_OS_WINDOWS || IS_OS_MAC)
-    {
-      browseDesktop(url);
-      return;
-    }
-
-    try
-    {
-      noOp(makeURI(url));
-    }
-    catch (URISyntaxException e)
-    {
-      errorPopup("An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e));
-      return;
-    }
-
-    openSystemSpecific(url);
   }
 
 //---------------------------------------------------------------------------

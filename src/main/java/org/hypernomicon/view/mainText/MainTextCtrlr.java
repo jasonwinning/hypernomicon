@@ -314,7 +314,7 @@ public class MainTextCtrlr
     setToolTip(btnPaste, "Paste");
 
     Button btnWebLink = new Button("", imgViewFromRelPath("resources/images/world_link.png"));
-    setToolTip(btnWebLink, "Insert/edit web link");
+    setToolTip(btnWebLink, "Insert/edit link");
 
     btnWebLink.setOnAction(event -> btnLinkClick());
 

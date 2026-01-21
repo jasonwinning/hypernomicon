@@ -48,7 +48,7 @@
       <Label text="Text to Display:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0"/>
     </AnchorPane>
     <AnchorPane GridPane.rowIndex="1">
-      <Label text="Web Address:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0"/>
+      <Label text="Location:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0"/>
     </AnchorPane>
     <AnchorPane GridPane.columnIndex="1">
       <TextField fx:id="tfDisplayText" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
