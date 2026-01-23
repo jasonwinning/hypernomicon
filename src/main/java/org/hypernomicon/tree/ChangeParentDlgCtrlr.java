@@ -18,12 +18,12 @@
 package org.hypernomicon.tree;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.UIUtil.*;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 
 //---------------------------------------------------------------------------
 
@@ -33,11 +33,14 @@ public class ChangeParentDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private CheckBox chkDetach1, chkDetach2;
-  @FXML private Label label1, label2, label3;
-  @FXML private TextField tfChild, tfNewParent, tfOldParent1, tfOldParent2;
+  @FXML private VBox vbMustDetach, vbOptionDetach;
+  @FXML private Label lblChild, lblNewParent, lblMustDetach, lblOptionDetach;
+  @FXML private TextField tfChild, tfNewParent, tfMustDetach, tfOptionDetach;
+  @FXML private Button btnDetachAlso, btnOnlyAttach;
 
-  boolean detachDragSource() { return chkDetach1.isSelected(); }
+  private boolean detachDragSource = false;
+
+  boolean detachDragSource() { return detachDragSource; }
 
   @Override protected boolean isValid() { return true; }
 
@@ -45,31 +48,86 @@ public class ChangeParentDlgCtrlr extends ModalDialog
 
   ChangeParentDlgCtrlr(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)
   {
-    super("tree/ChangeParentDlg", "Copy or Move Record to Destination", true, true);
+    super("tree/ChangeParentDlg", "Attach Record to New Parent", true, true);
 
-    label1.setText("The " + getTypeName(dragTargetEdge.child.getType()) + " record:");
-    label2.setText("will be attached under the " + getTypeName(dragTargetEdge.parent.getType()) + " record:");
+    String childTypeName     = getTypeName(dragTargetEdge.child .getType()),
+           newParentTypeName = getTypeName(dragTargetEdge.parent.getType()),
+           srcParentTypeName = getTypeName(dragSourceEdge.parent.getType());
 
+    // Set up child and new parent labels and fields
+    lblChild.setText("Selected " + childTypeName + " record:");
     tfChild.setText(dragTargetEdge.child.name());
+
+    lblNewParent.setText("Will become attached under the " + newParentTypeName + " record:");
     tfNewParent.setText(dragTargetEdge.parent.name());
 
-    tfOldParent1.setText(dragSourceEdge.parent.name());
-
-    if (dragSourceEdge.mustDetachIfAttaching(dragTargetEdge))
-    {
-      chkDetach1.setDisable(true);
-      chkDetach1.setSelected(true);
-    }
-    else if (dragSourceEdge.canDetach() == false)
-    {
-      chkDetach1.setDisable(true);
-      chkDetach1.setSelected(false);
-    }
-
+    // Handle "must be detached from" section (otherEdgeToDetach)
     if (otherEdgeToDetach == null)
-      setAllVisible(false, chkDetach2, tfOldParent2);
+    {
+      vbMustDetach.setVisible(false);
+      vbMustDetach.setManaged(false);
+    }
     else
-      tfOldParent2.setText(otherEdgeToDetach.parent.name());
+    {
+      String otherParentTypeName = getTypeName(otherEdgeToDetach.parent.getType());
+      lblMustDetach.setText("And must therefore be detached from " + otherParentTypeName + " record:");
+      tfMustDetach.setText(otherEdgeToDetach.parent.name());
+    }
+
+    // Handle "option to detach" section and edge cases
+    boolean mustDetach = dragSourceEdge.mustDetachIfAttaching(dragTargetEdge),
+            canDetach = dragSourceEdge.canDetach();
+
+    if (mustDetach)
+    {
+      // Must detach - change label and hide "Only Attach" button
+      lblOptionDetach.setText("And will be detached from " + srcParentTypeName + " record:");
+      tfOptionDetach.setText(dragSourceEdge.parent.name());
+      btnOnlyAttach.setVisible(false);
+      btnOnlyAttach.setManaged(false);
+      btnDetachAlso.setText("OK");
+    }
+    else if (!canDetach)
+    {
+      // Cannot detach - hide the entire option section and "Yes, Detach Also" button
+      vbOptionDetach.setVisible(false);
+      vbOptionDetach.setManaged(false);
+      btnDetachAlso.setVisible(false);
+      btnDetachAlso.setManaged(false);
+      btnOnlyAttach.setText("OK");
+    }
+    else
+    {
+      // Normal case - show option and both buttons
+      lblOptionDetach.setText("Also detach it from this " + srcParentTypeName + " record?");
+      tfOptionDetach.setText(dragSourceEdge.parent.name());
+    }
+
+    // Resize window to fit content, then lock vertical size
+    onShown = () ->
+    {
+      stage.sizeToScene();
+      stage.setMinHeight(stage.getHeight());
+      stage.setMaxHeight(stage.getHeight());
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnDetachAlsoClick()
+  {
+    detachDragSource = true;
+    btnOkClick();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnOnlyAttachClick()
+  {
+    detachDragSource = false;
+    btnOkClick();
   }
 
 //---------------------------------------------------------------------------

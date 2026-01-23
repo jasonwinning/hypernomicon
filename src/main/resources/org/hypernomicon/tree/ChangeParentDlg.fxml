@@ -16,89 +16,45 @@
    limitations under the License.
 -->
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="271.0" minHeight="211.0" minWidth="400.0" prefHeight="256.0" prefWidth="595.0"
-            xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.hypernomicon.tree.ChangeParentDlgCtrlr">
-  <GridPane layoutX="263.0" layoutY="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-    <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES"/>
-      <ColumnConstraints hgrow="NEVER" maxWidth="250.0" minWidth="250.0" prefWidth="250.0"/>
-      <ColumnConstraints hgrow="SOMETIMES"/>
-    </columnConstraints>
-    <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-    </rowConstraints>
-    <AnchorPane GridPane.columnSpan="2147483647">
-      <Label fx:id="label1" layoutX="8.0" layoutY="11.0" text="The note record:" AnchorPane.bottomAnchor="3.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
-      <TextField fx:id="tfChild" editable="false" layoutX="14.0" layoutY="7.0" AnchorPane.leftAnchor="8.0"
-                 AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="2.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
-      <Label fx:id="label2" layoutX="8.0" layoutY="11.0" text="will be attached under the note record:"
-             AnchorPane.bottomAnchor="3.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
-      <TextField fx:id="tfNewParent" editable="false" layoutX="14.0" layoutY="7.0" AnchorPane.leftAnchor="8.0"
-                 AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="2.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
-      <Label fx:id="label3" layoutX="8.0" layoutY="11.0"
-             text="Select record(s) it should also be unattached from:" AnchorPane.bottomAnchor="3.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
-      <CheckBox fx:id="chkDetach1" layoutX="-15.0" layoutY="6.0" mnemonicParsing="false"
-                AnchorPane.leftAnchor="8.0"/>
-      <TextField fx:id="tfOldParent1" editable="false" layoutX="33.0" layoutY="7.0" prefHeight="25.0"
-                 prefWidth="554.0" AnchorPane.leftAnchor="33.0" AnchorPane.rightAnchor="8.0"
-                 AnchorPane.topAnchor="2.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="6">
-      <CheckBox fx:id="chkDetach2" disable="true" layoutX="-15.0" layoutY="6.0" mnemonicParsing="false"
-                selected="true" AnchorPane.leftAnchor="8.0"/>
-      <TextField fx:id="tfOldParent2" editable="false" layoutX="33.0" layoutY="7.0" prefHeight="25.0"
-                 prefWidth="554.0" AnchorPane.leftAnchor="33.0" AnchorPane.rightAnchor="8.0"
-                 AnchorPane.topAnchor="2.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
-      <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                AnchorPane.topAnchor="0.0">
-        <columnConstraints>
-          <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0"/>
-          <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0"/>
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
-        </rowConstraints>
-        <AnchorPane GridPane.halignment="CENTER" GridPane.valignment="CENTER">
-          <Button defaultButton="true" maxWidth="75.0" minWidth="75.0" mnemonicParsing="false"
-                  onAction="#btnOkClick" prefWidth="75.0" text="OK" AnchorPane.rightAnchor="4.0"
-                  AnchorPane.topAnchor="3.0"/>
-        </AnchorPane>
-        <AnchorPane GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
-          <Button cancelButton="true" maxWidth="75.0" minWidth="75.0" mnemonicParsing="false"
-                  onAction="#btnCancelClick" prefWidth="75.0" text="Cancel" AnchorPane.leftAnchor="4.0"
-                  AnchorPane.topAnchor="3.0"/>
-        </AnchorPane>
-      </GridPane>
-    </AnchorPane>
-  </GridPane>
+<AnchorPane minWidth="400.0" prefWidth="595.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.ChangeParentDlgCtrlr">
+  <VBox spacing="2" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <padding>
+      <Insets bottom="12" left="8" right="8" top="8" />
+    </padding>
+
+    <Label fx:id="lblChild" text="Selected record:" />
+    <TextField fx:id="tfChild" editable="false" />
+
+    <Label fx:id="lblNewParent" text="Will become attached under the record:">
+      <VBox.margin><Insets top="8" /></VBox.margin>
+    </Label>
+    <TextField fx:id="tfNewParent" editable="false" />
+
+    <VBox fx:id="vbMustDetach" spacing="2">
+      <VBox.margin><Insets top="8" /></VBox.margin>
+      <Label fx:id="lblMustDetach" text="And must therefore be detached from record:" />
+      <TextField fx:id="tfMustDetach" editable="false" />
+    </VBox>
+
+    <VBox fx:id="vbOptionDetach" spacing="2">
+      <VBox.margin><Insets top="8" /></VBox.margin>
+      <Label fx:id="lblOptionDetach" text="Also detach it from this record?" />
+      <TextField fx:id="tfOptionDetach" editable="false" />
+    </VBox>
+
+    <HBox alignment="CENTER" spacing="10">
+      <VBox.margin><Insets top="12" /></VBox.margin>
+      <Button fx:id="btnDetachAlso" minWidth="60.0" mnemonicParsing="false" onAction="#btnDetachAlsoClick" text="Yes, Detach" />
+      <Button fx:id="btnOnlyAttach" minWidth="60.0" mnemonicParsing="false" onAction="#btnOnlyAttachClick" text="Leave Attached" />
+      <Button cancelButton="true" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" text="Cancel" />
+    </HBox>
+  </VBox>
 </AnchorPane>
