@@ -15,21 +15,16 @@
  *
  */
 
-package org.hypernomicon.util;
+package org.hypernomicon.util.http;
 
 import java.io.*;
+import java.net.http.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.http.*;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
 
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.util.filePath.FilePath;
@@ -69,6 +64,13 @@ public final class FileDownloadUtility
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * An in-memory buffer that stores downloaded file content.
+   * <p>
+   * This class extends {@link InputStream} to allow the buffered data to be
+   * read as a stream, and provides a method to save the contents to a file.
+   * </p>
+   */
   public static final class Buffer extends InputStream
   {
 
@@ -95,6 +97,12 @@ public final class FileDownloadUtility
 
   //---------------------------------------------------------------------------
 
+    /**
+     * Writes the buffered content to a file.
+     *
+     * @param saveFilePath the destination file path
+     * @throws IOException if an I/O error occurs while writing the file
+     */
     public void saveToFile(FilePath saveFilePath) throws IOException
     {
       try (OutputStream os = Files.newOutputStream(saveFilePath.toPath()))
@@ -176,12 +184,12 @@ public final class FileDownloadUtility
   {
     assignSB(fileName, "");
 
-    ResponseHandler<Boolean> responseHndlr = response -> handleResponse(response, fileURL, dirPath, fileNameStr, saveToBuffer, fileName,
-                                                                        assumeIsImage, httpClient, successHndlr, failHndlr);
+    Consumer<HttpResponse<InputStream>> responseHndlr = response -> handleResponse(response, fileURL, dirPath, fileNameStr, saveToBuffer, fileName,
+                                                                                   assumeIsImage, httpClient, successHndlr, failHndlr);
 
-    HttpUriRequest request = RequestBuilder.get()
-      .setUri(fileURL)
-      .setHeader("User-Agent", MainTextWrapper.getUserAgent())
+    HttpRequest request = AsyncHttpClient.requestBuilder(fileURL)
+      .header("User-Agent", MainTextWrapper.getUserAgent())
+      .GET()
       .build();
 
     httpClient.doRequest(request, responseHndlr, failHndlr);
@@ -190,45 +198,31 @@ public final class FileDownloadUtility
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean handleResponse(HttpResponse response, String fileURL, FilePath dirPath, String fileNameStr, boolean saveToBuffer,
-                                        StringBuilder fileName, boolean assumeIsImage, AsyncHttpClient httpClient,
-                                        Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
+  private static void handleResponse(HttpResponse<InputStream> response, String fileURL, FilePath dirPath, String fileNameStr, boolean saveToBuffer,
+                                      StringBuilder fileName, boolean assumeIsImage, AsyncHttpClient httpClient,
+                                      Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
   {
-    MutableInt contentLength = new MutableInt(-1);
+    int statusCode = response.statusCode();
 
-    int statusCode = response.getStatusLine().getStatusCode();
-    String reasonPhrase = response.getStatusLine().getReasonPhrase(),
-           contentType = "";
-
-    if (statusCode >= 400)
+    if (HttpStatusCode.isError(statusCode))
     {
-      runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, reasonPhrase)));
-      return false;
+      runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, fileURL)));
+      return;
     }
 
-    HttpEntity entity = response.getEntity();
+    HttpHeaders headers = response.headers();
 
-    for (Header header : response.getAllHeaders())
+    String contentType = headers.firstValue("Content-Type").orElse("");
+
+    headers.firstValue("Content-Disposition").ifPresent(disposition ->
     {
-      switch (HttpHeader.get(header))
+      if (fileName.isEmpty())
       {
-        case Content_Type : contentType = header.getValue(); break;
-        case Content_Length : contentLength.setValue(parseInt(header.getValue(), -1)); break;
-        case Content_Disposition :
-
-          if (fileName.isEmpty())
-          {
-            String disposition = header.getValue();
-            int index = disposition.indexOf("filename=");
-            if (index > 0)
-              assignSB(fileName, disposition.substring(index + 10, disposition.length() - 1));
-          }
-
-          break;
-
-        default : break;
+        int index = disposition.indexOf("filename=");
+        if (index > 0)
+          assignSB(fileName, disposition.substring(index + 10, disposition.length() - 1));
       }
-    }
+    });
 
     if (fileName.isEmpty())
     {
@@ -266,43 +260,38 @@ public final class FileDownloadUtility
 
     if (saveToBuffer)
     {
-      try (Buffer buffer = new Buffer(entity.getContent()))
+      try (Buffer buffer = new Buffer(response.body()))
       {
         runInFXThread(() -> successHndlr.accept(buffer));
       }
       catch (IOException e)
       {
         runInFXThread(() -> failHndlr.accept(httpClient.wasCancelledByUser() ? new CancelledTaskException() : e));
-
-        return false;
       }
+
+      return;
     }
-    else
+
+    FilePath saveFilePath = dirPath.resolve(fileNameStr.isEmpty() ? fileName.toString() : fileNameStr);
+
+    // opens input stream from the HTTP connection
+    // opens an output stream to save into file
+
+    try (InputStream inputStream = response.body();
+         OutputStream outputStream = Files.newOutputStream(saveFilePath.toPath()))
     {
-      FilePath saveFilePath = dirPath.resolve(fileNameStr.isEmpty() ? fileName.toString() : fileNameStr);
+      int bytesRead;
+      byte[] byteBuffer = new byte[BUFFER_SIZE];
 
-      // opens input stream from the HTTP connection
-      // opens an output stream to save into file
+      while ((bytesRead = inputStream.read(byteBuffer)) != -1)
+        outputStream.write(byteBuffer, 0, bytesRead);
 
-      try (InputStream inputStream = entity.getContent();
-           OutputStream outputStream = Files.newOutputStream(saveFilePath.toPath()))
-      {
-        int bytesRead;
-        byte[] byteBuffer = new byte[BUFFER_SIZE];
-
-        while ((bytesRead = inputStream.read(byteBuffer)) != -1)
-          outputStream.write(byteBuffer, 0, bytesRead);
-
-        runInFXThread(() -> successHndlr.accept(null));
-      }
-      catch (IOException e)
-      {
-        runInFXThread(() -> failHndlr.accept(e));
-        return false;
-      }
+      runInFXThread(() -> successHndlr.accept(null));
     }
-
-    return true;
+    catch (IOException e)
+    {
+      runInFXThread(() -> failHndlr.accept(httpClient.wasCancelledByUser() ? new CancelledTaskException() : e));
+    }
   }
 
 //---------------------------------------------------------------------------

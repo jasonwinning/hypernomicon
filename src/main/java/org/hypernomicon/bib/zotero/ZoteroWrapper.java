@@ -21,6 +21,7 @@ import static org.hypernomicon.App.app;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.http.HttpStatusCode.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -38,12 +39,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.http.Header;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.entity.StringEntity;
+import java.net.http.HttpHeaders;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
 
 import org.json.simple.parser.ParseException;
 import org.jspecify.annotations.NonNull;
@@ -61,9 +59,9 @@ import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.zotero.auth.ZoteroAuthKeys;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
-import org.hypernomicon.util.HttpHeader;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.http.*;
+import org.hypernomicon.util.http.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
@@ -143,7 +141,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static JsonObj getTemplateInitIfNecessary(EntryType type) throws IOException, ParseException, HDB_InternalError
+  static JsonObj getTemplateInitIfNecessary(EntryType type) throws IOException, ParseException, HDB_InternalError
   {
     if (templates == null)
       initTemplates();
@@ -172,22 +170,21 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
     return switch (jsonClient.getStatusCode())
     {
-      case HttpStatus.SC_OK,
-           HttpStatus.SC_NOT_MODIFIED,
-           HttpStatus.SC_PRECONDITION_FAILED
+      case SC_OK,
+           SC_NOT_MODIFIED,
+           SC_PRECONDITION_FAILED
 
         -> jsonArray;
 
-      case HttpStatus.SC_UNAUTHORIZED,
-           HttpStatus.SC_FORBIDDEN
+      case SC_UNAUTHORIZED,
+           SC_FORBIDDEN
 
         -> throw newAccessDeniedException();
 
       default
 
-        -> throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+        -> throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getLastUrl());
     };
-
   }
 
 //---------------------------------------------------------------------------
@@ -248,20 +245,20 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
     return switch (jsonClient.getStatusCode())
     {
-      case HttpStatus.SC_OK,
-           HttpStatus.SC_NOT_MODIFIED,
-           HttpStatus.SC_PRECONDITION_FAILED
+      case SC_OK,
+           SC_NOT_MODIFIED,
+           SC_PRECONDITION_FAILED
 
         -> jsonArray;
 
-      case HttpStatus.SC_UNAUTHORIZED,
-           HttpStatus.SC_FORBIDDEN
+      case SC_UNAUTHORIZED,
+           SC_FORBIDDEN
 
         -> throw newAccessDeniedException();
 
       default
 
-        -> throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
+        -> throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getLastUrl());
     };
   }
 
@@ -274,22 +271,15 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     Zotero_API_Key("Zotero-API-Key"),
     Zotero_Write_Token("Zotero-Write-Token"),
     If_Unmodified_Since_Version("If-Unmodified-Since-Version"),
-    Total_Results("Total-Results"),
     Last_Modified_Version("Last-Modified-Version"),
     Backoff("Backoff"),
-    Retry_After("Retry-After"),
-    None("None");
+    Retry_After("Retry-After");
 
     private final String name;
-    private static final Map<String, ZoteroHeader> headerMap = new HashMap<>();
 
     ZoteroHeader(String name) { this.name = name; }
 
     @Override public String toString() { return name; }
-
-    static { EnumSet.allOf(ZoteroHeader.class).forEach(header -> headerMap.put(header.name.toLowerCase(), header)); }
-
-    private static ZoteroHeader get(Header header) { return headerMap.getOrDefault(header.getName().toLowerCase(), None); }
   }
 
 //---------------------------------------------------------------------------
@@ -314,78 +304,57 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     waitUntilItIs(retryTime);
     waitUntilItIs(backoffTime);
 
-    RequestBuilder rb = switch (requestType)
-    {
-      case post -> RequestBuilder.post()
-                                 .setHeader(Zotero_Write_Token.toString(), generateWriteToken())
-                                 .setEntity(new StringEntity(postJsonData, StandardCharsets.UTF_8));
+    HttpRequest.Builder rb = AsyncHttpClient.requestBuilder(url)
+      .header(HttpHeader.Content_Type.toString(), "application/json")
+      .header(Zotero_API_Version.toString(), "3")
+      .header(If_Unmodified_Since_Version.toString(), String.valueOf(offlineLibVersion));
 
-      case get  -> RequestBuilder.get();
+    if (BibAuthKeys.isNotEmpty(authKeys))
+      rb = rb.header(Zotero_API_Key.toString(), ZoteroAuthKeys.getApiKey(authKeys));
+
+    HttpRequest httpRequest = switch (requestType)
+    {
+      case post -> rb.header(Zotero_Write_Token.toString(), generateWriteToken())
+                     .POST(BodyPublishers.ofString(postJsonData, StandardCharsets.UTF_8)).build();
+
+      case get  -> rb.GET().build();
 
       default   -> throw new UnsupportedOperationException(requestType.name());
     };
-
-    rb = rb
-      .setUri(url)
-      .setHeader(HttpHeader.Content_Type.toString(), "application/json")
-      .setHeader(Zotero_API_Version.toString(), "3");
-
-    if (BibAuthKeys.isNotEmpty(authKeys))
-      rb = rb.setHeader(Zotero_API_Key.toString(), ZoteroAuthKeys.getApiKey(authKeys));
-
-    request = rb
-      .setHeader(Zotero_Write_Token.toString(), generateWriteToken())
-      .setHeader(If_Unmodified_Since_Version.toString(), String.valueOf(offlineLibVersion))
-      .build();
 
     JsonArray jsonArray;
 
     try
     {
-      jsonArray = jsonClient.requestArrayInThisThread(request);
+      jsonArray = jsonClient.requestArrayInThisThread(httpRequest);
     }
     catch (SocketException e)
     {
-      request = null;
-
       HyperTask.throwExceptionIfCancelled(syncTask);
-
       throw e;
     }
 
-    StringBuilder apiVersion = new StringBuilder();
-    MutableInt totalResults = new MutableInt(-1);
+    HttpHeaders headers = jsonClient.getHeaders();
 
-    nullSwitch(jsonClient.getHeaders(), headers -> headers.forEach(header ->
+    if (headers != null)
     {
-      int sec;
+      headers.firstValue(Last_Modified_Version.toString()).ifPresent(val ->
+        onlineLibVersion = parseInt(val, -1));
 
-      switch (ZoteroHeader.get(header))
+      headers.firstValue(Backoff.toString()).ifPresent(val ->
       {
-        case Zotero_API_Version    : assignSB(apiVersion, header.getValue()); break;
-        case Total_Results         : totalResults.setValue(parseInt(header.getValue(), -1)); break;
-        case Last_Modified_Version : onlineLibVersion = parseInt(header.getValue(), -1); break;
-        case Backoff :
+        int sec = parseInt(val, -1);
+        if (sec > 0)
+          backoffTime = Instant.now().plusMillis(sec * 1000L);
+      });
 
-          sec = parseInt(header.getValue(), -1);
-          if (sec > 0)
-            backoffTime = Instant.now().plusMillis(sec * 1000L);
-
-          break;
-
-        case Retry_After :
-
-          sec = parseInt(header.getValue(), -1);
-          if (sec > 0)
-            retryTime = Instant.now().plusMillis(sec * 1000L);
-
-          break;
-
-        default : break;
-      }
-    }));
-
-    request = null;
+      headers.firstValue(Retry_After.toString()).ifPresent(val ->
+      {
+        int sec = parseInt(val, -1);
+        if (sec > 0)
+          retryTime = Instant.now().plusMillis(sec * 1000L);
+      });
+    }
 
     HyperTask.throwExceptionIfCancelled(syncTask);
 
@@ -408,7 +377,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public JsonObj getCreatorTypes() throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
+  JsonObj getCreatorTypes() throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
   {
     JsonObj jObj = new JsonObj();
 
@@ -423,7 +392,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public JsonArray getTemplates(boolean getItemTypesFromServer) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
+  JsonArray getTemplates(boolean getItemTypesFromServer) throws UnsupportedOperationException, IOException, ParseException, CancelledTaskException
   {
     Stream<String> typesStream;
 
@@ -513,7 +482,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
         int statusCode;
 
         if (syncChangedEntriesToServer() == false)
-          statusCode = HttpStatus.SC_PRECONDITION_FAILED;
+          statusCode = SC_PRECONDITION_FAILED;
         else
         {
           statusCode = jsonClient.getStatusCode();
@@ -524,7 +493,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     /*         Retrieve remote updates           */
     /*********************************************/
 
-        while (statusCode == HttpStatus.SC_PRECONDITION_FAILED)
+        while (statusCode == SC_PRECONDITION_FAILED)
         {
           if (!getRemoteUpdates(ZoteroCmd.readChangedCollVersions, ZoteroCmd.readCollections, keyToColl)) return;
 
@@ -542,7 +511,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
           JsonArray jArr = doReadCommand(ZoteroCmd.readDeletions, "", "");
 
-          if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return;
+          if (jsonClient.getStatusCode() != SC_OK) return;
 
           jArr.getObj(0).getArraySafe("items").strStream().forEach(key ->
           {
@@ -589,7 +558,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
             }
           });
 
-          if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
+          if (jsonClient.getStatusCode() == SC_OK)
             offlineLibVersion = onlineLibVersion;
           else
             return;
@@ -624,10 +593,10 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
       if (uploadQueue.isEmpty()) return false;
 
-      int statusCode = HttpStatus.SC_OK;
+      int statusCode = SC_OK;
       JsonArray jArr = new JsonArray();
 
-      while ((uploadQueue.size() > 0) && (statusCode == HttpStatus.SC_OK) && ((syncTask == null) || (syncTask.isCancelled() == false)))
+      while ((uploadQueue.size() > 0) && (statusCode == SC_OK) && ((syncTask == null) || (syncTask.isCancelled() == false)))
       {
         jArr.clear();
 
@@ -639,7 +608,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
         statusCode = jsonClient.getStatusCode();
 
-        if (statusCode == HttpStatus.SC_OK)
+        if (statusCode == SC_OK)
         {
           JsonObj jSuccess   = jArr.getObj(0).getObj("successful"),
                   jUnchanged = jArr.getObj(0).getObj("unchanged"),
@@ -685,13 +654,13 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     {
       JsonArray jArr = doReadCommand(versionsCmd, "", "");
 
-      if ((jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED))
+      if ((jsonClient.getStatusCode() == SC_OK) || (jsonClient.getStatusCode() == SC_NOT_MODIFIED))
         if (onlineLibVersion <= offlineLibVersion)
           return true;
 
       List<String> downloadQueue = new ArrayList<>();
 
-      if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
+      if (jsonClient.getStatusCode() == SC_OK)
       {
         JsonObj jObj = jArr.getObj(0);
 
@@ -713,7 +682,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
           keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
       }
 
-      while ((downloadQueue.size() > 0) && (jsonClient.getStatusCode() == HttpStatus.SC_OK))
+      while ((downloadQueue.size() > 0) && (jsonClient.getStatusCode() == SC_OK))
       {
         String keys = String.join(",", downloadQueue.subList(0, Math.min(downloadQueue.size(), 50)));
 
@@ -722,7 +691,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
         :
           doReadCommand(readCmd, keys, "");
 
-        if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
+        if (jsonClient.getStatusCode() == SC_OK)
         {
           jArr.getObjs().forEach(jObj ->
           {
@@ -781,7 +750,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
         }
       }
 
-      return (jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED);
+      return (jsonClient.getStatusCode() == SC_OK) || (jsonClient.getStatusCode() == SC_NOT_MODIFIED);
     }
 
   }; }

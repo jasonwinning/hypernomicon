@@ -17,9 +17,9 @@
 
 package org.hypernomicon;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -36,6 +36,8 @@ import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.*;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.http.AsyncHttpClient;
+import org.hypernomicon.util.http.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.MainCtrlr;
@@ -44,14 +46,14 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 
 import org.json.simple.parser.ParseException;
 
+import static java.lang.management.ManagementFactory.*;
+
 import java.io.*;
 import java.net.*;
+import java.net.http.HttpRequest;
 import java.nio.charset.Charset;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
-
-import static java.lang.management.ManagementFactory.*;
-
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.jar.JarInputStream;
@@ -62,7 +64,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -375,11 +376,12 @@ public final class App extends Application
   {
     try
     {
-      JsonArray jsonArray = new JsonHttpClient().requestArrayInThisThread(new HttpGet(hypernomiconReleasesURL));
+      HttpRequest request = AsyncHttpClient.requestBuilder(hypernomiconReleasesURL).GET().build();
+      JsonArray jsonArray = new JsonHttpClient().requestArrayInThisThread(request);
 
       processNewVersionJsonArray(jsonArray, successHndlr, failHndlr);
     }
-    catch (UnsupportedOperationException | ParseException | IOException e)
+    catch (ParseException | IOException e)
     {
       failHndlr.run();
     }

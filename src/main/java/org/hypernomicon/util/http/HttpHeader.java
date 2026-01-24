@@ -15,15 +15,9 @@
  *
  */
 
-package org.hypernomicon.util;
+package org.hypernomicon.util.http;
 
 import static com.google.common.net.HttpHeaders.*;
-
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.http.Header;
 
 //---------------------------------------------------------------------------
 
@@ -64,16 +58,16 @@ public enum HttpHeader
   Cookie(COOKIE),
   D_N_T(DNT),
   Date(DATE),
-  Dav(org.apache.http.HttpHeaders.DAV),
-  Depth(org.apache.http.HttpHeaders.DEPTH),
-  Destination(org.apache.http.HttpHeaders.DESTINATION),
+  Dav("DAV"),
+  Depth("Depth"),
+  Destination("Destination"),
   ETag(ETAG),
   Expect(EXPECT),
   Expires(EXPIRES),
   Follow_Only_When_Prerender_Shown(FOLLOW_ONLY_WHEN_PRERENDER_SHOWN),
   From(FROM),
   Host(HOST),
-  If(org.apache.http.HttpHeaders.IF),
+  If("If"),
   If_Match(IF_MATCH),
   If_Modified_Since(IF_MODIFIED_SINCE),
   If_None_Match(IF_NONE_MATCH),
@@ -83,10 +77,10 @@ public enum HttpHeader
   Last_Modified(LAST_MODIFIED),
   Link(LINK),
   Location(LOCATION),
-  Lock_Token(org.apache.http.HttpHeaders.LOCK_TOKEN),
+  Lock_Token("Lock-Token"),
   Max_Forwards(MAX_FORWARDS),
   Origin(ORIGIN),
-  Overwrite(org.apache.http.HttpHeaders.OVERWRITE),
+  Overwrite("Overwrite"),
   P_3_P(P3P),
   Ping_From(PING_FROM),
   Ping_To(PING_TO),
@@ -102,10 +96,10 @@ public enum HttpHeader
   Server(SERVER),
   Set_Cookie(SET_COOKIE),
   Set_Cookie2(SET_COOKIE2),
-  Status_URI(org.apache.http.HttpHeaders.STATUS_URI),
+  Status_URI("Status-URI"),
   Strict_Transport_Security(STRICT_TRANSPORT_SECURITY),
   T_E(TE),
-  Timeout(org.apache.http.HttpHeaders.TIMEOUT),
+  Timeout("Timeout"),
   Timing_Allow_Origin(TIMING_ALLOW_ORIGIN),
   Trailer(TRAILER),
   Transfer_Encoding(TRANSFER_ENCODING),
@@ -123,31 +117,17 @@ public enum HttpHeader
   X_Powered_By(X_POWERED_BY),
   X_Requested_With(X_REQUESTED_WITH),
   X_User_IP(X_USER_IP),
-  X_XSS_Protection(X_XSS_PROTECTION),
-  None("None");
+  X_XSS_Protection(X_XSS_PROTECTION);
 
 //---------------------------------------------------------------------------
 
   private final String name;
-  private static final Map<String, HttpHeader> map = new HashMap<>();
 
 //---------------------------------------------------------------------------
 
   HttpHeader(String name) { this.name = name; }
 
   @Override public String toString() { return name; }
-
-//---------------------------------------------------------------------------
-
-  static
-  {
-    EnumSet.allOf(HttpHeader.class).forEach(header -> map.put(header.name.toLowerCase(), header));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static HttpHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

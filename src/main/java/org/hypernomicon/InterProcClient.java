@@ -142,8 +142,7 @@ public final class InterProcClient
            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
       {
         out.println(UPDATE_CMD);
-        String line = null;
-        for (; line == null; line = in.readLine());
+        String line = in.readLine();
 
         AppInstance newInstance = AppInstance.fromString(line);
 

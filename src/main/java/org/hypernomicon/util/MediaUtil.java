@@ -213,7 +213,7 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static String getContentTypeExtension(String contentType)
+  public static String getContentTypeExtension(String contentType)
   {
     try { return getTikaConfig().getMimeRepository().forName(contentType).getExtension(); }
     catch (MimeTypeException e) { return ""; }

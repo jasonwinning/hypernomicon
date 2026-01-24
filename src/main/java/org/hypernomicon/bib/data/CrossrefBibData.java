@@ -33,8 +33,6 @@ import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
 
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.authors.Author;
@@ -43,8 +41,7 @@ import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.records.HDT_RecordBase;
-import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.JsonHttpClient;
+import org.hypernomicon.util.http.*;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.util.json.JsonObj.JsonNodeType;
@@ -373,7 +370,7 @@ public final class CrossrefBibData extends BibDataStandalone
 
     }, e ->
     {
-      if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatus.SC_NOT_FOUND))
+      if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatusCode.SC_NOT_FOUND))
       {
         if (doi.endsWith("."))
         {

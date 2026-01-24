@@ -38,6 +38,8 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.util.*;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.http.AsyncHttpClient;
+import org.hypernomicon.util.http.FileDownloadUtility;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;

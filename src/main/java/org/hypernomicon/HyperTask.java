@@ -20,9 +20,7 @@ package org.hypernomicon;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -57,11 +55,9 @@ public abstract class HyperTask
 
     private static final ConcurrentHashMap<String, Integer> threadNameBaseToNum = new ConcurrentHashMap<>();
 
-    private static synchronized String newThreadName(String base)
+    private static String newThreadName(String base)
     {
-      int num = threadNameBaseToNum.getOrDefault(base, -1) + 1;
-
-      threadNameBaseToNum.put(base, num);
+      int num = threadNameBaseToNum.merge(base, 0, (oldVal, v) -> oldVal + 1);
 
       return "Hypernomicon-" + base + '-' + num;
     }
@@ -93,8 +89,24 @@ public abstract class HyperTask
       updateMessage(startingMessage);
       updateProgress(withProgressUpdates ? 0 : -1, 1);
 
-      try                              { HyperTask.this.call(); }
-      catch (CancelledTaskException e) { cancel();              }
+      try
+      {
+        HyperTask.this.call();
+      }
+      catch (CancelledTaskException e)
+      {
+        cancel();
+      }
+      catch (Exception e)
+      {
+        // If the task was cancelled (e.g., thread interrupted during I/O),
+        // treat any resulting exception as cancellation, not failure
+        if (isCancelled())
+          return null;
+
+        throw e;
+      }
+
       return null;
     }
 
@@ -181,7 +193,8 @@ public abstract class HyperTask
   private final List<String> additionalMessages = new ArrayList<>();
   private final String threadName;
 
-  private HyperThread thread;
+  private volatile HyperThread thread;
+  private volatile boolean interruptOnCancel = false;
   private boolean skippable = false, initialized = false;
 
   /**
@@ -193,11 +206,17 @@ public abstract class HyperTask
   protected abstract void call() throws HyperDataException, CancelledTaskException;
 
   /**
-   * Terminates execution of this task.
-   *
-   * @return returns true if the cancel was successful
+   * Terminates execution of this task. If the task is running and
+   * {@link #setInterruptOnCancel(boolean)} was set to true, the thread
+   * will be interrupted to cancel any blocking I/O operations.
    */
-  public boolean cancel() { return innerTask.cancel(); }
+  public void cancel()
+  {
+    if (interruptOnCancel && (thread != null))
+      thread.interrupt();
+
+    innerTask.cancel();
+  }
 
   public Throwable getException()             { return innerTask.getException(); }
   public State getState()                     { return innerTask.getState(); }
@@ -307,6 +326,25 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * If true, calling {@link #cancel()} will interrupt the task's thread to
+   * cancel any blocking I/O operations (e.g., HTTP requests). If false
+   * (the default), cancellation is cooperative and the task must check
+   * {@link #isCancelled()} at checkpoints.
+   * @param interruptOnCancel Whether to interrupt the thread when cancelled
+   * @return This HyperTask
+   */
+  public HyperTask setInterruptOnCancel(boolean interruptOnCancel)
+  {
+    if (initialized) throw new IllegalStateException("Already initialized");
+
+    this.interruptOnCancel = interruptOnCancel;
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private synchronized boolean waitUntilThreadDies()
   {
     if ((thread == null) || (thread.isAlive() == false)) return true;
@@ -389,11 +427,16 @@ public abstract class HyperTask
    * Add a handler that will run after the task is finished, regardless of whether
    * it was cancelled, failed, or succeeded.
    * <p>
-   * It will only run after both (1) a final
-   * state is set, and (2) the task thread is no longer alive.
+   * The handler runs after both (1) the task reaches a final state, and (2) the
+   * task thread is no longer alive.
    * <p>
-   * The final state is
-   * passed as a parameter to the handler.
+   * Multiple handlers can be added by calling this method multiple times. Handlers
+   * are chained: each new handler wraps the previous one, so all handlers run in
+   * registration order (first added runs first). The first handler in the chain
+   * waits for the thread to die, guaranteeing all subsequent handlers also run
+   * after the thread is dead.
+   * <p>
+   * The final state is passed as a parameter to the handler.
    * @param hndlr The handler
    */
   public void addDoneHandler(Consumer<State> hndlr)

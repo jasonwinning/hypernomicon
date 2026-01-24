@@ -36,7 +36,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 import org.hypernomicon.FolderTreeWatcher;
@@ -403,7 +402,7 @@ public final class HyperDB extends AbstractHyperDB
 
       try (InputStream is = Files.newInputStream(xmlPath(entry.getKey()).toPath()))
       {
-        hex = DigestUtils.md5Hex(is);
+        hex = md5Hex(is);
       }
       catch (IOException e) { noOp(); }
 

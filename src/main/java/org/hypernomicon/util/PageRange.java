@@ -135,7 +135,16 @@ public class PageRange implements Comparable<PageRange>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final Map<Character, Integer> romanMap = new HashMap<>();
+  private static final Map<Character, Integer> romanMap = Map.ofEntries
+  (
+    Map.entry('I', 1),    Map.entry('i', 1),
+    Map.entry('V', 5),    Map.entry('v', 5),
+    Map.entry('X', 10),   Map.entry('x', 10),
+    Map.entry('L', 50),   Map.entry('l', 50),
+    Map.entry('C', 100),  Map.entry('c', 100),
+    Map.entry('D', 500),  Map.entry('d', 500),
+    Map.entry('M', 1000), Map.entry('m', 1000)
+  );
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -145,17 +154,6 @@ public class PageRange implements Comparable<PageRange>
     if (strNullOrBlank(s)) return 0;
 
     s = s.strip();
-
-    if (romanMap.isEmpty())
-    {
-      romanMap.put('I', 1);    romanMap.put('i', 1);
-      romanMap.put('V', 5);    romanMap.put('v', 5);
-      romanMap.put('X', 10);   romanMap.put('x', 10);
-      romanMap.put('L', 50);   romanMap.put('l', 50);
-      romanMap.put('C', 100);  romanMap.put('c', 100);
-      romanMap.put('D', 500);  romanMap.put('d', 500);
-      romanMap.put('M', 1000); romanMap.put('m', 1000);
-    }
 
     int result = 0;
 

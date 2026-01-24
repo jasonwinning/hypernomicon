@@ -42,8 +42,6 @@ import static org.hypernomicon.util.WebButton.WebButtonField.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.utils.URIBuilder;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
@@ -51,6 +49,7 @@ import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.http.HttpResponseException;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
 import com.google.common.collect.Lists;
@@ -135,6 +134,7 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("deprecation")
   private static URI makeURI(String url) throws URISyntaxException
   {
     if (url.contains(":") == false)
@@ -154,7 +154,6 @@ public final class DesktopUtil
       {
         try
         {
-          @SuppressWarnings("deprecation")
           URL urlObj = new URL(url);
           return new URI(urlObj.getProtocol(), urlObj.getUserInfo(), urlObj.getHost(), urlObj.getPort(), urlObj.getPath(), urlObj.getQuery(), urlObj.getRef());
         }
@@ -167,16 +166,23 @@ public final class DesktopUtil
 
     try
     {
-      URIBuilder ub = new URIBuilder(url);  // Try this first because it doesn't do any escaping.
-      return ub.build();
+      return new URI(url);  // Try this first because it doesn't do any escaping.
     }
-    catch (URISyntaxException e)  // If that failed, then use the URI constructor, which does escaping.
+    catch (URISyntaxException e)  // If that failed, try using URL class which is more lenient.
     {
-      pos = ssp.indexOf('#');
-      String fragment = safeSubstring(ssp, pos + 1, ssp.length());
-      ssp = ssp.substring(0, pos);
+      try
+      {
+        URL urlObj = new URL(url);
+        return urlObj.toURI();  // Preserves encoding without re-escaping
+      }
+      catch (MalformedURLException | URISyntaxException e1)
+      {
+        pos = ssp.indexOf('#');
+        String fragment = safeSubstring(ssp, pos + 1, ssp.length());
+        ssp = ssp.substring(0, pos);
 
-      return new URI(scheme, ssp, fragment);
+        return new URI(scheme, ssp, fragment);
+      }
     }
   }
 
@@ -718,7 +724,7 @@ public final class DesktopUtil
             else
             {
               state.set(State.FAILED);
-              throwable.set(new HttpResponseException(con.getResponseCode(), con.getResponseMessage()));
+              throwable.set(new HttpResponseException(con.getResponseCode()));
             }
           }
           catch (IOException e)
@@ -765,6 +771,7 @@ public final class DesktopUtil
 
       }}.setSilent(true)
         .setSkippable(true)
+        .setInterruptOnCancel(true)
         .addMessage("Press \"Skip\" if internet connection is not needed.");
 
       if (task.runWithProgressDialog() == State.SUCCEEDED)

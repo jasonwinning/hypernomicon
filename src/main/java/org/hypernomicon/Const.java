@@ -21,8 +21,6 @@ import java.util.Map;
 
 import org.hypernomicon.util.VersionNumber;
 
-import com.google.common.collect.ImmutableMap;
-
 import javafx.scene.input.DataFormat;
 
 //---------------------------------------------------------------------------
@@ -39,61 +37,50 @@ public final class Const
 
   /**
    * Change this and the version in pom.xml to set the application version
-   * <br>
    */
   public static final VersionNumber appVersion = new VersionNumber(1, 33);  // 1.33
 
   /**
    * This is the minimum version that the application version (or higher) is able to load
-   * <br>
    */
-  public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
-
-    .put(new VersionNumber(1), new VersionNumber(1))
-    .build();
+  public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = Map.of(new VersionNumber(1), new VersionNumber(1));
 
   /**
    * This is the minimum version that the application version (or higher) is able to load
-   * <br>
    */
-  public static final Map<VersionNumber, VersionNumber> appVersionToMinSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
-
-    .put(new VersionNumber(1), new VersionNumber(1))
-    .build();
+  public static final Map<VersionNumber, VersionNumber> appVersionToMinSettingsXMLVersion = Map.of(new VersionNumber(1), new VersionNumber(1));
 
   /**
    * This is the version that the application version (or lower) will actually save to
-   * <br>
    */
-  public static final Map<VersionNumber, VersionNumber> appVersionToMaxRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
-
-    .put(new VersionNumber(1, 17, 5), new VersionNumber(1    ))
-    .put(new VersionNumber(1, 19, 4), new VersionNumber(1, 1 ))
-    .put(new VersionNumber(1, 20   ), new VersionNumber(1, 2 ))
-    .put(new VersionNumber(1, 22, 1), new VersionNumber(1, 3 ))
-    .put(new VersionNumber(1, 22, 2), new VersionNumber(1, 4 ))
-    .put(new VersionNumber(1, 23, 1), new VersionNumber(1, 5 ))
-    .put(new VersionNumber(1, 25, 1), new VersionNumber(1, 6 ))
-    .put(new VersionNumber(1, 28   ), new VersionNumber(1, 7 ))
-    .put(new VersionNumber(1, 29   ), new VersionNumber(1, 8 ))
-    .put(new VersionNumber(1, 31, 1), new VersionNumber(1, 9 ))
-    .put(new VersionNumber(1, 32, 1), new VersionNumber(1, 10))
-    .put(appVersion                 , new VersionNumber(1, 11))
-    .build();
+  public static final Map<VersionNumber, VersionNumber> appVersionToMaxRecordsXMLVersion = Map.ofEntries
+  (
+    Map.entry(new VersionNumber(1, 17, 5), new VersionNumber(1    )),
+    Map.entry(new VersionNumber(1, 19, 4), new VersionNumber(1, 1 )),
+    Map.entry(new VersionNumber(1, 20   ), new VersionNumber(1, 2 )),
+    Map.entry(new VersionNumber(1, 22, 1), new VersionNumber(1, 3 )),
+    Map.entry(new VersionNumber(1, 22, 2), new VersionNumber(1, 4 )),
+    Map.entry(new VersionNumber(1, 23, 1), new VersionNumber(1, 5 )),
+    Map.entry(new VersionNumber(1, 25, 1), new VersionNumber(1, 6 )),
+    Map.entry(new VersionNumber(1, 28   ), new VersionNumber(1, 7 )),
+    Map.entry(new VersionNumber(1, 29   ), new VersionNumber(1, 8 )),
+    Map.entry(new VersionNumber(1, 31, 1), new VersionNumber(1, 9 )),
+    Map.entry(new VersionNumber(1, 32, 1), new VersionNumber(1, 10)),
+    Map.entry(appVersion                 , new VersionNumber(1, 11))
+  );
 
   /**
-   *  This is the version that the application version (or lower) will actually save to
-   *  <br>
+   * This is the version that the application version (or lower) will actually save to
    */
-  public static final Map<VersionNumber, VersionNumber> appVersionToMaxSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
-
-    .put(new VersionNumber(1, 17, 5), new VersionNumber(1   ))
-    .put(new VersionNumber(1, 19, 4), new VersionNumber(1, 1))
-    .put(new VersionNumber(1, 22, 1), new VersionNumber(1, 2))
-    .put(new VersionNumber(1, 23, 1), new VersionNumber(1, 3))
-    .put(new VersionNumber(1, 30, 3), new VersionNumber(1, 4))
-    .put(appVersion                 , new VersionNumber(1, 5))
-    .build();
+  public static final Map<VersionNumber, VersionNumber> appVersionToMaxSettingsXMLVersion = Map.ofEntries
+  (
+    Map.entry(new VersionNumber(1, 17, 5), new VersionNumber(1   )),
+    Map.entry(new VersionNumber(1, 19, 4), new VersionNumber(1, 1)),
+    Map.entry(new VersionNumber(1, 22, 1), new VersionNumber(1, 2)),
+    Map.entry(new VersionNumber(1, 23, 1), new VersionNumber(1, 3)),
+    Map.entry(new VersionNumber(1, 30, 3), new VersionNumber(1, 4)),
+    Map.entry(appVersion                 , new VersionNumber(1, 5))
+  );
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

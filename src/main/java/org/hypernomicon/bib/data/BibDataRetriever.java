@@ -26,15 +26,13 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
-
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
-import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.http.*;
+
 import org.json.simple.parser.ParseException;
 
 //---------------------------------------------------------------------------
@@ -255,7 +253,7 @@ public class BibDataRetriever
 
         }, e ->
         {
-          if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
+          if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatusCode.SC_SERVICE_UNAVAILABLE))
           {
             searchedCrossref = true;
             errorPopup(e);

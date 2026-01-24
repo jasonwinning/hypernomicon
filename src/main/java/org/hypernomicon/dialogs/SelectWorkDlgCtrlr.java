@@ -30,8 +30,8 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.previewWindow.PreviewWrapper;
-import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.http.AsyncHttpClient;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;

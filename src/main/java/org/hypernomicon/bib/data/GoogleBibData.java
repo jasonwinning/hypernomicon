@@ -36,8 +36,8 @@ import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_RecordBase;
-import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.JsonHttpClient;
+import org.hypernomicon.util.http.AsyncHttpClient;
+import org.hypernomicon.util.http.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 

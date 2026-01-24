@@ -24,6 +24,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.http.HttpStatusCode.*;
 import static org.hypernomicon.util.json.JsonObj.*;
 
 import java.io.*;
@@ -35,12 +36,9 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.http.Header;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.entity.StringEntity;
+import java.net.http.HttpHeaders;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
 
 import org.json.simple.parser.ParseException;
 import org.jspecify.annotations.NonNull;
@@ -59,9 +57,9 @@ import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.mendeley.auth.MendeleyAuthKeys;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
-import org.hypernomicon.util.HttpHeader;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.http.*;
+import org.hypernomicon.util.http.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
@@ -161,19 +159,13 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
   public enum MendeleyHeader
   {
     Mendeley_Count("Mendeley-Count"),
-    Link("Link"),
-    None("None");
+    Link("Link");
 
     private final String name;
-    private static final Map<String, MendeleyHeader> map = new HashMap<>();
 
     MendeleyHeader(String name) { this.name = name; }
 
     @Override public String toString() { return name; }
-
-    static { EnumSet.allOf(MendeleyHeader.class).forEach(header -> map.put(header.name.toLowerCase(), header)); }
-
-    private static MendeleyHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }
   }
 
 //---------------------------------------------------------------------------
@@ -196,71 +188,66 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
   {
     HyperTask.throwExceptionIfCancelled(syncTask);
 
-    RequestBuilder rb = switch (requestType)
+    HttpRequest.Builder rb = AsyncHttpClient.requestBuilder(url)
+      .header(HttpHeader.Authorization.toString(), "Bearer " + MendeleyAuthKeys.getAccessToken(authKeys));
+
+    HttpRequest httpRequest = switch (requestType)
     {
-      case get   -> RequestBuilder.get  ().setHeader(HttpHeader.Accept.toString(), mediaType);
+      case get   -> rb.header(HttpHeader.Accept.toString(), mediaType)
+                      .GET()
+                      .build();
 
-      case patch -> RequestBuilder.patch().setEntity(new StringEntity(jsonData, StandardCharsets.UTF_8))
-                                          .setHeader(HttpHeader.Content_Type.toString(), mediaType)
-                                          .setHeader(HttpHeader.If_Unmodified_Since.toString(), dateTimeToHttpDate(ifUnmodifiedSince));
+      case patch -> rb.header(HttpHeader.Content_Type.toString(), mediaType)
+                      .header(HttpHeader.If_Unmodified_Since.toString(), dateTimeToHttpDate(ifUnmodifiedSince))
+                      .method("PATCH", BodyPublishers.ofString(jsonData, StandardCharsets.UTF_8))
+                      .build();
 
-      case post ->  RequestBuilder.post ().setEntity(new StringEntity(jsonData, StandardCharsets.UTF_8))
-                                          .setHeader(HttpHeader.Content_Type.toString(), mediaType)
-                                          .setHeader(HttpHeader.Accept.toString(), mediaType);
+      case post ->  rb.header(HttpHeader.Content_Type.toString(), mediaType)
+                      .header(HttpHeader.Accept.toString(), mediaType)
+                      .POST(BodyPublishers.ofString(jsonData, StandardCharsets.UTF_8))
+                      .build();
+
       default -> null;
     };
 
-    if (rb == null) return null;
-
-    request = rb.setUri(url)
-                .setHeader(HttpHeader.Authorization.toString(), "Bearer " + MendeleyAuthKeys.getAccessToken(authKeys))
-                .build();
+    if (httpRequest == null) return null;
 
     JsonArray jsonArray;
 
     try
     {
-      jsonArray = jsonClient.requestArrayInThisThread(request);
+      jsonArray = jsonClient.requestArrayInThisThread(httpRequest);
     }
     catch (SocketException e)
     {
       if ((syncTask != null) && syncTask.isCancelled())
-      {
-        request = null;
         throw new CancelledTaskException();
-      }
 
-      request = null;
       throw e;
     }
 
-    MutableInt totalResults = new MutableInt(-1);
+    HttpHeaders headers = jsonClient.getHeaders();
 
-    nullSwitch(jsonClient.getHeaders(), headers -> headers.forEach(header ->
+    if (headers != null)
     {
-      switch (MendeleyHeader.get(header))
+      headers.firstValue(MendeleyHeader.Link.toString()).ifPresent(headerValue ->
       {
-        case Mendeley_Count : totalResults.setValue(parseInt(header.getValue(), -1)); break;
+        if (headerValue.endsWith("rel=\"next\""))
+        {
+          int startIdx = headerValue.indexOf('<'),
+              endIdx   = headerValue.indexOf('>');
 
-        case Link :
-
-          String val = header.getValue();
-          if (val.endsWith("rel=\"next\""))
-            assignSB(nextUrl, val.split("<")[1].split(">")[0]);
-
-          break;
-
-        default : break;
-      }
-    }));
-
-    request = null;
+          if ((startIdx >= 0) && (endIdx > startIdx))
+            assignSB(nextUrl, headerValue.substring(startIdx + 1, endIdx));
+        }
+      });
+    }
 
     HyperTask.throwExceptionIfCancelled(syncTask);
 
-    if ((jsonClient.getStatusCode() == HttpStatus.SC_BAD_REQUEST)  ||
-        (jsonClient.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) ||
-        (jsonClient.getStatusCode() == HttpStatus.SC_FORBIDDEN))
+    if ((jsonClient.getStatusCode() == SC_BAD_REQUEST)  ||
+        (jsonClient.getStatusCode() == SC_UNAUTHORIZED) ||
+        (jsonClient.getStatusCode() == SC_FORBIDDEN))
     {
       if ((jsonArray != null) && (jsonArray.size() > 0))
       {
@@ -476,7 +463,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 // ------------------------------------------------------------------------------------------------------------------
 
         Iterator<MendeleyDocument> it = localChanges.iterator();
-        while (it.hasNext() && (jsonClient.getStatusCode() != HttpStatus.SC_PRECONDITION_FAILED))
+        while (it.hasNext() && (jsonClient.getStatusCode() != SC_PRECONDITION_FAILED))
         {
           MendeleyDocument document = it.next();
 
@@ -494,12 +481,12 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
           else
           {
             JsonArray jsonArray = updateDocumentOnServer(document);
-            if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
+            if (jsonClient.getStatusCode() == SC_OK)
             {
               document.update(jsonArray.getObj(0), false, false);
               changed = true;
             }
-            else if (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED)
+            else if (jsonClient.getStatusCode() == SC_NOT_MODIFIED)
             {
               document.mergeWithBackupCopy();
               changed = true;
@@ -510,7 +497,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 // If 412 status received, start over -------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-      } while ((jsonClient.getStatusCode() == HttpStatus.SC_PRECONDITION_FAILED) || didMergeDuringSync);
+      } while ((jsonClient.getStatusCode() == SC_PRECONDITION_FAILED) || didMergeDuringSync);
 
 // Get list of folders from server ----------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
@@ -639,9 +626,9 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     return switch (jsonClient.getStatusCode())
     {
-      case HttpStatus.SC_OK,
-           HttpStatus.SC_NOT_MODIFIED,
-           HttpStatus.SC_PRECONDITION_FAILED ->
+      case SC_OK,
+           SC_NOT_MODIFIED,
+           SC_PRECONDITION_FAILED ->
 
         jsonArray;
 
@@ -664,7 +651,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     return switch (jsonClient.getStatusCode())
     {
-      case HttpStatus.SC_CREATED ->
+      case SC_CREATED ->
 
         jsonArray;
 
@@ -688,9 +675,9 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     return switch (jsonClient.getStatusCode())
     {
-      case HttpStatus.SC_OK,
-           HttpStatus.SC_NOT_MODIFIED,
-           HttpStatus.SC_PRECONDITION_FAILED ->
+      case SC_OK,
+           SC_NOT_MODIFIED,
+           SC_PRECONDITION_FAILED ->
 
         jsonArray;
 
@@ -705,11 +692,19 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
   private JsonArray throwResponseException(JsonArray jsonArray, String documentID) throws HttpResponseException
   {
-    StringBuilder errMsg = new StringBuilder(jsonClient.getReasonPhrase());
+    StringBuilder serverMsg = new StringBuilder();
 
-    new CondJsonArray(jsonArray).condObj(0).condStr("message", jsonMsg -> assignSB(errMsg, jsonMsg));
+    new CondJsonArray(jsonArray).condObj(0).condStr("message", jsonMsg -> assignSB(serverMsg, jsonMsg));
 
-    throw new HttpResponseException(jsonClient.getStatusCode(), errMsg + (strNullOrBlank(documentID) ? "" : ("\n\nEntry ID: " + documentID)));
+    if (strNotNullOrBlank(documentID))
+    {
+      if (strNotNullOrEmpty(serverMsg))
+        serverMsg.append("\n\n");
+
+      serverMsg.append("Entry ID: ").append(documentID);
+    }
+
+    throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getLastUrl(), serverMsg.isEmpty() ? null : serverMsg.toString());
   }
 
 //---------------------------------------------------------------------------

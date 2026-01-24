@@ -241,12 +241,22 @@
     <dependency>
       <groupId>com.ibm.icu</groupId>
       <artifactId>icu4j</artifactId>
-      <version>78.1</version>
+      <version>78.2</version>
     </dependency>
     <dependency>
       <groupId>com.github.scribejava</groupId>
-      <artifactId>scribejava-httpclient-apache</artifactId>
+      <artifactId>scribejava-core</artifactId>
       <version>8.3.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.21.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.21.0</version>
     </dependency>
     <dependency>
       <groupId>com.adobe.xmp</groupId>
@@ -268,12 +278,6 @@
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
       <version>3.0.6</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.tika</groupId>
@@ -318,7 +322,7 @@
    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>6.0.1</version>
+      <version>6.0.2</version>
     </dependency>
 
   </dependencies>

@@ -54,10 +54,7 @@ class InterProcDaemon extends HyperThread
              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
         {
-          String line;
-
-          do { line = in.readLine(); }
-          while (line == null);
+          String line = in.readLine();
 
           if (InterProcClient.UPDATE_CMD.equals(line))
             out.println(InterProcClient.getInstance());

@@ -23,8 +23,6 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.Stream;
 
-import org.apache.http.client.methods.HttpUriRequest;
-
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.HyperTask;
@@ -34,7 +32,7 @@ import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.util.JsonHttpClient;
+import org.hypernomicon.util.http.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
@@ -80,7 +78,11 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   public static abstract class SyncTask extends HyperTask
   {
-    protected SyncTask(String message) { super("SyncReferenceLibrary", message, false); }
+    protected SyncTask(String message)
+    {
+      super("SyncReferenceLibrary", message, false);
+      setInterruptOnCancel(true);  // Enable thread interruption to cancel blocking HTTP I/O
+    }
 
     protected boolean changed = false;
     public boolean getChanged() { return changed; }
@@ -96,7 +98,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   protected final JsonHttpClient jsonClient = new JsonHttpClient();
   protected SyncTask syncTask = null;
-  protected HttpUriRequest request = null;
   private BiConsumer<String, String> keyChangeHndlr;
 
   protected boolean didMergeDuringSync = false;
@@ -152,9 +153,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   {
     if ((syncTask != null) && syncTask.isRunning())
       syncTask.cancel();
-
-    if (request != null)
-      request.abort();
   }
 
 //---------------------------------------------------------------------------

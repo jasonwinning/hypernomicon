@@ -50,7 +50,7 @@ Contributions can be submitted via [Pull requests](https://github.com/jasonwinni
 
 ### Prerequisites
 
-* [JDK 22](https://adoptium.net/temurin/releases/?version=22) or later for building 'master' branch
+* [JDK 25](https://adoptium.net/temurin/releases/?version=25) or later for building 'master' branch
 * A recent version of [Git](https://git-scm.com/downloads)
 * [Maven](https://maven.apache.org/download.cgi) version 3.6.3 or greater
 
@@ -97,7 +97,7 @@ Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testin
   * [Fugue Icons](http://p.yusukekamiyamane.com/)
 
 * Additional third-party libraries used:
-  * Apache [Commons Lang](https://commons.apache.org/proper/commons-lang/), [Commons Text](https://commons.apache.org/proper/commons-text/), [Commons IO](https://commons.apache.org/proper/commons-io/), [PDFBox](https://pdfbox.apache.org/), [Tika](https://tika.apache.org/), [HttpClient](https://hc.apache.org/httpcomponents-client-4.5.x/index.html), [Log4j](https://logging.apache.org/log4j/2.x/index.html)
+  * Apache [Commons Lang](https://commons.apache.org/proper/commons-lang/), [Commons Text](https://commons.apache.org/proper/commons-text/), [Commons IO](https://commons.apache.org/proper/commons-io/), [PDFBox](https://pdfbox.apache.org/), [Tika](https://tika.apache.org/), [Log4j](https://logging.apache.org/log4j/2.x/index.html)
   * [Guava](https://github.com/google/guava)
   * [PDF.js](https://mozilla.github.io/pdf.js/)
   * [jsoup](https://jsoup.org/)

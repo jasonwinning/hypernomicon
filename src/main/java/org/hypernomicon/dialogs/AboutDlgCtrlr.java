@@ -40,7 +40,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.reports.ReportEngine;
-import org.hypernomicon.util.AsyncHttpClient;
+import org.hypernomicon.util.http.AsyncHttpClient;
 import org.hypernomicon.view.mainText.MainTextUtil;
 
 import com.sun.javafx.runtime.VersionInfo;
@@ -100,7 +100,6 @@ public class AboutDlgCtrlr extends ModalDialog
       anchorTag("Commons IO", "https://commons.apache.org/proper/commons-io/") + ", " +
       anchorTag("PDFBox", "https://pdfbox.apache.org/") + ", " +
       anchorTag("Tika", "https://tika.apache.org/") + ", " +
-      anchorTag("HttpClient", "https://hc.apache.org/httpcomponents-client-4.5.x/index.html") + ", " +
       anchorTag("Log4j", "https://logging.apache.org/log4j/2.x/index.html") + "</li>" +
       "<li>" + anchorTag("Guava", "https://github.com/google/guava") + "</li>" +
       "<li>" + anchorTag("JxBrowser", "https://www.teamdev.com/jxbrowser") + "</li>" +

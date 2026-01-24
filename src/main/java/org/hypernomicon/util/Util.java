@@ -21,11 +21,11 @@ import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.http.HttpResponseException;
 
 import static org.hypernomicon.util.StringUtil.*;
 
 import java.io.*;
-
 import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -52,10 +52,10 @@ import javafx.application.Platform;
 import javafx.scene.input.*;
 import javafx.util.Duration;
 
-import org.apache.commons.codec.binary.Hex;
+import javax.net.ssl.SSLHandshakeException;
+
 import org.apache.commons.lang3.*;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.http.client.HttpResponseException;
 
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
@@ -379,7 +379,7 @@ public final class Util
    */
   public static String digestHexStr(MessageDigest md)
   {
-    return Hex.encodeHexString(md.digest());
+    return HexFormat.of().formatHex(md.digest());
   }
 
 //---------------------------------------------------------------------------
@@ -401,6 +401,28 @@ public final class Util
     {
       throw newAssertionError(e);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Computes the MD5 hash of an InputStream and returns it as a hexadecimal string.
+   *
+   * @param is the InputStream to hash
+   * @return the MD5 hash as a lowercase hexadecimal string
+   * @throws IOException if an I/O error occurs
+   */
+  public static String md5Hex(InputStream is) throws IOException
+  {
+    MessageDigest md = newMessageDigest();
+    byte[] buffer = new byte[8192];
+    int bytesRead;
+
+    while ((bytesRead = is.read(buffer)) != -1)
+      md.update(buffer, 0, bytesRead);
+
+    return digestHexStr(md);
   }
 
 //---------------------------------------------------------------------------
@@ -1436,38 +1458,38 @@ public final class Util
     if (strNullOrBlank(msg) || "null".equals(msg))
       msg = "";
 
-    switch (e)
+    return switch (e)
     {
-      case UnknownHostException _ ->
-      {
-        return "Unable to connect to host" + (msg.isEmpty() ? "" : ": ") + msg;
-      }
+      case UnknownHostException _ -> "Host not found" + (msg.isEmpty() ? "" : ": ") + msg;
 
       case ConnectException _ ->
       {
-        return msg.toLowerCase().contains("timed out") ? "Connection timed out" : msg;
+        if (msg.toLowerCase().contains("timed out"))
+          yield "Connection timed out";
+
+        yield msg.isEmpty() ? "Unable to connect to server" : msg;
       }
 
-      case HttpResponseException httpResponseException ->
-      {
-        return httpResponseException.getStatusCode() + (msg.isEmpty() ? "" : " ") + msg;
-      }
+      case NoRouteToHostException _ -> msg.isEmpty() ? "Unable to connect to server" : msg;
 
-      case AccessDeniedException _ ->
-      {
-        return "Access denied" + (msg.isEmpty() ? "" : ". ") + msg;
-      }
+      case SocketTimeoutException _ -> "Connection timed out";
+
+      case SSLHandshakeException _ -> "Secure connection failed" + (msg.isEmpty() ? "" : ": ") + msg;
+
+      case HttpResponseException _ -> msg.isEmpty() ? "Unknown server error" : msg;
+
+      case AccessDeniedException _ -> "Access denied" + (msg.isEmpty() ? "" : ": ") + msg;
 
       case IOException ioException ->
       {
         if (ioException.getClass().equals(FileSystemException.class))
-          return msg.isEmpty() ? "File system error" : msg;
+          yield msg.isEmpty() ? "File system error" : msg;
 
-        return userFriendlyThrowableName(ioException) + (msg.isEmpty() ? "" : ": ") + msg;
+        yield userFriendlyThrowableName(ioException) + (msg.isEmpty() ? "" : ": ") + msg;
       }
 
-      default -> { return msg.isEmpty() ? userFriendlyThrowableName(e) : msg; }
-    }
+      default -> msg.isEmpty() ? userFriendlyThrowableName(e) : msg;
+    };
   }
 
 //---------------------------------------------------------------------------
