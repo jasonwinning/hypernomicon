@@ -75,17 +75,31 @@ public class HDT_WorkLabel extends HDT_RecordWithMainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String extendedText()
-  {
-    if (parentLabels.size() > 0)
-    {
-      if (parentLabels.getFirst().getID() == 1) return name();
-      String parentText = parentLabels.getFirst().extendedText();
-      if (parentText.length() > 0)
-        return parentText + " / " + name();
-    }
+  /**
+   * Returns the name of this label prefixed with its ancestor hierarchy,
+   * excluding the root "All Labels" record (ID=1).
+   * @return the extended text with " / " separators
+   */
+  public String extendedText() { return extendedText(false); }
 
-    return name();
+  /**
+   * Returns the name of this label prefixed with its ancestor hierarchy.
+   * @param includeRoot whether to include the root "All Labels" record (ID=1)
+   * @return the extended text with " / " separators
+   */
+  public String extendedText(boolean includeRoot)
+  {
+    if (parentLabels.isEmpty())
+      return name();
+
+    HDT_WorkLabel parent = parentLabels.getFirst();
+
+    if (parent.getID() == 1)
+      return includeRoot ? (parent.name() + " / " + name()) : name();
+
+    String parentText = parent.extendedText(includeRoot);
+
+    return parentText.isEmpty() ? name() : (parentText + " / " + name());
   }
 
 //---------------------------------------------------------------------------

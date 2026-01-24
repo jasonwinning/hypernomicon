@@ -161,7 +161,7 @@ public class HyperTableColumn
   private Function<HyperTableRow, String> textHndlr;
   private Function<HyperTableRow, Tooltip> cellToolTipHndlr;
   private Pos alignment = null;  // This is currently only respected by ReadOnlyCell
-  private OverrunStyle textOverrunStyle = null;  // This is currently only respected by ComboBoxCell
+  private OverrunStyle textOverrunStyle = null;  // This is currently only respected by ComboBoxCell and ReadOnlyCell
 
 //---------------------------------------------------------------------------
 

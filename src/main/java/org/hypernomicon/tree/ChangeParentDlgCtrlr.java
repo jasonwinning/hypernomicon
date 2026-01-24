@@ -33,10 +33,10 @@ public class ChangeParentDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private VBox vbMustDetach, vbOptionDetach;
+  @FXML private Button btnDetachAlso, btnOnlyAttach;
   @FXML private Label lblChild, lblNewParent, lblMustDetach, lblOptionDetach;
   @FXML private TextField tfChild, tfNewParent, tfMustDetach, tfOptionDetach;
-  @FXML private Button btnDetachAlso, btnOnlyAttach;
+  @FXML private VBox vbMustDetach, vbOptionDetach;
 
   private boolean detachDragSource = false;
 
@@ -55,6 +55,7 @@ public class ChangeParentDlgCtrlr extends ModalDialog
            srcParentTypeName = getTypeName(dragSourceEdge.parent.getType());
 
     // Set up child and new parent labels and fields
+
     lblChild.setText("Selected " + childTypeName + " record:");
     tfChild.setText(dragTargetEdge.child.name());
 
@@ -62,6 +63,7 @@ public class ChangeParentDlgCtrlr extends ModalDialog
     tfNewParent.setText(dragTargetEdge.parent.name());
 
     // Handle "must be detached from" section (otherEdgeToDetach)
+
     if (otherEdgeToDetach == null)
     {
       vbMustDetach.setVisible(false);
@@ -75,21 +77,24 @@ public class ChangeParentDlgCtrlr extends ModalDialog
     }
 
     // Handle "option to detach" section and edge cases
+
     boolean mustDetach = dragSourceEdge.mustDetachIfAttaching(dragTargetEdge),
             canDetach = dragSourceEdge.canDetach();
 
     if (mustDetach)
     {
       // Must detach - change label and hide "Only Attach" button
+
       lblOptionDetach.setText("And will be detached from " + srcParentTypeName + " record:");
       tfOptionDetach.setText(dragSourceEdge.parent.name());
       btnOnlyAttach.setVisible(false);
       btnOnlyAttach.setManaged(false);
       btnDetachAlso.setText("OK");
     }
-    else if (!canDetach)
+    else if (canDetach == false)
     {
       // Cannot detach - hide the entire option section and "Yes, Detach Also" button
+
       vbOptionDetach.setVisible(false);
       vbOptionDetach.setManaged(false);
       btnDetachAlso.setVisible(false);
@@ -99,11 +104,13 @@ public class ChangeParentDlgCtrlr extends ModalDialog
     else
     {
       // Normal case - show option and both buttons
+
       lblOptionDetach.setText("Also detach it from this " + srcParentTypeName + " record?");
       tfOptionDetach.setText(dragSourceEdge.parent.name());
     }
 
     // Resize window to fit content, then lock vertical size
+
     onShown = () ->
     {
       stage.sizeToScene();

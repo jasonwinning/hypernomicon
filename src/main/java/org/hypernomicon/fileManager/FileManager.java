@@ -231,7 +231,9 @@ public final class FileManager extends NonmodalWindow
     folderTree.getTreeModel().addParentChildRelation(rtParentFolderOfFolder, true);
 
     recordTable.addCol(hdtNone, ctIncremental);
-    recordTable.addLabelCol(hdtNone);
+    recordTable.addLabelCol(hdtNone)
+      .setTextOverrunStyle(OverrunStyle.LEADING_ELLIPSIS)
+      .setCellToolTipHndlr(row -> makeTooltip(row.getText(1)));
 
     treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -1430,17 +1432,25 @@ public final class FileManager extends NonmodalWindow
     {
       HDT_Record relative = relIt.next();
 
-      if ((hasMore) && (relIt.hasNext() == false))
+      if (hasMore && (relIt.hasNext() == false))
       {
         recordTable.newShowMoreRow();
         break;
       }
 
-      if (relative.getType() != hdtFolder)
+      RecordType relativeType = relative.getType();
+
+      if (relativeType != hdtFolder)
       {
         HyperTableRow row = recordTable.newDataRow();
-        row.setCellValue(0, relative, getTypeName(relative.getType()));
-        row.setCellValue(1, relative, relative.defaultChoiceText());
+        row.setCellValue(0, relative, getTypeName(relativeType));
+
+        String displayText = (folderRecord != null) && (relativeType == hdtNote) ?
+          ((HDT_Note) relative).extendedText(false)
+        :
+          relative.defaultChoiceText();
+
+        row.setCellValue(1, relative, displayText);
       }
     }
 

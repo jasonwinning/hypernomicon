@@ -62,4 +62,27 @@ public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns the name of this note prefixed with its ancestor hierarchy.
+   * @param includeRoot whether to include the root "All Notes" record (ID=1)
+   * @return the extended text with " / " separators
+   */
+  public String extendedText(boolean includeRoot)
+  {
+    if (parentNotes.isEmpty())
+      return name();
+
+    HDT_Note parent = parentNotes.getFirst();
+
+    if (parent.getID() == 1)
+      return includeRoot ? (parent.name() + " / " + name()) : name();
+
+    String parentText = parent.extendedText(includeRoot);
+
+    return parentText.isEmpty() ? name() : (parentText + " / " + name());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

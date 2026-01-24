@@ -63,6 +63,9 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
     if (col.getAlignment() != null)
       setAlignment(col.getAlignment());
 
+    if (col.getTextOverrunStyle() != null)
+      setTextOverrun(col.getTextOverrunStyle());
+
     setOnMouseClicked(mouseEvent -> nullSwitch(getItem(), cellItem -> nullSwitch(cellItem.getRecord(), (HDT_Record record) ->
     {
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
