@@ -34,7 +34,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane layoutX="-1.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="230.0" minWidth="300.0" prefHeight="750.0" prefWidth="838.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.InsertPictureDlgCtrlr">
+<AnchorPane layoutX="-1.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="230.0" minWidth="300.0" prefHeight="750.0" prefWidth="838.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.InsertPictureDlgCtrlr">
    <BorderPane layoutX="325.0" layoutY="152.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <center>
          <WebView fx:id="webView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
@@ -141,7 +141,7 @@
                 <ToggleGroup fx:id="tgFormat"/>
               </toggleGroup>
             </ToggleButton>
-            <ToggleButton fx:id="btnPng" layoutX="105.0" layoutY="3.0" maxHeight="25.0" maxWidth="55.0"
+            <ToggleButton layoutX="105.0" layoutY="3.0" maxHeight="25.0" maxWidth="55.0"
                           minHeight="25.0" minWidth="55.0" mnemonicParsing="false" prefHeight="25.0"
                           prefWidth="55.0" text="PNG" toggleGroup="$tgFormat" AnchorPane.bottomAnchor="2.0"
                           AnchorPane.leftAnchor="105.0"/>

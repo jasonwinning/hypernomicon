@@ -23,7 +23,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="1.7976931348623157E308" minWidth="200.0" prefWidth="581.0" xmlns="http://javafx.com/javafx/21"
+<AnchorPane maxHeight="1.7976931348623157E308" minWidth="200.0" prefWidth="581.0" xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.ProgressDlgCtrlr">
   <VBox fx:id="vbox" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <AnchorPane maxHeight="30.0" minHeight="30.0" prefHeight="30.0">

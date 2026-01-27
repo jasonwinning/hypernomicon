@@ -26,7 +26,7 @@
 <?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="98.0" minWidth="300.0" prefHeight="94.0" prefWidth="482.0" minHeight="98.0"
-            xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.hypernomicon.dialogs.RenameDlgCtrlr">
   <GridPane layoutX="141.0" layoutY="57.0" prefHeight="41.0" prefWidth="482.0" AnchorPane.bottomAnchor="0.0"
             AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

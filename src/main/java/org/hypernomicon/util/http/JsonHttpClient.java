@@ -207,7 +207,7 @@ public class JsonHttpClient
 //---------------------------------------------------------------------------
 
   private boolean handleResponse(HttpResponse<InputStream> response, AsyncHttpClient httpClient,
-                                  Consumer<JsonHttpClient> successHndlr, Consumer<Exception> failHndlr)
+                                 Consumer<JsonHttpClient> successHndlr, Consumer<Exception> failHndlr)
   {
     statusCode = response.statusCode();
 

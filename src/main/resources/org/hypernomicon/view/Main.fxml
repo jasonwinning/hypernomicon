@@ -48,7 +48,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" stylesheets="@../resources/css.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
+<BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" stylesheets="@../resources/css.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
   <top>
     <HBox fx:id="topHBox" style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
       <MenuBar fx:id="menuBar" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
@@ -63,7 +63,7 @@
           <SeparatorMenuItem mnemonicParsing="false" />
           <MenuItem fx:id="mnuImportBibFile" mnemonicParsing="false" text="Import Bibliographic Entry File" />
           <MenuItem fx:id="mnuImportBibClipboard" mnemonicParsing="false" text="Import Bibliographic Entry from Clipboard" />
-          <SeparatorMenuItem fx:id="mnuBibImportSeparator" mnemonicParsing="false" />
+          <SeparatorMenuItem mnemonicParsing="false" />
           <MenuItem onAction="#mnuExitClick" text="E_xit" />
           <MenuItem fx:id="mnuExitNoSave" mnemonicParsing="false" onAction="#mnuExitNoSaveClick" text="Exit Without Saving" />
         </Menu>
@@ -209,7 +209,7 @@
     </AnchorPane>
   </center>
   <bottom>
-    <StackPane fx:id="lowerStackPane">
+    <StackPane>
       <HBox fx:id="bottomToolBar" pickOnBounds="false" spacing="3.0">
         <Button fx:id="btnBack" maxWidth="32.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0">
           <graphic>
@@ -245,7 +245,7 @@
             </ImageView>
           </graphic>
         </Button>
-        <HBox fx:id="hbRecord" alignment="BASELINE_LEFT" spacing="3.0">
+        <HBox alignment="BASELINE_LEFT" spacing="3.0">
           <padding>
             <Insets left="3.0" right="5.0" />
           </padding>

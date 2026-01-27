@@ -91,10 +91,10 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     WebButton btn = new WebButton("Google", "Google");
 
-    btn.addPattern("http://www.google.com/search?q=" + FirstName + "%20" + LastName + "%20" + Field,
+    btn.addPattern("https://www.google.com/search?q=" + FirstName + "%20" + LastName + "%20" + Field,
         FirstName, LastName);
 
-    btn.addPattern("http://www.google.com/search?q=" + SingleName + "%20" + Field,
+    btn.addPattern("https://www.google.com/search?q=" + SingleName + "%20" + Field,
         SingleName);
 
     personSrchList.add(btn);
@@ -146,10 +146,10 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Google Image Search", "Google");
 
-    btn.addPattern("http://www.google.com/search?q=" + FirstName + "%20" + LastName + "%20" + Field + "&tbm=isch",
+    btn.addPattern("https://www.google.com/search?q=" + FirstName + "%20" + LastName + "%20" + Field + "&tbm=isch",
         FirstName, LastName);
 
-    btn.addPattern("http://www.google.com/search?q=" + SingleName + "%20" + Field + "&tbm=isch",
+    btn.addPattern("https://www.google.com/search?q=" + SingleName + "%20" + Field + "&tbm=isch",
         SingleName);
 
     personImgSrchList.add(btn);
@@ -180,10 +180,10 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Google", "");
 
-    btn.addPattern("http://www.google.com/search?q=" + Name + "%20" + DivisionName,
+    btn.addPattern("https://www.google.com/search?q=" + Name + "%20" + DivisionName,
         Name, DivisionName);
 
-    btn.addPattern("http://www.google.com/search?q=" + Name,
+    btn.addPattern("https://www.google.com/search?q=" + Name,
         Name);
 
     instSrchList.add(btn);
@@ -230,7 +230,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Bing Maps", "Bing Maps");
 
-    btn.addPattern("http://www.bing.com/maps/default.aspx?where1=" + Name + ',' + City + ',' + Region + ',' + Country,
+    btn.addPattern("https://www.bing.com/maps/default.aspx?where1=" + Name + ',' + City + ',' + Region + ',' + Country,
         Name);
 
     instMapSrchList.add(btn);
@@ -240,7 +240,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Google", "Google");
 
-    btn.addPattern("http://www.google.com/search?q=doi%3A" + doi,
+    btn.addPattern("https://www.google.com/search?q=doi%3A" + doi,
         doi);
 
     doiSrchList.add(btn);
@@ -265,7 +265,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("WorldCat", "WorldCat");
 
-    btn.addPattern("http://www.worldcat.org/search?q=bn%3A" + ISBN + "&qt=advanced",
+    btn.addPattern("https://www.worldcat.org/search?q=bn%3A" + ISBN + "&qt=advanced",
         ISBN);
 
     isbnSrchList.add(btn);
@@ -283,25 +283,25 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("WorldCat", "WorldCat");
 
-    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "+AND+ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
+    btn.addPattern("https://www.worldcat.org/search?q=au%3A" + SingleName + "+AND+ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
         Title, NumericYear, SingleName);
 
-    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "+AND+ti%3A" + Title + "&qt=advanced",
+    btn.addPattern("https://www.worldcat.org/search?q=au%3A" + SingleName + "+AND+ti%3A" + Title + "&qt=advanced",
         Title, SingleName);
 
-    btn.addPattern("http://www.worldcat.org/search?q=ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
+    btn.addPattern("https://www.worldcat.org/search?q=ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
         Title, NumericYear);
 
-    btn.addPattern("http://www.worldcat.org/search?q=ti%3A" + Title + "&qt=advanced",
+    btn.addPattern("https://www.worldcat.org/search?q=ti%3A" + Title + "&qt=advanced",
         Title);
 
-    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
+    btn.addPattern("https://www.worldcat.org/search?q=au%3A" + SingleName + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
         NumericYear, SingleName);
 
-    btn.addPattern("http://www.worldcat.org/search?q=au%3A" + SingleName + "&qt=advanced",
+    btn.addPattern("https://www.worldcat.org/search?q=au%3A" + SingleName + "&qt=advanced",
         SingleName);
 
-    btn.addPattern("http://www.worldcat.org/search?q=bn%3A" + ISBN + "&qt=advanced",
+    btn.addPattern("https://www.worldcat.org/search?q=bn%3A" + ISBN + "&qt=advanced",
         ISBN);
 
     workSrchList.add(btn);
@@ -333,7 +333,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Google", "Google");
 
-    btn.addPattern("http://www.google.com/search?q=" + Name,
+    btn.addPattern("https://www.google.com/search?q=" + Name,
         Name);
 
     genSrchList.add(btn);
@@ -341,7 +341,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Stanford Encyclopedia of Philosophy", "SEP");
 
-    btn.addPattern("http://plato.stanford.edu/search/searcher.py?query=" + Name,
+    btn.addPattern("https://plato.stanford.edu/search/searcher.py?query=" + Name,
         Name);
 
     genSrchList.add(btn);
@@ -357,7 +357,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     btn = new WebButton("Wikipedia", "Wikipedia");
 
-    btn.addPattern("http://en.wikipedia.org/w/index.php?search=" + Name,
+    btn.addPattern("https://en.wikipedia.org/w/index.php?search=" + Name,
         Name);
 
     genSrchList.add(btn);

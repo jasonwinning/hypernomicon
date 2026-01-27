@@ -87,7 +87,7 @@ public class AboutDlgCtrlr extends ModalDialog
     webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);
 
-    tabContributorsHtml = htmlStart + "Original design and development: " + anchorTag("Jason Winning", "http://jasonwinning.com") + "<br>" +
+    tabContributorsHtml = htmlStart + "Original design and development: " + anchorTag("Jason Winning", "https://jasonwinning.com") + "<br>" +
                                       "Design ideas and testing: " + anchorTag("Danny Weltman", "https://dannyweltman.com/") + "<br><br>" +
       anchorTag("List at GitHub", "https://github.com/jasonwinning/hypernomicon/contributors") + "&nbsp;&nbsp;&nbsp;" +
       anchorTag("Add your name to this list!", "https://akrabat.com/the-beginners-guide-to-contributing-to-a-github-project/") +
@@ -113,7 +113,7 @@ public class AboutDlgCtrlr extends ModalDialog
       "<li>" + anchorTag("JODConverter", "https://github.com/jodconverter/jodconverter") + "</li>" +
       "<li>" + anchorTag("NetBeans Keyring", "https://netbeans.apache.org/front/main/index.html") + "</li>" +
       "<li>" + anchorTag("JUnit Jupiter", "https://junit.org/junit5/") + "</li>" +
-      "<li>" + anchorTag("SLF4J Simple", "http://www.slf4j.org") + "</li>" +
+      "<li>" + anchorTag("SLF4J Simple", "https://www.slf4j.org") + "</li>" +
       "<li>" + anchorTag("JBibTex", "https://github.com/jbibtex/jbibtex") + "</li>" +
       "<li>" + anchorTag("mark.js", "https://markjs.io/") +
 
@@ -194,7 +194,7 @@ public class AboutDlgCtrlr extends ModalDialog
       "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + ' ' + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
       maxHeap +
       "JavaFX version: " + VersionInfo. getRuntimeVersion() + "<br>" +
-      anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
+      anchorTag("Website", "https://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
       anchorTag("Release Notes", "https://sourceforge.net/p/hypernomicon/wiki/ReleaseNotes/") + "&nbsp;&nbsp;&nbsp;" +
       anchorTag("GitHub repo", "https://github.com/jasonwinning/hypernomicon") + "</body></html>";
   }

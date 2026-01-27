@@ -40,7 +40,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane prefHeight="809.0" prefWidth="1417.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.bib.BibManager">
+<AnchorPane prefHeight="809.0" prefWidth="1417.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.bib.BibManager">
   <GridPane AnchorPane.bottomAnchor="32.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
@@ -148,7 +148,7 @@
             <AnchorPane>
               <WebView fx:id="webView" layoutX="17.0" layoutY="468.0" prefHeight="267.0" prefWidth="272.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="468.0" />
               <TitledPane fx:id="tpRelated" animated="false" layoutX="20.0" layoutY="94.0" text="Related entries" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                <AnchorPane fx:id="apRelated" minHeight="0.0" minWidth="0.0" prefHeight="300.0" prefWidth="270.0" style="-fx-padding: 0em;">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="300.0" prefWidth="270.0" style="-fx-padding: 0em;">
                   <Button fx:id="btnUpdateRelatives" layoutX="9.600000381469727" layoutY="9.600000381469727" mnemonicParsing="false" prefHeight="46.0" prefWidth="251.0" text="Use this entry's book data to update child, sibling, and/or parent entries" textAlignment="CENTER" wrapText="true" AnchorPane.leftAnchor="6.0" AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="6.0" />
                   <TableView fx:id="tvRelatives" layoutX="14.0" layoutY="36.0" prefHeight="193.0" prefWidth="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="58.0">
                     <columns>

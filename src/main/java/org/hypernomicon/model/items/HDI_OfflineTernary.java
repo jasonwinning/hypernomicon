@@ -41,7 +41,7 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
   {
     this(schema, recordState);
 
-    value = newValue == null ? Ternary.Unset : newValue;
+    value = newValue == null ? Unset : newValue;
   }
 
   public HDI_OfflineTernary(HDI_Schema schema, RecordState recordState)

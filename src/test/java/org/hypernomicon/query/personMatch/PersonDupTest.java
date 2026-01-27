@@ -182,38 +182,38 @@ class PersonDupTest
       new PersonForDupCheck(a1)                                                                  // C29
     );
 
-    PersonMatcher matcher = findMatches(null, candidates);
-    assertEquals(0, matcher.numMatches());
-    assertTrue(matcher.isEmpty());
+    PersonMatcher matchResult = findMatches(null, candidates);
+    assertEquals(0, matchResult.numMatches());
+    assertTrue(matchResult.isEmpty());
 
-    matcher = findMatches(new PersonForDupCheck(new PersonName("")), candidates);
-    assertEquals(0, matcher.numMatches());
-    assertTrue(matcher.isEmpty());
+    matchResult = findMatches(new PersonForDupCheck(new PersonName("")), candidates);
+    assertEquals(0, matchResult.numMatches());
+    assertTrue(matchResult.isEmpty());
 
-    matcher = findMatches(new PersonForDupCheck(new PersonName("Dan Dennett")), candidates);
-    assertEquals(0, matcher.numMatches());
-    assertTrue(matcher.isEmpty());
+    matchResult = findMatches(new PersonForDupCheck(new PersonName("Dan Dennett")), candidates);
+    assertEquals(0, matchResult.numMatches());
+    assertTrue(matchResult.isEmpty());
 
-    matcher = findMatches(new PersonForDupCheck(new PersonName("Confucius")), candidates);
-    assertEquals(2, matcher.numMatches());
-    assertFalse(matcher.isEmpty());
+    matchResult = findMatches(new PersonForDupCheck(new PersonName("Confucius")), candidates);
+    assertEquals(2, matchResult.numMatches());
+    assertFalse(matchResult.isEmpty());
 
-    matcher = findMatches(new PersonForDupCheck(new PersonName("Jose Nino")), candidates);
-    assertEquals(2, matcher.numMatches());
-    assertSame(p16, matcher.getMatchedAuthor(0).getPerson());
-    assertSame(p17, matcher.getMatchedAuthor(1).getPerson());
+    matchResult = findMatches(new PersonForDupCheck(new PersonName("Jose Nino")), candidates);
+    assertEquals(2, matchResult.numMatches());
+    assertSame(p16, matchResult.getMatchedAuthor(0).getPerson());
+    assertSame(p17, matchResult.getMatchedAuthor(1).getPerson());
 
-    matcher = findMatches(new PersonForDupCheck(a1, new PersonName("Magda Arnold")), candidates);
-    assertEquals(0, matcher.numMatches());
+    matchResult = findMatches(new PersonForDupCheck(a1, new PersonName("Magda Arnold")), candidates);
+    assertEquals(0, matchResult.numMatches());
 
-    matcher = findMatches(new PersonForDupCheck(a1, new PersonName("Donald Davidson")), candidates);  // Reject match if Author object is the same, even if name is the same
-    assertEquals(0, matcher.numMatches());
+    matchResult = findMatches(new PersonForDupCheck(a1, new PersonName("Donald Davidson")), candidates);  // Reject match if Author object is the same, even if name is the same
+    assertEquals(0, matchResult.numMatches());
 
-    matcher = findMatches(new PersonForDupCheck(new RecordAuthor(p9), new PersonName("Fred Dretske")), candidates);
-    assertEquals(0, matcher.numMatches());
+    matchResult = findMatches(new PersonForDupCheck(new RecordAuthor(p9), new PersonName("Fred Dretske")), candidates);
+    assertEquals(0, matchResult.numMatches());
 
-    matcher = findMatches(new PersonForDupCheck(new RecordAuthor(p9), new PersonName(p9.getNameLastFirst(false))), candidates);  // Reject match if Person object is the same, even if name is the same
-    assertEquals(0, matcher.numMatches());
+    matchResult = findMatches(new PersonForDupCheck(new RecordAuthor(p9), new PersonName(p9.getNameLastFirst(false))), candidates);  // Reject match if Person object is the same, even if name is the same
+    assertEquals(0, matchResult.numMatches());
 
     RecordAuthor a2 = new RecordAuthor(w5, new PersonName("Nancy Cartwright"), false, false, Ternary.Unset),
                  a3 = new RecordAuthor(w5, new PersonName("Nancy Cartwright"), false, false, Ternary.Unset),
@@ -225,11 +225,11 @@ class PersonDupTest
 
     // Reject match if authors are in the same work, regardless of whether names match
 
-    matcher = findMatches(new PersonForDupCheck(a2), List.of(new PersonForDupCheck(a3)));
-    assertEquals(0, matcher.numMatches());
+    matchResult = findMatches(new PersonForDupCheck(a2), List.of(new PersonForDupCheck(a3)));
+    assertEquals(0, matchResult.numMatches());
 
-    matcher = findMatches(new PersonForDupCheck(w5.getAuthors().get(0)), List.of(new PersonForDupCheck(w5.getAuthors().get(1))));
-    assertEquals(0, matcher.numMatches());
+    matchResult = findMatches(new PersonForDupCheck(w5.getAuthors().get(0)), List.of(new PersonForDupCheck(w5.getAuthors().get(1))));
+    assertEquals(0, matchResult.numMatches());
 
 //---------------------------------------------------------------------------
 
@@ -243,13 +243,13 @@ class PersonDupTest
       }
     };
 
-    matcher = findMatches(person1, candidates);
+    matchResult = findMatches(person1, candidates);
 
-    List<RecordAuthor> result = matcher.getMatches(person1);
+    List<RecordAuthor> matches = matchResult.getMatches(person1);
 
     // A) Skipped are: C1, C8, C17, C18, C20, C21, C23, C27
 
-    assertEquals(21, result.size(), "We should get exactly 21 matches; all the skip-criteria removed 8 candidates");
+    assertEquals(21, matches.size(), "We should get exactly 21 matches; all the skip-criteria removed 8 candidates");
 
     // B) None of the SKIPPED candidates' authors appear:
 
@@ -273,11 +273,11 @@ class PersonDupTest
 
   private static PersonMatcher findMatches(PersonForDupCheck person1, Iterable<PersonForDupCheck> candidates)
   {
-    PersonMatcher matcher = new PersonMatcher();
+    PersonMatcher result = new PersonMatcher();
 
-    assertDoesNotThrow(() -> matcher.doDupCheck(person1, candidates, null));
+    assertDoesNotThrow(() -> result.doDupCheck(person1, candidates, null));
 
-    return matcher;
+    return result;
   }
 
 //---------------------------------------------------------------------------

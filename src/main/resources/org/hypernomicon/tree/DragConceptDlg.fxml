@@ -23,7 +23,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane maxHeight="300.0" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="450.0" prefHeight="300.0"
-            prefWidth="926.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="926.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.hypernomicon.tree.DragConceptDlgCtrlr">
   <Label layoutX="20.0" layoutY="25.0" text="Select whether to:" AnchorPane.leftAnchor="24.0"/>
   <Label fx:id="lblMoveInfo" alignment="TOP_LEFT" layoutX="58.0" layoutY="80.0" prefHeight="61.0" prefWidth="686.0"

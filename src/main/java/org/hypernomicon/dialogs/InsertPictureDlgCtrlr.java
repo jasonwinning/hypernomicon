@@ -64,7 +64,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
   @FXML private ProgressBar progressBar;
   @FXML private RadioButton rbExistingRecord, rbLocalFile, rbWebAddress, rbClipboard;
   @FXML private TextField tfLocalFile, tfWebUrl;
-  @FXML private ToggleButton btnJpg, btnPng;
+  @FXML private ToggleButton btnJpg;
   @FXML private ToggleGroup tgFormat;
   @FXML private WebView webView;
 

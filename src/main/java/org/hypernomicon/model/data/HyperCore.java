@@ -38,15 +38,8 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private record KeyIDpair(int id, String key) implements Comparable<KeyIDpair>, Cloneable
+  private record KeyIDpair(int id, String key) implements Comparable<KeyIDpair>
   {
-    @Override public KeyIDpair clone()
-    {
-      try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }
-    }
-
-    //---------------------------------------------------------------------------
-
     @Override public boolean equals(Object obj)
     {
       if (this == obj) return true;
@@ -54,7 +47,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
       if (getClass() != obj.getClass()) return false;
 
       KeyIDpair otherPair = (KeyIDpair) obj;
-      return (otherPair.id == id) && otherPair.key.equals(key);
+      return (id == otherPair.id) && key.equals(otherPair.key);
     }
 
     //---------------------------------------------------------------------------
@@ -75,6 +68,8 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
   private final Map<Integer, HDT_DT> idToRecord = new HashMap<>();
 
   private final RecordType type;
+
+  private int modCount = 0;
 
 //---------------------------------------------------------------------------
 
@@ -130,8 +125,19 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
   @SuppressWarnings("unchecked")
   @Override public <T> T[] toArray(T[] a)
   {
-    Objects.requireNonNull(a,"The provided array is null");
-    return stream().toArray(size -> a.length >= size ? a : (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size));
+    Objects.requireNonNull(a, "The provided array is null");
+
+    int size = size();
+    T[] result = a.length >= size ? a : (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);
+
+    int ndx = 0;
+    for (HDT_DT record : this)
+      result[ndx++] = (T) record;
+
+    if (result.length > size)
+      result[size] = null;  // Add ending marker to fulfill contract. This is done in case the passed-in array was full of data.
+
+    return result;
   }
 
 //---------------------------------------------------------------------------
@@ -149,6 +155,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
   private final class CoreIterator implements Iterator<HDT_DT>
   {
     private final boolean byKey;
+    private final int expectedModCount;
 
     private int nextNdx = 0;
 
@@ -160,12 +167,14 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
     private CoreIterator(boolean byKey)
     {
       this.byKey = byKey;
+      this.expectedModCount = modCount;
     }
 
   //---------------------------------------------------------------------------
 
     @Override public HDT_DT next()
     {
+      if (modCount != expectedModCount) throw new ConcurrentModificationException();
       if (hasNext() == false) throw new NoSuchElementException();
 
       return byKey ? getByKeyNdx(nextNdx++) : getByIDNdx(nextNdx++);
@@ -181,6 +190,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
     idToKey   .clear();
     sortedIDs .clear();
     sortedKeys.clear();
+    modCount++;
   }
 
 //---------------------------------------------------------------------------
@@ -258,6 +268,8 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
           sortedKeys.remove(getKeyNdxByID(id));
           idToKey   .remove(id);
         }
+
+        modCount++;
       }
       else if (record.getID() < 1)
       {
@@ -274,6 +286,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
     addToSortedList(sortedIDs, id);
     setKey(id, key);
     idToRecord.put(id, record);
+    modCount++;
   }
 
 //---------------------------------------------------------------------------
@@ -285,6 +298,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
     sortedKeys.remove(getKeyNdxByID(id));
     idToKey   .remove(id);
     idToRecord.remove(id);
+    modCount++;
   }
 
 //---------------------------------------------------------------------------
@@ -303,6 +317,9 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
 
     idToKey.put(id, newKey);
     addToSortedList(sortedKeys, new KeyIDpair(id, newKey));
+
+    // Note: setKey doesn't increment modCount because it reorders but doesn't add/remove elements.
+    // The CoreIterator iterates by index, so reordering is safe during iteration.
   }
 
 //---------------------------------------------------------------------------

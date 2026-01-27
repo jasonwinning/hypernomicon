@@ -138,6 +138,9 @@ public class SettingsDlgCtrlr extends ModalDialog
   @FXML private void mnuClearLogPathClick()      { tfLogPath.clear(); }
   @FXML private void btnClearOfficeClick()       { tfOffice.clear(); }
 
+  private void showLinkToExtBibMgrPane()     { vbRefMgr.getChildren().setAll(apLinkToExtBibMgr);     scaleNodeForDPI(apLinkToExtBibMgr); }
+  private void showUnlinkFromExtBibMgrPane() { vbRefMgr.getChildren().setAll(apUnlinkFromExtBibMgr); scaleNodeForDPI(apUnlinkFromExtBibMgr); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -189,6 +192,7 @@ public class SettingsDlgCtrlr extends ModalDialog
     {
       btnReEstablishAccess.setDisable(true);
       vbRefMgr.getChildren().add(apLinkToExtBibMgr);
+      scaleNodeForDPI(apLinkToExtBibMgr);
       selectLibraryType(db.getBibLibrary().type());
     });
 
@@ -616,7 +620,7 @@ public class SettingsDlgCtrlr extends ModalDialog
       if (db.bibLibraryIsLinked())
       {
         btnReEstablishAccess.setDisable(false);
-        vbRefMgr.getChildren().setAll(apUnlinkFromExtBibMgr);
+        showUnlinkFromExtBibMgrPane();
       }
     }
   }
@@ -666,7 +670,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     BibManager.instance().syncWithModalPopup();
 
-    vbRefMgr.getChildren().setAll(apUnlinkFromExtBibMgr);
+    showUnlinkFromExtBibMgrPane();
     btnReEstablishAccess.setDisable(false);
     setUnlinkMessage();
   }
@@ -714,7 +718,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     BibManager.instance().syncWithModalPopup();
 
-    vbRefMgr.getChildren().setAll(apUnlinkFromExtBibMgr);
+    showUnlinkFromExtBibMgrPane();
     btnReEstablishAccess.setDisable(false);
     setUnlinkMessage();
   }
@@ -768,7 +772,7 @@ public class SettingsDlgCtrlr extends ModalDialog
       return;
 
     db.unlinkBibLibrary();
-    vbRefMgr.getChildren().setAll(apLinkToExtBibMgr);
+    showLinkToExtBibMgrPane();
   }
 
 //---------------------------------------------------------------------------

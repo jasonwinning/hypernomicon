@@ -157,7 +157,8 @@ public final class SelectTermDlgCtrlr extends ModalDialog
       HDT_Term tempTerm = hcbTerm.selectedRecord();
       if (tempTerm == null) return Stream.empty();
 
-      return tempTerm.concepts.stream().filter(curConcept -> (unitingWith == null) || HDT_Hub.canUnite(curConcept, unitingWith, sb))
+      // unitingWith will never be null here because this is only used if concept == null
+      return tempTerm.concepts.stream().filter(curConcept -> HDT_Hub.canUnite(curConcept, unitingWith, sb))
                                        .map(curConcept -> curConcept.glossary.get()).distinct();
     });
 
@@ -174,9 +175,9 @@ public final class SelectTermDlgCtrlr extends ModalDialog
       HDT_Glossary tempGlossary = hcbGlossary.selectedRecord();
       if (tempGlossary == null) return Stream.empty();
 
-      if (concept == null)
+      if (concept == null)  // unitingWith must be non-null whenever concept is null
         return tempTerm.concepts.stream().filter(curConcept -> curConcept.glossary.get() == tempGlossary)
-                                         .filter(curConcept -> (unitingWith == null) || HDT_Hub.canUnite(curConcept, unitingWith, sb))
+                                         .filter(curConcept -> HDT_Hub.canUnite(curConcept, unitingWith, sb))
                                          .map(curConcept -> curConcept.sense.get());
 
       return db.conceptSenses.stream().filter(curSense -> tempTerm.getConcept(tempGlossary, curSense) == null);
@@ -348,19 +349,19 @@ public final class SelectTermDlgCtrlr extends ModalDialog
 
   public boolean uniteWith(HDT_RecordWithMainText otherSpoke, MutableBoolean createdNewTerm, Property<HDT_Concept> conceptProp) throws HyperDataException
   {
-    HDT_Concept concept = term.getConcept(getGlossary(), getSense());
+    HDT_Concept selectedConcept = term.getConcept(getGlossary(), getSense());
 
-    if (concept == null)
+    if (selectedConcept == null)
       throw new HDB_InternalError(89681);
 
-    if (MainCtrlr.uniteRecords(otherSpoke, concept) == false)
+    if (MainCtrlr.uniteRecords(otherSpoke, selectedConcept) == false)
       return false;
 
     createdNewTerm.setValue(creatingNewTerm);
-    conceptProp   .setValue(concept);
+    conceptProp   .setValue(selectedConcept);
 
     if (creatingNewTerm)
-      concept.term.get().setName(otherSpoke.defaultCellText());
+      selectedConcept.term.get().setName(otherSpoke.defaultCellText());
 
     return true;
   }

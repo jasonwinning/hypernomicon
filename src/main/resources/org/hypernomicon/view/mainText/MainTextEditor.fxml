@@ -32,7 +32,7 @@
 <?import javafx.scene.web.HTMLEditor?>
 <?import org.hypernomicon.view.controls.HiddenSidesPane?>
 
-<BorderPane fx:id="borderPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.mainText.MainTextCtrlr">
+<BorderPane fx:id="borderPane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.mainText.MainTextCtrlr">
    <center>
       <HiddenSidesPane fx:id="hsPane">
         <content>

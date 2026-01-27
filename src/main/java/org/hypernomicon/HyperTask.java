@@ -345,9 +345,9 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private synchronized boolean waitUntilThreadDies()
+  private synchronized void waitUntilThreadDies()
   {
-    if ((thread == null) || (thread.isAlive() == false)) return true;
+    if ((thread == null) || (thread.isAlive() == false)) return;
 
     try
     {
@@ -356,10 +356,7 @@ public abstract class HyperTask
     catch (InterruptedException e)
     {
       Thread.currentThread().interrupt();
-      return false;
     }
-
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -367,14 +364,12 @@ public abstract class HyperTask
 
   /**
    * Terminates execution of this task and waits for the thread to die.
-   *
-   * @return returns true if the cancel was successful
    */
-  public boolean cancelAndWait()
+  public void cancelAndWait()
   {
     cancel();
 
-    return waitUntilThreadDies();
+    waitUntilThreadDies();
   }
 
 //---------------------------------------------------------------------------

@@ -24,7 +24,7 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="356.0" minWidth="1026.0" prefHeight="657.0"
-            prefWidth="1271.0" xmlns="http://javafx.com/javafx/24.0.1"
+            prefWidth="1271.0" xmlns="http://javafx.com/javafx/25"
             fx:controller="org.hypernomicon.settings.SettingsDlgCtrlr">
   <SplitPane dividerPositions="0.18124507486209615" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

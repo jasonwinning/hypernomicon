@@ -475,9 +475,9 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
       try
       {
 
-    /*********************************************/
-    /*        Try sending local updates          */
-    /*********************************************/
+    /* ******************************************* */
+    /*        Try sending local updates            */
+    /* ******************************************* */
 
         int statusCode;
 
@@ -489,9 +489,9 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
           changed = true;
         }
 
-    /*********************************************/
-    /*         Retrieve remote updates           */
-    /*********************************************/
+    /* ******************************************* */
+    /*         Retrieve remote updates             */
+    /* ******************************************* */
 
         while (statusCode == SC_PRECONDITION_FAILED)
         {
@@ -505,9 +505,9 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
           if (!getRemoteUpdates(ZoteroCmd.readChangedItemVersions, ZoteroCmd.readItems, keyToAllEntry  )) return;
           if (!getRemoteUpdates(ZoteroCmd.readTrashVersions,       ZoteroCmd.readTrash, keyToTrashEntry)) return;
 
-      /*********************************************/
-      /*       Retrieve remote deletions           */
-      /*********************************************/
+      /* ******************************************* */
+      /*       Retrieve remote deletions             */
+      /* ******************************************* */
 
           JsonArray jArr = doReadCommand(ZoteroCmd.readDeletions, "", "");
 
@@ -563,9 +563,9 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
           else
             return;
 
-      /*********************************************/
-      /*      Try sending local updates again      */
-      /*********************************************/
+      /* ******************************************* */
+      /*      Try sending local updates again        */
+      /* ******************************************* */
 
           syncChangedEntriesToServer();
 

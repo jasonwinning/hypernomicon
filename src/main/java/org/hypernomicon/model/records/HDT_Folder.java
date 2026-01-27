@@ -73,6 +73,29 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Check if this folder's parent chain connects back to the root folder.
+   * This can return false if parent folder records have been deleted.
+   * @return true if the folder is connected to root, false otherwise
+   */
+  public boolean isConnectedToRoot()
+  {
+    HDT_Folder folder = this;
+
+    while (folder != null)
+    {
+      if (folder.getID() == ROOT_FOLDER_ID)
+        return true;
+
+      folder = folder.parentFolder();
+    }
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public boolean renameTo(String newName)
   {
     if (getID() == ROOT_FOLDER_ID)

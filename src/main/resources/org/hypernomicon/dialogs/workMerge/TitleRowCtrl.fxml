@@ -24,7 +24,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="80.0" prefWidth="271.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.workMerge.BibFieldRow$TitleRow">
+<AnchorPane prefHeight="80.0" prefWidth="271.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.workMerge.BibFieldRow$TitleRow">
   <GridPane.margin>
     <Insets bottom="4.0" left="4.0" right="4.0" />
   </GridPane.margin>

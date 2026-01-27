@@ -33,7 +33,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<AnchorPane maxHeight="150.0" minHeight="150.0" minWidth="300.0" prefHeight="150.0" prefWidth="971.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.SelectWorkDlgCtrlr">
+<AnchorPane maxHeight="150.0" minHeight="150.0" minWidth="300.0" prefHeight="150.0" prefWidth="971.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.SelectWorkDlgCtrlr">
   <AnchorPane fx:id="apMain" minHeight="150.0" minWidth="300.0" prefHeight="150.0" prefWidth="821.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <GridPane layoutX="280.0" layoutY="104.0" prefWidth="759.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <columnConstraints>

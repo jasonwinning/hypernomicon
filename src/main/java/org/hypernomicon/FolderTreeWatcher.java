@@ -159,9 +159,10 @@ public class FolderTreeWatcher
             if (folder == null)
               watchKeyToDir.put(watchKey, folder = HyperPath.getFolderFromFilePath(new FilePath((Path)watchKey.watchable()), false));
 
-            if (folder.getID() > 0)
+            if ((folder != null) && (folder.getID() > 0))
             {
-              FilePath filePath = folder.filePath().resolve(new FilePath(watchEvent.context())); // This is what actually changed
+              FilePath parentPath = folder.isConnectedToRoot() ? folder.filePath() : new FilePath((Path) watchKey.watchable());
+              FilePath filePath = parentPath.resolve(new FilePath(watchEvent.context())); // This is what actually changed
               PathInfo newPathInfo = new PathInfo(filePath);
               WatcherEvent watcherEvent = null;
 
@@ -259,12 +260,7 @@ public class FolderTreeWatcher
 
     private void processEventList(List<WatcherEvent> eventList) throws IOException
     {
-      if (app.debugging)
-      {
-        System.out.println("---------------------------");
-        System.out.println("New event list");
-        System.out.println("---------------------------");
-      }
+      boolean bannerPrinted = false;
 
       for (WatcherEvent watcherEvent : eventList)
       {
@@ -322,10 +318,8 @@ public class FolderTreeWatcher
                 {
                   FilePath oldPath = oldPathInfo.getFilePath();
 
-                  Platform.runLater(() ->
+                  runOutsideFXThread(2000, () ->
                   {
-                    sleepForMillis(2000);
-
                     if (oldPath.exists() == false)
                       warningPopup(deletedMsg(oldPath));
                   });
@@ -376,49 +370,50 @@ public class FolderTreeWatcher
                 warningPopup(changedFolderMsg());
               else
               {
-                Platform.runLater(() ->
+                runOutsideFXThread(2000, () ->
                 {
-                  sleepForMillis(2000);
-
                   if ((newPath.exists() == false) || oldPathInfo.getFilePath().equals(newPath)) return;
 
-                  if (!confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
-                                     "This may or may not cause a data integrity problem." + System.lineSeparator() +
-                                     "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?", true))
-                    return;
-
-                  if (newPath.exists() == false)
+                  runInFXThread(() ->
                   {
-                    warningPopup("The file \"" + newPath.getNameOnly() + "\" no longer exists. Record was not changed.");
-                    return;
-                  }
+                    if (!confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
+                                       "This may or may not cause a data integrity problem." + System.lineSeparator() +
+                                       "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?", true))
+                      return;
 
-                  hyperPath.assign(hyperPath.parentFolder(), newPath.getNameOnly());
-
-                  HDT_RecordWithPath record = hyperPath.getRecord();
-
-                  if (record == null)
-                    return;
-
-                  if ((record.getType() == hdtWorkFile) && (ui.activeTabEnum() == workTabEnum))
-                  {
-                    HDT_WorkFile workFile = (HDT_WorkFile) record;
-
-                    if (workFile.works.contains(ui.activeRecord()))
+                    if (newPath.exists() == false)
                     {
-                      if      (ui.workHyperTab().wdc != null) ui.workHyperTab().wdc.btnCancel.fire();
-                      else if (ui.workHyperTab().fdc != null) ui.workHyperTab().fdc.btnCancel.fire();
-
-                      ui.workHyperTab().refreshFiles();
+                      warningPopup("The file \"" + newPath.getNameOnly() + "\" no longer exists. Record was not changed.");
+                      return;
                     }
-                  }
-                  else if ((record.getType() == hdtMiscFile) && (ui.activeTabEnum() == fileTabEnum))
-                  {
-                    if (ui.fileHyperTab().fdc != null)
-                      ui.fileHyperTab().fdc.btnCancel.fire();
 
-                    ui.fileHyperTab().refreshFile();
-                  }
+                    hyperPath.assign(hyperPath.parentFolder(), newPath.getNameOnly());
+
+                    HDT_RecordWithPath record = hyperPath.getRecord();
+
+                    if (record == null)
+                      return;
+
+                    if ((record.getType() == hdtWorkFile) && (ui.activeTabEnum() == workTabEnum))
+                    {
+                      HDT_WorkFile workFile = (HDT_WorkFile) record;
+
+                      if (workFile.works.contains(ui.activeRecord()))
+                      {
+                        if      (ui.workHyperTab().wdc != null) ui.workHyperTab().wdc.btnCancel.fire();
+                        else if (ui.workHyperTab().fdc != null) ui.workHyperTab().fdc.btnCancel.fire();
+
+                        ui.workHyperTab().refreshFiles();
+                      }
+                    }
+                    else if ((record.getType() == hdtMiscFile) && (ui.activeTabEnum() == fileTabEnum))
+                    {
+                      if (ui.fileHyperTab().fdc != null)
+                        ui.fileHyperTab().fdc.btnCancel.fire();
+
+                      ui.fileHyperTab().refreshFile();
+                    }
+                  });
                 });
               }
             }
@@ -438,14 +433,27 @@ public class FolderTreeWatcher
             break;
         }
 
-        if (app.debugging) System.out.println(switch (watcherEvent.kind)
+        // Skip printing directory modify events - they're typically noise from Dropbox, antivirus, etc.
+
+        if (app.debugging && ((watcherEvent.kind != wekModify) || (watcherEvent.isDirectory() == false)))
         {
-          case wekCreate -> "Created: \""       + watcherEvent.newPathInfo + '"';
-          case wekDelete -> "Deleted: \""       + watcherEvent.oldPathInfo + '"';
-          case wekModify -> "Modified: \""      + watcherEvent.newPathInfo + '"';
-          case wekRename -> "Renamed: \""       + watcherEvent.oldPathInfo +
-                            "\" to: \""         + watcherEvent.newPathInfo.getFilePath().getNameOnly() + '"';
-        });
+          if (bannerPrinted == false)
+          {
+            System.out.println("---------------------------");
+            System.out.println("New event list");
+            System.out.println("---------------------------");
+            bannerPrinted = true;
+          }
+
+          System.out.println(switch (watcherEvent.kind)
+          {
+            case wekCreate -> "Created: \""       + watcherEvent.newPathInfo + '"';
+            case wekDelete -> "Deleted: \""       + watcherEvent.oldPathInfo + '"';
+            case wekModify -> "Modified: \""      + watcherEvent.newPathInfo + '"';
+            case wekRename -> "Renamed: \""       + watcherEvent.oldPathInfo +
+                              "\" to: \""         + watcherEvent.newPathInfo.getFilePath().getNameOnly() + '"';
+          });
+        }
       }
     }
 

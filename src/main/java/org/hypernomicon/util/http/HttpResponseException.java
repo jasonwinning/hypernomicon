@@ -34,8 +34,7 @@ public class HttpResponseException extends IOException
   private static final long serialVersionUID = 1L;
 
   private final int statusCode;
-  private final String url;
-  private final String serverMessage;
+  private final String url, serverMessage;
 
 //---------------------------------------------------------------------------
 

@@ -106,8 +106,6 @@ public class WorkDlgCtrlr extends ModalDialog
   @FXML private TextArea taMisc;
   @FXML private TextField tfDest, tfDOI, tfFileTitle, tfNewFile, tfOrigFile, tfTitle, tfYear, tfDay;
   @FXML private ToggleButton btnPreview;
-  @FXML private ToggleGroup tgSelect;
-
   @FXML public Button btnCancel;
 
   private final AnchorPane apPreview;

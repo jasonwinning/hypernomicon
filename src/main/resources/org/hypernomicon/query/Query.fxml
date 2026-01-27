@@ -28,7 +28,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<SplitPane fx:id="spMain" dividerPositions="0.35" orientation="VERTICAL" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueryCtrlr">
+<SplitPane fx:id="spMain" dividerPositions="0.35" orientation="VERTICAL" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueryCtrlr">
    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" style="-fx-background-color: -fx-background;">
      <TableView fx:id="tvFields" editable="true" layoutX="-2.0" layoutY="-1.0" prefHeight="245.0" prefWidth="1057.0" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="-1.0">
        <columns>

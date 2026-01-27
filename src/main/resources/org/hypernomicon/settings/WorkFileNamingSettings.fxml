@@ -28,7 +28,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="495.0" prefWidth="1139.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.WorkFileNamingSettingsCtrlr">
+<AnchorPane prefHeight="495.0" prefWidth="1139.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.WorkFileNamingSettingsCtrlr">
   <SplitPane dividerPositions="0.5" layoutX="214.0" layoutY="100.0" orientation="VERTICAL" prefHeight="200.0"
              prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
              AnchorPane.topAnchor="0.0">

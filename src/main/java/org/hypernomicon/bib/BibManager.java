@@ -91,7 +91,7 @@ public final class BibManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private AnchorPane apRelated, apSelecting;
+  @FXML private AnchorPane apSelecting;
   @FXML private BorderPane borderPane;
   @FXML private Button btnCreateNew, btnAutofill, btnViewInRefMgr, btnAssign, btnUnassign, btnDelete, btnMainWindow, btnPreviewWindow, btnStop, btnSync, btnUpdateRelatives;
   @FXML private CheckBox chkRequireByDefault;

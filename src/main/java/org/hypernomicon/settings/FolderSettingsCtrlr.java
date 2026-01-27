@@ -42,7 +42,7 @@ public class FolderSettingsCtrlr implements SettingsControl
 
   @FXML private TextField tfPapers, tfBooks, tfUnentered, tfPictures, tfTopical, tfMiscFiles, tfResults;
   @FXML private Button btnPapers, btnBooks, btnUnentered, btnPictures, btnTopical, btnMiscFiles, btnResults;
-  @FXML private RadioButton rbPapers, rbBooks;
+  @FXML private RadioButton rbBooks;
 
 //---------------------------------------------------------------------------
 

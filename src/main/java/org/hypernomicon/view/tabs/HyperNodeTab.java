@@ -29,7 +29,6 @@ import java.util.prefs.Preferences;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.dialogs.SelectTermDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;

@@ -28,7 +28,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="418.0" prefWidth="599.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.FavOrderDlgCtrlr">
+<AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="418.0" prefWidth="599.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.FavOrderDlgCtrlr">
   <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />

@@ -27,7 +27,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" minWidth="500.0" prefHeight="551.0" prefWidth="819.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.LaunchCommandsDlgCtrlr">
+<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" minWidth="500.0" prefHeight="551.0" prefWidth="819.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.LaunchCommandsDlgCtrlr">
   <Label layoutX="14.0" layoutY="6.0" text="Command(s):" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="6.0" />
   <TextArea fx:id="taCommands" layoutX="14.0" layoutY="33.0" prefHeight="334.0" prefWidth="548.0" AnchorPane.bottomAnchor="153.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="257.0" AnchorPane.topAnchor="33.0" />
   <GridPane layoutX="579.0" prefHeight="132.0" prefWidth="222.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="36.0">

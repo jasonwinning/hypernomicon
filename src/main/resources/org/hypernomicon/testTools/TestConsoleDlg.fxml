@@ -22,7 +22,7 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="561.0" prefWidth="689.0"
-            xmlns="http://javafx.com/javafx/24.0.1" fx:controller="org.hypernomicon.testTools.TestConsoleDlgCtrlr">
+            xmlns="http://javafx.com/javafx/25" fx:controller="org.hypernomicon.testTools.TestConsoleDlgCtrlr">
   <TabPane AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
            AnchorPane.topAnchor="0.0">
     <Tab closable="false" text="DB Creation">

@@ -6,14 +6,14 @@
   <packaging>jar</packaging>
   <version>1.33</version>
   <name>Hypernomicon</name>
-  <url>http://hypernomicon.org</url>
+  <url>https://hypernomicon.org</url>
   <inceptionYear>2012</inceptionYear>
 
   <developers>
     <developer>
       <name>Jason Winning</name>
       <email>jason.winning@gmail.com</email>
-      <url>http://jasonwinning.com/</url>
+      <url>https://jasonwinning.com/</url>
     </developer>
   </developers>
 

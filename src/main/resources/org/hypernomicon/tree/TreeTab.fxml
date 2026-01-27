@@ -26,7 +26,7 @@
 <?import javafx.scene.web.WebView?>
 <?import org.controlsfx.control.BreadCrumbBar?>
 
-<AnchorPane prefHeight="689.0" prefWidth="1227.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.TreeTabCtrlr">
+<AnchorPane prefHeight="689.0" prefWidth="1227.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.TreeTabCtrlr">
    <BorderPane fx:id="borderPane" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <bottom>
         <BreadCrumbBar fx:id="bcbPath" autoNavigationEnabled="false" prefHeight="25.0" prefWidth="1122.0" BorderPane.alignment="CENTER" />

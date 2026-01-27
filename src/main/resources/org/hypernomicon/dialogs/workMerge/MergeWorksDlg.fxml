@@ -29,7 +29,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 
-<AnchorPane minHeight="400.0" minWidth="600.0" prefHeight="646.0" prefWidth="1039.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr">
+<AnchorPane minHeight="400.0" minWidth="600.0" prefHeight="646.0" prefWidth="1039.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr">
   <AnchorPane fx:id="apMain" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
   <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="333.0" layoutY="150.0" vbarPolicy="ALWAYS" AnchorPane.bottomAnchor="32.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <AnchorPane>

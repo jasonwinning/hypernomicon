@@ -21,7 +21,7 @@
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="58.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<AnchorPane prefHeight="58.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.hypernomicon.dialogs.workMerge.BibFieldCtrlr$EntryTypeCtrlr">
   <RadioButton fx:id="radioBtn" mnemonicParsing="false" selected="true" AnchorPane.bottomAnchor="7.0"
                AnchorPane.leftAnchor="0.0"/>

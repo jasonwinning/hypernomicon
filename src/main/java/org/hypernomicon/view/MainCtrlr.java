@@ -138,7 +138,7 @@ public final class MainCtrlr
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpFindTable;
-  @FXML private HBox topHBox, bottomToolBar, hbRecord;
+  @FXML private HBox topHBox, bottomToolBar;
   @FXML private ImageView ivDates;
   @FXML private Label lblProgress, lblFindToast;
   @FXML private Menu mnuFolders;
@@ -153,9 +153,7 @@ public final class MainCtrlr
 
   @FXML private MenuButton mbCreateNew;
   @FXML private ProgressBar progressBar;
-  @FXML private SeparatorMenuItem mnuBibImportSeparator;
   @FXML private SplitMenuButton btnGoTo, btnCreateNew;
-  @FXML private StackPane lowerStackPane;
   @FXML private Tab tabViewSelector, tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
   @FXML private TabPane selectorTabPane, tabPane;
   @FXML private TextField tfID, tfOmniGoTo, tfRecord;
@@ -415,7 +413,7 @@ public final class MainCtrlr
     mnuImportBibFile     .setOnAction(event -> importBibFile(null, null));
     mnuImportBibClipboard.setOnAction(event -> importBibFile(convertMultiLineStrToStrList(getClipboardText(false), false), null));
 
-    mnuVideos            .setOnAction(event -> openWebLink("http://hypernomicon.org/support.html"));
+    mnuVideos            .setOnAction(event -> openWebLink("https://hypernomicon.org/support.html"));
 
     mnuFindNextAll       .setOnAction(event -> tree().find(true,  false));
     mnuFindPreviousAll   .setOnAction(event -> tree().find(false, false));

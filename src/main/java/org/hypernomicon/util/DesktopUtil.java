@@ -294,7 +294,7 @@ public final class DesktopUtil
   {
     if (strNotNullOrEmpty(orcid))
     {
-      openWebLink("http://orcid.org/" + escapeURL(orcid, false));
+      openWebLink("https://orcid.org/" + escapeURL(orcid, false));
       return;
     }
 
@@ -323,7 +323,7 @@ public final class DesktopUtil
   {
     String doi = matchDOI(str);
     if (strNotNullOrBlank(doi))
-      openWebLink("http://dx.doi.org/" + escapeURL(doi, false));
+      openWebLink("https://dx.doi.org/" + escapeURL(doi, false));
   }
 
   //---------------------------------------------------------------------------

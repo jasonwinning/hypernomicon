@@ -28,7 +28,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane prefHeight="677.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueriesTabCtrlr">
+<AnchorPane prefHeight="677.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueriesTabCtrlr">
   <Button fx:id="btnExecute" layoutX="9.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="143.0" style="-fx-font-weight: bold;" text="Execute Query" AnchorPane.leftAnchor="9.0" AnchorPane.topAnchor="9.0">
     <graphic>
       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">

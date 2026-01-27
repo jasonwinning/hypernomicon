@@ -125,8 +125,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public void nextSearchResult()           { highlighter.nextSearchResult    (); }
   @Override public void previousSearchResult()       { highlighter.previousSearchResult(); }
 
-  @FXML private void mnuCopyToFolderClick()          { copyFilesToFolder(true); }
-
   @Override public boolean saveToRecord(boolean saveNameIfBlank) { return false; }
   @Override public TextViewInfo mainTextInfo(HDT_Record record)  { return new TextViewInfo(record, webEngineScrollPos(webView.getEngine())); }
 
@@ -209,8 +207,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     mnuClear            .setOnAction(event -> mnuClearSearchFolderClick());
     mnuClearAndAdd      .setOnAction(event -> mnuCopyAllClick          ());
-    mnuAddSelected      .setOnAction(event -> mnuCopyToFolderClick     ());
-
+    
+    mnuAddSelected      .setOnAction(event -> copyFilesToFolder        (true ));
     mnuShowInSysExplorer.setOnAction(event -> mnuShowSearchFolderClick (false));
     mnuShowInFileMgr    .setOnAction(event -> mnuShowSearchFolderClick (true ));
 
@@ -270,7 +268,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void mnuShowSearchFolderClick(boolean inFileMgr)
+  private void mnuShowSearchFolderClick(boolean inFileMgr)
   {
     if (db.isOffline()) return;
 
@@ -417,7 +415,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void mnuCopyAllClick()
+  private void mnuCopyAllClick()
   {
     boolean startWatcher = folderTreeWatcher.stop();
 
@@ -471,7 +469,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void mnuClearSearchFolderClick()
+  private void mnuClearSearchFolderClick()
   {
     if (db.isOffline()) return;
 

@@ -28,7 +28,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 
 <AnchorPane maxHeight="279.0" minHeight="279.0" minWidth="600.0" prefHeight="279.0" prefWidth="900.0"
-            xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.hypernomicon.dialogs.NewDatabaseDlgCtrlr">
   <GridPane layoutX="10.0" layoutY="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0"
             AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">

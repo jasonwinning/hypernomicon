@@ -2,6 +2,8 @@
 .DS_Store
 .settings
 .claude
+CLAUDE.md
+hypernomicon.code-workspace
 sh.exe.stackdump
 qodana.yaml
 .classpath
@@ -15,4 +17,3 @@ pom2*.xml
 *.log
 *.patch
 *.iml
-CLAUDE.md

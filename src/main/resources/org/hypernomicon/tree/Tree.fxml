@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" minHeight="0.0" minWidth="0.0" prefHeight="501.0" prefWidth="1091.0"
-            xmlns="http://javafx.com/javafx/24.0.1" fx:controller="org.hypernomicon.tree.TreeCtrlr">
+            xmlns="http://javafx.com/javafx/25" fx:controller="org.hypernomicon.tree.TreeCtrlr">
   <TreeTableView fx:id="ttv" prefHeight="665.0" prefWidth="781.0" tableMenuButtonVisible="true"
                  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                  AnchorPane.topAnchor="0.0">

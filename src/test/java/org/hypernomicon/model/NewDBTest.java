@@ -39,7 +39,6 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.io.FilenameUtils;
 
 import org.hypernomicon.App;
-import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.prefs.XmlSupport;
 

@@ -26,7 +26,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 
-<AnchorPane prefHeight="200.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/11.0.1"
+<AnchorPane prefHeight="200.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.EditWebButtonCtrlr">
   <HBox fx:id="hBox" layoutX="2.0" layoutY="5.0" prefHeight="32.0" spacing="6.0" AnchorPane.leftAnchor="2.0"
         AnchorPane.rightAnchor="104.0" AnchorPane.topAnchor="5.0">

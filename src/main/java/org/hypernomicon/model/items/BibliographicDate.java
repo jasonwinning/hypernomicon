@@ -274,7 +274,7 @@ public class BibliographicDate implements Comparable<BibliographicDate>
                               RAW_YEAR_ATTR_NAME = "raw_year",
                               PARSED_YEAR_ATTR_NAME = "parsed_year";
 
-  public String toXmlAttribs()
+  String toXmlAttribs()
   {
     String attribs = "", parsedYearStr = "";
 

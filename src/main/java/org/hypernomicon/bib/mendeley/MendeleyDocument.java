@@ -598,7 +598,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void syncBookAuthorsTo(RelatedBibEntry relative)
+  @Override protected void syncBookAuthorsTo(RelatedBibEntry relative)
   {
     MendeleyDocument dest = (MendeleyDocument) relative.entry();
 

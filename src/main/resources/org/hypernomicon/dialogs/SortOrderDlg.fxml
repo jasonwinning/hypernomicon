@@ -27,7 +27,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="697.0" prefWidth="773.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.SortOrderDlgCtrlr">
+<AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="697.0" prefWidth="773.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.SortOrderDlgCtrlr">
   <TableView fx:id="tvRecords" editable="true" AnchorPane.bottomAnchor="28.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" GridPane.rowIndex="1">
     <columns>
       <TableColumn editable="false" maxWidth="86.0" minWidth="86.0" prefWidth="86.0" resizable="false" text="ID" />

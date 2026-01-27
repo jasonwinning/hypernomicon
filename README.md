@@ -14,18 +14,18 @@ Hypernomicon is perfect for: Anyone who works in a field (professionals, hobbyis
  * Authors (and information about them such as website, affiliation, etc.)
  * The works authors have authored
  * Sources and authors associated with arguments, theories, positions, and debates
- * PDF files associated with such sources and works (including the multiple works an edited volume might contain, and ability to jump to the PDF page of a particular paper)
+ * PDF files associated with such sources and works (including the multiple works an edited volume might contain, and the ability to jump to the PDF page of a particular paper)
  * Personal notes associated with any of the above
  * Notes taken during talks, meetings, seminars
  * Any other files or folders associated with any of the above (including notes)
  * Ability to manage (rename, move, etc.) files and folders while not losing associations with any of the above information
  * Associations between works and entries in your bibliography manager (currently integrates with Zotero and Mendeley)
 
-Hypernomicon keeps track of all of the above in a highly structured, thoroughly indexed and user friendly relational database, and automatically generates semantic hyperlinks between all of them so that you are constantly informed of ways all of your information is related that you had not realized.
+Hypernomicon keeps track of all of the above in a highly structured, thoroughly indexed and user-friendly relational database, and automatically generates semantic hyperlinks between all of them so that you are constantly informed of connections in the material you hadn't realized.
 
 ## Getting started ##
 
-The best way to get started with Hypernomicon is by downloading and installing on your developer machine the latest
+The best way to get started with Hypernomicon is to download and install the latest
 [Hypernomicon release](https://sourceforge.net/projects/hypernomicon/files/latest/download).
 
 Or you can clone this repository and build from source (see below).
@@ -40,9 +40,9 @@ Also check out the [FAQ document](https://sourceforge.net/p/hypernomicon/wiki/FA
 
 If you have a non-programming-related question or topic to discuss, please post to the [SourceForge discussion forums](https://sourceforge.net/p/hypernomicon/discussion/).
 
-To report a bug or make a feature request from the point of view of a user, please [create a ticket at SourceForge](https://sourceforge.net/p/hypernomicon/tickets/).
+To report a bug or make a feature request as an end user, please [create a ticket at SourceForge](https://sourceforge.net/p/hypernomicon/tickets/).
 
-If you are a programmer and have a code-related issue, bug, question, or feature request, please post to the [Github issue tracker](https://github.com/jasonwinning/hypernomicon/issues/).
+If you are a programmer and have a code-related issue, bug, question, or feature request, please post to the [GitHub issue tracker](https://github.com/jasonwinning/hypernomicon/issues/).
 
 Contributions can be submitted via [Pull requests](https://github.com/jasonwinning/hypernomicon/pulls/).
 
@@ -50,7 +50,7 @@ Contributions can be submitted via [Pull requests](https://github.com/jasonwinni
 
 ### Prerequisites
 
-* [JDK 25](https://adoptium.net/temurin/releases/?version=25) or later for building 'master' branch
+* [JDK 25](https://adoptium.net/temurin/releases/?version=25) or later for building the 'master' branch
 * A recent version of [Git](https://git-scm.com/downloads)
 * [Maven](https://maven.apache.org/download.cgi) version 3.6.3 or greater
 
@@ -75,13 +75,13 @@ Can be found [here](https://sourceforge.net/p/hypernomicon/wiki/ReleaseNotes/).
 
 ## Authors
 
-* **Jason Winning** - *Original design and development* - [website](http://jasonwinning.org)
+* **Jason Winning** - *Original design and development* - [website](https://jasonwinning.com)
 
 See also the list of [contributors](https://github.com/jasonwinning/hypernomicon/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the Apache 2.0 License + Commons Clause 1.0 - see the [LICENSE](http://htmlpreview.github.io/?https://github.com/jasonwinning/hypernomicon/blob/master/LICENSE.html) file for details.
+This project is licensed under the Apache 2.0 License + Commons Clause 1.0 - see the [LICENSE](https://jasonwinning.github.io/hypernomicon/LICENSE.html) file for details.
 
 Hypernomicon is a non-commercial product and will always be free to use.
 

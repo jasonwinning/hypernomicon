@@ -22,7 +22,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane prefHeight="121.0" prefWidth="921.0" minHeight="121.0" minWidth="300.0"
-            xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.hypernomicon.dialogs.VerdictDlgCtrlr">
   <Label fx:id="lblParentType" layoutX="14.0" layoutY="14.0" text="Target position:" AnchorPane.leftAnchor="14.0"
          AnchorPane.topAnchor="10.0"/>

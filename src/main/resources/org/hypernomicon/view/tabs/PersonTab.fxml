@@ -38,7 +38,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabCtrlr">
+<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabCtrlr">
   <SplitPane fx:id="spVert" dividerPositions="0.6166, 0.7998" layoutX="120.0" layoutY="96.0" orientation="VERTICAL" prefHeight="412.0" prefWidth="419.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <opaqueInsets>
       <Insets />

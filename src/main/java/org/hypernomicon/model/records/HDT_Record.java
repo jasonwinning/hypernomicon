@@ -105,9 +105,8 @@ public interface HDT_Record
    * when showing the selected item and the choices in the dropdown.
    * <p>In some cases, this will contain more context information than name() or defaultCellText(). For example, it
    * includes the glossary in the case of concept records.</p>
+   * <p>See also {@code ResultRow.getCBText()} and {@code RecordPopulator.generateCellText(HDT_Record)}</p>
    * @see #defaultCellText()
-   * @see ResultRow#defaultChoiceText
-   * @see RecordPopulator#generateCellText(HyperTableRow row, HDT_Record record)
    * @return The choice text so the user knows which record is selected or which record they are choosing
    */
   String defaultChoiceText();

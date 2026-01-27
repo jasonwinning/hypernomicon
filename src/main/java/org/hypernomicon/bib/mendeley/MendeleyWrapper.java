@@ -234,11 +234,11 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
       {
         if (headerValue.endsWith("rel=\"next\""))
         {
-          int startIdx = headerValue.indexOf('<'),
-              endIdx   = headerValue.indexOf('>');
+          int startNdx = headerValue.indexOf('<'),
+              endNdx   = headerValue.indexOf('>');
 
-          if ((startIdx >= 0) && (endIdx > startIdx))
-            assignSB(nextUrl, headerValue.substring(startIdx + 1, endIdx));
+          if ((startNdx >= 0) && (endNdx > startNdx))
+            assignSB(nextUrl, headerValue.substring(startNdx + 1, endNdx));
         }
       });
     }

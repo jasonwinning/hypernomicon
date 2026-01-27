@@ -42,7 +42,7 @@
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
             minHeight="500.0"
             minWidth="400.0" prefHeight="700.0" prefWidth="712.0"
-            xmlns="http://javafx.com/javafx/24.0.1" fx:controller="org.hypernomicon.previewWindow.PreviewWindow">
+            xmlns="http://javafx.com/javafx/25" fx:controller="org.hypernomicon.previewWindow.PreviewWindow">
   <BorderPane prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <center>

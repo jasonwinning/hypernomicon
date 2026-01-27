@@ -349,7 +349,7 @@ class MentionsIndex
         try
         {
           for (RecordType type : types)
-            for (HDT_Record record : db.records(type))
+            for (HDT_Record record : List.copyOf(db.records(type)))
             {
               incrementAndUpdateProgress(50);
 

@@ -304,7 +304,7 @@ public final class TestHyperDB extends AbstractHyperDB
    * Creates a new {@link HDT_Work} record populated from the fields of the given
    * reference manager {@link BibEntry}. This method is intended exclusively for
    * unit tests running against {@link TestHyperDB}, and will assert that it is
-   * invoked on the designated unit-test thread.
+   * invoked by a unit test.
    *
    * <p>The returned work record is initialized as a blank {@code hdtWork} record
    * and then populated as follows:
@@ -314,7 +314,7 @@ public final class TestHyperDB extends AbstractHyperDB
    *   <li>Each normalized author in the entry is converted into a
    *       {@link RecordAuthor} and added to the work's author list, preserving
    *       editor/translator flags.</li>
-   *   <li>The work's BibEntry key is set to the key of the supplied entry.</li>
+   *   <li>The work becomes assigned as the work record for the supplied entry.</li>
    * </ul>
    *
    * @param entry the bibliographic entry from which to construct the work record;

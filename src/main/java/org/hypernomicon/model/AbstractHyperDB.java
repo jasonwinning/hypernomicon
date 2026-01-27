@@ -1991,10 +1991,7 @@ public abstract class AbstractHyperDB
 
 //---------------------------------------------------------------------------
 
-            default :
-            {
-              break;
-            }
+            default : break;
           }
 
         }  // End of loop for the elements in a single record

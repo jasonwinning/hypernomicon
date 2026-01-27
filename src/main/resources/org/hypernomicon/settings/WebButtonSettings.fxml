@@ -27,7 +27,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="760.0" prefWidth="856.0" xmlns="http://javafx.com/javafx/11.0.1"
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="760.0" prefWidth="856.0" xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.settings.WebButtonSettingsCtrlr">
   <GridPane layoutX="14.0" layoutY="14.0" prefHeight="160.0" prefWidth="848.0" AnchorPane.leftAnchor="4.0"
             AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="2.0">

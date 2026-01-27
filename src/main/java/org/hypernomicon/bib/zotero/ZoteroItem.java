@@ -713,7 +713,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void syncBookAuthorsTo(RelatedBibEntry relative)
+  @Override protected void syncBookAuthorsTo(RelatedBibEntry relative)
   {
     ZoteroItem dest = (ZoteroItem) relative.entry();
 
