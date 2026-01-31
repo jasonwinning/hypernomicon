@@ -647,6 +647,14 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FXML private void btnAdHocTestClick()
+  {
+
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private void btnLinkGenBrowseClick()
   {
     DirectoryChooser dirChooser = new DirectoryChooser();

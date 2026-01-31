@@ -58,10 +58,11 @@ public class CombinedUnfilteredQuerySource extends QuerySource
 //---------------------------------------------------------------------------
 
   @Override public int size()                       { return types.stream().map(db::records).mapToInt(Collection::size).sum(); }
+  @Override public boolean isEmpty()                { return types.stream().allMatch(type -> db.records(type).isEmpty()); }
   @Override public QuerySourceType sourceType()     { return QuerySourceType.QST_combinedUnfilteredRecords; }
   @Override public Iterator<HDT_Record> iterator()  { return Iterators.concat(types.stream().map(type -> db.records(type).iterator()).iterator()); }
   @Override public RecordType recordType()          { return types.size() == 1 ? (RecordType) types.toArray()[0] : hdtNone; }
-  @Override public boolean contains(Object element) { return (element instanceof HDT_Record record) && types.contains(record.getType()); }
+  @Override public boolean contains(Object element) { return (element instanceof HDT_Record record) && types.contains(record.getType()) && (HDT_Record.isEmpty(record, true) == false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

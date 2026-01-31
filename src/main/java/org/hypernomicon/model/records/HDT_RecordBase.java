@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.hypernomicon.TestConfig;
 import org.hypernomicon.model.*;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
@@ -68,7 +69,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final boolean isDummy()                 { return dummyFlag; }
   @Override public final int getID()                       { return id; }
   @Override public final int keyNdx()                      { return dataset.getKeyNdxByID(id); }
-  @Override public final void viewNow()                    { if (db.viewTestingInProgress == false) viewDate = Instant.now(); }
+  @Override public final void viewNow()                    { if (TestConfig.runRecordSaveCycleTest() == false) viewDate = Instant.now(); }
   @Override public final String getSortKeyAttr()           { return sortKeyAttr; }
   @Override public final String getSortKey()               { return safeStr(dataset.getKeyByID(id)); }
   @Override public final boolean isExpired()               { return expired; }

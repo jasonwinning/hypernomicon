@@ -82,13 +82,14 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   {
     HDT_Folder folder = this;
 
-    while (folder != null)
+    do
     {
       if (folder.getID() == ROOT_FOLDER_ID)
         return true;
 
       folder = folder.parentFolder();
     }
+    while (folder != null);
 
     return false;
   }

@@ -119,6 +119,7 @@ public final class TestHyperDB extends AbstractHyperDB
   @Override public FilePath extPath() { return null; }
   @Override protected void lock() { }
   @Override protected void unlock() { }
+  @Override protected void updateFilenameRules() { }
   @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { }
   @Override protected void saveSourcePathToSystemSettings(String newPathStr) { }
   @Override public FilePath getRequestMessageFilePath(boolean useAppPrefs) { return new FilePath(""); }

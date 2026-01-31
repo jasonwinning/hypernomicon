@@ -34,6 +34,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
@@ -45,6 +46,8 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.FilePathSet;
 import org.hypernomicon.view.MainCtrlr.ShutDownMode;
+
+import com.google.common.base.Suppliers;
 
 import javafx.application.Platform;
 import javafx.stage.Modality;
@@ -224,12 +227,12 @@ public class FolderTreeWatcher
 
     private void doImport(FilePath filePath)
     {
-      if (alreadyImporting || App.dragInProgress || (ui.windows.getOutermostModality() != Modality.NONE)) return;
+      if (alreadyImporting || dragInProgress || (ui.windows.getOutermostModality() != Modality.NONE)) return;
 
       Platform.runLater(() ->
       {
         ui.importWorkFile(null, filePath, true);
-        downloading.remove(filePath);
+        recentlyCreated.get().remove(filePath);
         alreadyImporting = false;
       });
 
@@ -279,7 +282,7 @@ public class FolderTreeWatcher
                      (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
                      "pdf".equalsIgnoreCase(newPath.getExtensionOnly()))
             {
-              downloading.add(newPath);
+              recentlyCreated.get().add(newPath);
 
               runOutsideFXThread(() -> { for (int ndx = 0; ndx <= 10; ndx++)
               {
@@ -340,7 +343,7 @@ public class FolderTreeWatcher
 
           case wekModify:
           {
-            if (app.prefs.getBoolean(PrefKey.AUTO_IMPORT, true) && downloading.contains(newPath))
+            if (app.prefs.getBoolean(PrefKey.AUTO_IMPORT, true) && recentlyCreated.get().contains(newPath))
             {
               doImport(newPath);
             }
@@ -589,7 +592,8 @@ public class FolderTreeWatcher
 
   private WatchService watcher;
   private WatcherThread watcherThread;
-  private final FilePathSet downloading = new FilePathSet();
+
+  private final Supplier<FilePathSet> recentlyCreated = Suppliers.memoize(FilePathSet::new);
   private final Map<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
   public static final long FOLDER_TREE_WATCHER_POLL_TIME_MS = 250L;
   private static boolean alreadyImporting = false;

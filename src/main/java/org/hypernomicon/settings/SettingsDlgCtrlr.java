@@ -750,13 +750,15 @@ public class SettingsDlgCtrlr extends ModalDialog
     :
       "Username: " + userName);
 
-    library.getProfileInfoFromServer(
+    library.getProfileInfoFromServer
+    (
       _userName -> setLinkedMessage("Username: " + _userName),
       ex        ->
       {
         if (userName.isBlank())
           setLinkedMessage("Unable to retrieve username from " + library.getUserFriendlyName() + " server.");
-      });
+      }
+    );
   }
 
 //---------------------------------------------------------------------------

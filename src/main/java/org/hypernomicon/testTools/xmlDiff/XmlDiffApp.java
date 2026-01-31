@@ -29,6 +29,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
 
 import org.hypernomicon.App;
+import org.hypernomicon.util.file.FilenameRules;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -81,6 +82,8 @@ public final class XmlDiffApp extends Application
     }
 
     prefs = appPrefs;
+
+    FilenameRules.initialize(prefs);
   }
 
 //---------------------------------------------------------------------------

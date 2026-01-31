@@ -25,6 +25,32 @@ import java.util.function.Predicate;
 
 //---------------------------------------------------------------------------
 
+/**
+ * A thread-safe Set implementation for FilePath objects, organized by filename.
+ * <p>
+ * Internally uses a {@link FilenameMap} with OS-appropriate filename key matching, where each
+ * key maps to a concurrent set of FilePath objects sharing that filename. This allows
+ * efficient lookups by filename while supporting multiple paths with the same name
+ * (in different directories).
+ *
+ * <h2>Thread Safety</h2>
+ * Individual operations ({@link #add}, {@link #remove}, {@link #contains}) are thread-safe
+ * and can be called concurrently from multiple threads. The underlying data structures use
+ * {@link java.util.concurrent.ConcurrentHashMap} for safe concurrent access.
+ * <p>
+ * Empty internal buckets are cleaned up after removal to prevent memory leaks. The {@link #add}
+ * method uses a retry mechanism to handle the rare race condition where a concurrent
+ * {@link #remove} cleans up the bucket during the add operation.
+ *
+ * <h2>Scalability</h2>
+ * This implementation scales well with large datasets:
+ * <ul>
+ *   <li>O(1) average time for {@link #add}, {@link #remove}, and {@link #contains}</li>
+ *   <li>Memory usage is proportional to the number of distinct filenames</li>
+ *   <li>Empty buckets are cleaned up immediately, preventing memory leaks during high churn</li>
+ *   <li>Operations on different filenames run fully concurrently</li>
+ * </ul>
+ */
 public class FilePathSet implements Set<FilePath>
 {
 
@@ -42,7 +68,7 @@ public class FilePathSet implements Set<FilePath>
 //---------------------------------------------------------------------------
 
   @Override public void clear()                         { nameToPaths.clear(); }
-  @Override public Iterator<FilePath> iterator()        { return new FilePathIterator(nameToPaths); }
+  @Override public Iterator<FilePath> iterator()        { return nameToPaths.values().stream().flatMap(Set::stream).iterator(); }
   @Override public boolean isEmpty()                    { return size() == 0; }
   @Override public boolean retainAll(Collection<?> c)   { return removeIf(Predicate.not(c::contains)); }
   @Override public int size()                           { return nameToPaths.values().stream().map(Set::size).reduce(0, Math::addExact); }
@@ -67,7 +93,7 @@ public class FilePathSet implements Set<FilePath>
 
     Set<FilePath> set = nameToPaths.get(filePath.getNameOnly().toString());
 
-    return (set != null) && set.stream().anyMatch(filePath::equals);
+    return (set != null) && set.contains(filePath);
   }
 
 //---------------------------------------------------------------------------
@@ -78,6 +104,7 @@ public class FilePathSet implements Set<FilePath>
     Object[] array = new Object[size()];
 
     int ndx = 0;
+
     for (Set<FilePath> pathSet : nameToPaths.values())
       for (FilePath filePath : pathSet)
         array[ndx++] = filePath;
@@ -91,13 +118,19 @@ public class FilePathSet implements Set<FilePath>
   @SuppressWarnings("unchecked")
   @Override public <T> T[] toArray(T[] a)
   {
-    if (a.length < size())
-      a = (T[]) new FilePath[size()];
+    int size = size();
+
+    if (a.length < size)
+      a = (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);
 
     int ndx = 0;
+
     for (Set<FilePath> pathSet : nameToPaths.values())
       for (FilePath filePath : pathSet)
         a[ndx++] = (T) filePath;
+
+    if (a.length > size)
+      a[size] = null;  // Null terminator to fulfill Collection.toArray contract
 
     return a;
   }
@@ -108,11 +141,30 @@ public class FilePathSet implements Set<FilePath>
   @Override public boolean add(FilePath filePath)
   {
     if (FilePath.isEmpty(filePath))
-      throw new UnsupportedOperationException("Unable to add null path to FilePathSet: That operation is not supported.");
+      throw new IllegalArgumentException("Unable to add null or empty path to FilePathSet.");
 
-    if (contains(filePath)) return false;
+    String key = filePath.getNameOnly().toString();
 
-    return nameToPaths.computeIfAbsent(filePath.getNameOnly().toString(), _ -> ConcurrentHashMap.newKeySet()).add(filePath);
+    // Retry loop handles the rare race where our set gets cleaned up during add
+
+    while (true)
+    {
+      Set<FilePath> set = nameToPaths.computeIfAbsent(key, _ -> ConcurrentHashMap.newKeySet());
+      boolean added = set.add(filePath);
+
+      // Verify our set is still in the map (concurrent cleanup may have removed it)
+
+      if (nameToPaths.get(key) == set)
+        return added;
+
+      // Our set was removed - the add went to a detached set.
+      // If the item is already in the current map, we're done (another thread added it)
+
+      if (contains(filePath))
+        return false;
+
+      // Otherwise retry with a fresh set
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -122,23 +174,20 @@ public class FilePathSet implements Set<FilePath>
   {
     if ((o instanceof FilePath) == false) return false;
 
-    FilePath filePath = (FilePath)o;
-    if (contains(filePath) == false) return false;
-
-    String nameStr = filePath.getNameOnly().toString();
-
-    Set<FilePath> set = nameToPaths.get(nameStr);
+    FilePath filePath = (FilePath) o;
+    String key = filePath.getNameOnly().toString();
+    Set<FilePath> set = nameToPaths.get(key);
 
     if (set == null) return false;
 
-    for (FilePath otherPath : set)
-      if (otherPath.equals(filePath))
-      {
-        set.remove(otherPath);
-        return true;
-      }
+    boolean removed = set.remove(filePath);
 
-    return false;
+    // Clean up empty buckets to prevent memory leaks with high churn
+
+    if (removed && set.isEmpty())
+      nameToPaths.remove(key);
+
+    return removed;
   }
 
 //---------------------------------------------------------------------------
@@ -149,7 +198,8 @@ public class FilePathSet implements Set<FilePath>
     boolean changed = false;
 
     for (FilePath filePath : c)
-      if (add(filePath)) changed = true;
+      if (add(filePath))
+        changed = true;
 
     return changed;
   }
@@ -162,7 +212,27 @@ public class FilePathSet implements Set<FilePath>
     boolean changed = false;
 
     for (Object o : c)
-      if (remove(o)) changed = true;
+      if (remove(o))
+        changed = true;
+
+    return changed;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Overridden because the stream-based iterator doesn't support remove(),
+   * and we need to use {@link #remove(Object)} for proper empty bucket cleanup.
+   */
+  @Override public boolean removeIf(Predicate<? super FilePath> filter)
+  {
+    boolean changed = false;
+
+    for (Set<FilePath> pathSet : nameToPaths.values())
+      for (FilePath filePath : List.copyOf(pathSet))
+        if (filter.test(filePath) && remove(filePath))
+          changed = true;
 
     return changed;
   }

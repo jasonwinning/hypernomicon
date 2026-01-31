@@ -70,17 +70,17 @@ class VersionNumberTest
   @Test
   void testHashCode()
   {
-    VersionNumber version1 = new VersionNumber(1, 2, 0);
-    VersionNumber version2 = new VersionNumber("1.2.0");
+    VersionNumber version1 = new VersionNumber(1, 2, 0),
+                  version2 = new VersionNumber("1.2.0");
     assertEquals(version1.hashCode(), version2.hashCode());
   }
 
   @Test
   void testEquals()
   {
-    VersionNumber version1 = new VersionNumber(1, 2, 3);
-    VersionNumber version2 = new VersionNumber("1.2.3");
-    VersionNumber version3 = new VersionNumber(1, 2);
+    VersionNumber version1 = new VersionNumber(1, 2, 3),
+                  version2 = new VersionNumber("1.2.3"),
+                  version3 = new VersionNumber(1, 2);
     assertEquals(version1, version2);
     assertNotEquals(version1, version3);
   }
@@ -88,10 +88,10 @@ class VersionNumberTest
   @Test
   void testCompareTo()
   {
-    VersionNumber version1 = new VersionNumber(1, 2, 3);
-    VersionNumber version2 = new VersionNumber("1.2.4");
-    VersionNumber version3 = new VersionNumber(1, 2, 3);
-    VersionNumber version4 = new VersionNumber(1, 3);
+    VersionNumber version1 = new VersionNumber(1, 2, 3),
+                  version2 = new VersionNumber("1.2.4"),
+                  version3 = new VersionNumber(1, 2, 3),
+                  version4 = new VersionNumber(1, 3);
 
     assertTrue(version1.compareTo(version2) < 0);
     assertEquals(0, version1.compareTo(version3));
@@ -102,8 +102,8 @@ class VersionNumberTest
   @Test
   void testWithLeadingZeros()
   {
-    VersionNumber version1 = new VersionNumber("001.002.003");
-    VersionNumber version2 = new VersionNumber(1, 2, 3);
+    VersionNumber version1 = new VersionNumber("001.002.003"),
+                  version2 = new VersionNumber(1, 2, 3);
     assertEquals(version1, version2);
     assertEquals(version1.hashCode(), version2.hashCode());
   }
@@ -123,8 +123,8 @@ class VersionNumberTest
   @Test
   void testLessThanTwoParts()
   {
-    VersionNumber version1 = new VersionNumber(1);
-    VersionNumber version2 = new VersionNumber(1, 0);
+    VersionNumber version1 = new VersionNumber(1),
+                  version2 = new VersionNumber(1, 0);
     assertEquals(version2, version1);
   }
 
@@ -172,9 +172,9 @@ class VersionNumberTest
   @Test
   void testCompareToWithDifferentLengths()
   {
-    VersionNumber version1 = new VersionNumber(1, 2);
-    VersionNumber version2 = new VersionNumber(1, 2, 0);
-    VersionNumber version3 = new VersionNumber(1, 2, 3);
+    VersionNumber version1 = new VersionNumber(1, 2),
+                  version2 = new VersionNumber(1, 2, 0),
+                  version3 = new VersionNumber(1, 2, 3);
 
     assertEquals(0, version1.compareTo(version2));
     assertTrue(version1.compareTo(version3) < 0);
@@ -184,9 +184,9 @@ class VersionNumberTest
   @Test
   void testEqualsWithDifferentLengths()
   {
-    VersionNumber version1 = new VersionNumber(1, 2);
-    VersionNumber version2 = new VersionNumber(1, 2, 0);
-    VersionNumber version3 = new VersionNumber(1, 2, 3);
+    VersionNumber version1 = new VersionNumber(1, 2),
+                  version2 = new VersionNumber(1, 2, 0),
+                  version3 = new VersionNumber(1, 2, 3);
 
     assertEquals(version1, version2);
     assertNotEquals(version1, version3);
@@ -212,8 +212,8 @@ class VersionNumberTest
   @Test
   void testCompareToWithNegativeParts()
   {
-    VersionNumber version1 = new VersionNumber(-1, 2, 3);
-    VersionNumber version2 = new VersionNumber(1, 2, 3);
+    VersionNumber version1 = new VersionNumber(-1, 2, 3),
+                  version2 = new VersionNumber(1, 2, 3);
 
     assertTrue(version1.compareTo(version2) < 0);
     assertTrue(version2.compareTo(version1) > 0);
@@ -222,9 +222,9 @@ class VersionNumberTest
   @Test
   void testEqualsWithNegativeParts()
   {
-    VersionNumber version1 = new VersionNumber(-1, 2, 3);
-    VersionNumber version2 = new VersionNumber(-1, 2, 3);
-    VersionNumber version3 = new VersionNumber(1, 2, 3);
+    VersionNumber version1 = new VersionNumber(-1, 2, 3),
+                  version2 = new VersionNumber(-1, 2, 3),
+                  version3 = new VersionNumber(1, 2, 3);
 
     assertEquals(version1, version2);
     assertNotEquals(version1, version3);
@@ -233,8 +233,8 @@ class VersionNumberTest
   @Test
   void testTrailingZerosInEquality()
   {
-    VersionNumber version1 = new VersionNumber("2.3");
-    VersionNumber version2 = new VersionNumber("2.30");
+    VersionNumber version1 = new VersionNumber("2.3"),
+                  version2 = new VersionNumber("2.30");
 
     assertNotEquals(version1, version2);
     assertTrue(version1.compareTo(version2) < 0);
@@ -244,9 +244,9 @@ class VersionNumberTest
   @Test
   void testTrailingZerosInComparison()
   {
-    VersionNumber version1 = new VersionNumber("1.2.3");
-    VersionNumber version2 = new VersionNumber("1.2.3.0");
-    VersionNumber version3 = new VersionNumber("1.2.3.0.0");
+    VersionNumber version1 = new VersionNumber("1.2.3"),
+                  version2 = new VersionNumber("1.2.3.0"),
+                  version3 = new VersionNumber("1.2.3.0.0");
 
     assertEquals(version1, version2);
     assertEquals(0, version2.compareTo(version3));
@@ -255,48 +255,48 @@ class VersionNumberTest
   @Test
   void testHashCodeWithSameVersions()
   {
-    VersionNumber version1 = new VersionNumber("1.2.3");
-    VersionNumber version2 = new VersionNumber(1, 2, 3);
+    VersionNumber version1 = new VersionNumber("1.2.3"),
+                  version2 = new VersionNumber(1, 2, 3);
     assertEquals(version1.hashCode(), version2.hashCode());
   }
 
   @Test
   void testHashCodeWithDifferentLengthsSameValues()
   {
-    VersionNumber version1 = new VersionNumber("1.2.3");
-    VersionNumber version2 = new VersionNumber("1.2.3.0");
+    VersionNumber version1 = new VersionNumber("1.2.3"),
+                  version2 = new VersionNumber("1.2.3.0");
     assertEquals(version1.hashCode(), version2.hashCode());
   }
 
   @Test
   void testHashCodeWithTrailingZeros()
   {
-    VersionNumber version1 = new VersionNumber("1.2.3");
-    VersionNumber version2 = new VersionNumber("1.2.3.0.0");
+    VersionNumber version1 = new VersionNumber("1.2.3"),
+                  version2 = new VersionNumber("1.2.3.0.0");
     assertEquals(version1.hashCode(), version2.hashCode());
   }
 
   @Test
   void testHashCodeWithNegativeParts()
   {
-    VersionNumber version1 = new VersionNumber("-1.2.3");
-    VersionNumber version2 = new VersionNumber("-1.2.3.0");
+    VersionNumber version1 = new VersionNumber("-1.2.3"),
+                  version2 = new VersionNumber("-1.2.3.0");
     assertEquals(version1.hashCode(), version2.hashCode());
   }
 
   @Test
   void testHashCodeWithDifferentTrailingZeros()
   {
-    VersionNumber version1 = new VersionNumber("2.3");
-    VersionNumber version2 = new VersionNumber("2.30");
+    VersionNumber version1 = new VersionNumber("2.3"),
+                  version2 = new VersionNumber("2.30");
     assertNotEquals(version1.hashCode(), version2.hashCode());
   }
 
   @Test
   void testHashCodeWithZerosOnly()
   {
-    VersionNumber version1 = new VersionNumber("0.0.0");
-    VersionNumber version2 = new VersionNumber("0.0.0.0");
+    VersionNumber version1 = new VersionNumber("0.0.0"),
+                  version2 = new VersionNumber("0.0.0.0");
     assertEquals(version1.hashCode(), version2.hashCode());
   }
 

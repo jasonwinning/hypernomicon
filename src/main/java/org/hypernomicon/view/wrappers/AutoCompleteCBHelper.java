@@ -399,11 +399,12 @@ public class AutoCompleteCBHelper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final Set<KeyCode> IGNORED_KEYS = EnumSet.of(
-
-      KeyCode.BACK_SPACE, KeyCode.RIGHT, KeyCode.LEFT   , KeyCode.DELETE ,
-      KeyCode.HOME      , KeyCode.END  , KeyCode.TAB    , KeyCode.ESCAPE,
-      KeyCode.UP        , KeyCode.DOWN , KeyCode.PAGE_UP, KeyCode.PAGE_DOWN);
+  private static final Set<KeyCode> IGNORED_KEYS = EnumSet.of
+  (
+    KeyCode.BACK_SPACE, KeyCode.RIGHT, KeyCode.LEFT   , KeyCode.DELETE ,
+    KeyCode.HOME      , KeyCode.END  , KeyCode.TAB    , KeyCode.ESCAPE,
+    KeyCode.UP        , KeyCode.DOWN , KeyCode.PAGE_UP, KeyCode.PAGE_DOWN
+  );
 
   private static boolean notNormalTypingEvent(KeyEvent event)
   {

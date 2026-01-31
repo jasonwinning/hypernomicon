@@ -78,6 +78,8 @@
                 prefHeight="25.0" prefWidth="190.0" text="Open Welcome window"/>
         <Button layoutX="391.0" layoutY="274.0" mnemonicParsing="false" onAction="#btnLogMessageClick" prefHeight="25.0"
                 prefWidth="190.0" text="Write message to log"/>
+        <Button layoutX="391.0" layoutY="305.0" mnemonicParsing="false" onAction="#btnAdHocTestClick" prefHeight="25.0"
+                prefWidth="190.0" text="Run Ad Hoc Test"/>
       </AnchorPane>
     </Tab>
     <Tab closable="false" text="Deletion">

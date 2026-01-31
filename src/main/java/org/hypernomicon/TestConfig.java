@@ -15,25 +15,39 @@
  *
  */
 
-package org.hypernomicon.query.sources;
-
-import static org.hypernomicon.model.records.RecordType.*;
-
-import java.util.EnumSet;
+package org.hypernomicon;
 
 //---------------------------------------------------------------------------
 
-public class AllQuerySource extends CombinedUnfilteredQuerySource
+public final class TestConfig
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public AllQuerySource() { super(EnumSet.of(hdtNone)); }
+  /**
+   * Run automated test that navigates to and saves all records.
+   * When enabled, view date updating is suppressed to avoid polluting timestamps.
+   */
+  public static boolean runRecordSaveCycleTest() { //if (Boolean.TRUE) return true;
+    return false; }
+
+  /**
+   * During {@link #runRecordSaveCycleTest()}, also test entering edit mode on main text for each record.
+   */
+  static boolean runMainTextEditingTest() { //if (Boolean.TRUE) return true;
+    return false; }
+
+  /**
+   * Enable long-running stress tests in unit test suites.
+   */
+  public static boolean runLongTests() { if (Boolean.TRUE) return true;
+    return false; }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  @Override public QuerySourceType sourceType() { return QuerySourceType.QST_allRecords; }
+  private TestConfig() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

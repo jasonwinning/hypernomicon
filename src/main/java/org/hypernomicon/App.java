@@ -36,6 +36,7 @@ import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.*;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilenameRules;
 import org.hypernomicon.util.http.AsyncHttpClient;
 import org.hypernomicon.util.http.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
@@ -99,8 +100,6 @@ public final class App extends Application
   public final Preferences prefs;
   public final boolean debugging;
 
-  private boolean testMainTextEditing = false;
-
   private static int total, ctr, lastPercent;
 
   private static final double baseDisplayScale = 81.89306640625;
@@ -161,6 +160,9 @@ public final class App extends Application
     }
 
     prefs = appPrefs;
+
+    FilenameRules.initialize(prefs);
+
     origOut = System.out;
     origErr = System.err;
 
@@ -174,9 +176,6 @@ public final class App extends Application
         setLogPath(newLogFilePath);
 
       HyperDB.create(folderTreeWatcher);
-
-      //db.viewTestingInProgress = true;
-      //testMainTextEditing = true;
     }
     catch (HDB_UnrecoverableInternalError e)
     {
@@ -353,7 +352,7 @@ public final class App extends Application
 
     }, Util::noOp);
 
-    if (db.viewTestingInProgress && db.isOnline())
+    if (TestConfig.runRecordSaveCycleTest() && db.isOnline())
       testUpdatingAllRecords(1);
   }
 
@@ -424,7 +423,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void testUpdatingAllRecords(int passes)
+  private static void testUpdatingAllRecords(int passes)
   {
     List<RecordType> types = List.of(hdtPerson,   hdtInstitution, hdtInvestigation, hdtDebate,   hdtPosition,
                                      hdtArgument, hdtWork,        hdtTerm,          hdtMiscFile, hdtNote);
@@ -448,13 +447,13 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void testUpdatingRecords(RecordType type)
+  private static void testUpdatingRecords(RecordType type)
   {
     for (HDT_Record record : db.records(type))
     {
       ui.goToRecord(record, true);
 
-      if (testMainTextEditing)
+      if (TestConfig.runMainTextEditingTest())
       {
         MainTextWrapper mainText = ui.activeTab().mainTextWrapper();
 

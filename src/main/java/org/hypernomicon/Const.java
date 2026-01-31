@@ -221,6 +221,23 @@ public final class Const
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final class FilenameRulesPrefKey
+  {
+    public static final String
+
+      CASE_INSENSITIVE         = "filenameRulesCaseInsensitive",
+      UNICODE_COMP_INSENSITIVE = "filenameRulesUnicodeCompInsensitive",
+      TRIMS_TRAILING           = "filenameRulesTrimsTrailing",
+      IGNORES_IGNORABLES       = "filenameRulesIgnoresIgnorables",
+      CASE_FOLDING_MODE        = "filenameRulesCaseFoldingMode",
+      INITIALIZED              = "filenameRulesInitialized";
+
+    private FilenameRulesPrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final class ZoomPrefKey
   {
     public static final String

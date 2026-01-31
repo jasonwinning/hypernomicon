@@ -282,10 +282,11 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
   private static final String entryTypeKey = "itemType";
 
-  private static final List<String> titleKeyList = List.of(
-
-      "publicationTitle", "bookTitle"   , "encyclopediaTitle", "proceedingsTitle", "dictionaryTitle",
-      "forumTitle",       "programTitle", "websiteTitle"     , "blogTitle"       , "seriesTitle");
+  private static final List<String> titleKeyList = List.of
+  (
+    "publicationTitle", "bookTitle"   , "encyclopediaTitle", "proceedingsTitle", "dictionaryTitle",
+    "forumTitle",       "programTitle", "websiteTitle"     , "blogTitle"       , "seriesTitle"
+  );
 
   private String getFieldKey(BibFieldEnum bibFieldEnum) { return switch (bibFieldEnum)
   {

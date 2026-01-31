@@ -226,8 +226,8 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final List<Preset> presets = List.of(
-
+  private static final List<Preset> presets = List.of
+  (
     new Preset(WINDOWS, "Adobe Acrobat", opSysCmdAndArgs, PrefKey.PDF_READER_COMMANDS,
                appPathVar + '\n' +
                "/A\n" +
@@ -255,7 +255,8 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
                "tell app \"" + appPathVar + "\"\n" +
                "  activate\n" +
                "  open \"" + filePathVar + "\" options \"page=" + pageNumVar + "\"\n" +
-               "end tell"));
+               "end tell")
+  );
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

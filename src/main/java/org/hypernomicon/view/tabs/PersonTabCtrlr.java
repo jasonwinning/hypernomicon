@@ -34,6 +34,7 @@ import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.TestConfig;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
 import org.hypernomicon.model.authors.*;
@@ -877,7 +878,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private boolean saveNameToRecord(PersonName personName)
   {
-    if (db.viewTestingInProgress || PopupRobot.isActive())
+    if (TestConfig.runRecordSaveCycleTest() || PopupRobot.isActive())
     {
       curPerson.setName(personName);
       return true;

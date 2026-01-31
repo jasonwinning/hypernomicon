@@ -132,6 +132,7 @@ public abstract class AbstractHyperDB
 
   protected abstract void lock() throws IOException;
   protected abstract void unlock();
+  protected abstract void updateFilenameRules() throws IOException;
 
   abstract MentionsIndex createMentionsIndex(List<Runnable> completeHandlers);
 
@@ -218,7 +219,6 @@ public abstract class AbstractHyperDB
                   initialized  = false, startMentionsRebuildAfterDelete = false, alreadyShowedUpgradeMsg = false;
 
   public boolean runningConversion            = false,  // suppresses "modified date" updating
-                 viewTestingInProgress        = false,  // suppresses "view date" updating
                  recordDeletionTestInProgress = false;  // suppresses file deletion prompts and mentions index building
 
 //---------------------------------------------------------------------------
@@ -933,6 +933,18 @@ public abstract class AbstractHyperDB
 
     rootFilePath = newRootFilePath;
     hdbFilePath = rootFilePath.resolve(hdbFileName);
+
+    try
+    {
+      updateFilenameRules();
+    }
+    catch (IOException e)
+    {
+      errorPopup("Unable to write to database folder: " + getThrowableMessage(e));
+
+      close(null);
+      return false;
+    }
 
     updateRunningInstancesFile(newRootFilePath);
 

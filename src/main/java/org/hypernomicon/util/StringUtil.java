@@ -49,15 +49,27 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 
   /**
+   * Returns true if the current thread is running in a JUnit test context.
+   */
+  public static boolean isUnitTestThread()
+  {
+    for (StackTraceElement element : Thread.currentThread().getStackTrace())
+      if (element.getClassName().startsWith("org.junit.") || element.getClassName().startsWith("junit."))
+        return true;
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Use this in functions that are only supposed to run in a unit test.
    */
   public static void assertThatThisIsUnitTestThread()
   {
-    for (StackTraceElement element : Thread.currentThread().getStackTrace())
-      if (element.getClassName().startsWith("org.junit.") || element.getClassName().startsWith("junit."))
-        return;
-
-    throw new AssertionError("Can only run in unit test.");
+    if (isUnitTestThread() == false)
+      throw new AssertionError("Can only run in unit test.");
   }
 
 //---------------------------------------------------------------------------
@@ -134,6 +146,24 @@ public final class StringUtil
     // wrap in a String exactly once
 
     return new String(buf, 0, out);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns true if the given CharSequence contains only ASCII characters (0x00-0x7F).
+   *
+   * @param cs the CharSequence to check
+   * @return true if all characters are ASCII, false otherwise
+   */
+  public static boolean isAscii(CharSequence cs)
+  {
+    for (int ndx = 0; ndx < cs.length(); ndx++)
+      if (cs.charAt(ndx) > 0x7F)
+        return false;
+
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -403,6 +433,39 @@ public final class StringUtil
   public static char toLowerAscii(char c)
   {
     return (c >= 'A') && (c <= 'Z') ? (char)(c + 32) : c;
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Converts ASCII uppercase letters (A-Z) to lowercase. Non-ASCII characters
+   * and non-uppercase ASCII characters are left unchanged.
+   * <p>
+   * Returns the original string if no uppercase ASCII letters are found,
+   * avoiding unnecessary allocation.
+   *
+   * @param s the string to convert
+   * @return the string with ASCII uppercase letters converted to lowercase
+   */
+  public static String toLowerAsciiStr(String s)
+  {
+    for (int ndx = 0; ndx < s.length(); ndx++)
+    {
+      char c = s.charAt(ndx);
+
+      if ((c >= 'A') && (c <= 'Z'))
+      {
+        char[] arr = s.toCharArray();
+        arr[ndx] = toLowerAscii(c);
+
+        for (int j = ndx + 1; j < arr.length; j++)
+          arr[j] = toLowerAscii(arr[j]);
+
+        return new String(arr);
+      }
+    }
+
+    return s;
   }
 
 //---------------------------------------------------------------------------
@@ -746,18 +809,7 @@ public final class StringUtil
 
   public static String convertToEnglishCharsWithMap(CharSequence input, ArrayList<Integer> posMap)
   {
-    boolean asciiOnly = true;
-
-    for (int i = 0; i < input.length(); i++)
-    {
-      if (input.charAt(i) > 0x7F)
-      {
-        asciiOnly = false;
-        break;
-      }
-    }
-
-    if (asciiOnly)
+    if (isAscii(input))
     {
       // Fast path: all ASCII
 

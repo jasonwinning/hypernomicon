@@ -107,11 +107,11 @@ class PersonDupTest
   {
     // Shared works
 
-    HDT_Work w1 = createWork("Work One");
-    HDT_Work w2 = createWork("Work Two");
-    HDT_Work w3 = createWork("Work Three");
-    HDT_Work w4 = createWork("Work Four");
-    HDT_Work w5 = createWork("Work Five");
+    HDT_Work w1 = createWork("Work One"),
+             w2 = createWork("Work Two"),
+             w3 = createWork("Work Three"),
+             w4 = createWork("Work Four"),
+             w5 = createWork("Work Five");
 
     // Shared persons
 

@@ -37,6 +37,7 @@ import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -347,6 +348,42 @@ public class FilePath implements Comparable<FilePath>
     }
 
     FileUtils.deleteDirectory(filePath.toFile());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Silently deletes this directory and all its contents, suppressing all errors.
+   * <p>
+   * This method is intended for cleanup of temporary directories where failure
+   * to delete is acceptable (e.g., cleanup after filesystem probing).
+   * <p>
+   * No error is thrown or logged if deletion fails for any reason.
+   */
+  public void deleteDirectoryQuietly()
+  {
+    Path root = getDirOnly().toPath();
+    List<Path> paths;
+
+    try (var walk = Files.walk(root))
+    {
+      paths = walk.sorted(Comparator.reverseOrder()).toList();
+    }
+    catch (IOException e)
+    {
+      return;  // Can't walk the directory; nothing to delete
+    }
+
+    // Delete after closing the stream to avoid Windows file handle issues
+    for (Path path : paths)
+    {
+      try
+      {
+        Files.deleteIfExists(path);
+      }
+      catch (IOException ignored) { }
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -67,8 +67,8 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
   @Override public void init(boolean noDB)
   {
-    webBtnCtrlList.addAll(List.of(
-
+    webBtnCtrlList.addAll(List.of
+    (
       new WebButtonTable(WebButtonContextPrefKey.PERSON, personSrchList, personSrchDefaults, tvPersonSrch),
       new WebButtonTable(WebButtonContextPrefKey.WORK  , workSrchList,   workSrchDefaults,   tvWorkSrch),
       new WebButtonTable(WebButtonContextPrefKey.GEN   , genSrchList,    genSrchDefaults,    tvGenSrch),
@@ -77,7 +77,8 @@ public class WebButtonSettingsCtrlr implements SettingsControl
       new WebButtonBar(WebButtonContextPrefKey.INST      , instSrchList,      null           , cbInstSrch     , btnInstSrchAdvanced),
       new WebButtonBar(WebButtonContextPrefKey.INST_MAP  , instMapSrchList,   tfInstMapSrch  , cbInstMapSrch  , btnInstMapSrchAdvanced),
       new WebButtonBar(WebButtonContextPrefKey.DOI       , doiSrchList,       tfDOISrch      , cbDOISrch      , btnDOISrchAdvanced),
-      new WebButtonBar(WebButtonContextPrefKey.ISBN      , isbnSrchList,      tfISBNSrch     , cbISBNSrch     , btnISBNSrchAdvanced)));
+      new WebButtonBar(WebButtonContextPrefKey.ISBN      , isbnSrchList,      tfISBNSrch     , cbISBNSrch     , btnISBNSrchAdvanced))
+    );
   }
 
 //---------------------------------------------------------------------------

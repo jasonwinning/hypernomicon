@@ -45,6 +45,7 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilenameRules;
 import org.hypernomicon.view.HyperFavorites;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
 
@@ -244,6 +245,14 @@ public final class HyperDB extends AbstractHyperDB
 
     lockFilePath.deletePromptOnFail(true);
     lockFilePath = null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected void updateFilenameRules() throws IOException
+  {
+    FilenameRules.updateForPath(rootFilePath);
   }
 
 //---------------------------------------------------------------------------
