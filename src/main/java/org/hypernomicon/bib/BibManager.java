@@ -61,7 +61,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.http.AsyncHttpClient;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.controls.WebTooltip;

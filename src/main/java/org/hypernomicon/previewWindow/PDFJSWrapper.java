@@ -48,7 +48,7 @@ import org.apache.commons.io.FileUtils;
 
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

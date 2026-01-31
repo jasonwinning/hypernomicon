@@ -45,7 +45,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.settings.WorkSearchKeySettings;
 import org.hypernomicon.settings.WorkSearchKeySettings.WorkSearchKeyConfig;
 import org.hypernomicon.util.SplitString;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
 //---------------------------------------------------------------------------

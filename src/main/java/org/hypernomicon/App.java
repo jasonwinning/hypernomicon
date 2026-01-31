@@ -35,7 +35,7 @@ import org.hypernomicon.settings.shortcuts.Shortcut;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.*;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.http.AsyncHttpClient;
 import org.hypernomicon.util.http.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;

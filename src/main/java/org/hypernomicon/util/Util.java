@@ -20,7 +20,7 @@ package org.hypernomicon.util;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.http.HttpResponseException;
 
 import static org.hypernomicon.util.StringUtil.*;

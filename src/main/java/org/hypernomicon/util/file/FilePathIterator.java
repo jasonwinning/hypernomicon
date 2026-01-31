@@ -15,11 +15,9 @@
  *
  */
 
-package org.hypernomicon.util.filePath;
+package org.hypernomicon.util.file;
 
 import java.util.*;
-
-import org.hypernomicon.util.FilenameMap;
 
 //---------------------------------------------------------------------------
 

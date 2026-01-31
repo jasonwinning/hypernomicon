@@ -35,7 +35,7 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 

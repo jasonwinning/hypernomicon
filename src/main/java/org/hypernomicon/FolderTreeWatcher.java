@@ -42,8 +42,8 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.PathInfo.FileKind;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.util.filePath.FilePathSet;
+import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilePathSet;
 import org.hypernomicon.view.MainCtrlr.ShutDownMode;
 
 import javafx.application.Platform;

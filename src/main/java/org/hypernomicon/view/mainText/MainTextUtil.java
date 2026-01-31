@@ -43,7 +43,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.previewWindow.PreviewWindow;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.HtmlTextNodeList.HtmlTextNode;
 

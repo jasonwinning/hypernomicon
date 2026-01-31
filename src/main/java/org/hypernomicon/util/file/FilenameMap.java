@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.util;
+package org.hypernomicon.util.file;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

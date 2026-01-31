@@ -44,7 +44,7 @@ import org.hypernomicon.InterProcClient;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.VersionNumber;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.HyperFavorites;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
 

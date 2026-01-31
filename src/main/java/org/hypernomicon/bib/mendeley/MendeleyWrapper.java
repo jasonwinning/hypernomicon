@@ -57,7 +57,7 @@ import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.mendeley.auth.MendeleyAuthKeys;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.http.*;
 import org.hypernomicon.util.http.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.json.JsonArray;

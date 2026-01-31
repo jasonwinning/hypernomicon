@@ -25,8 +25,8 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import org.hypernomicon.model.Exceptions.HyperDataException;
-import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.util.filePath.FilePathSet;
+import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilePathSet;
 
 import java.io.*;
 import java.nio.charset.Charset;

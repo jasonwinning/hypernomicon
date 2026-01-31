@@ -32,7 +32,7 @@ import java.util.List;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 

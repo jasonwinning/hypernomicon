@@ -17,7 +17,7 @@
 
 package org.hypernomicon.previewWindow;
 
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

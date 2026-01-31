@@ -24,7 +24,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import org.apache.commons.io.FilenameUtils;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;

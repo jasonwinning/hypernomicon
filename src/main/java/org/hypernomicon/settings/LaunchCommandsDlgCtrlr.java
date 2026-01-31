@@ -18,7 +18,7 @@
 package org.hypernomicon.settings;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.wrappers.SimpleSelector;
 
 import static org.hypernomicon.App.*;

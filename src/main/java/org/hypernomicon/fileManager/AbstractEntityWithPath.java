@@ -18,7 +18,7 @@
 package org.hypernomicon.fileManager;
 
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 

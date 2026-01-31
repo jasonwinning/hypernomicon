@@ -42,7 +42,7 @@ import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;

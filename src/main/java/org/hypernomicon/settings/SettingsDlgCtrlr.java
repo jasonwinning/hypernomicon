@@ -45,7 +45,7 @@ import org.hypernomicon.bib.zotero.auth.ZoteroAuthKeys;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.populators.StandardPopulator;

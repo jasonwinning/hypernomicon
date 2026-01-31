@@ -84,7 +84,8 @@ import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.*;
 import org.hypernomicon.util.PopupDialog.DialogResult;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilenameMap;
 import org.hypernomicon.util.prefs.XmlSupport;
 import org.hypernomicon.view.HyperFavorites;
 

@@ -36,7 +36,7 @@ import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.dialogs.LockedDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.util.PopupDialog.DialogResult;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.WindowStack;
 
 import com.google.common.collect.HashBasedTable;

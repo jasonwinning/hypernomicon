@@ -69,7 +69,7 @@ import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
 import org.hypernomicon.tree.*;
 import org.hypernomicon.util.*;
 import org.hypernomicon.util.PopupDialog.DialogResult;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.RecordFavorite;
 import org.hypernomicon.view.cellValues.*;

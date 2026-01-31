@@ -24,7 +24,7 @@ import java.util.*;
 
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.query.Query.FilteredFolderQuery;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 

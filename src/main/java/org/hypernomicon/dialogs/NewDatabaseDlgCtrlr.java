@@ -24,8 +24,8 @@ import java.util.Map;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.util.filePath.FilePathSet;
+import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilePathSet;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;

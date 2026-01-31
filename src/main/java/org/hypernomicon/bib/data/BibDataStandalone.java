@@ -29,7 +29,7 @@ import org.hypernomicon.model.items.BibliographicDate.DateType;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;

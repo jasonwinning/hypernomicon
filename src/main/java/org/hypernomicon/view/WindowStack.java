@@ -27,7 +27,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;

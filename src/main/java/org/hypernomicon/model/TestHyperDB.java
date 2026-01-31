@@ -44,8 +44,8 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.PopupRobot;
 import org.hypernomicon.util.VersionNumber;
-import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.util.filePath.FilePathSet;
+import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilePathSet;
 import org.hypernomicon.view.HyperFavorites;
 
 import com.google.common.collect.SetMultimap;

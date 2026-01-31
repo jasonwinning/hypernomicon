@@ -28,7 +28,7 @@ import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.hypernomicon.previewWindow.PDFJSWrapper;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 

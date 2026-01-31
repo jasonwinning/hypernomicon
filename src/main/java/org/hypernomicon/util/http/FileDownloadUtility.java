@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 import org.apache.commons.io.FilenameUtils;
 
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 
 import static org.hypernomicon.util.StringUtil.*;

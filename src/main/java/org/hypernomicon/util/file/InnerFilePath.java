@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.util.filePath;
+package org.hypernomicon.util.file;
 
 import static org.hypernomicon.util.Util.*;
 

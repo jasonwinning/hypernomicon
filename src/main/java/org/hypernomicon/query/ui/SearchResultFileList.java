@@ -36,8 +36,8 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.util.filePath.FilePathSet;
+import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilePathSet;
 
 //---------------------------------------------------------------------------
 

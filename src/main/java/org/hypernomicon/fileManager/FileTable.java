@@ -33,7 +33,7 @@ import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.cellValues.ObjectCellValue;
 import org.hypernomicon.view.wrappers.DragNDropContainer;
 import org.hypernomicon.view.wrappers.HyperTable;

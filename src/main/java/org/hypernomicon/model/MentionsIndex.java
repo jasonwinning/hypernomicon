@@ -39,7 +39,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.jsoup.nodes.Element;
 

@@ -21,7 +21,7 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.util.SplitString;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 

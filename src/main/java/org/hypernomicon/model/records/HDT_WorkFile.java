@@ -30,7 +30,7 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponent;
 import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponentType;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;

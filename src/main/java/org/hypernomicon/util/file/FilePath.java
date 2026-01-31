@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.util.filePath;
+package org.hypernomicon.util.file;
 
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.fileManager.FileManager;

@@ -47,7 +47,7 @@ import org.hypernomicon.query.personMatch.PersonForDupCheck;
 import org.hypernomicon.query.personMatch.PersonMatcher;
 import org.hypernomicon.util.PopupRobot;
 import org.hypernomicon.util.WebButton.WebButtonField;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.MainCtrlr;

@@ -31,7 +31,7 @@ import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.tree.AbstractTreeWrapper;
 import org.hypernomicon.tree.TreeModel;
 import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 
 import static org.hypernomicon.model.records.RecordType.*;
 

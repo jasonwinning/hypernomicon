@@ -15,15 +15,13 @@
  *
  */
 
-package org.hypernomicon.util.filePath;
+package org.hypernomicon.util.file;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
-
-import org.hypernomicon.util.FilenameMap;
 
 //---------------------------------------------------------------------------
 

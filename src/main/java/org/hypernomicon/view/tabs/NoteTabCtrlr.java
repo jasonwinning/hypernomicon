@@ -36,7 +36,7 @@ import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.unities.*;
-import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTable;
