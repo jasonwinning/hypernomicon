@@ -40,7 +40,7 @@
             <Hyperlink fx:id="linkMore" layoutX="6.0" layoutY="63.0" text="More..." />
           </AnchorPane>
         </TitledPane>
-        <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="37.0" layoutY="172.0" prefHeight="112.0" prefWidth="289.0" text="Training Videos">
+        <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="37.0" layoutY="172.0" prefHeight="112.0" prefWidth="289.0" text="Tutorial Videos">
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="0.0" prefWidth="29.0">
             <Hyperlink fx:id="linkIntroVideo" layoutX="6.0" layoutY="3.0" text="Introductory Tutorial" />
             <Hyperlink fx:id="linkFileMgmtVideo" layoutX="6.0" layoutY="22.0" text="Managing PDFs, Other Files, and Folders" />

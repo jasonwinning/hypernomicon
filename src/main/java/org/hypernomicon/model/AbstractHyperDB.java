@@ -1387,16 +1387,18 @@ public abstract class AbstractHyperDB
     {
       errorPopup(e);
     }
-
-    deletionInProgress = false;
-    deleteFileAnswer = mrNone;
-
-    FolderTreeWatcher watcher = getFolderTreeWatcher();
-
-    if ((watcher != null) && watcher.isDisabled())
+    finally
     {
-      watcher.enable();
-      watcher.createNewWatcherAndStart();
+      deletionInProgress = false;
+      deleteFileAnswer = mrNone;
+
+      FolderTreeWatcher watcher = getFolderTreeWatcher();
+
+      if ((watcher != null) && watcher.isDisabled())
+      {
+        watcher.enable();
+        watcher.createNewWatcherAndStart();
+      }
     }
 
     if (startMentionsRebuildAfterDelete == false)

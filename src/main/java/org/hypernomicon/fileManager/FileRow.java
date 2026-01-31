@@ -33,6 +33,7 @@ import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.tree.AbstractTreeRow;
 import org.hypernomicon.tree.TreeModel;
+import org.hypernomicon.util.file.FilenameRules;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.cellValues.ObjectCellValue;
 
@@ -82,8 +83,55 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_RecordWithPath> HDT_T getRecord() { return (HDT_T) hyperPath.getRecord(); }
 
-  @Override public int hashCode()             { return hyperPath == null ? 0 : nullSwitch(hyperPath.getFileName(), 0, FilePath::hashCode); }
-  @Override public boolean equals(Object obj) { return (this == obj) || ((obj instanceof FileRow fileRow) && (compareTo(fileRow) == 0)); }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int hashCode()
+  {
+    HDT_RecordWithPath record = getRecord();
+
+    if (record != null)
+      return record.hashCode();
+
+    // No record; use normalized filename (only compared within same folder)
+
+    if (hyperPath == null) return 0;
+
+    return FilenameRules.current().normalize(hyperPath.getNameStr()).hashCode();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public boolean equals(Object obj)
+  {
+    if (this == obj) return true;
+    if ((obj instanceof FileRow) == false) return false;
+
+    FileRow other = (FileRow) obj;
+
+    HDT_RecordWithPath thisRecord = getRecord(),
+                       otherRecord = other.getRecord();
+
+    // Both have records; compare by record identity
+
+    if ((thisRecord != null) && (otherRecord != null))
+      return thisRecord == otherRecord;
+
+    // One has record, other doesn't; not equal
+
+    if ((thisRecord != null) || (otherRecord != null))
+      return false;
+
+    // Neither has record; compare by normalized filename
+
+    if (hyperPath == null) return other.hyperPath == null;
+
+    String fileNameStr = hyperPath == null ? "" : hyperPath.getNameStr(),
+           otherFileNameStr = other.hyperPath == null ? "" : other.hyperPath.getNameStr();
+
+    return FilenameRules.current().normalize(fileNameStr).equals(FilenameRules.current().normalize(otherFileNameStr));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

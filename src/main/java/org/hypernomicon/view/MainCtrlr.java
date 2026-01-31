@@ -1762,14 +1762,13 @@ public final class MainCtrlr
     FilePath rootPath = showDirDialog(dirChooser);
     if (FilePath.isEmpty(rootPath)) return;
 
-    String[] list = rootPath.toFile().list();
-    if (list == null)
+    if (rootPath.isDirectory() == false)
     {
       errorPopup("Selected item is not a folder.");
       return;
     }
 
-    if (list.length != 0)
+    if (rootPath.toFile().list().length != 0)
     {
       errorPopup("The selected folder is not empty.");
       return;

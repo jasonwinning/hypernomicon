@@ -359,30 +359,45 @@ public class FilePath implements Comparable<FilePath>
    * This method is intended for cleanup of temporary directories where failure
    * to delete is acceptable (e.g., cleanup after filesystem probing).
    * <p>
+   * Retries every 250ms for up to 2.5 seconds to handle Windows file handle delays.
+   * <p>
    * No error is thrown or logged if deletion fails for any reason.
    */
   public void deleteDirectoryQuietly()
   {
     Path root = getDirOnly().toPath();
-    List<Path> paths;
 
-    try (var walk = Files.walk(root))
+    for (int attempt = 0; attempt < 10; attempt++)
     {
-      paths = walk.sorted(Comparator.reverseOrder()).toList();
-    }
-    catch (IOException e)
-    {
-      return;  // Can't walk the directory; nothing to delete
-    }
-
-    // Delete after closing the stream to avoid Windows file handle issues
-    for (Path path : paths)
-    {
-      try
+      if (attempt > 0)
       {
-        Files.deleteIfExists(path);
+        try { Thread.sleep(250); }
+        catch (InterruptedException e) { Thread.currentThread().interrupt(); return; }
       }
-      catch (IOException ignored) { }
+
+      List<Path> paths;
+
+      try (var walk = Files.walk(root))
+      {
+        paths = walk.sorted(Comparator.reverseOrder()).toList();
+      }
+      catch (IOException e)
+      {
+        return;  // Can't walk the directory; nothing to delete
+      }
+
+      // Delete after closing the stream to avoid Windows file handle issues
+
+      for (Path path : paths)
+      {
+        try { Files.deleteIfExists(path); }
+        catch (IOException ignored) { }
+      }
+
+      // Check if root was successfully deleted
+
+      if (Files.exists(root) == false)
+        return;
     }
   }
 
@@ -540,13 +555,21 @@ public class FilePath implements Comparable<FilePath>
 
   public boolean isSubpath(FilePath subFilePath)
   {
-    while (equals(subFilePath) == false)
-    {
-      subFilePath = subFilePath.getParent();
-      if (isEmpty(subFilePath)) return false;
-    }
+    // Use cached real paths when available
 
-    return true;
+    Path thisReal = innerVal.getRealPath(),
+         subReal = subFilePath.innerVal.getRealPath();
+
+    if ((thisReal != null) && (subReal != null))
+      return subReal.startsWith(thisReal);
+
+    // Fallback for non-existent paths: use normalized absolute paths
+    // Path.startsWith() is case-insensitive on Windows automatically
+
+    Path thisNorm = toPath().toAbsolutePath().normalize(),
+         subNorm = subFilePath.toPath().toAbsolutePath().normalize();
+
+    return subNorm.startsWith(thisNorm);
   }
 
 //---------------------------------------------------------------------------

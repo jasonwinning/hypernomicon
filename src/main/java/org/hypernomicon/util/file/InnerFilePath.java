@@ -17,13 +17,11 @@
 
 package org.hypernomicon.util.file;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.StringUtil.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 
 //---------------------------------------------------------------------------
 
@@ -35,7 +33,8 @@ class InnerFilePath
 
   private String pathStr = null;
   private File file = null;
-  private Path path = null;
+  private Path path = null, realPath = null;
+  private boolean realPathResolved = false;
 
 //---------------------------------------------------------------------------
 
@@ -53,16 +52,14 @@ class InnerFilePath
 
   @Override public int hashCode()
   {
-    try
-    {
-      // Use the canonical path if available
-      return getFile().getCanonicalFile().hashCode();
-    }
-    catch (IOException e)
-    {
-      // Fallback to normalized path if canonical path is not available
-      return getPath().normalize().hashCode();
-    }
+    Path real = getRealPath();
+
+    if (real != null)
+      return real.hashCode();
+
+    // Fallback to normalized path if real path is not available
+
+    return getPath().normalize().hashCode();
   }
 
 //---------------------------------------------------------------------------
@@ -107,6 +104,26 @@ class InnerFilePath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  Path getRealPath()
+  {
+    if (realPathResolved) return realPath;
+
+    try
+    {
+      realPath = getPath().toRealPath();
+    }
+    catch (IOException e)
+    {
+      realPath = null;
+    }
+
+    realPathResolved = true;
+    return realPath;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public boolean equals(Object other)
   {
     if (this == other) return true;
@@ -114,11 +131,25 @@ class InnerFilePath
 
     InnerFilePath otherFilePath = (InnerFilePath) other;
 
-    try { return Files.isSameFile(getPath(), otherFilePath.getPath()); }
-    catch (IOException e) { noOp(); }
+    String thisStr = safeStr(toString()),
+           otherStr = safeStr(otherFilePath.toString());
 
-    try { return getFile().getCanonicalFile().equals(otherFilePath.getFile().getCanonicalFile()); }
-    catch (IOException e) { noOp(); }
+    if (thisStr.equals(otherStr)) return true;
+
+    // Use cached real paths for comparison
+
+    Path thisReal = getRealPath(),
+         otherReal = otherFilePath.getRealPath();
+
+    if ((thisReal != null) && (otherReal != null))
+      return thisReal.equals(otherReal);
+
+    // If one exists and the other doesn't, they can't be the same
+
+    if ((thisReal != null) || (otherReal != null))
+      return false;
+
+    // Neither file exists; compare by normalized path structure
 
     return getPath().normalize().equals(otherFilePath.getPath().normalize());
   }

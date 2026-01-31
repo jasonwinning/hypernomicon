@@ -27,6 +27,8 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.prefs.Preferences;
 
+import org.hypernomicon.HyperTask.HyperThread;
+
 import com.ibm.icu.lang.UCharacter;
 import com.ibm.icu.lang.UProperty;
 import com.ibm.icu.text.Normalizer2;
@@ -97,8 +99,8 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
   /** Heuristic rules for Windows/NTFS: case-insensitive, trims trailing dots/spaces. */
   static final FilenameRules WINDOWS_HEURISTIC = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
 
-  /** Heuristic rules for macOS/APFS: case-insensitive, Unicode composition insensitive. */
-  static final FilenameRules MAC_HEURISTIC = new FilenameRules(true, true, false, false, CaseFoldingMode.SIMPLE);
+  /** Heuristic rules for macOS/APFS: case-insensitive, Unicode composition insensitive, full case folding. */
+  static final FilenameRules MAC_HEURISTIC = new FilenameRules(true, true, false, false, CaseFoldingMode.FULL);
 
   /** Heuristic rules for Linux/ext4: case-sensitive, no special handling. */
   static final FilenameRules LINUX_HEURISTIC = new FilenameRules(false, false, false, false, CaseFoldingMode.SIMPLE);
@@ -276,8 +278,8 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
               trimsTrailingSpaces = (fileSystemTreatsAsDistinct(sandbox, "trim_" + token + "_b", "trim_" + token + "_b ") == false),
 
               // Use OR: if filesystem trims either, we trim both during normalization. This may cause
-              // false collision warnings on hypothetical filesystems that trim only one, but errs on
-              // the side of safety (no missed collisions). All known filesystems trim both or neither.
+              // false collision warnings on filesystems that trim only one (e.g., exFAT trims dots
+              // but not spaces), but errs on the side of safety (no missed collisions).
 
               trimsTrailing     = trimsTrailingDots || trimsTrailingSpaces,
 
@@ -292,8 +294,19 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
     }
     finally
     {
-      new FilePath(sandbox).deleteDirectoryQuietly();
+      cleanupLeftoverProbeDirectory(sandbox);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void cleanupLeftoverProbeDirectory(Path path)
+  {
+    FilePath probeDir = new FilePath(path);
+    HyperThread cleanupThread = new HyperThread(probeDir::deleteDirectoryQuietly, "ProbeCleanup");
+    cleanupThread.setDaemon(true);
+    cleanupThread.start();
   }
 
 //---------------------------------------------------------------------------
@@ -306,7 +319,7 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
       for (Path path : stream)
       {
         if (Files.isDirectory(path))
-          new FilePath(path).deleteDirectoryQuietly();
+          cleanupLeftoverProbeDirectory(path);
       }
     }
     catch (IOException e)

@@ -22,6 +22,7 @@ import org.hypernomicon.util.file.FilePath;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.List;
 
@@ -93,6 +94,7 @@ public class WelcomeDlgCtrlr extends ModalDialog
       String mruCaption = mru.length() <= 50 ? mru : mru.substring(0, 30) + "..." + mru.substring(mru.length() - 20);
 
       Hyperlink hl = new Hyperlink(mruCaption);
+      setToolTip(hl, mru);
       apRecent.getChildren().add(apRecent.getChildren().size() - 1, hl);
       hl.setPrefWidth(386.0);
       hl.setLayoutX(6.0);

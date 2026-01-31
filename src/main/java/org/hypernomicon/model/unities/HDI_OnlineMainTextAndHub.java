@@ -236,7 +236,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
       default :
 
-        val.htmlText = mainText.getPlain().matches(".*\\p{Alnum}.*") ? mainText.getHtml() : "";
+        val.htmlText = mainText.getPlain().isBlank() ? "" : mainText.getHtml();  // Avoid saving empty HTML boilerplate
         break;
     }
   }
