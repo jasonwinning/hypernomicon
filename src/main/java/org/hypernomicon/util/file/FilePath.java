@@ -553,23 +553,33 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean isSubpath(FilePath subFilePath)
+  /**
+   * Check if the given path is contained within this path's directory tree.
+   * <p>
+   * Returns true if {@code descendant} is a subpath (descendant) of this path.
+   * For example, if this path is "/a/b" and descendant is "/a/b/c/d", returns true.
+   * This is the inverse of {@link java.nio.file.Path#startsWith(Path)}.
+   *
+   * @param descendant the path to check
+   * @return true if descendant is under this path (i.e., this path contains descendant)
+   */
+  public boolean contains(FilePath descendant)
   {
     // Use cached real paths when available
 
     Path thisReal = innerVal.getRealPath(),
-         subReal = subFilePath.innerVal.getRealPath();
+         descendantReal = descendant.innerVal.getRealPath();
 
-    if ((thisReal != null) && (subReal != null))
-      return subReal.startsWith(thisReal);
+    if ((thisReal != null) && (descendantReal != null))
+      return descendantReal.startsWith(thisReal);
 
     // Fallback for non-existent paths: use normalized absolute paths
     // Path.startsWith() is case-insensitive on Windows automatically
 
     Path thisNorm = toPath().toAbsolutePath().normalize(),
-         subNorm = subFilePath.toPath().toAbsolutePath().normalize();
+         descendantNorm = descendant.toPath().toAbsolutePath().normalize();
 
-    return subNorm.startsWith(thisNorm);
+    return descendantNorm.startsWith(thisNorm);
   }
 
 //---------------------------------------------------------------------------

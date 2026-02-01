@@ -522,7 +522,7 @@ public final class FileManager extends NonmodalWindow
         if (srcFilePath.equals(destFilePath))
           throw new HyperDataException("Source and destination are the same.");
 
-        if ((copying == false) && srcFilePath.isDirectory() && srcFilePath.isSubpath(destFilePath))
+        if ((copying == false) && srcFilePath.isDirectory() && srcFilePath.contains(destFilePath))
           throw new HyperDataException("The destination folder is a subfolder of the source folder.");
 
         destSet.add(destFilePath);
@@ -789,9 +789,9 @@ public final class FileManager extends NonmodalWindow
           {
             incrementAndUpdateProgress();
 
-            if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles(true) == false) && (srcFilePath.isSubpath(db.getRootPath()) == false))
+            if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles(true) == false) && (srcFilePath.contains(db.getRootPath()) == false))
             {
-              if (db.getRootPath().isSubpath(srcFilePath))
+              if (db.getRootPath().contains(srcFilePath))
                 HyperPath.getFolderFromFilePath(srcFilePath, false).delete(false);
               else
                 srcFilePath.deleteDirectory(false);

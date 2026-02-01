@@ -752,7 +752,7 @@ public class PictureDlgCtrlr extends ModalDialog
       return;
     }
 
-    if (db.getRootPath().isSubpath(path) == false)
+    if (db.getRootPath().contains(path) == false)
     {
       chkMove.setDisable(true);
       chkMove.setSelected(true);
@@ -789,7 +789,7 @@ public class PictureDlgCtrlr extends ModalDialog
 
     picture = new Image(personHyperTab.getCurPicture().toURI().toString());
 
-    if (db.getRootPath().isSubpath(personHyperTab.getCurPicture()) == false)
+    if (db.getRootPath().contains(personHyperTab.getCurPicture()) == false)
     {
       chkMove.setDisable(true);
       chkMove.setSelected(true);
@@ -870,7 +870,7 @@ public class PictureDlgCtrlr extends ModalDialog
     else if (rbFile.isSelected())
     {
       FilePath filePath = new FilePath(tfFile.getText());
-      if (db.getRootPath().isSubpath(filePath) && (chkMove.isSelected() == false))
+      if (db.getRootPath().contains(filePath) && (chkMove.isSelected() == false))
         return filePath.getDirOnly().resolve(new FilePath(fileName));
     }
 

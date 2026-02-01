@@ -178,7 +178,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     if (FilePath.isEmpty(filePath))
       return;
 
-    if (db.isOnline() && db.getRootPath().isSubpath(filePath))
+    if (db.isOnline() && db.getRootPath().contains(filePath))
     {
       falseWithErrorPopup("Path \"" + filePath + "\" is within the directory structure of the currently loaded database.", tfFolderName);
       return;
@@ -454,7 +454,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     if (modifying == false)
       return transientDBFilePath;
 
-    if (db.isOnline() && (deleting || (db.getRootPath().equals(transientDBFilePath) == false)) && db.getRootPath().isSubpath(transientDBFilePath))
+    if (db.isOnline() && (deleting || (db.getRootPath().equals(transientDBFilePath) == false)) && db.getRootPath().contains(transientDBFilePath))
     {
       falseWithErrorPopup("Path \"" + transientDBFilePath + "\" is within the directory structure of the currently loaded database.", tfFolderName);
       return null;

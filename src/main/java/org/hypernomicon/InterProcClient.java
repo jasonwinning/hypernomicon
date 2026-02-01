@@ -202,7 +202,7 @@ public final class InterProcClient
     for (AppInstance instance : updateRunningInstancesFile().values())
       if (instance.getID().equals(thisInstanceID) == false)
         if (FilePath.isEmpty(instance.getDBPath()) == false)
-          if (instance.getDBPath().isSubpath(newDbPath) || newDbPath.isSubpath(instance.getDBPath()))
+          if (instance.getDBPath().contains(newDbPath) || newDbPath.contains(instance.getDBPath()))
             return true;
 
     return false;

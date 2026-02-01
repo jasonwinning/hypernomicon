@@ -69,7 +69,7 @@ public class HyperPath
     if (FilePath.isEmpty(filePath))
       return;
 
-    if (db.getRootPath().isSubpath(filePath) == false)
+    if (db.getRootPath().contains(filePath) == false)
     {
       internalErrorPopup(90177);
       return;
@@ -185,7 +185,7 @@ public class HyperPath
   {
     dirFilePath = dirFilePath.getDirOnly();
 
-    if (db.getRootPath().isSubpath(dirFilePath) == false)  // the path is not in the database folder tree
+    if (db.getRootPath().contains(dirFilePath) == false)  // the path is not in the database folder tree
       return null;
 
     Set<HyperPath> set = getHyperPathSetForFilePath(dirFilePath);

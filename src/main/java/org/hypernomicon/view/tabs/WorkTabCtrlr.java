@@ -1921,7 +1921,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       return false;
 
     FilePath filePath = new FilePath(files.getFirst());
-    if (db.getRootPath().isSubpath(filePath))
+    if (db.getRootPath().contains(filePath))
       return false;
 
     FilePath extPath = db.extPath();
@@ -1931,7 +1931,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       return true;
     }
 
-    if (extPath.isSubpath(filePath) == false)
+    if (extPath.contains(filePath) == false)
       return false;
 
     tfURL.setText(EXT_1 + FilenameUtils.separatorsToUnix(extPath.relativize(filePath).toString()));

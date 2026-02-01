@@ -817,7 +817,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     rbMove.setDisable(false);
 
-    rbCurrent.setDisable(db.getRootPath().isSubpath(chosenFile) == false);
+    rbCurrent.setDisable(db.getRootPath().contains(chosenFile) == false);
 
     if ((newWorkFile != null) && (newWorkFile != oldWorkFile))
     {
@@ -826,7 +826,7 @@ public class WorkDlgCtrlr extends ModalDialog
     }
     else if (rbCurrent.isSelected())
     {
-      if (rbCurrent.isDisabled() || db.unenteredPath().isSubpath(chosenFile))
+      if (rbCurrent.isDisabled() || db.unenteredPath().contains(chosenFile))
         rbMove.setSelected(true);
     }
 

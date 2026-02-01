@@ -137,7 +137,7 @@ public class FileDlgCtrlr extends ModalDialog
       {
         tfCurrentPath.setText(srcFilePath.toString());
 
-        if (db.unenteredPath().isSubpath(srcFilePath))
+        if (db.unenteredPath().contains(srcFilePath))
           tfNewPath.setText(db.miscFilesPath().toString());
         else
         {
@@ -284,7 +284,7 @@ public class FileDlgCtrlr extends ModalDialog
     }
     else  // chosen file is not already attached to a record
     {
-      if (db.getRootPath().isSubpath(newSrc) && (db.unenteredPath().isSubpath(newSrc) == false))
+      if (db.getRootPath().contains(newSrc) && (db.unenteredPath().contains(newSrc) == false))
       {
         rbNeither.setDisable(false);
       }
@@ -292,7 +292,7 @@ public class FileDlgCtrlr extends ModalDialog
       {
         if (rbNeither.isSelected())
           rbMove.setSelected(true);
-        rbNeither.setDisable(db.unenteredPath().isSubpath(newSrc) == false);
+        rbNeither.setDisable(db.unenteredPath().contains(newSrc) == false);
       }
 
       rbMove.setDisable(false);
@@ -361,7 +361,7 @@ public class FileDlgCtrlr extends ModalDialog
     chosenFilePath = showDirDialog(dirChooser);
     if (FilePath.isEmpty(chosenFilePath)) return;
 
-    if (db.getRootPath().isSubpath(chosenFilePath) == false)
+    if (db.getRootPath().contains(chosenFilePath) == false)
     {
       errorPopup("The file cannot be copied or moved outside the database folder structure.");
       return;

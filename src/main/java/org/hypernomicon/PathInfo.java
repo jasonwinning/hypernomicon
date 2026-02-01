@@ -80,7 +80,7 @@ class PathInfo
       return;
     }
 
-    if (db.getRootPath().isSubpath(filePath))
+    if (db.getRootPath().contains(filePath))
     {
       parentFolder = getParentFolderOfPath(filePath);
 
