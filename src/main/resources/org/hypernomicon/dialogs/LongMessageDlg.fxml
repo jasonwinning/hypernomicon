@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2026 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+
+<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="526.0" prefWidth="654.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.LongMessageDlgCtrlr">
+  <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <top>
+      <HBox fx:id="hboxHeader" alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: linear-gradient(-fx-background, derive(-fx-background, 30%)); -fx-border-color: -fx-box-border; -fx-border-width: 0 0 1 0;">
+        <padding>
+          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        </padding>
+        <Label fx:id="lblHeaderText" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+      </HBox>
+    </top>
+    <center>
+      <TextArea fx:id="taMessage" editable="false" wrapText="true">
+        <BorderPane.margin>
+          <Insets left="6.0" right="6.0" top="6.0" />
+        </BorderPane.margin>
+      </TextArea>
+    </center>
+    <bottom>
+      <HBox alignment="CENTER" prefHeight="42.0">
+        <Button fx:id="btnOk" cancelButton="true" defaultButton="true" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="90.0" text="OK" />
+      </HBox>
+    </bottom>
+  </BorderPane>
+</AnchorPane>

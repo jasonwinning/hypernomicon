@@ -33,7 +33,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import org.controlsfx.control.MasterDetailPane;
 
-import org.hypernomicon.dialogs.LockedDlgCtrlr;
+import org.hypernomicon.dialogs.LongMessageDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.file.FilePath;
@@ -747,9 +747,30 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void showLongMessage(String title, String text)
+  /**
+   * Displays a dialog with a scrollable text area for long messages.
+   * @param title The window title
+   * @param text The text to display in the scrollable text area
+   */
+  public static void longMessagePopup(String title, String text)
   {
-    new LockedDlgCtrlr(title, text).showModal();
+    new LongMessageDlgCtrlr(title, text).showModal();
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Displays a dialog with an icon, header message, and scrollable text area,
+   * similar in appearance to a standard {@link Alert} but with a text area
+   * for displaying longer content.
+   * @param title The window title
+   * @param alertType The type of alert icon to display (WARNING, ERROR, INFORMATION, etc.)
+   * @param headerText The header message to display next to the icon
+   * @param text The detailed text to display in the scrollable text area
+   */
+  public static void longMessagePopup(String title, AlertType alertType, String headerText, String text)
+  {
+    new LongMessageDlgCtrlr(title, alertType, headerText, text).showModal();
   }
 
 //---------------------------------------------------------------------------

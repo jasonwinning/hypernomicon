@@ -218,11 +218,10 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 
   /**
-   * Show a warning to the user if this folder or any of its subfolders no longer exists on the file system.<br>
-   * Shows a message for each folder.<br>
-   * This is intended to be called during database load.
+   * Check if this folder and its subfolders exist, collecting any missing folders into the provided list.
+   * @param missingFolders List to add missing folder paths to
    */
-  public void checkExists()
+  public void checkExists(List<FilePath> missingFolders)
   {
     if (checkedForExistence) return;
 
@@ -231,10 +230,9 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (getID() != ROOT_FOLDER_ID)
       if (filePath().exists() == false)
         if (isSpecial(false) || path.isInUseByRecords())
-          warningPopup("The folder: \"" + filePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
-                       "Next time, only use the " + appTitle + " File Manager to make changes to move, rename, or delete database folders.");
+          missingFolders.add(filePath());
 
-    childFolders.forEach(HDT_Folder::checkExists);
+    childFolders.forEach(child -> child.checkExists(missingFolders));
   }
 
 //---------------------------------------------------------------------------

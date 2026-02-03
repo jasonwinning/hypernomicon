@@ -134,24 +134,6 @@ public class LockedDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public LockedDlgCtrlr(String title, String text)
-  {
-    super("LockedDlg", title, true);
-
-    otherHostName = "";
-    otherCompName = "";
-
-    taOutput.setText(text);
-
-    btnTryTerminate.setText("Copy to Clipboard");
-    btnTryTerminate.setOnAction(event -> copyToClipboard(text));
-
-    setAllVisible(false, btnTryComm, btnOverride, btnStop, lblSeconds);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public LockedDlgCtrlr(String otherCompName)
   {
     super("LockedDlg", "Database is Currently Locked", true);

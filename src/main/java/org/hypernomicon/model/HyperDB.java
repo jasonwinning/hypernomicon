@@ -30,10 +30,11 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
+
+import javafx.scene.control.Alert.AlertType;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.EnumMap;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
@@ -440,7 +441,23 @@ public final class HyperDB extends AbstractHyperDB
 
   @Override protected void checkWhetherFoldersExist()
   {
-    getRootFolder().checkExists();
+    List<FilePath> missingFolders = new ArrayList<>();
+    getRootFolder().checkExists(missingFolders);
+
+    if (missingFolders.isEmpty())
+      return;
+
+    String headerText = "Each folder shown below is referred to by one or more database records but cannot be found." + System.lineSeparator() +
+                        "Next time, only use the " + appTitle + " File Manager to move, rename, or delete database folders.";
+
+    StringBuilder folderList = new StringBuilder();
+
+    for (FilePath folder : missingFolders)
+      folderList.append(folder).append(System.lineSeparator());
+
+    String title = missingFolders.size() == 1 ? "Missing Folder" : missingFolders.size() + " Missing Folders";
+
+    longMessagePopup(title, AlertType.WARNING, headerText, folderList.toString());
   }
 
 //---------------------------------------------------------------------------
