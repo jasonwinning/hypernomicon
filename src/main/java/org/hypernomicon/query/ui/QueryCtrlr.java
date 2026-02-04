@@ -737,7 +737,7 @@ public final class QueryCtrlr
     {
       reportEngine.generate(this, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
 
-    }}.runWithProgressDialog() != State.SUCCEEDED) return;
+    }}.setShowDialogImmediately(true).runWithProgressDialog() != State.SUCCEEDED) return;
 
     reportTable.inject(reportEngine);
 
@@ -937,6 +937,7 @@ public final class QueryCtrlr
 
     };
 
+    task.setShowDialogImmediately(true);
     task.addDoneHandler(state -> queries.values().forEach(query -> query.cleanup(state)));
 
     boolean succeeded = task.runWithProgressDialog() == State.SUCCEEDED;

@@ -351,6 +351,8 @@ class MentionsIndex
       }
     };
 
+    task.setShowDialogImmediately(true);
+
     task.addDoneHandler(state ->
     {
       ui.updateProgress("", -1);

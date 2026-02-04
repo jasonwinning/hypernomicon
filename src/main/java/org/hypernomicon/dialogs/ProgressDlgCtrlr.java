@@ -17,7 +17,6 @@
 
 package org.hypernomicon.dialogs;
 
-import javafx.application.Platform;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -26,9 +25,11 @@ import javafx.scene.layout.VBox;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.base.ModalDialog;
+import org.hypernomicon.util.PopupRobot;
 
 //---------------------------------------------------------------------------
 
@@ -39,7 +40,6 @@ public final class ProgressDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 
   private Label lblPercent;
-  private boolean ownThread = true;
   private long lastPercent = -200;
 
   @FXML private Button btnSkip;
@@ -47,6 +47,13 @@ public final class ProgressDlgCtrlr extends ModalDialog
   @FXML private VBox vbox;
 
   private static final double ROW_HEIGHT = 30.0;
+
+  /**
+   * Time to wait before showing the progress dialog. If the task completes
+   * within this time, the dialog is not shown at all, avoiding UI flicker
+   * for quick operations.
+   */
+  private static final long SHOW_DIALOG_THRESHOLD_MS = 300;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -88,19 +95,8 @@ public final class ProgressDlgCtrlr extends ModalDialog
 
     task.addDoneHandler(state -> stage.close());
 
-    onShown = () -> Platform.runLater(() ->       // This needs to be done in a runLater because the task may have been started so recently that
-    {                                             // the task's running property has not yet been set to true. It gets set to true by a runnable
-      ownThread = (task.isRunning() == false);    // queued to run on the FX thread, so this runnable will run after that one.
-
-      if (ownThread)
-        task.startWithNewThread();
-    });
-
     stage.setOnHiding(event ->
     {
-      if (task.isRunning() && ownThread)
-        task.cancelAndWait();
-
       lblMessage .textProperty    ().unbind();
       progressBar.progressProperty().unbind();
     });
@@ -144,6 +140,10 @@ public final class ProgressDlgCtrlr extends ModalDialog
    * Run the specified task while showing progress updates in a progress dialog.
    * This method blocks execution in the calling thread until the task completes.
    *
+   * <p>To avoid UI flicker for quick operations, the dialog is not shown immediately.
+   * Instead, the task is started first and the dialog only appears if the task is
+   * still running after {@link #SHOW_DIALOG_THRESHOLD_MS} milliseconds.</p>
+   *
    * <p>The task may already be running when this method is called.
    * If it is not, it will be started automatically.</p>
    *
@@ -158,7 +158,70 @@ public final class ProgressDlgCtrlr extends ModalDialog
    */
   public static State performTask(HyperTask task)
   {
-    return new ProgressDlgCtrlr(task).showModal() ? State.SUCCEEDED : task.getState();
+    // If task is already done, return immediately
+
+    if (task.isDone())
+      return task.getState();
+
+    // Check both state and thread liveness: state might still be READY briefly
+    // after an external caller starts the thread (SCHEDULED transition is deferred
+    // via Platform.runLater)
+
+    boolean startedByUs = (task.isRunning() == false) && (task.threadIsAlive() == false);
+
+    // Start task first if not already running
+
+    if (startedByUs)
+      task.startWithNewThread();
+
+    // Skip delay for tasks that opt out (e.g., tasks that queue many runLaters)
+
+    if (task.getShowDialogImmediately() == false)
+    {
+      // Use custom threshold if set, otherwise use default
+
+      long threshold = task.getDialogDelayMillis() >= 0 ? task.getDialogDelayMillis() : SHOW_DIALOG_THRESHOLD_MS;
+
+      // Wait for task to complete or timeout. Each iteration pumps the FX event
+      // queue so state property updates (via Platform.runLater) can be processed.
+
+      long startTime = System.currentTimeMillis();
+
+      do
+      {
+        sleepForMillis(50);
+        pauseAndWaitForRunLaters();
+      }
+      while (task.isRunning() && ((System.currentTimeMillis() - startTime) < threshold));
+
+      // If task completed within threshold, return its state
+
+      if (task.isRunning() == false)
+        return task.getState();
+    }
+
+    // Task still running; show dialog
+
+    // PopupRobot interception: simulate Cancel on progress dialog
+
+    if (PopupRobot.isActive() && PopupRobot.shouldCancelProgressDialog())
+    {
+      if (startedByUs && task.isRunning())
+        task.cancelAndWait();
+
+      return task.getState();
+    }
+
+    boolean ok = new ProgressDlgCtrlr(task).showModal();
+
+    // If we started the task and it's still running (user cancelled or
+    // skipped the dialog), cancel and wait so the caller can safely
+    // clean up data structures.
+
+    if (startedByUs && task.isRunning())
+      task.cancelAndWait();
+
+    return ok ? State.SUCCEEDED : task.getState();
   }
 
 //---------------------------------------------------------------------------

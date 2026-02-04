@@ -81,7 +81,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     protected SyncTask(String message)
     {
       super("SyncReferenceLibrary", message, false);
-      setInterruptOnCancel(true);  // Enable thread interruption to cancel blocking HTTP I/O
+      setInterruptOnCancel(true);        // Enable thread interruption to cancel blocking HTTP I/O
+      setShowDialogImmediately(true);
     }
 
     protected boolean changed = false;

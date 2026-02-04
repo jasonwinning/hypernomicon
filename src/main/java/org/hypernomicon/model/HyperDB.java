@@ -124,7 +124,7 @@ public final class HyperDB extends AbstractHyperDB
 
       for (FilePath filePath : xmlFileList) loadFromXMLFile(creatingNew, filePath, recordTypeToDataVersion, workIDtoInvIDs, this);
 
-    }}.runWithProgressDialog() == State.SUCCEEDED;
+    }}.setShowDialogImmediately(true).runWithProgressDialog() == State.SUCCEEDED;
   }
 
 //---------------------------------------------------------------------------
@@ -383,7 +383,7 @@ public final class HyperDB extends AbstractHyperDB
     {
       bringAllDatasetsOnline(this);
 
-    }}.runWithProgressDialog() == State.SUCCEEDED;
+    }}.setShowDialogImmediately(true).runWithProgressDialog() == State.SUCCEEDED;
   }
 
 //---------------------------------------------------------------------------

@@ -872,6 +872,8 @@ public abstract class AbstractHyperDB
       }
     }};
 
+    task.setShowDialogImmediately(true);
+
     if (task.runWithProgressDialog() != State.SUCCEEDED) return false;
 
     MessageDigest md = newMessageDigest();

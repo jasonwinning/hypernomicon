@@ -808,7 +808,7 @@ public final class FileManager extends NonmodalWindow
 
       suppressNeedRefresh = false;
 
-    }}.runWithProgressDialog() == State.SUCCEEDED;
+    }}.setShowDialogImmediately(true).runWithProgressDialog() == State.SUCCEEDED;
 
     suppressNeedRefresh = false;
 

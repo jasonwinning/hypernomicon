@@ -28,9 +28,9 @@ import javafx.scene.control.Alert.AlertType;
 //---------------------------------------------------------------------------
 
 /**
- * PopupRobot is a utility for intercepting and simulating popup dialogs.
- * It can be used for test automation or other situations where UI workflows
- * should be run non-interactively.
+ * PopupRobot is a utility for intercepting and simulating popup dialogs
+ * and progress windows. It can be used for test automation or other
+ * situations where UI workflows should be run non-interactively.
  *
  * <p>When active, PopupRobot records the message and type of each popup
  * and returns a predictable {@link DialogResult} instead of showing a real
@@ -44,6 +44,7 @@ import javafx.scene.control.Alert.AlertType;
  *   <li>Configure the default response with {@link #setDefaultResponse(DialogResult)}.</li>
  *   <li>Run code that would normally show popups; they will be intercepted.</li>
  *   <li>Verify recorded message and type with {@link #getLastMessage()} and {@link #getLastType()}.</li>
+ *   <li>Verify popup count with {@link #getInvocationCount()}.</li>
  *   <li>Deactivate with {@link #setActive(boolean)} false in a finalizer step.</li>
  * </ul>
  *
@@ -51,12 +52,23 @@ import javafx.scene.control.Alert.AlertType;
  * <p>For multi-dialog flows where successive popups need different responses,
  * use {@link #enqueueResponses(DialogResult...)} to pre-load a FIFO queue.
  * Each call to {@link #getDefaultResponse()} polls the next response from the queue.
- * When the queue is empty, the static {@code defaultResponse} is used as a fallback.
- * {@link #clear()} empties the queue along with recorded message and type.</p>
+ * When the queue is empty, the static {@code defaultResponse} is used as a fallback.</p>
+ *
+ * <h3>Progress Dialog Interception</h3>
+ * <p>{@link org.hypernomicon.dialogs.ProgressDlgCtrlr ProgressDlgCtrlr} checks
+ * PopupRobot before showing its modal progress window. Call
+ * {@link #setCancelNextProgressDialog(boolean)} with {@code true} to simulate
+ * clicking Cancel on the next progress dialog. The flag auto-resets after
+ * consumption by {@link #shouldCancelProgressDialog()}, so subsequent progress
+ * dialogs proceed normally.</p>
+ *
+ * <h3>Resetting State</h3>
+ * <p>{@link #clear()} resets all mutable state: recorded message and type,
+ * invocation count, progress cancel flag, and the response queue.</p>
  *
  * <h3>Thread Safety</h3>
- * All methods are synchronized to ensure consistent state across the FX thread
- * and test runner threads.
+ * <p>All methods are synchronized to ensure consistent state across the FX
+ * thread and test runner threads.</p>
  *
  * <h3>Usage Examples</h3>
  * <pre>
@@ -80,6 +92,16 @@ import javafx.scene.control.Alert.AlertType;
  *
  * PopupRobot.setActive(false);
  * </pre>
+ * <pre>
+ * // Cancel the next progress dialog
+ * PopupRobot.setActive(true);
+ * PopupRobot.setCancelNextProgressDialog(true);
+ *
+ * // The progress dialog will be cancelled automatically;
+ * // subsequent progress dialogs are unaffected.
+ *
+ * PopupRobot.setActive(false);
+ * </pre>
  */
 public final class PopupRobot
 {
@@ -87,11 +109,12 @@ public final class PopupRobot
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean active = false;
+  private static boolean active = false, cancelNextProgressDialog = false;
   private static String lastMessage;
   private static AlertType lastType;
   private static DialogResult defaultResponse = mrOk;
-
+  private static int invocationCount = 0;
+  
   private static final Deque<DialogResult> responseQueue = new ArrayDeque<>();
 
 //---------------------------------------------------------------------------
@@ -104,10 +127,23 @@ public final class PopupRobot
   public static synchronized boolean isActive()                               { return active; }
   public static synchronized String getLastMessage()                          { return lastMessage; }
   public static synchronized AlertType getLastType()                          { return lastType; }
+  public static synchronized int getInvocationCount()                         { return invocationCount; }
   public static synchronized void setDefaultResponse(DialogResult response)   { defaultResponse = response; }
   public static synchronized void enqueueResponses(DialogResult... responses) { Collections.addAll(responseQueue, responses); }
 
   static synchronized DialogResult getDefaultResponse()                       { return responseQueue.isEmpty() ? defaultResponse : responseQueue.poll(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static synchronized void setCancelNextProgressDialog(boolean value) { cancelNextProgressDialog = value; }
+
+  public static synchronized boolean shouldCancelProgressDialog()
+  {
+    boolean result = cancelNextProgressDialog;
+    cancelNextProgressDialog = false;
+    return result;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -118,6 +154,7 @@ public final class PopupRobot
 
     lastMessage = msg;
     lastType = type;
+    invocationCount++;
   }
 
 
@@ -128,6 +165,8 @@ public final class PopupRobot
   {
     lastMessage = null;
     lastType = null;
+    invocationCount = 0;
+    cancelNextProgressDialog = false;
     responseQueue.clear();
   }
 

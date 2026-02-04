@@ -800,6 +800,28 @@ public final class Util
 //---------------------------------------------------------------------------
 
   /**
+   * Pauses execution and waits for pending {@link Platform#runLater(Runnable)} calls
+   * to be processed before returning.
+   * <p>
+   * This method enters and immediately exits a nested event loop, which allows
+   * any pending runLater calls to execute. This is useful when you need to ensure
+   * that deferred state updates have been applied.
+   * </p>
+   * <p>
+   * <strong>Must be called from the JavaFX Application Thread.</strong>
+   * </p>
+   */
+  public static void pauseAndWaitForRunLaters()
+  {
+    Object exitKey = new Object();
+    Platform.runLater(() -> Platform.exitNestedEventLoop(exitKey, null));
+    Platform.enterNestedEventLoop(exitKey);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Executes a consumer function if the provided object is not null.
    * <p>
    * This method checks if the given object is not null. If the object is non-null, it executes the specified consumer function with the object.

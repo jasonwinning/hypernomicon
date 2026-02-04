@@ -66,7 +66,11 @@ public final class CryptoUtil
 
   private static final String SECURITY_PROMPT_MESSAGE = "You might need to respond to a password prompt in a separate window.";
 
-  private static final long SHOW_PROGRESS_DIALOG_THRESHOLD_MS = 750;
+  /**
+   * Delay before showing progress dialog for keyring operations.
+   * Longer than default because OS credential prompts may take time to appear.
+   */
+  private static final long KEYRING_DIALOG_DELAY_MS = 750;
 
   private static KeyringProvider keyring;
 
@@ -125,19 +129,32 @@ public final class CryptoUtil
     {
       final Future<char[]> futureResult = keyringService.submit(() -> getKeyring().read(secretName));
 
-      if (Platform.isFxApplicationThread() && (futureResult.isDone() == false))
-      {
-        try
-        {
-          return futureResult.get(SHOW_PROGRESS_DIALOG_THRESHOLD_MS, TimeUnit.MILLISECONDS);
-        }
-        catch (TimeoutException e)
-        {
-          return finishReadingWithProgressDialog(futureResult, taskMessage);
-        }
-      }
+      // If not on FX thread, just wait for result
 
-      return futureResult.get();
+      if (Platform.isFxApplicationThread() == false)
+        return futureResult.get();
+
+      // If already done, return immediately
+
+      if (futureResult.isDone())
+        return futureResult.get();
+
+      // Use HyperTask with built-in dialog delay to wait for result
+
+      State state = new HyperTask("LoadFromKeyring", taskMessage, false) { @Override protected void call() throws CancelledTaskException
+      {
+        while (futureResult.isDone() == false)
+        {
+          sleepForMillis(100);
+          throwExceptionIfCancelled(this);
+
+          if (futureResult.isCancelled())
+            throw new CancelledTaskException();
+        }
+
+      }}.setDialogDelayMillis(KEYRING_DIALOG_DELAY_MS).addMessage(SECURITY_PROMPT_MESSAGE).runWithProgressDialog();
+
+      return state == State.SUCCEEDED ? futureResult.get() : null;
     }
     catch (InterruptedException e)
     {
@@ -247,49 +264,30 @@ public final class CryptoUtil
 
   private static void finishWritingWithProgressDialog(Task task, String taskMessage)
   {
-    if (Platform.isFxApplicationThread() && (task.isFinished() == false))
-    {
-      try
-      {
-        if (task.waitFinished(SHOW_PROGRESS_DIALOG_THRESHOLD_MS) == false)
-        {
-          new HyperTask("WriteToKeyring", taskMessage, false) { @Override protected void call() throws CancelledTaskException
-          {
-            while (task.isFinished() == false)
-            {
-              sleepForMillis(100);
-              throwExceptionIfCancelled(this);
-            }
+    // If not on FX thread, just wait for completion
 
-          }}.addMessage(SECURITY_PROMPT_MESSAGE).runWithProgressDialog();
-        }
-      }
-      catch (InterruptedException e)
-      {
-        Thread.currentThread().interrupt();
-      }
+    if (Platform.isFxApplicationThread() == false)
+    {
+      task.waitFinished();
+      return;
     }
 
-    task.waitFinished();
-  }
+    // If already done, return immediately
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    if (task.isFinished())
+      return;
 
-  private static char[] finishReadingWithProgressDialog(Future<char[]> result, String taskMessage) throws ExecutionException, InterruptedException
-  {
-    return new HyperTask("LoadFromKeyring", taskMessage, false) { @Override protected void call() throws CancelledTaskException
+    // Use HyperTask with built-in dialog delay to wait for completion
+
+    new HyperTask("WriteToKeyring", taskMessage, false) { @Override protected void call() throws CancelledTaskException
     {
-      while (result.isDone() == false)
+      while (task.isFinished() == false)
       {
         sleepForMillis(100);
         throwExceptionIfCancelled(this);
-
-        if (result.isCancelled())
-          throw new CancelledTaskException();
       }
 
-    }}.addMessage(SECURITY_PROMPT_MESSAGE).runWithProgressDialog() == State.SUCCEEDED ? result.get() : null;
+    }}.setDialogDelayMillis(KEYRING_DIALOG_DELAY_MS).addMessage(SECURITY_PROMPT_MESSAGE).runWithProgressDialog();
   }
 
 //---------------------------------------------------------------------------

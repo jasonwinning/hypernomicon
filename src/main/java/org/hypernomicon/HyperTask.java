@@ -195,7 +195,8 @@ public abstract class HyperTask
 
   private volatile HyperThread thread;
   private volatile boolean interruptOnCancel = false;
-  private boolean skippable = false, initialized = false;
+  private boolean skippable = false, initialized = false, showDialogImmediately = false;
+  private long dialogDelayMillis = -1;  // -1 means use default
 
   /**
    * If completedCount is negative, then the progress will be shown as indeterminate, regardless of what totalCount is.
@@ -221,16 +222,17 @@ public abstract class HyperTask
   public Throwable getException()             { return innerTask.getException(); }
   public State getState()                     { return innerTask.getState(); }
   public List<String> getAdditionalMessages() { return Collections.unmodifiableList(additionalMessages); }
+  public boolean getSkippable()               { return skippable; }
+  public boolean getShowDialogImmediately()   { return showDialogImmediately; }
+  public long    getDialogDelayMillis()       { return dialogDelayMillis; }
+  public boolean threadIsAlive()              { return HyperThread.isRunning(thread); }
+  public boolean isRunning()                  { return innerTask.isRunning(); }
+  public boolean isCancelled()                { return innerTask.isCancelled(); }
+  public boolean isDone()                     { return innerTask.isDone(); }
+  public boolean willHaveProgressUpdates()    { return innerTask.withProgressUpdates; }
 
   public ReadOnlyStringProperty  messageProperty () { return innerTask.messageProperty (); }
   public ReadOnlyDoubleProperty  progressProperty() { return innerTask.progressProperty(); }
-
-  public boolean getSkippable()            { return skippable; }
-  public boolean threadIsAlive()           { return HyperThread.isRunning(thread); }
-  public boolean isRunning()               { return innerTask.isRunning(); }
-  public boolean isCancelled()             { return innerTask.isCancelled(); }
-  public boolean isDone()                  { return innerTask.isDone(); }
-  public boolean willHaveProgressUpdates() { return innerTask.withProgressUpdates; }
 
   protected void incrementAndUpdateProgress() throws CancelledTaskException { completedCount++; updateProgress(); }
 
@@ -339,6 +341,46 @@ public abstract class HyperTask
     if (initialized) throw new IllegalStateException("Already initialized");
 
     this.interruptOnCancel = interruptOnCancel;
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * If true, the progress dialog will be shown immediately when the task starts.
+   * If false (the default), the dialog display is delayed to avoid UI flicker
+   * for quick operations.
+   * <p>
+   * Set this to true for tasks that are known to take a long time and queue
+   * many Platform.runLater calls during execution, which could otherwise cause
+   * the delay loop to process those calls and become unresponsive.
+   * @param showDialogImmediately Whether to skip the dialog delay
+   * @return This HyperTask
+   */
+  public HyperTask setShowDialogImmediately(boolean showDialogImmediately)
+  {
+    if (initialized) throw new IllegalStateException("Already initialized");
+
+    this.showDialogImmediately = showDialogImmediately;
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Set a custom delay in milliseconds before the progress dialog is shown.
+   * If not set (or set to a negative value), the default threshold from
+   * {@link ProgressDlgCtrlr} will be used.
+   * @param delayMillis The delay in milliseconds, or -1 to use the default
+   * @return This HyperTask
+   */
+  public HyperTask setDialogDelayMillis(long delayMillis)
+  {
+    if (initialized) throw new IllegalStateException("Already initialized");
+
+    this.dialogDelayMillis = delayMillis;
     return this;
   }
 
