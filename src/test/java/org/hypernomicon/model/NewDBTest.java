@@ -86,9 +86,9 @@ class NewDBTest
 
           // The next 3 lines are a workaround for https://bugs.openjdk.org/browse/JDK-8368902
 
-          xmlInputFactory.setProperty("jdk.xml.totalEntitySizeLimit", 0);
+          xmlInputFactory.setProperty("jdk.xml.totalEntitySizeLimit"     , 0);
           xmlInputFactory.setProperty("jdk.xml.maxGeneralEntitySizeLimit", 0);
-          xmlInputFactory.setProperty("jdk.xml.entityExpansionLimit", 0);
+          xmlInputFactory.setProperty("jdk.xml.entityExpansionLimit"     , 0);
 
           XMLEventReader eventReader = xmlInputFactory.createXMLEventReader(new ByteArrayInputStream(zis.readAllBytes()), XML_FILES_CHARSET.name());
 
