@@ -1883,7 +1883,15 @@ public abstract class AbstractHyperDB
 
     try (DigestInputStream dis = new DigestInputStream(is, md))
     {
-      XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(dis, XML_FILES_CHARSET.name());
+      XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+
+      // The next 3 lines are a workaround for https://bugs.openjdk.org/browse/JDK-8368902
+
+      xmlInputFactory.setProperty("jdk.xml.totalEntitySizeLimit"     , 0);
+      xmlInputFactory.setProperty("jdk.xml.maxGeneralEntitySizeLimit", 0);
+      xmlInputFactory.setProperty("jdk.xml.entityExpansionLimit"     , 0);
+
+      XMLEventReader eventReader = xmlInputFactory.createXMLEventReader(dis, XML_FILES_CHARSET.name());
 
       VersionNumber dataVersion = getVersionNumberFromXML(eventReader);
 
