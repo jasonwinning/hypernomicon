@@ -279,6 +279,12 @@ public class HyperPath
    * When {@code doCreateRecord} is {@code false}, the method only returns a record if one already
    * exists in {@code filenameMap} for the exact path. No records are created and no side effects
    * occur.
+   * <p>
+   * This method is {@code synchronized} because it is called from both the FX thread (UI
+   * operations, FileManager paste) and the FolderTreeWatcher thread ({@code registerTree}).
+   * The check-then-create sequence (lookup in {@code filenameMap}, then
+   * {@code createNewRecordFromState}) must be atomic to prevent duplicate records or stale
+   * state when both threads attempt to create a folder record for the same path.
    *
    * @param dirFilePath    The filesystem path of the directory. If this points to a file rather
    *                       than a directory, it is normalized to the containing directory first.
@@ -289,7 +295,7 @@ public class HyperPath
    *         outside the database root, does not exist on disk, or {@code doCreateRecord} is
    *         {@code false} and no record exists.
    */
-  public static HDT_Folder getFolderFromFilePath(FilePath dirFilePath, boolean doCreateRecord)
+  public static synchronized HDT_Folder getFolderFromFilePath(FilePath dirFilePath, boolean doCreateRecord)
   {
     dirFilePath = dirFilePath.getDirOnly();
 
@@ -319,7 +325,7 @@ public class HyperPath
     }
     catch (IOException e) { noOp(); }
 
-    HDT_Folder newFolder = null;
+    HDT_Folder newFolder;
 
     try
     {

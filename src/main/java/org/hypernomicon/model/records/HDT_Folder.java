@@ -108,22 +108,22 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
       return falseWithErrorPopup("Unable to rename the folder: XML folder cannot be renamed.");
 
     if (parentFolder() == null)
-      return falseWithErrorPopup("Unable to rename the folder: parent folder record is null.");
+      return falseWithErrorPopup("Unable to rename the folder: Parent folder record is null.");
 
     FilePath srcFilePath = filePath();
 
     if (srcFilePath.exists() == false)
-      return falseWithErrorPopup("Unable to rename the folder: it does not exist.");
+      return falseWithErrorPopup("Unable to rename the folder: It does not exist.");
 
     FilePath parentFilePath = parentFolder().filePath();
 
     if (parentFilePath.exists() == false)
-      return falseWithErrorPopup("Unable to rename the folder: parent folder does not exist.");
+      return falseWithErrorPopup("Unable to rename the folder: Parent folder does not exist.");
 
     FilePath destFilePath = parentFilePath.resolve(newName);
 
     if (destFilePath.exists())
-      return falseWithErrorPopup("Unable to rename the folder: a file or folder already has that name.");
+      return falseWithErrorPopup("Unable to rename the folder: A file or folder already has that name.");
 
     folderTreeWatcher.stop();
 
@@ -162,6 +162,60 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 
   /**
+   * Move this folder (and its entire subtree) to a new parent folder by reparenting the
+   * existing record rather than creating new records and deleting old ones. This preserves
+   * record IDs and all associations (notes, work files, misc files).
+   * <p>
+   * The caller is responsible for managing the FolderTreeWatcher lifecycle.
+   * @param newParent The destination parent folder
+   * @return True if the folder was moved successfully
+   * @throws IOException If the filesystem move fails
+   */
+  public boolean moveToNewParent(HDT_Folder newParent) throws IOException
+  {
+    if (getID() == ROOT_FOLDER_ID)
+      return falseWithErrorPopup("Unable to move the folder: Root folder cannot be moved.");
+
+    if (this == db.getXmlFolder())
+      return falseWithErrorPopup("Unable to move the folder: XML folder cannot be moved.");
+
+    if (parentFolder() == null)
+      return falseWithErrorPopup("Unable to move the folder: Parent folder record is null.");
+
+    if (newParent == null)
+      return falseWithErrorPopup("Unable to move the folder: Destination parent is null.");
+
+    if (newParent == parentFolder())
+      return true;
+
+    FilePath srcFilePath = filePath();
+
+    if (srcFilePath.exists() == false)
+      return falseWithErrorPopup("Unable to move the folder: It does not exist.");
+
+    if (newParent.filePath().exists() == false)
+      return falseWithErrorPopup("Unable to move the folder: Destination parent does not exist.");
+
+    FilePath destFilePath = newParent.filePath().resolve(name());
+
+    if (destFilePath.exists())
+      return falseWithErrorPopup("Unable to move the folder: A file or folder already exists at \"" + destFilePath + "\".");
+
+    if (srcFilePath.anyOpenFilesInDir())
+      return false;
+
+    Files.move(srcFilePath.toPath(), destFilePath.toPath());
+
+    db.unmapFilePath(srcFilePath);
+    path.assign(newParent, new FilePath(name()));
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Delete the folder on the file system and delete the folder record and its child folder records
    * @return True if the folder was deleted successfully
    */
@@ -173,10 +227,10 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
       return falseWithErrorPopup("The folder \"" + filePath + "\" is in use by the database and cannot be deleted.");
 
     if (parentFolder() == null)
-      return falseWithErrorPopup("Unable to delete the folder \"" + filePath + "\": parent folder record is null.");
+      return falseWithErrorPopup("Unable to delete the folder \"" + filePath + "\": Parent folder record is null.");
 
     if (filePath.exists() == false)
-      return falseWithErrorPopup("Unable to delete the folder \"" + filePath + "\": it does not exist.");
+      return falseWithErrorPopup("Unable to delete the folder \"" + filePath + "\": It does not exist.");
 
     boolean restartWatcher = folderTreeWatcher.stop();
 

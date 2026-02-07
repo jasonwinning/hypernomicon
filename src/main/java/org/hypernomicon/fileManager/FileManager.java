@@ -487,7 +487,7 @@ public final class FileManager extends NonmodalWindow
 
   private enum PasteAnswer { check, overwriteNone, overwriteAll }
 
-  private boolean doPasteChecks(FileRow destRow, Map<FilePath, FilePath> srcToDest, boolean copying, boolean dragging)
+  private boolean doPasteChecks(FileRow destRow, Map<FilePath, FilePath> srcToDest, boolean copying, boolean dragging, Set<FilePath> reparentRoots)
   {
     final FilePathSet srcSet = new FilePathSet(), destSet = new FilePathSet();
     srcPathToHilite = null;
@@ -660,8 +660,14 @@ public final class FileManager extends NonmodalWindow
         {
           incrementAndUpdateProgress();
 
-          if ((copying == false) && (entry.getKey().canObtainLock() == false))
-            throw new HyperDataException("Unable to obtain lock on path: \"" + entry.getKey() + '"');
+          // Skip lock check for paths covered by a re-parented directory
+
+          FilePath srcFilePath = entry.getKey();
+          if (reparentRoots.stream().anyMatch(root -> root.equals(srcFilePath) || root.contains(srcFilePath)))
+            continue;
+
+          if ((copying == false) && (srcFilePath.canObtainLock() == false))
+            throw new HyperDataException("Unable to obtain lock on path: \"" + srcFilePath + '"');
 
           if (entry.getValue().canObtainLock() == false)
             throw new HyperDataException("Unable to obtain lock on path: \"" + entry.getValue() + '"');
@@ -686,7 +692,28 @@ public final class FileManager extends NonmodalWindow
 
     Map<FilePath, FilePath> srcToDest = new HashMap<>();
 
-    if (doPasteChecks(destRow, srcToDest, copying, dragging) == false)
+    final Set<FilePath> reparentRoots = new LinkedHashSet<>();
+
+    if (copying == false)
+    {
+      // Identify internal folder roots that can be re-parented instead of delete+recreate (moves only)
+
+      for (AbstractEntityWithPath pathItem : getSrcPaths(dragging))
+      {
+        FilePath srcPath = pathItem.getFilePath();
+
+        if (pathItem.isDirectory() && (HyperPath.getFolderFromFilePath(srcPath, true) != null))
+          reparentRoots.add(srcPath);
+      }
+
+      // Remove nested roots (where another root is an ancestor)
+
+      reparentRoots.removeIf(root ->
+        reparentRoots.stream().anyMatch(other ->
+          (other.equals(root) == false) && other.contains(root)));
+    }
+
+    if (doPasteChecks(destRow, srcToDest, copying, dragging, reparentRoots) == false)
     {
       if (folderTreeWatcher.isRunning() == false)
         folderTreeWatcher.createNewWatcherAndStart();
@@ -696,21 +723,34 @@ public final class FileManager extends NonmodalWindow
 
     folderTreeWatcher.stop();
 
+    // Build set of all source paths covered by re-parent operations
+
+    final Set<FilePath> coveredBySrcPath = new FilePathSet();
+
+    for (FilePath root : reparentRoots)
+    {
+      coveredBySrcPath.add(root);
+
+      for (FilePath src : srcToDest.keySet())
+        if (root.contains(src))
+          coveredBySrcPath.add(src);
+    }
+
     // Collect empty source directories to delete after move completes
 
     final Set<FilePath>   externalEmptyDirs    = new LinkedHashSet<>();
     final Set<HDT_Folder> internalEmptyFolders = new LinkedHashSet<>();
 
     boolean success = new HyperTask("PasteOperation", copying ? "Copying..." : "Moving...",
-                                    srcToDest.size() * (copying ? 2L : 4L)) { @Override protected void call() throws CancelledTaskException, HyperDataException
+                                    srcToDest.size() * (copying ? 2L : 4L) + reparentRoots.size()) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
       suppressNeedRefresh = true;
 
       try
       {
 
-      // Create directories that need to be created
-      // ------------------------------------------
+      // Create directories that need to be created (skip those covered by re-parent)
+      // ----------------------------------------------------------------------------
 
         for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
         {
@@ -719,12 +759,12 @@ public final class FileManager extends NonmodalWindow
           FilePath srcFilePath  = entry.getKey(),
                    destFilePath = entry.getValue();
 
-          if (srcFilePath.isDirectory())
+          if (srcFilePath.isDirectory() && (coveredBySrcPath.contains(srcFilePath) == false))
             destFilePath.createDirectories();
         }
 
       // if copying, copy files
-      // -----------------------------------------------
+      // ----------------------------------------------------------
 
         if (copying)
         {
@@ -742,17 +782,38 @@ public final class FileManager extends NonmodalWindow
           }
         }
 
-      // if moving, move files
-      // -----------------------------------------------
+      // if moving, re-parent folder roots and move remaining files
+      // ----------------------------------------------------------
 
         else
         {
+
+        // Re-parent internal folder roots
+        // -------------------------------
+
+          for (FilePath srcRootPath : reparentRoots)
+          {
+            incrementAndUpdateProgress();
+
+            FilePath destRootPath = srcToDest.get(srcRootPath);
+            HDT_Folder srcFolder = HyperPath.getFolderFromFilePath(srcRootPath, false),
+                       destParent = HyperPath.getFolderFromFilePath(destRootPath.getParent(), true);
+
+            if (srcFolder.moveToNewParent(destParent) == false)
+              throw new CancelledTaskException();  // Error popup already shown by moveToNewParent
+          }
+
+        // Move remaining files not covered by re-parented directories
+        // -----------------------------------------------------------
+
           for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
           {
             incrementAndUpdateProgress();
 
             FilePath srcFilePath = entry.getKey(),
                      destFilePath = entry.getValue();
+
+            if (coveredBySrcPath.contains(srcFilePath)) continue;
 
             HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
 
@@ -771,30 +832,14 @@ public final class FileManager extends NonmodalWindow
             }
           }
 
-      // if moving, update note records
-      // ------------------------------
-
-          for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
-          {
-            FilePath srcFilePath = entry.getKey(),
-                     destFilePath = entry.getValue();
-
-            incrementAndUpdateProgress();
-
-            if (srcFilePath.isDirectory() == false) continue;
-
-            HDT_Folder folder = HyperPath.getFolderFromFilePath(srcFilePath, false);
-
-            if (folder != null)
-              List.copyOf(folder.notes).forEach(note -> note.folder.set(HyperPath.getFolderFromFilePath(destFilePath, false)));
-          }
-
-      // If moving, collect source directories that are now empty for deletion after HyperTask
-      // -------------------------------------------------------------------------------------
+        // Collect non-re-parented source directories that are now empty for deletion after HyperTask
+        // ------------------------------------------------------------------------------------------
 
           for (FilePath srcFilePath : srcToDest.keySet())
           {
             incrementAndUpdateProgress();
+
+            if (coveredBySrcPath.contains(srcFilePath)) continue;
 
             if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles(true) == false) && (srcFilePath.contains(db.getRootPath()) == false))
             {
@@ -808,22 +853,25 @@ public final class FileManager extends NonmodalWindow
       }
       catch (IOException e)
       {
-        suppressNeedRefresh = false;
         throw new HyperDataException("An error occurred while trying to " + (copying ? "copy" : "move") + " the item(s): " + getThrowableMessage(e), e);
       }
-
-      suppressNeedRefresh = false;
+      finally
+      {
+        suppressNeedRefresh = false;
+      }
 
     }}.setShowDialogImmediately(true).runWithProgressDialog() == State.SUCCEEDED;
 
-    suppressNeedRefresh = false;
-
-    // Delete empty source directories after successful move
-
     if (success)
     {
+      // Delete empty source directories after successful move
+
       if (externalEmptyDirs.isEmpty() == false)
         FileDeletion.ofDirsWithContents(externalEmptyDirs).interactive().execute();
+
+      // Currently unreachable: internal directories are always re-parented, so they never end up
+      // in internalEmptyFolders. This cleanup will be needed when the UI supports moving
+      // non-associated DB-internal files/folders to an external destination.
 
       for (HDT_Folder folder : internalEmptyFolders)
       {
