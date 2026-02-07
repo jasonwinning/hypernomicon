@@ -59,8 +59,8 @@
           <Button fx:id="btnFromExisting" layoutY="102.0" mnemonicParsing="false" onAction="#btnFromExistingClick"
                   prefHeight="25.0" prefWidth="259.0" text="Test creating database based on this one"
                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="102.0"/>
-          <Button layoutY="132.0" mnemonicParsing="false" onAction="#btnDeleteClick" prefHeight="25.0" prefWidth="134.0"
-                  text="Delete folder" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="132.0"/>
+          <Button layoutY="132.0" mnemonicParsing="false" onAction="#btnClearClick" prefHeight="25.0" prefWidth="134.0"
+                  text="Clear folder" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="132.0"/>
           <Button layoutX="234.0" layoutY="25.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
                   onAction="#btnLaunchClick" prefHeight="25.0" prefWidth="25.0" AnchorPane.rightAnchor="0.0"
                   AnchorPane.topAnchor="25.0">
@@ -89,6 +89,10 @@
         <Button layoutX="52.0" layoutY="37.0" mnemonicParsing="false" onAction="#copyForNukeTest"
                 text="Copy current DB without user files to transient folder" AnchorPane.leftAnchor="52.0"
                 AnchorPane.topAnchor="37.0"/>
+        <Button fx:id="btnFolderBypassTest" layoutX="52.0" layoutY="99.0" mnemonicParsing="false" onAction="#folderBypassTest"
+                text="Test Folder Deletion Bypass" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="99.0"/>
+        <CheckBox fx:id="chkFolderBypass" layoutX="230.0" layoutY="103.0" mnemonicParsing="false" selected="true"
+                  text="Enable folder deletion bypass" AnchorPane.leftAnchor="230.0" AnchorPane.topAnchor="103.0"/>
       </AnchorPane>
     </Tab>
     <Tab closable="false" text="Reference Mgr">

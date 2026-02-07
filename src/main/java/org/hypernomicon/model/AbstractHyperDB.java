@@ -219,7 +219,8 @@ public abstract class AbstractHyperDB
                   initialized  = false, startMentionsRebuildAfterDelete = false, alreadyShowedUpgradeMsg = false;
 
   public boolean runningConversion            = false,  // suppresses "modified date" updating
-                 recordDeletionTestInProgress = false;  // suppresses file deletion prompts and mentions index building
+                 recordDeletionTestInProgress = false,  // suppresses file deletion prompts and mentions index building
+                 folderDeletionBypassEnabled  = true;   // skip resolvePointers/cleanupRelations for folder deletions
 
 //---------------------------------------------------------------------------
   @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Record subject, HDT_Record object, boolean affirm); }
@@ -251,7 +252,7 @@ public abstract class AbstractHyperDB
   { searchKeys.setSearchKey(record, newKey, noMod, rebuildMentions, confirmDup); }
 
   public LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> getBibLibrary()  { return bibLibrary; }
-  public Stream<Consumer<HDT_Record>> getRecordDeleteHandlers()                             { return recordDeleteHandlers.stream(); }
+
   public void addRelationChangeHandler(RelationType relType, RelationChangeHandler handler) { relationSets.get(relType).addChangeHandler(handler); }
   public void addKeyWorkHandler(RecordType recordType, RelationChangeHandler handler)       { keyWorkHandlers.put(recordType, handler); }
   public void addCloseDBHandler(Runnable handler)                                           { dbCloseHandlers.add(handler); }
@@ -259,8 +260,17 @@ public abstract class AbstractHyperDB
   public void addDBLoadedHandler(Runnable handler)                                          { dbLoadedHandlers.add(handler); }
   public void addMentionsNdxCompleteHandler(Runnable handler)                               { dbMentionsNdxCompleteHandlers.add(handler); }
   public void addBibChangedHandler(Runnable handler)                                        { bibChangedHandlers.add(handler); }
-  public void addDeleteHandler(Consumer<HDT_Record> handler)                                { recordDeleteHandlers.add(handler); }
   public void addChangeRecordIDHandler(ChangeRecordIDHandler handler)                       { changeRecordIDHandlers.add(handler); }
+  public boolean hasRecordDeleteHandlers()                                                  { return recordDeleteHandlers.isEmpty() == false; }
+  public Stream<Consumer<HDT_Record>> getRecordDeleteHandlers()                             { return recordDeleteHandlers.stream(); }
+
+  /**
+   * Register a handler that runs when a record is deleted. Handlers are invoked on
+   * the FX application thread via {@code runInFXThread}. By the time the handler runs,
+   * the record may already be expired (ID set to -1, items expired). Do not rely on
+   * the record's ID or data; use it only for identity comparisons and UI cleanup.
+   */
+  public void addDeleteHandler(Consumer<HDT_Record> handler)                                { recordDeleteHandlers.add(handler); }
 
   public boolean isOnline () { return state == DBState.ONLINE; }
   public boolean isOffline() { return state != DBState.ONLINE; }
@@ -1335,6 +1345,9 @@ public abstract class AbstractHyperDB
       return;
     }
 
+    if (folderDeletionBypassEnabled && (record instanceof HDT_Folder))
+      doFolderDeletionCheck(record);
+
     if (recordDeletionTestInProgress)
       mentionsIndex.stopRebuild();
 
@@ -1367,6 +1380,8 @@ public abstract class AbstractHyperDB
     deletionInProgress = true;
     deleteFileAnswer = mrNone;
 
+    int recordID = record.getID();  // Save before expire() sets it to -1
+
     globalLock.lock();
 
     try
@@ -1380,8 +1395,33 @@ public abstract class AbstractHyperDB
 
     try
     {
-      resolvePointers();  // This is where the record actually gets deleted (removed from its HyperCore)
-      cleanupRelations();
+      if (folderDeletionBypassEnabled && (record instanceof HDT_Folder folder))
+      {
+        // Folder deletions bypass resolvePointers because:
+        // 1. doFolderDeletionCheck verifies no non-folder records point to this folder
+        // 2. doFolderDeletionCheck also verifies that the folder has no children
+        //    (This method should only be called for HDT_Folders from
+        //     HDT_Folder.deleteFolderRecordTree which always deletes depth-first.)
+        // 3. Severing the relation to the parent is done by expire()
+        // We just need to remove the expired record from its HyperCore directly.
+
+        removeExpiredFolder(recordID, folder);
+      }
+      else
+      {
+        // Clears stale pointers: when a record expires, it clears relations where it is the subject,
+        // but relations where it is the object (i.e., other records pointing TO it) remain until
+        // resolvePointers iterates through all records and has each one check for expired targets.
+
+        // This is also where the record actually gets deleted (removed from its HyperCore)
+
+        resolvePointers();
+
+        // Defensive cleanup: if expire() and resolvePointers() work correctly, RelationSet internal
+        // structures should already be consistent. This rebuilds the structures as a safety net.
+
+        cleanupRelations();
+      }
     }
     catch (HDB_InternalError e)
     {
@@ -1406,6 +1446,59 @@ public abstract class AbstractHyperDB
 
     rebuildMentions();
     startMentionsRebuildAfterDelete = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Removes an expired folder from the folders dataset directly, bypassing resolvePointers.
+   * This is safe for folders because doFolderDeletionCheck verifies no non-folder records
+   * point to the folder, deleteFolderRecordTree and expire() sever parent/child relations.
+   * @param folderID The ID of the folder (must be captured before expire() sets it to -1)
+   * @param folder The expired folder to remove
+   * @throws HDB_InternalError if the folder is not expired or not actually a folder
+   */
+  @SuppressWarnings("unchecked")
+  private void removeExpiredFolder(int folderID, HDT_Folder folder) throws HDB_InternalError
+  {
+    if (deletionInProgress == false)
+      throw new HDB_InternalError(78383);
+
+    ((HyperDataset<HDT_Folder>) datasets.get(hdtFolder)).removeExpiredFolder(folderID, folder);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void doFolderDeletionCheck(HDT_Record record)
+  {
+    // Assert invariant: when deleting a folder, all relations must be folder-to-folder.
+    // This is guaranteed by FileManager.canCutRow checking isInUse before allowing deletion.
+    // If this assertion fails, a code path bypassed the guardrail or the schema changed unexpectedly.
+    // Also there must be no child folders; this is enforced by deleteFolderRecordTree
+
+    if (record.getType() != hdtFolder) return;
+
+    HDT_Folder folder = (HDT_Folder) record;
+
+    // Check incoming relations: no non-folder records should point to this folder
+
+    for (RelationType relType : getRelationsForObjType(hdtFolder, false))
+      if ((getSubjType(relType) != hdtFolder) && (getSubjectList(relType, folder).isEmpty() == false))
+        throw newAssertionError(73521);
+
+    // Check outgoing relations: folder should not point to any non-folder records
+
+    for (RelationType relType : getRelationsForSubjType(hdtFolder, false))
+      if ((getObjType(relType) != hdtFolder) && (getObjectList(relType, folder, false).isEmpty() == false))
+        throw newAssertionError(73522);
+
+    // Check that all child folders have already been deleted.
+    // deleteFolderRecordTree should delete children depth-first before the parent.
+
+    if (folder.childFolders.isEmpty() == false)
+      throw newAssertionError(73523);
   }
 
 //---------------------------------------------------------------------------

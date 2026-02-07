@@ -22,20 +22,24 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.LibraryWrapper.LibraryType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
@@ -57,11 +61,12 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest,
+                       btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter, btnTermsTabTests, btnFolderBypassTest;
+  @FXML private CheckBox chkFolderBypass;
+  @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private Tab tabLinkGen;
   @FXML private TextField tfParent, tfLinkGenParent, tfFolderName, tfRefMgrUserID;
-  @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest,
-                       btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter, btnTermsTabTests;
-  @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private ToggleGroup tgLink;
 
   private final Map<Toggle, LibraryType> toggleToLibraryType;
@@ -77,7 +82,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     initTextField(app.prefs, tfFolderName   , PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
     initTextField(app.prefs, tfLinkGenParent, PrefKey.LINK_GENERATION_LOG_FOLDER, "", null);
 
-    enableAllIff(db.isOnline(), btnFromExisting, btnCloseDB, btnZoteroItemTemplates, btnZoteroCreatorTypes, btnNukeTest, btnTermsTabTests, tabLinkGen);
+    enableAllIff(db.isOnline(), btnFromExisting, btnCloseDB, btnZoteroItemTemplates, btnZoteroCreatorTypes, btnNukeTest, btnTermsTabTests, btnFolderBypassTest, tabLinkGen);
 
     toggleToLibraryType = Map.of(rbZotero, ltZotero, rbMendeley, ltMendeley);
 
@@ -97,6 +102,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     btnLinkGenBefore      .setOnAction(event -> db.rebuildMentions("Before.csv"));
     btnLinkGenAfter       .setOnAction(event -> db.rebuildMentions("After.csv" ));
+
+    chkFolderBypass.setSelected(db.folderDeletionBypassEnabled);
+    chkFolderBypass.selectedProperty().addListener((ob, oldVal, newVal) -> db.folderDeletionBypassEnabled = newVal);
 
     if (db.bibLibraryIsLinked())
       tfRefMgrUserID.setText(db.getBibLibrary().getUserID());
@@ -250,6 +258,11 @@ public class TestConsoleDlgCtrlr extends ModalDialog
           if (ui.isShuttingDown())
             return;
         }
+        else if (confirmDialog("The contents of folder \"" + transientDBFilePath + "\" will be deleted. Continue?", false) == false)
+        {
+          new TestConsoleDlgCtrlr().showModal();
+          return;
+        }
 
         try
         {
@@ -314,15 +327,32 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void btnDeleteClick()
+  @FXML private void btnClearClick()
   {
-    deleteTransientDB(true);
+    FilePath transientDBFilePath = getTransientDBFilePath(true, false, null);
+
+    if (FilePath.isEmpty(transientDBFilePath)) return;
+
+    if (transientDBFilePath.exists() == false)
+    {
+      falseWithErrorPopup("Path \"" + transientDBFilePath + "\" does not exist.", tfFolderName);
+      return;
+    }
+
+    String[] fileNameArr = transientDBFilePath.toFile().list();
+    if ((fileNameArr == null) || (fileNameArr.length == 0))
+    {
+      infoPopup("Folder is already empty.");
+      return;
+    }
+
+    clearTransientDB();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean deleteTransientDB(boolean deleteRootFolder)
+  private boolean clearTransientDB()
   {
     MutableBoolean nonEmptyWithNoHdbFile = new MutableBoolean(false);
 
@@ -336,26 +366,21 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return false;
     }
 
+    String[] fileNameArr = transientDBFilePath.toFile().list();
+    if ((fileNameArr == null) || (fileNameArr.length == 0))
+      return true;  // Already empty - success
+
     String prompt = nonEmptyWithNoHdbFile.isTrue() ?
-      (deleteRootFolder ?
-        "Path \"" + transientDBFilePath + "\" is a non-empty directory with no HDB file. Are you sure you want to delete it?"
-      :
-        "Path \"" + transientDBFilePath + "\" is a non-empty directory with no HDB file. Are you sure you want to delete all contents?")
+      "Path \"" + transientDBFilePath + "\" is a non-empty directory with no HDB file. Are you sure you want to delete all contents?"
     :
-      (deleteRootFolder ?
-        "Delete folder \"" + transientDBFilePath + "\" and everything in it?"
-      :
-        "Delete all contents of folder \"" + transientDBFilePath + "\"?");
+      "Delete all contents of folder \"" + transientDBFilePath + "\"?";
 
     if (confirmDialog(prompt, false) == false)
       return false;
 
     try
     {
-      if (deleteRootFolder)
-        transientDBFilePath.deleteDirectory(true);
-      else
-        FileUtils.cleanDirectory(transientDBFilePath.toFile());
+      FileUtils.cleanDirectory(transientDBFilePath.toFile());
     }
     catch (IOException e)
     {
@@ -444,13 +469,6 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return null;
     }
 
-    String[] fileNameArr = transientDBFilePath.toFile().list();
-    if (fileNameArr == null)
-    {
-      falseWithErrorPopup("Path \"" + transientDBFilePath + "\" is not a directory.", tfFolderName);
-      return null;
-    }
-
     if (modifying == false)
       return transientDBFilePath;
 
@@ -460,7 +478,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return null;
     }
 
-    if (fileNameArr.length == 0)
+    String[] fileNameArr = transientDBFilePath.toFile().list();
+
+    if ((fileNameArr == null) || (fileNameArr.length == 0))
       return transientDBFilePath;
 
     if (Arrays.stream(fileNameArr).map(transientDBFilePath::resolve)
@@ -520,7 +540,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     Random random = new Random();
 
     EnumSet<RecordType> types = EnumSet.allOf(RecordType.class);
-    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
+    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub, hdtFolder));  // Folders deleted last
     List<RecordType> typeList = List.copyOf(types);
 
     int deleteCtr = 0;
@@ -554,15 +574,18 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       if (doDelete)
       {
         db.deleteRecord(record);
-
-        System.out.printf("%5d %s%n", randomID, randomType.name().substring(3));
-
-        noOp(deleteCtr++);
+        deleteCtr++;
 
         if ((deleteCtr % 100) == 0)
-          System.out.println("----------------------------------------------------- Records deleted: " + deleteCtr);
+          System.out.println("Records deleted: " + deleteCtr);
       }
     }
+
+    System.out.println("Non-folder records deleted: " + deleteCtr);
+
+    // Delete folders last so the bypass preconditions hold (no non-folder records pointing to folders).
+
+    deleteCtr = deleteNonProtectedFolders(deleteCtr, "Records");
 
     System.out.println("Record deletion complete.");
 
@@ -585,15 +608,159 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Delete all non-protected folders, sorted deepest first so children are deleted before parents.
+   * @param deleteCount number of records already deleted, used for progress logging
+   * @param recordLabel label to use in progress messages (e.g. "Records" or "Folders")
+   * @return the updated total delete count (deleteCount + number of folders deleted)
+   */
+  private static int deleteNonProtectedFolders(int deleteCount, String recordLabel)
+  {
+    List<HDT_Folder> foldersToDelete = db.folders.stream()
+      .filter(folder -> HDT_Record.isEmpty(folder, false) == false)
+      .filter(folder -> db.isProtectedRecord(folder, true) == false)
+      .sorted(Comparator.comparingInt(TestConsoleDlgCtrlr::folderDepth).reversed())
+      .toList();
+
+    for (HDT_Folder folder : foldersToDelete)
+    {
+      if (folder.isExpired()) continue;
+
+      db.deleteRecord(folder);
+      deleteCount++;
+
+      if ((deleteCount % 100) == 0)
+        System.out.println(recordLabel + " deleted: " + deleteCount);
+    }
+
+    return deleteCount;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static int folderDepth(HDT_Folder folder)
+  {
+    int depth = 0;
+
+    while ((folder = folder.parentFolder()) != null)
+      depth++;
+
+    return depth;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Test to verify that folder deletion bypass produces identical results to the non-bypass path.
+   * <p>
+   * This test should be run on a copy of a real database. It:
+   * <ol>
+   *   <li>Loops through all HDT_Folder records</li>
+   *   <li>For non-protected folders, severs links to HDT_WorkFile, HDT_MiscFile, HDT_Note, and HDT_Person records</li>
+   *   <li>Loops again and deletes all non-protected folders</li>
+   *   <li>Saves the database to XML</li>
+   * </ol>
+   * To verify correctness, run this test twice: once with bypass enabled and once disabled,
+   * then diff the resulting XML files.
+   */
+  @FXML private void folderBypassTest()
+  {
+    if (db.isOffline()) return;
+
+    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
+
+    if (db.getRootPath().equals(transientDBFilePath) == false)
+    {
+      errorPopup("This can only be done when the transient DB is loaded.");
+      return;
+    }
+
+    if (confirmDialog("This will sever folder links and delete non-protected folders. Proceed?", false) == false)
+      return;
+
+    db.recordDeletionTestInProgress = true;
+    db.runningConversion = true;
+
+    System.out.println("=== Folder Bypass Test: Severing non-folder links ===");
+
+    // First pass: sever links from non-folder records to non-protected folders
+
+    int severedCount = 0;
+
+    for (HDT_Folder folder : List.copyOf(db.folders))
+    {
+      if (db.isProtectedRecord(folder, true))
+        continue;
+
+      // Sever links from HDT_WorkFile records
+
+      for (HDT_WorkFile workFile : List.copyOf(db.<HDT_Folder, HDT_WorkFile>getSubjectList(rtFolderOfWorkFile, folder)))
+      {
+        workFile.getPath().clear(false);
+        severedCount++;
+      }
+
+      // Sever links from HDT_MiscFile records
+
+      for (HDT_MiscFile miscFile : List.copyOf(db.<HDT_Folder, HDT_MiscFile>getSubjectList(rtFolderOfMiscFile, folder)))
+      {
+        miscFile.getPath().clear(false);
+        severedCount++;
+      }
+
+      // Sever links from HDT_Note records
+
+      for (HDT_Note note : List.copyOf(db.<HDT_Folder, HDT_Note>getSubjectList(rtFolderOfNote, folder)))
+      {
+        note.folder.setID(-1);
+        severedCount++;
+      }
+
+      // Sever links from HDT_Person picture folder
+
+      for (HDT_Person person : List.copyOf(db.<HDT_Folder, HDT_Person>getSubjectList(rtPictureFolderOfPerson, folder)))
+      {
+        person.getPath().clear(false);
+        severedCount++;
+      }
+    }
+
+    System.out.println("Severed " + severedCount + " links.");
+    System.out.println("=== Folder Bypass Test: Deleting non-protected folders ===");
+
+    // Second pass: delete non-protected folders (deepest first so children are deleted before parents)
+
+    int deleteCount = deleteNonProtectedFolders(0, "Folders");
+
+    System.out.println("Deleted " + deleteCount + " folders total.");
+
+    db.recordDeletionTestInProgress = false;
+    db.runningConversion = false;
+    db.rebuildMentions();
+
+    System.out.println("=== Folder Bypass Test: Complete. ===");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private void copyForNukeTest()
   {
     if (db.isOffline())
+    {
+      errorPopup("No database is currently loaded.");
       return;
+    }
 
     FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
 
     if (FilePath.isEmpty(transientDBFilePath))
+    {
+      errorPopup("Transient DB folder path needs to be entered.");
       return;
+    }
 
     if (db.getRootPath().equals(transientDBFilePath))
     {
@@ -601,7 +768,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return;
     }
 
-    if (deleteTransientDB(false) == false)
+    if (clearTransientDB() == false)
       return;
 
     try
@@ -610,14 +777,21 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
       FileUtils.copyDirectory(db.xmlPath().toFile(), transientDBFilePath.resolve(DEFAULT_XML_PATH).toFile());
 
-      String command = "xcopy \"" + db.getRootPath() + "\" \"" + transientDBFilePath + "\" /t /e /y";
+      Path srcRoot = db.getRootPath().toPath(),
+           dstRoot = transientDBFilePath.toPath();
 
-      ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", command);
-      processBuilder.inheritIO();  // Redirects output to console
-      Process process = processBuilder.start();
-      process.waitFor(); // Wait for process to complete
+      try (Stream<Path> dirs = Files.walk(srcRoot))
+      {
+        dirs.filter(Files::isDirectory).forEach(srcDir ->
+        {
+          try { Files.createDirectories(dstRoot.resolve(srcRoot.relativize(srcDir))); }
+          catch (IOException e) { throw new UncheckedIOException(e); }
+        });
+      }
+
+      infoPopup("Database copied successfully.");
     }
-    catch (IOException | InterruptedException e)
+    catch (IOException | UncheckedIOException e)
     {
       errorPopup("Error while copying: " + getThrowableMessage(e));
     }

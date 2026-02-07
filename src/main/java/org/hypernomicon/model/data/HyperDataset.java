@@ -84,6 +84,15 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
    */
   public void resolvePointers() throws HDB_InternalError  { core.resolvePointers(); }
 
+  /**
+   * Removes an expired folder from this dataset directly, without iterating over all records.
+   * This is used to optimize folder deletion, which doesn't need full pointer resolution.
+   * @param id The ID of the record (must be captured before the record was expired, since expire sets ID to -1)
+   * @param folder The expired folder to remove (used to verify it is actually an expired folder)
+   * @throws HDB_InternalError if the record is not expired or not a folder
+   */
+  public void removeExpiredFolder(int id, HDT_DT folder) throws HDB_InternalError  { core.removeExpiredFolder(id, folder); }
+
   public DatasetAccessor<HDT_DT> getAccessor()            { return core; }
 
   public boolean idAvailable(int id)                      { return (isUnstoredRecord(id, type) == false) && (core.containsID(id) == false); }

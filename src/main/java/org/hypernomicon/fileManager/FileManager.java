@@ -239,7 +239,10 @@ public final class FileManager extends NonmodalWindow
     {
       if ((newValue == null) || (newValue == oldValue)) return;
 
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(newValue.getValue().getFilePath(), true);
+      FilePath filePath = Objects.requireNonNull(newValue.getValue().getFilePath(),
+        "Folder/record sync invariant violated: Selected folder TreeItem has no file path (HDT_Folder record expired)");
+
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
 
       curFolder = folder;
 

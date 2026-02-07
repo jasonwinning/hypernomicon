@@ -221,6 +221,19 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Called when a record is being deleted. Subclasses may override to delete child records
+   * or perform other cleanup before the record is fully expired.
+   * <p>
+   * <b>Important constraint for subclass overrides:</b> During batch deletion, multiple records
+   * may be expired before {@code resolvePointers()} runs. This means pointers TO expired records
+   * (from other records) may be stale. Override implementations are safe if and only if they
+   * only access relations for which this record is one of the relata (subject or object).
+   * <p>
+   * For example, accessing {@code myRelation.get()} is safe because this record is a relatum.
+   * Accessing {@code myRelatedRecord.otherRelation.get()} is unsafe because this record is not
+   * a relatum in {@code otherRelation}, and the target may have been expired earlier in the batch.
+   */
   @Override public void expire()
   {
     if ((db.isDeletionInProgress() == false) && (db.resolvingPointers() == false))
@@ -246,8 +259,8 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     if (expired) return;
 
-    if (dummyFlag == false)
-      db.getRecordDeleteHandlers().forEach(handler -> handler.accept(this));
+    if ((dummyFlag == false) && db.hasRecordDeleteHandlers())
+      runInFXThread(() -> db.getRecordDeleteHandlers().forEach(handler -> handler.accept(this)));
 
     items.values().forEach(HDI_OnlineBase::expire);
 

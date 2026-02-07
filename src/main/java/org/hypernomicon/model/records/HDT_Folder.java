@@ -206,7 +206,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     FilePath filePath = folder.filePath();
 
     if (folder.childFolders.isEmpty() == false)
-      folder.childFolders.forEach(HDT_Folder::deleteFolderRecordTree);
+      List.copyOf(folder.childFolders).forEach(HDT_Folder::deleteFolderRecordTree);
 
     if (folder.getID() > 0)
       db.deleteRecord(folder);

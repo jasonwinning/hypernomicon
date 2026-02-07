@@ -66,17 +66,10 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 
   @Override public void expire()
   {
-    Iterator<HDT_Concept> it = concepts.iterator();  // This algorithm is different from
-                                                     // HDT_Institution.expire() because
-    while (it.hasNext())                             // concepts are the objects in the
-    {                                                // rtConceptOfTerm relation
-      HDT_Concept concept = it.next();
-      it.remove();
-      db.deleteRecord(concept);
-    }
-
-    super.expire();
-  }
+    List.copyOf(concepts).forEach(db::deleteRecord);  // This algorithm is different from HDT_Institution.expire() because
+                                                      // concepts are the objects in the rtConceptOfTerm relation.
+    super.expire();                                   // Calling delete here only expires the concept; it doesn't get
+  }                                                   // detached from the term until super.expire.
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

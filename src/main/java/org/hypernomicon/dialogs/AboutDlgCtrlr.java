@@ -119,7 +119,7 @@ public class AboutDlgCtrlr extends ModalDialog
 
       "</li></ul>Icons:<br><ul>" +
 
-      "<li>" + anchorTag("FatCow", "http://www.fatcow.com/free-icons") + "</li>" +
+      "<li>" + anchorTag("FatCow", "https://web.archive.org/web/20160323032439/http://www.fatcow.com/free-icons") + "</li>" +
       "<li>" + anchorTag("Fugue", "http://p.yusukekamiyamane.com/") + "</li></ul>" +
 
       "</div></body></html>";

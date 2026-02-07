@@ -302,6 +302,29 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
   }
 
 //---------------------------------------------------------------------------
+
+  /**
+   * Removes an expired folder from this core directly, without iterating over all records.
+   * This is used to optimize folder deletion, which doesn't need full pointer resolution.
+   * @param id The ID of the record (must be captured before the record was expired, since expire sets ID to -1)
+   * @param record The expired record to remove (used to verify it is actually an expired folder)
+   * @throws HDB_InternalError if the record is not expired or not a folder
+   */
+  void removeExpiredFolder(int id, HDT_DT record) throws HDB_InternalError
+  {
+    if (record.isExpired() == false)
+      throw new HDB_InternalError(78384);
+
+    if (record.getType() != RecordType.hdtFolder)
+      throw new HDB_InternalError(78385);
+
+    if (type != RecordType.hdtFolder)
+      throw new HDB_InternalError(78386);
+
+    remove(id);
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setKey(int id, String newKey)
