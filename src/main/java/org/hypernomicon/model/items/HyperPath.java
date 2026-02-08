@@ -39,6 +39,49 @@ import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 
+/**
+ * Associates a database record with a location in the filesystem, expressed as a parent
+ * {@link HDT_Folder} and a leaf filename.
+ * <p>
+ * Every {@link HDT_RecordWithPath} owns a HyperPath. The concrete record types that use it are:
+ * <ul>
+ *   <li>{@link HDT_Folder} — the folder itself; the parent folder pointer is the
+ *       {@code rtParentFolderOfFolder} relation, and the filename is the directory name.</li>
+ *   <li>{@link HDT_WorkFile} — a file attached to one or more works (via
+ *       {@code rtFolderOfWorkFile}).</li>
+ *   <li>{@link HDT_MiscFile} — a miscellaneous file record (via
+ *       {@code rtFolderOfMiscFile}).</li>
+ *   <li>{@link HDT_Person} — a person's picture file (via
+ *       {@code rtPictureFolderOfPerson}).</li>
+ * </ul>
+ * {@link HDT_Note} and {@link HDT_Work} also implement {@code HDT_RecordWithPath} but delegate
+ * to the path of a related folder or work-file record rather than owning a HyperPath directly.
+ *
+ * <h2>Path Resolution</h2>
+ * The full filesystem path is never stored; instead, {@link #filePath()} dynamically resolves it
+ * by walking the parent-folder chain: {@code parentFolder().filePath().resolve(fileName)}. This
+ * means re-parenting a single folder record automatically fixes the resolved paths of all
+ * descendants without updating any other records.
+ *
+ * <h2>Filename Map</h2>
+ * Every non-empty HyperPath registers itself in
+ * {@link org.hypernomicon.model.AbstractHyperDB#filenameMap db.filenameMap}, a map from leaf
+ * filename strings to sets of HyperPath instances. This enables efficient reverse lookup from a
+ * filesystem path to the record(s) that reference it (see {@link #getHyperPathSetForFilePath}).
+ * Since multiple records can share the same physical file (e.g. two persons using the same
+ * picture), the map values are sets.
+ *
+ * <h2>"In Use" Semantics</h2>
+ * A file or folder is considered "in use" when its HyperPath has associated database records
+ * (see {@link #isInUse()} and {@link #isInUseByRecords()}). This distinction drives file-management
+ * decisions throughout the application: whether the FileManager requires deletion confirmation,
+ * whether the FolderTreeWatcher warns about external renames, and whether missing folders are
+ * reported.
+ *
+ * @see HDT_RecordWithPath
+ * @see #filePath()
+ * @see #getHyperPathSetForFilePath(FilePath)
+ */
 public class HyperPath
 {
 
@@ -92,6 +135,7 @@ public class HyperPath
   public FilePath           getFileName()   { return fileName; }
   public HDT_Folder         parentFolder()  { return folderPtr == null ? folder : folderPtr.get(); }
 
+  /** @see #isEmpty() */
   public boolean isNotEmpty()               { return isEmpty() == false; }
 
   @Override public String toString()        { return filePath().toString(); }
@@ -101,6 +145,17 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Return whether this path has no filename assigned. A HyperPath is empty when it has not
+   * been associated with a file or folder on disk.
+   * <p>
+   * The root folder is a special case: it always returns {@code false} even though its
+   * {@code fileName} field is empty, because the root folder's path is resolved via
+   * {@link org.hypernomicon.model.AbstractHyperDB#getRootPath() db.getRootPath()} rather than
+   * from a stored filename.
+   *
+   * @return True if this path has no filename and is not the root folder
+   */
   public boolean isEmpty()
   {
     return (record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID) ?
@@ -114,6 +169,13 @@ public class HyperPath
 
   static final String ROOT_PATH_STR = "<Root>";
 
+  /**
+   * Return the display name for this path. For the root folder this is the constant
+   * {@code "<Root>"}; for all other paths it is the leaf filename, or an empty string
+   * if no filename has been assigned.
+   *
+   * @return The display name
+   */
   public String getNameStr()
   {
     return (record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID) ?
@@ -125,8 +187,20 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** @see #clear(boolean) */
   public void clear() { clear(true); }
 
+  /**
+   * Dissociate this path from its parent folder and filename, resetting the folder pointer to
+   * {@code -1} and removing the filename from {@code filenameMap}.
+   * <p>
+   * If {@code deleteFile} is true and no other {@link HyperPath} still references the same
+   * physical file, the database is notified that the file is no longer in use (which may
+   * trigger deletion of the physical file). Pass {@code false} when the file on disk has
+   * already been deleted or will be handled separately by the caller.
+   *
+   * @param deleteFile Whether to notify the database that the file may no longer be in use
+   */
   public void clear(boolean deleteFile)
   {
     FilePath filePath = filePath();
@@ -158,6 +232,17 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Return the set of {@link HyperPath} instances whose resolved file path equals the given path.
+   * <p>
+   * Lookup is a two-step process: first, the leaf filename is used to find candidate entries in
+   * {@code filenameMap} (a fast O(1) lookup); then each candidate's dynamically resolved
+   * {@link #filePath()} is compared against the given path to filter out same-name files in
+   * different directories.
+   *
+   * @param filePath The filesystem path to look up
+   * @return A set of matching {@code HyperPath} instances, or an empty set if none match
+   */
   public static Set<HyperPath> getHyperPathSetForFilePath(FilePath filePath)
   {
     return nullSwitch(db.filenameMap.get(filePath.getNameOnly().toString()), new HashSet<>(),
@@ -181,6 +266,29 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Look up (and optionally create) the {@link HDT_Folder} record for a filesystem directory path.
+   * <p>
+   * The path must be inside the database root folder; if it is not, {@code null} is returned.
+   * If a folder record already exists for the path (found via {@code filenameMap}), it is
+   * returned immediately. Otherwise, if the directory exists on disk and {@code doCreateRecord}
+   * is {@code true}, the method recursively ensures that all ancestor folders up to the database
+   * root have records, then creates a new {@code HDT_Folder} record for this path. The new
+   * record's creation/modified/view dates are taken from the directory's filesystem attributes.
+   * <p>
+   * When {@code doCreateRecord} is {@code false}, the method only returns a record if one already
+   * exists in {@code filenameMap} for the exact path. No records are created and no side effects
+   * occur.
+   *
+   * @param dirFilePath    The filesystem path of the directory. If this points to a file rather
+   *                       than a directory, it is normalized to the containing directory first.
+   * @param doCreateRecord If {@code true}, create new folder records as needed for this path and
+   *                       any ancestor paths that lack records. If {@code false}, only return an
+   *                       existing record or {@code null}.
+   * @return The {@code HDT_Folder} record for the given path, or {@code null} if the path is
+   *         outside the database root, does not exist on disk, or {@code doCreateRecord} is
+   *         {@code false} and no record exists.
+   */
   public static HDT_Folder getFolderFromFilePath(FilePath dirFilePath, boolean doCreateRecord)
   {
     dirFilePath = dirFilePath.getDirOnly();
@@ -193,11 +301,11 @@ public class HyperPath
     HDT_RecordWithPath folder = findFirst(set, hyperPath -> hyperPath.getRecordType() == hdtFolder, HyperPath::getRecord);
     if (folder != null) return (HDT_Folder) folder;
 
-    if (dirFilePath.exists() == false) return null;
+    if ((doCreateRecord == false) || (dirFilePath.exists() == false)) return null;
 
-    HDT_Folder parentRecord = getFolderFromFilePath(dirFilePath.getParent(), doCreateRecord);
+    HDT_Folder parentRecord = getFolderFromFilePath(dirFilePath.getParent(), true);
 
-    if ((parentRecord == null) || (doCreateRecord == false)) return null;
+    if (parentRecord == null) return null;
 
     RecordState recordState = new RecordState(hdtFolder);
 
@@ -394,6 +502,40 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Build a human-readable summary of the database records associated with this path's file or
+   * folder, formatted as semicolon-separated entries of the form {@code "Type: Name"}.
+   * <p>
+   * This string serves two purposes in the application:
+   * <ol>
+   *   <li><b>Display</b> — It populates the "Record(s)" column in the FileManager table,
+   *       giving the user a quick view of which database records reference a given file or
+   *       folder (e.g. {@code "Person: Smith, John; Work: Some Title"}).</li>
+   *   <li><b>"In use" determination</b> — {@link #isInUseByRecords()} delegates to this method;
+   *       a non-empty return value means the path is in use by at least one record. This drives
+   *       decisions throughout the application: the FolderTreeWatcher uses it to decide whether
+   *       an externally renamed/deleted file warrants a warning, the FileManager uses it to
+   *       determine whether deleting a file requires confirmation and record cleanup, and
+   *       {@link org.hypernomicon.model.records.HDT_Folder#checkExists HDT_Folder.checkExists}
+   *       uses it to decide whether a missing folder should be reported.</li>
+   * </ol>
+   * <p>
+   * The string is assembled in two parts:
+   * <ul>
+   *   <li>For person and misc-file records, all same-type records sharing this exact file path
+   *       are listed (since multiple persons or misc-file records can reference the same
+   *       physical file).</li>
+   *   <li>Then, up to 10 related records (both subject-side and object-side relations, excluding
+   *       parent-folder relations) are appended via
+   *       {@link org.hypernomicon.model.AbstractHyperDB#getRelatives getRelatives}.</li>
+   * </ul>
+   * For folders with no direct associations, if any child folder is in use by records, the string
+   * {@code "(Subfolders have associated records)"} is returned instead. This check is indirectly
+   * recursive: each child's {@link #isInUseByRecords()} calls {@code getRecordsString()}, which
+   * in turn checks its own children, so the entire subtree is considered.
+   *
+   * @return A semicolon-separated description of associated records, or an empty string if none
+   */
   public String getRecordsString()
   {
     if (getRecord() == null) return "";
@@ -443,7 +585,7 @@ public class HyperPath
 //---------------------------------------------------------------------------
 
   /**
-   * Returns true if either getRecordsString() returns non-empty, or this is the path for a DB special folder.
+   * Returns true if {@link #getRecordsString()} returns non-empty, or this is the path for a DB special folder.
    * @return The return value just described
    */
   public boolean isInUse()
@@ -452,7 +594,7 @@ public class HyperPath
   }
 
   /**
-   * Returns true if getRecordsString() returns non-empty.
+   * Returns true if {@link #getRecordsString()} returns non-empty.
    * @return The return value just described
    */
   public boolean isInUseByRecords()
@@ -461,7 +603,7 @@ public class HyperPath
   }
 
   /**
-   * Returns true if non-null and either getRecordsString() returns non-empty, or this is the path for a DB special folder.
+   * Returns true if non-null and either {@link #getRecordsString()} returns non-empty, or this is the path for a DB special folder.
    * @return The return value just described
    */
   public static boolean isInUse(HyperPath hyperPath)
@@ -470,7 +612,7 @@ public class HyperPath
   }
 
   /**
-   * Returns true if non-null and getRecordsString() returns non-empty.
+   * Returns true if non-null and {@link #getRecordsString()} returns non-empty.
    * @return The return value just described
    */
   public static boolean isInUseByRecords(HyperPath hyperPath)

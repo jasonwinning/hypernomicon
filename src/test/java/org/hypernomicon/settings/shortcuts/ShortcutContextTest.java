@@ -103,13 +103,13 @@ class ShortcutContextTest
       { true, true, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false, false, true }
     };
 
-    for (int i = 0; i < values.length; i++)
+    for (int rowNdx = 0; rowNdx < values.length; rowNdx++)
     {
-      for (int j = 0; j < values.length; j++)
+      for (int colNdx = 0; colNdx < values.length; colNdx++)
       {
-        final int row = i, col = j;
-        boolean exp = expected[row][col];
-        assertEquals(exp, values[row].overlaps(values[col]), () -> values[row] + " vs " + values[col] + " expected " + exp);
+        final int finalRowNdx = rowNdx, finalColNdx = colNdx;
+        boolean exp = expected[finalRowNdx][finalColNdx];
+        assertEquals(exp, values[finalRowNdx].overlaps(values[finalColNdx]), () -> values[finalRowNdx] + " vs " + values[finalColNdx] + " expected " + exp);
       }
     }
   }

@@ -115,26 +115,26 @@ class PersonDupTest
 
     // Shared persons
 
-    HDT_Person p1  = createPerson(new PersonName("Jean", "St. James"));
-    HDT_Person p2  = createPerson(new PersonName("Jean", "X. St. James"));    // longer initials
-    HDT_Person p3  = createPerson(new PersonName("Henry", "St. John"));
-    HDT_Person p4  = createPerson(new PersonName("Bøb", "Söderström"));       // Unicode
-    HDT_Person p5  = createPerson(new PersonName("Li", "Wei"));               // minimal
-    HDT_Person p6  = createPerson(new PersonName("Maria", "de la Cruz"));
-    HDT_Person p7  = createPerson(new PersonName("Lí"));                      // one-word
-    HDT_Person p8  = createPerson(new PersonName("Mary-Jane", "O’Neil"));
-    HDT_Person p9  = createPerson(new PersonName("J. B.", "Smith"));
-    HDT_Person p10 = createPerson(new PersonName("J0hn", "W1lliams"));        // OCR artifacts
-    HDT_Person p11 = createPerson(new PersonName("von Neumann", "John"));
-    HDT_Person p12 = createPerson(new PersonName("Иван", "Иванович"));        // Cyrillic
-    HDT_Person p13 = createPerson(new PersonName("Ludwig", "van Beethoven"));
-    HDT_Person p14 = createPerson(new PersonName("Confucius"));               // mononym
-    HDT_Person p15 = createPerson(new PersonName("Jean", "St. James"));       // duplicate of p1
-    HDT_Person p16 = createPerson(new PersonName("José", "Niño"));            // composed
-    HDT_Person p17 = createPerson(new PersonName("José", "Niño"));            // decomposed
-    HDT_Person p18 = createPerson(new PersonName("Sarah", "Connor"));
-    HDT_Person p19 = createPerson(new PersonName("Eve", "Quinn"));
-    HDT_Person p20 = createPerson(new PersonName("J"));                       // abbreviation
+    HDT_Person p1  = createPerson(new PersonName("Jean", "St. James")),
+               p2  = createPerson(new PersonName("Jean", "X. St. James")),    // longer initials
+               p3  = createPerson(new PersonName("Henry", "St. John")),
+               p4  = createPerson(new PersonName("Bøb", "Söderström")),       // Unicode
+               p5  = createPerson(new PersonName("Li", "Wei")),               // minimal
+               p6  = createPerson(new PersonName("Maria", "de la Cruz")),
+               p7  = createPerson(new PersonName("Lí")),                      // one-word
+               p8  = createPerson(new PersonName("Mary-Jane", "O'Neil")),
+               p9  = createPerson(new PersonName("J. B.", "Smith")),
+               p10 = createPerson(new PersonName("J0hn", "W1lliams")),        // OCR artifacts
+               p11 = createPerson(new PersonName("von Neumann", "John")),
+               p12 = createPerson(new PersonName("Иван", "Иванович")),        // Cyrillic
+               p13 = createPerson(new PersonName("Ludwig", "van Beethoven")),
+               p14 = createPerson(new PersonName("Confucius")),               // mononym
+               p15 = createPerson(new PersonName("Jean", "St. James")),       // duplicate of p1
+               p16 = createPerson(new PersonName("José", "Niño")),            // composed
+               p17 = createPerson(new PersonName("José", "Niño")),            // decomposed
+               p18 = createPerson(new PersonName("Sarah", "Connor")),
+               p19 = createPerson(new PersonName("Eve", "Quinn")),
+               p20 = createPerson(new PersonName("J"));                       // abbreviation
 
     // Assign works
 

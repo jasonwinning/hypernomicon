@@ -82,31 +82,29 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
     tv.setCellFactory(treeView ->
     {
-      TreeCell<FileRow> row = new TreeCell<>();
-
-      row.itemProperty().addListener((ob, oldValue, newValue) ->
+      TreeCell<FileRow> row = new TreeCell<>()
       {
-        if (oldValue == newValue) return;
-
-        if (newValue == null)
+        @Override protected void updateItem(FileRow newValue, boolean empty)
         {
-          row.setText(null);
-          row.setGraphic(null);
-          row.setContextMenu(null);
-          return;
+          super.updateItem(newValue, empty);
+
+          if (empty || (newValue == null) || (newValue.getFilePath() == null))
+          {
+            setText(null);
+            setGraphic(null);
+            setContextMenu(null);
+            return;
+          }
+
+          String fileName = newValue.getFileName();
+          setText(fileName);
+          setToolTip(this, fileName.length() >= FILENAME_LENGTH_TO_SHOW_TOOLTIP ? fileName : null);
+
+          setGraphic(imgViewForRecord(newValue.getRecord(), hdtFolder));
+
+          setContextMenu(createContextMenu(newValue, fileTable.getContextMenuSchemata()));
         }
-
-        if (newValue.getFilePath() == null) // happens right before a filerow is deleted sometimes
-          return;
-
-        String fileName = newValue.getFileName();
-        row.setText(fileName);
-        setToolTip(row, fileName.length() >= FILENAME_LENGTH_TO_SHOW_TOOLTIP ? fileName : null);
-
-        row.setGraphic(imgViewForRecord(newValue.getRecord(), hdtFolder));
-
-        row.setContextMenu(createContextMenu(newValue, fileTable.getContextMenuSchemata()));
-      });
+      };
 
       setupDragHandlers(row);
 
@@ -160,7 +158,17 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   {
     sortNode(getRoot());
 
-    tv.refresh();
+    // Reset the cell factory to force the VirtualFlow to discard all cells and
+    // create fresh ones. Otherwise JavaFX bugginess can leave cells with stale
+    // indentation (wrong tree depth), producing click dead zones shifted by one
+    // indentation level. Recreating cells from the final tree structure ensures
+    // correct layout. Potentially related to:
+    // https://bugs.openjdk.org/browse/JDK-8260977
+    // https://bugs.openjdk.org/browse/JDK-8252811
+
+    var factory = tv.getCellFactory();
+    tv.setCellFactory(null);
+    tv.setCellFactory(factory);
   }
 
 //---------------------------------------------------------------------------

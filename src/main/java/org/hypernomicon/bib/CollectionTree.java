@@ -56,25 +56,21 @@ class CollectionTree
     this.treeView = treeView;
     keyToRow = new HashMap<>();
 
-    treeView.setCellFactory(theTreeView ->
+    treeView.setCellFactory(theTreeView -> new TreeCell<>()
     {
-      TreeCell<BibCollectionRow> row = new TreeCell<>();
-
-      row.itemProperty().addListener((ob, oldValue, newValue) ->
+      @Override protected void updateItem(BibCollectionRow newValue, boolean empty)
       {
-        if (oldValue == newValue) return;
+        super.updateItem(newValue, empty);
 
-        if (newValue == null)
+        if (empty || (newValue == null))
         {
-          row.setText(null);
-          row.setGraphic(null);
-          row.setContextMenu(null);
+          setText(null);
+          setGraphic(null);
+          setContextMenu(null);
         }
         else
-          row.setText(newValue.getText());
-      });
-
-      return row;
+          setText(newValue.getText());
+      }
     });
   }
 

@@ -136,7 +136,6 @@ public class FolderTreeWatcher
           return;
         }
 
-        List<WatcherEvent> eventList = null;
         WatchKey watchKey = null;
 
         if (handleInterComputerMessage() == false)
@@ -144,6 +143,8 @@ public class FolderTreeWatcher
           try { watchKey = watcher.poll(FOLDER_TREE_WATCHER_POLL_TIME_MS, TimeUnit.MILLISECONDS); }
           catch (InterruptedException e1) { noOp(); }
         }
+
+        List<WatcherEvent> eventList = null;
 
         if (watchKey != null)
           eventList = new ArrayList<>();
@@ -164,8 +165,16 @@ public class FolderTreeWatcher
 
             if ((folder != null) && (folder.getID() > 0))
             {
-              FilePath parentPath = folder.isConnectedToRoot() ? folder.filePath() : new FilePath((Path) watchKey.watchable());
-              FilePath filePath = parentPath.resolve(new FilePath(watchEvent.context())); // This is what actually changed
+              FilePath parentPath = folder.isConnectedToRoot() ? folder.filePath() : new FilePath((Path) watchKey.watchable()),
+                       filePath = parentPath.resolve(new FilePath(watchEvent.context()));  // This is what actually changed
+
+              // Inter-computer message and lock files are never associated with database records;
+              // skip them to avoid unnecessary FileManager refreshes.
+              // These files are handled directly by handleInterComputerMessage().
+
+              if (db.isInterComputerFile(filePath))
+                continue;
+
               PathInfo newPathInfo = new PathInfo(filePath);
               WatcherEvent watcherEvent = null;
 
@@ -590,8 +599,8 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private WatchService watcher;
-  private WatcherThread watcherThread;
+  private volatile WatchService watcher;
+  private volatile WatcherThread watcherThread;
 
   private final Supplier<FilePathSet> recentlyCreated = Suppliers.memoize(FilePathSet::new);
   private final Map<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
@@ -601,10 +610,10 @@ public class FolderTreeWatcher
                            stopped = true,
                            disabled = false;
 
-  public void disable()       { stop(); disabled = true; }
-  public void enable()        { disabled = false; }
-  public boolean isDisabled() { return disabled; }
-  public boolean isRunning()  { return (stopped == false) && HyperThread.isRunning(watcherThread); }
+  public void disable()              { stop(); disabled = true; }
+  public void enable()               { disabled = false; }
+  public boolean isDisabled()        { return disabled; }
+  public boolean isRunning()         { return (stopped == false) && HyperThread.isRunning(watcherThread); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

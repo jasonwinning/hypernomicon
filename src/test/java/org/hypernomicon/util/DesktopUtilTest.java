@@ -104,7 +104,7 @@ class DesktopUtilTest
 
     assertEquals(UrlOpenAction.BROWSE_WEB, result.action());
     assertNotNull(result.uri());
-    // Brackets escaped to %5B/%5D, spaces to %20 - no double-encoding
+    // Brackets escaped to %5B/%5D, spaces to %20 -- no double-encoding
     assertTrue(result.uri().getRawPath().contains("%5B12345%5D"), "Brackets should be escaped");
     assertTrue(result.uri().getRawPath().contains("%20"), "Spaces should be escaped");
     assertFalse(result.uri().getRawPath().contains("%255B"), "Should not double-encode");
@@ -851,6 +851,83 @@ class DesktopUtilTest
     assertEquals("[::1]", result.uri().getHost());
     assertEquals("", result.uri().getPath());
     assertEquals("section%5B0%5D", result.uri().getRawFragment());
+    assertNull(result.errorMessage());
+  }
+
+  // === BROWSE_WEB action tests: URLs with embedded URL in path (e.g., Wayback Machine, CORS proxies) ===
+
+  @Test
+  @EnabledOnOs({org.junit.jupiter.api.condition.OS.WINDOWS, org.junit.jupiter.api.condition.OS.MAC})
+  void testProcessWebLink_EmbeddedUrl_WaybackMachine_Http()
+  {
+    // Wayback Machine URLs embed the original URL (including scheme) in the path.
+    // The embedded "http://" must not confuse scheme detection or URI construction.
+    String url = "https://web.archive.org/web/20160323032439/http://www.fatcow.com/free-icons";
+    UrlOpenResult result = processWebLink(url, true);
+
+    assertEquals(UrlOpenAction.BROWSE_WEB, result.action());
+    assertEquals(url, result.urlString());
+    assertNotNull(result.uri());
+    assertEquals("https", result.uri().getScheme());
+    assertEquals("web.archive.org", result.uri().getHost());
+    assertEquals("/web/20160323032439/http://www.fatcow.com/free-icons", result.uri().getPath());
+    assertNull(result.uri().getQuery());
+    assertNull(result.uri().getFragment());
+    assertNull(result.errorMessage());
+  }
+
+  @Test
+  @EnabledOnOs({org.junit.jupiter.api.condition.OS.WINDOWS, org.junit.jupiter.api.condition.OS.MAC})
+  void testProcessWebLink_EmbeddedUrl_WaybackMachine_Https()
+  {
+    // Wayback Machine with https:// embedded in path
+    String url = "https://web.archive.org/web/20230615/https://www.example.com/docs/page.html";
+    UrlOpenResult result = processWebLink(url, true);
+
+    assertEquals(UrlOpenAction.BROWSE_WEB, result.action());
+    assertEquals(url, result.urlString());
+    assertNotNull(result.uri());
+    assertEquals("https", result.uri().getScheme());
+    assertEquals("web.archive.org", result.uri().getHost());
+    assertEquals("/web/20230615/https://www.example.com/docs/page.html", result.uri().getPath());
+    assertNull(result.uri().getQuery());
+    assertNull(result.uri().getFragment());
+    assertNull(result.errorMessage());
+  }
+
+  @Test
+  @EnabledOnOs({org.junit.jupiter.api.condition.OS.WINDOWS, org.junit.jupiter.api.condition.OS.MAC})
+  void testProcessWebLink_EmbeddedUrl_InnerUrlHasQuery()
+  {
+    // When the embedded URL has a query string, the ? is parsed as the outer URL's query delimiter
+    String url = "https://web.archive.org/web/20200101/http://www.example.com/search?q=test&lang=en";
+    UrlOpenResult result = processWebLink(url, true);
+
+    assertEquals(UrlOpenAction.BROWSE_WEB, result.action());
+    assertEquals(url, result.urlString());
+    assertNotNull(result.uri());
+    assertEquals("https", result.uri().getScheme());
+    assertEquals("web.archive.org", result.uri().getHost());
+    assertEquals("/web/20200101/http://www.example.com/search", result.uri().getPath());
+    assertEquals("q=test&lang=en", result.uri().getQuery());
+    assertNull(result.errorMessage());
+  }
+
+  @Test
+  @EnabledOnOs({org.junit.jupiter.api.condition.OS.WINDOWS, org.junit.jupiter.api.condition.OS.MAC})
+  void testProcessWebLink_EmbeddedUrl_InnerUrlHasFragment()
+  {
+    // When the embedded URL has a fragment, the # is parsed as the outer URL's fragment
+    String url = "https://web.archive.org/web/20200101/http://www.example.com/page#section";
+    UrlOpenResult result = processWebLink(url, true);
+
+    assertEquals(UrlOpenAction.BROWSE_WEB, result.action());
+    assertEquals(url, result.urlString());
+    assertNotNull(result.uri());
+    assertEquals("https", result.uri().getScheme());
+    assertEquals("web.archive.org", result.uri().getHost());
+    assertEquals("/web/20200101/http://www.example.com/page", result.uri().getPath());
+    assertEquals("section", result.uri().getFragment());
     assertNull(result.errorMessage());
   }
 
@@ -1876,7 +1953,7 @@ class DesktopUtilTest
   @EnabledOnOs({org.junit.jupiter.api.condition.OS.WINDOWS, org.junit.jupiter.api.condition.OS.MAC})
   void testProcessWebLink_SchemeWithEmptyAuthority_AndPath()
   {
-    // http:///path - empty authority with path
+    // http:///path -- empty authority with path
     UrlOpenResult result = processWebLink("http:///path", true);
 
     assertEquals(UrlOpenAction.BROWSE_WEB, result.action());
@@ -1943,7 +2020,7 @@ class DesktopUtilTest
   @EnabledOnOs({org.junit.jupiter.api.condition.OS.WINDOWS, org.junit.jupiter.api.condition.OS.MAC})
   void testProcessWebLink_UncPath_ThreeBackslashes()
   {
-    // Three backslashes: \\\server - first two trigger UNC handling, third becomes /
+    // Three backslashes: \\\server -- first two trigger UNC handling, third becomes /
     UrlOpenResult result = processWebLink("\\\\\\server", true);
 
     assertEquals(UrlOpenAction.BROWSE_WEB, result.action());

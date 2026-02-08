@@ -64,6 +64,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
 //---------------------------------------------------------------------------
 
+  /** @see org.hypernomicon.model.AbstractHyperDB#isSpecialFolder(int, boolean) */
   public boolean isSpecial(boolean checkSubfolders) { return db.isSpecialFolder(getID(), checkSubfolders); }
 
   @Override public HyperPath getPath()     { return path; }
@@ -138,7 +139,13 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     catch (IOException e)
     {
       folderTreeWatcher.createNewWatcherAndStart();
-      return falseWithErrorPopup("Unable to rename the folder: " + getThrowableMessage(e));
+
+      String msg = "Unable to rename the folder: " + getThrowableMessage(e);
+
+      if (e instanceof java.nio.file.AccessDeniedException)
+        msg = msg + "\n\nIt may work to restart " + appTitle + " and try again.";
+
+      return falseWithErrorPopup(msg);
     }
 
     db.unmapFilePath(srcFilePath);

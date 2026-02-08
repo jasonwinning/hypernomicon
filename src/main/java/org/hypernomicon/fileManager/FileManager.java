@@ -506,7 +506,7 @@ public final class FileManager extends NonmodalWindow
 
     }}.runWithProgressDialog() != State.SUCCEEDED) return false;
 
-    if (new HyperTask("PasteChecks", "Performing checks...", srcSet.size() * 2L) { @Override protected void call() throws CancelledTaskException, HyperDataException
+    if (new HyperTask("PasteChecks", "Performing checks...", srcSet.size()) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
       FilePath baseDir = getSrcPaths(dragging).getFirst().getFilePath().getParent();
 
@@ -534,8 +534,6 @@ public final class FileManager extends NonmodalWindow
 
       for (FilePath destFilePath : destSet)
       {
-        incrementAndUpdateProgress();
-
         if (srcSet.contains(destFilePath))
           throw new HyperDataException("Destination path \"" + destFilePath + "\" is also one of the source paths.");
 

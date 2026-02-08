@@ -238,7 +238,7 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final Pattern invalidCharsPattern = Pattern.compile("[\\\\/:*?\\\"<>|']");
+  private static final Pattern invalidCharsPattern = Pattern.compile("[\\\\/:*?\"<>|']");
 
   public static String removeInvalidFileNameChars(CharSequence fileTitle)
   {
@@ -406,41 +406,8 @@ public class FilePath implements Comparable<FilePath>
 
   public void renameDirectory(FilePath destFilePath) throws IOException
   {
-    FilePath srcFilePath = getDirOnly();
-
     FileManager.setNeedRefresh();
-
-    if (IS_OS_WINDOWS)
-    {
-      ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "ren \"" + srcFilePath + "\" \"" + destFilePath.getNameOnly() + '"');
-      Process proc = pb.redirectErrorStream(true).start();
-
-      try
-      {
-        proc.waitFor();
-      }
-      catch (InterruptedException e)
-      {
-        throw new IOException(e);
-      }
-
-      try (InputStream is = proc.getInputStream())
-      {
-        String errStr = IOUtils.toString(is, Charset.defaultCharset());
-
-        if (errStr.length() > 0)
-        {
-          if (errStr.toLowerCase().contains("denied"))
-            errStr = errStr + "\n\nIt may work to restart " + appTitle + " and try again.";
-
-          throw new IOException(errStr);
-        }
-      }
-
-      return;
-    }
-
-    FileUtils.moveDirectory(srcFilePath.toFile(), destFilePath.toFile());
+    Files.move(getDirOnly().toPath(), destFilePath.toPath());
   }
 
 //---------------------------------------------------------------------------

@@ -184,7 +184,16 @@ class FileTable extends DragNDropContainer<FileRow>
     clear();
     PreviewWindow.disablePreviewUpdating = false;
 
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder.filePath().toPath(), "**"))
+    FilePath folderPath = folder.filePath();
+
+    // During folder move/delete, this can be called for a folder that no longer exists on disk.
+    // Just returning is sufficient: pruneAndRefresh(true) runs in Platform.runLater afterward,
+    // which rebuilds the folder tree and resets the selection to a valid folder.
+
+    if ((folderPath == null) || (folderPath.exists() == false))
+      return;
+
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(folderPath.toPath(), "**"))
     {
       for (Path entry: stream)
       {

@@ -97,9 +97,9 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public abstract FilePath getRequestMessageFilePath(boolean useAppPrefs);
+  public abstract FilePath getRequestMessageFilePath (boolean useAppPrefs);
   public abstract FilePath getResponseMessageFilePath(boolean useAppPrefs);
-  public abstract FilePath getLockFilePath(boolean useAppPrefs);
+  public abstract FilePath getLockFilePath           (boolean useAppPrefs);
 
   /**
    * Retrieves the owner of the lock from the lock file.
@@ -1272,6 +1272,15 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Determine whether the folder with the given ID is a special folder (root folder or one
+   * returned by {@link #specialFolders()}), or--when {@code checkSubfolders} is true--whether
+   * it is an ancestor of a special folder.
+   *
+   * @param id               The folder record ID to test
+   * @param checkSubfolders  If true, recursively check whether any descendant is a special folder
+   * @return True if the folder is special or contains a special folder
+   */
   public boolean isSpecialFolder(int id, boolean checkSubfolders)
   {
     if (id < 1)
@@ -1286,11 +1295,20 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** @see #isUnstoredRecord(int, RecordType) */
   public static boolean isUnstoredRecord(HDT_Record record)
   {
     return isUnstoredRecord(record.getID(), record.getType());
   }
 
+  /**
+   * Returns true if and only if the id/type are reserved for root records that must always
+   * exist and are not editable. They do not get saved to XML; they are always dynamically
+   * regenerated on database load.
+   * @param id The record ID
+   * @param type The record type
+   * @return The return value just described
+   */
   public static boolean isUnstoredRecord(int id, RecordType type)
   {
     return switch (type)
@@ -1398,11 +1416,9 @@ public abstract class AbstractHyperDB
       if (folderDeletionBypassEnabled && (record instanceof HDT_Folder folder))
       {
         // Folder deletions bypass resolvePointers because:
-        // 1. doFolderDeletionCheck verifies no non-folder records point to this folder
-        // 2. doFolderDeletionCheck also verifies that the folder has no children
-        //    (This method should only be called for HDT_Folders from
-        //     HDT_Folder.deleteFolderRecordTree which always deletes depth-first.)
-        // 3. Severing the relation to the parent is done by expire()
+        // 1. doFolderDeletionCheck verifies no records point to this folder
+        //    (including child folders; deleteFolderRecordTree always deletes depth-first)
+        // 2. Severing the relation to the parent is done by expire()
         // We just need to remove the expired record from its HyperCore directly.
 
         removeExpiredFolder(recordID, folder);
@@ -1453,8 +1469,8 @@ public abstract class AbstractHyperDB
 
   /**
    * Removes an expired folder from the folders dataset directly, bypassing resolvePointers.
-   * This is safe for folders because doFolderDeletionCheck verifies no non-folder records
-   * point to the folder, deleteFolderRecordTree and expire() sever parent/child relations.
+   * This is safe for folders because doFolderDeletionCheck verifies no records point to
+   * the folder, and expire() severs the relation to the parent.
    * @param folderID The ID of the folder (must be captured before expire() sets it to -1)
    * @param folder The expired folder to remove
    * @throws HDB_InternalError if the folder is not expired or not actually a folder
@@ -1473,19 +1489,21 @@ public abstract class AbstractHyperDB
 
   private void doFolderDeletionCheck(HDT_Record record)
   {
-    // Assert invariant: when deleting a folder, all relations must be folder-to-folder.
-    // This is guaranteed by FileManager.canCutRow checking isInUse before allowing deletion.
+    // Assert invariant: when deleting a folder, no records should point to it (incoming)
+    // and it should not point to any non-folder records (outgoing).
+    // The incoming check also covers child folders (via rtParentFolderOfFolder) which
+    // deleteFolderRecordTree must delete depth-first before the parent.
+    // Incoming non-folder relations are prevented by FileManager.canCutRow checking isInUse.
     // If this assertion fails, a code path bypassed the guardrail or the schema changed unexpectedly.
-    // Also there must be no child folders; this is enforced by deleteFolderRecordTree
 
     if (record.getType() != hdtFolder) return;
 
     HDT_Folder folder = (HDT_Folder) record;
 
-    // Check incoming relations: no non-folder records should point to this folder
+    // Check incoming relations: no records of any type should point to this folder
 
     for (RelationType relType : getRelationsForObjType(hdtFolder, false))
-      if ((getSubjType(relType) != hdtFolder) && (getSubjectList(relType, folder).isEmpty() == false))
+      if (getSubjectList(relType, folder).isEmpty() == false)
         throw newAssertionError(73521);
 
     // Check outgoing relations: folder should not point to any non-folder records
@@ -1493,12 +1511,6 @@ public abstract class AbstractHyperDB
     for (RelationType relType : getRelationsForSubjType(hdtFolder, false))
       if ((getObjType(relType) != hdtFolder) && (getObjectList(relType, folder, false).isEmpty() == false))
         throw newAssertionError(73522);
-
-    // Check that all child folders have already been deleted.
-    // deleteFolderRecordTree should delete children depth-first before the parent.
-
-    if (folder.childFolders.isEmpty() == false)
-      throw newAssertionError(73523);
   }
 
 //---------------------------------------------------------------------------
@@ -2560,6 +2572,21 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns true if the given path is an inter-computer communication file
+   * (lock file, request message, or response message). These files live in
+   * the database root but are never associated with database records.
+   */
+  public boolean isInterComputerFile(FilePath filePath)
+  {
+    return filePath.equals(getRequestMessageFilePath (false)) ||
+           filePath.equals(getResponseMessageFilePath(false)) ||
+           filePath.equals(getLockFilePath           (false));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public boolean isProtectedFile(FilePath filePath, boolean checkSubfolders)
   {
     if (filePath.equals(rootFilePath)) return true;
@@ -2575,9 +2602,7 @@ public abstract class AbstractHyperDB
         (filePath.getParent().equals(xmlPath     ) == false))   return false;
 
     return filePath.equals(hdbFilePath) ||
-           filePath.equals(getRequestMessageFilePath(false)) ||
-           filePath.equals(getResponseMessageFilePath(false)) ||
-           filePath.equals(getLockFilePath(false)) ||
+           isInterComputerFile(filePath) ||
            filePath.equals(xmlPath.resolve(SETTINGS_FILE_NAME     )) ||
            filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||
            filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||
@@ -2809,6 +2834,11 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns a <code>Stream</code> of the "special folders", i.e., folders with a pre-defined function that every
+   * database must have.
+   * @return The return value just described
+   */
   private Stream<HDT_Folder> specialFolders()
   {
     return Stream.of(xmlFolder, picturesFolder, booksFolder, papersFolder, resultsFolder, unenteredFolder, miscFilesFolder, topicalFolder);

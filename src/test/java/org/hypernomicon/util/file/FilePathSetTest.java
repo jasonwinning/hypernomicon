@@ -727,16 +727,16 @@ class FilePathSetTest
     {
       CountDownLatch latch = new CountDownLatch(numThreads);
 
-      for (int t = 0; t < numThreads; t++)
+      for (int threadNdx = 0; threadNdx < numThreads; threadNdx++)
       {
-        final int threadId = t;
+        final int finalThreadNdx = threadNdx;
         executor.submit(() ->
         {
           try
           {
-            for (int ndx = 0; ndx < pathsPerThread; ndx++)
+            for (int pathNdx = 0; pathNdx < pathsPerThread; pathNdx++)
             {
-              FilePath path = new FilePath("/thread" + threadId + "/file" + ndx + ".txt");
+              FilePath path = new FilePath("/thread" + finalThreadNdx + "/file" + pathNdx + ".txt");
               set.add(path);
             }
           }
@@ -770,16 +770,16 @@ class FilePathSetTest
     {
       CountDownLatch latch = new CountDownLatch(numThreads);
 
-      for (int t = 0; t < numThreads; t++)
+      for (int threadNdx = 0; threadNdx < numThreads; threadNdx++)
       {
         executor.submit(() ->
         {
           try
           {
-            for (int ndx = 0; ndx < opsPerThread; ndx++)
+            for (int opNdx = 0; opNdx < opsPerThread; opNdx++)
             {
-              FilePath path = new FilePath("C:/dir/file" + (ndx % 50) + ".txt");
-              if ((ndx % 2) == 0)
+              FilePath path = new FilePath("C:/dir/file" + (opNdx % 50) + ".txt");
+              if ((opNdx % 2) == 0)
                 set.add(path);
               else
                 set.remove(path);
@@ -821,20 +821,20 @@ class FilePathSetTest
       CountDownLatch latch = new CountDownLatch(numThreads);
 
       // Pre-populate some data
-      for (int ndx = 0; ndx < 50; ndx++)
-        set.add(new FilePath("/dir/file" + ndx + ".txt"));
+      for (int pathNdx = 0; pathNdx < 50; pathNdx++)
+        set.add(new FilePath("/dir/file" + pathNdx + ".txt"));
 
-      for (int t = 0; t < numThreads; t++)
+      for (int threadNdx = 0; threadNdx < numThreads; threadNdx++)
       {
         executor.submit(() ->
         {
           try
           {
             Random random = new Random();
-            for (int ndx = 0; ndx < opsPerThread; ndx++)
+            for (int opNdx = 0; opNdx < opsPerThread; opNdx++)
             {
               FilePath path = new FilePath("/dir/file" + random.nextInt(100) + ".txt");
-              switch (ndx % 4)
+              switch (opNdx % 4)
               {
                 case 0 -> set.add(path);
                 case 1 -> set.remove(path);
@@ -952,16 +952,16 @@ class FilePathSetTest
       CountDownLatch latch = new CountDownLatch(numWriters + numReaders + 1);
 
       // Writers
-      for (int t = 0; t < numWriters; t++)
+      for (int threadNdx = 0; threadNdx < numWriters; threadNdx++)
       {
-        final int threadId = t;
+        final int finalThreadNdx = threadNdx;
         executor.submit(() ->
         {
           try
           {
-            for (int ndx = 0; ndx < opsPerThread; ndx++)
+            for (int opNdx = 0; opNdx < opsPerThread; opNdx++)
             {
-              set.add(new FilePath("C:/writer" + threadId + "/file" + ndx + ".txt"));
+              set.add(new FilePath("C:/writer" + finalThreadNdx + "/file" + opNdx + ".txt"));
             }
           }
           catch (Exception e)
@@ -977,14 +977,14 @@ class FilePathSetTest
       }
 
       // Readers
-      for (int t = 0; t < numReaders; t++)
+      for (int threadNdx = 0; threadNdx < numReaders; threadNdx++)
       {
         executor.submit(() ->
         {
           try
           {
-            for (int ndx = 0; ndx < opsPerThread; ndx++)
-              set.contains(new FilePath("C:/writer0/file" + (ndx % 100) + ".txt"));
+            for (int opNdx = 0; opNdx < opsPerThread; opNdx++)
+              set.contains(new FilePath("C:/writer0/file" + (opNdx % 100) + ".txt"));
           }
           catch (Exception e)
           {
@@ -1051,7 +1051,7 @@ class FilePathSetTest
     assertEquals(numPaths, set.size());
 
     // Remove half
-    for (int ndx = 0; ndx < numPaths / 2; ndx++)
+    for (int ndx = 0; ndx < (numPaths / 2); ndx++)
       set.remove(new FilePath("/dir" + ndx + "/samename.txt"));
 
     assertEquals(numPaths / 2, set.size());

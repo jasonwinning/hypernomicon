@@ -18,7 +18,6 @@
 package org.hypernomicon.fileManager;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Instant;
 
 import org.apache.commons.io.FilenameUtils;
@@ -86,6 +85,15 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * When the FileRow has an associated database record, the hash is based on that
+   * record's identity. When there is no record (a file on disk not tracked by the
+   * database), the hash is based on the filesystem-normalized filename alone. This
+   * is sufficient because recordless FileRows are only created by
+   * {@link FileTable#update}, which lists a single folder's contents; within one
+   * folder, the filesystem guarantees filename uniqueness under its own normalization
+   * rules, so the normalized name uniquely identifies the entry.
+   */
   @Override public int hashCode()
   {
     HDT_RecordWithPath record = getRecord();
@@ -103,6 +111,15 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * When both FileRows have associated database records, equality is determined by
+   * record identity. When neither has a record, equality is determined by
+   * filesystem-normalized filename alone. This is sufficient because recordless
+   * FileRows are only created by {@link FileTable#update}, which lists a single
+   * folder's contents; within one folder, the filesystem guarantees filename
+   * uniqueness under its own normalization rules, so the normalized name uniquely
+   * identifies the entry.
+   */
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
@@ -126,9 +143,10 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     // Neither has record; compare by normalized filename
 
     if (hyperPath == null) return other.hyperPath == null;
+    if (other.hyperPath == null) return false;
 
-    String fileNameStr = hyperPath == null ? "" : hyperPath.getNameStr(),
-           otherFileNameStr = other.hyperPath == null ? "" : other.hyperPath.getNameStr();
+    String fileNameStr = hyperPath.getNameStr(),
+           otherFileNameStr = other.hyperPath.getNameStr();
 
     return FilenameRules.current().normalize(fileNameStr).equals(FilenameRules.current().normalize(otherFileNameStr));
   }
@@ -209,6 +227,14 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Provides display ordering for the File Manager: directories sort before files,
+   * filenames with numeric suffixes sort naturally (file2 before file10), and
+   * everything else is ordered by {@link FilenameRules}-normalized filename. This
+   * ensures the sort order respects the filesystem's comparison rules (such as
+   * case-insensitive ordering on case-insensitive filesystems) and is consistent
+   * with {@link #equals} and {@link #hashCode}.
+   */
   @Override public int compareTo(FileRow o)
   {
     if (o           == null) return 1;
@@ -227,6 +253,8 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     String fileNameStr1 =  fileName.toString(),
            fileNameStr2 = oFileName.toString();
 
+    FilenameRules rules = FilenameRules.current();
+
     if (Character.isDigit(fileNameStr1.charAt(fileNameStr1.length() - 1)) &&
         Character.isDigit(fileNameStr2.charAt(fileNameStr2.length() - 1)))
     {
@@ -236,17 +264,11 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
       int num1 = splitIntoPrefixAndNumber(fileNameStr1, prefix1),
           num2 = splitIntoPrefixAndNumber(fileNameStr2, prefix2);
 
-      if ((num1 >= 0) && (num2 >= 0))
-      {
-        prefix1.append('A');  // Adding 'A' to
-        prefix2.append('A');  // avoid InvalidPathException
-
-        if (Path.of(prefix1.toString()).equals(Path.of(prefix2.toString())))
-          return num1 - num2;
-      }
+      if ((num1 >= 0) && (num2 >= 0) && rules.normalize(prefix1.toString()).equals(rules.normalize(prefix2.toString())))
+        return num1 - num2;
     }
 
-    return fileName.toPath().compareTo(oFileName.toPath());
+    return rules.normalize(fileNameStr1).compareTo(rules.normalize(fileNameStr2));
   }
 
 //---------------------------------------------------------------------------

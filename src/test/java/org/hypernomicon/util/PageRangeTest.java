@@ -51,8 +51,8 @@ class PageRangeTest
     assertEquals("Appendix A", list.get(4).toString());
     assertEquals("Chapter One", list.get(5).toString());
 
-    PageRange pr1 = new PageRange(null);
-    PageRange pr2 = new PageRange(null);
+    PageRange pr1 = new PageRange(null),
+              pr2 = new PageRange(null);
 
     assertEquals(pr1, pr2);
 
@@ -79,8 +79,8 @@ class PageRangeTest
   @Test
   void testRomanNumeralsFirst()
   {
-    PageRange pr1 = new PageRange("X");
-    PageRange pr2 = new PageRange("3");
+    PageRange pr1 = new PageRange("X"),
+              pr2 = new PageRange("3");
 
     assertTrue(pr1.compareTo(pr2) < 0);
   }
@@ -88,8 +88,8 @@ class PageRangeTest
   @Test
   void testPositiveIntegerSorting()
   {
-    PageRange pr1 = new PageRange("5");
-    PageRange pr2 = new PageRange("15");
+    PageRange pr1 = new PageRange("5"),
+              pr2 = new PageRange("15");
 
     assertTrue(pr1.compareTo(pr2) < 0);
   }
@@ -97,8 +97,8 @@ class PageRangeTest
   @Test
   void testStringSorting()
   {
-    PageRange pr1 = new PageRange("Alpha");
-    PageRange pr2 = new PageRange("Beta");
+    PageRange pr1 = new PageRange("Alpha"),
+              pr2 = new PageRange("Beta");
 
     assertTrue(pr1.compareTo(pr2) < 0);
   }
@@ -106,13 +106,13 @@ class PageRangeTest
   @Test
   void testRomanNumeralOrder()
   {
-    PageRange pr1 = new PageRange("I");
-    PageRange pr2 = new PageRange("V");
-    PageRange pr3 = new PageRange("X");
-    PageRange pr4 = new PageRange("L");
-    PageRange pr5 = new PageRange("C");
-    PageRange pr6 = new PageRange("D");
-    PageRange pr7 = new PageRange("M");
+    PageRange pr1 = new PageRange("I"),
+              pr2 = new PageRange("V"),
+              pr3 = new PageRange("X"),
+              pr4 = new PageRange("L"),
+              pr5 = new PageRange("C"),
+              pr6 = new PageRange("D"),
+              pr7 = new PageRange("M");
 
     List<PageRange> list = Arrays.asList(pr5, pr3, pr7, pr2, pr4, pr6, pr1);
     Collections.sort(list);
@@ -236,9 +236,9 @@ class PageRangeTest
   @Test
   void testComparisonWithNegativeNumbers()
   {
-    PageRange pr1 = new PageRange("-1");
-    PageRange pr2 = new PageRange("1");
-    PageRange pr3 = new PageRange("-1");
+    PageRange pr1 = new PageRange("-1"),
+              pr2 = new PageRange("1"),
+              pr3 = new PageRange("-1");
 
     List<PageRange> list = Arrays.asList(pr2, pr1, pr3);
     Collections.sort(list);
@@ -251,11 +251,11 @@ class PageRangeTest
   @Test
   void testComparisonWithMixedInvalidRomanNumerals()
   {
-    PageRange pr1 = new PageRange("XIV");
-    PageRange pr2 = new PageRange("IIIX");
-    PageRange pr3 = new PageRange("3");
-    PageRange pr4 = new PageRange("X");
-    PageRange pr5 = new PageRange("IV");
+    PageRange pr1 = new PageRange("XIV"),
+              pr2 = new PageRange("IIIX"),
+              pr3 = new PageRange("3"),
+              pr4 = new PageRange("X"),
+              pr5 = new PageRange("IV");
 
     List<PageRange> list = Arrays.asList(pr1, pr2, pr3, pr4, pr5);
     Collections.sort(list);
@@ -270,10 +270,10 @@ class PageRangeTest
   @Test
   void testComparisonWithMixedNumbersAndLetters()
   {
-    PageRange pr1 = new PageRange("1A");
-    PageRange pr2 = new PageRange("10B");
-    PageRange pr3 = new PageRange("A1");
-    PageRange pr4 = new PageRange("B10");
+    PageRange pr1 = new PageRange("1A"),
+              pr2 = new PageRange("10B"),
+              pr3 = new PageRange("A1"),
+              pr4 = new PageRange("B10");
 
     List<PageRange> list = Arrays.asList(pr4, pr3, pr2, pr1);
     Collections.sort(list);
@@ -287,11 +287,11 @@ class PageRangeTest
   @Test
   void testComparisonWithPunctuation()
   {
-    PageRange pr1 = new PageRange("XIV!");
-    PageRange pr2 = new PageRange("!XIV");
-    PageRange pr3 = new PageRange("!");
-    PageRange pr4 = new PageRange("XIV");
-    PageRange pr5 = new PageRange("3!");
+    PageRange pr1 = new PageRange("XIV!"),
+              pr2 = new PageRange("!XIV"),
+              pr3 = new PageRange("!"),
+              pr4 = new PageRange("XIV"),
+              pr5 = new PageRange("3!");
 
     List<PageRange> list = Arrays.asList(pr1, pr2, pr3, pr4, pr5);
     Collections.sort(list);
@@ -306,10 +306,10 @@ class PageRangeTest
   @Test
   void testComparisonWithStartingTrailingSpaces()
   {
-    PageRange pr1 = new PageRange(" XIV ");
-    PageRange pr2 = new PageRange("  XIV");
-    PageRange pr3 = new PageRange("XIV  ");
-    PageRange pr4 = new PageRange(" XIV");
+    PageRange pr1 = new PageRange(" XIV "),
+              pr2 = new PageRange("  XIV"),
+              pr3 = new PageRange("XIV  "),
+              pr4 = new PageRange(" XIV");
 
     List<PageRange> list = Arrays.asList(pr1, pr2, pr3, pr4);
     Collections.sort(list);
@@ -323,10 +323,10 @@ class PageRangeTest
   @Test
   void testMixedCases()
   {
-    PageRange pr1 = new PageRange("IV");
-    PageRange pr2 = new PageRange("iv");
-    PageRange pr3 = new PageRange("X");
-    PageRange pr4 = new PageRange("x");
+    PageRange pr1 = new PageRange("IV"),
+              pr2 = new PageRange("iv"),
+              pr3 = new PageRange("X"),
+              pr4 = new PageRange("x");
 
     List<PageRange> list = Arrays.asList(pr4, pr3, pr2, pr1);
     Collections.sort(list);
