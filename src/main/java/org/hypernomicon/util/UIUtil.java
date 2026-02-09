@@ -822,10 +822,12 @@ public final class UIUtil
 
   public static DialogResult abortRetryIgnoreDialog(String msg)
   {
+    // Intercept before PopupDialog to use a safe fallback (mrIgnore) for unrecognized
+    // responses. PopupDialog.showModal() also intercepts but falls back to the default
+    // button (mrRetry), which is less conservative for this dialog.
+
     if (PopupRobot.isActive())
     {
-      // If the robot is not anticipating this dialog, default to Ignore.
-
       PopupRobot.record(msg, AlertType.CONFIRMATION);
       DialogResult response = PopupRobot.getDefaultResponse();
 
@@ -846,10 +848,12 @@ public final class UIUtil
 
   public static DialogResult yesNoCancelDialog(String msg)
   {
+    // Intercept before PopupDialog to use a safe fallback (mrCancel) for unrecognized
+    // responses. PopupDialog.showModal() also intercepts but falls back to the default
+    // button, which happens to also be mrCancel for this dialog.
+
     if (PopupRobot.isActive())
     {
-      // If the robot is not anticipating this dialog, default to Cancel.
-
       PopupRobot.record(msg, AlertType.CONFIRMATION);
       DialogResult response = PopupRobot.getDefaultResponse();
 
@@ -870,10 +874,12 @@ public final class UIUtil
 
   public static DialogResult seriesConfirmDialog(String msg)
   {
+    // Intercept before PopupDialog to use a safe fallback (mrNoToAll) for unrecognized
+    // responses. PopupDialog.showModal() also intercepts but falls back to the default
+    // button (mrNo), which is less conservative for this dialog.
+
     if (PopupRobot.isActive())
     {
-      // If the robot is not anticipating this dialog, default to No To All.
-
       PopupRobot.record(msg, AlertType.CONFIRMATION);
       DialogResult response = PopupRobot.getDefaultResponse();
 
@@ -902,10 +908,12 @@ public final class UIUtil
 
   public static boolean confirmDialog(String msg, String yesCaption, String noCaption, boolean yesIsDefault)
   {
+    // Intercept before PopupDialog to use a safe fallback (false, i.e. No) for
+    // unrecognized responses. PopupDialog.showModal() also intercepts but falls back
+    // to the default button, which could be mrYes when yesIsDefault is true.
+
     if (PopupRobot.isActive())
     {
-      // If the robot is not anticipating this dialog, default to No (return false).
-
       PopupRobot.record(msg, AlertType.CONFIRMATION);
       DialogResult response = PopupRobot.getDefaultResponse();
 

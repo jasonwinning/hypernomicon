@@ -89,6 +89,25 @@ public class PopupDialog
 
   public DialogResult showModal()
   {
+    // PopupRobot interception for direct PopupDialog callers (e.g., FileDeletion).
+    // UIUtil wrappers (confirmDialog, yesNoCancelDialog, etc.) intercept earlier with
+    // their own fallback logic and never reach this point.
+
+    if (PopupRobot.isActive())
+    {
+      PopupRobot.record(dlg.getHeaderText(), AlertType.CONFIRMATION);
+      DialogResult response = PopupRobot.getDefaultResponse();
+
+      // Return the response if it matches a configured button
+
+      if (bTypeToResult.containsValue(response))
+        return response;
+
+      // Otherwise return the default button's result, or the first configured button
+
+      return defaultButton != null ? defaultButton : bTypeToResult.values().iterator().next();
+    }
+
     if (defaultButton != null)
       Platform.runLater(() -> dlg.getDialogPane().lookupButton(bTypeToResult.inverse().get(defaultButton)).requestFocus());
 

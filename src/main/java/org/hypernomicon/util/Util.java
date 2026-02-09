@@ -47,11 +47,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.*;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.scene.input.*;
-import javafx.util.Duration;
 
 import javax.net.ssl.SSLHandshakeException;
 
@@ -521,17 +518,17 @@ public final class Util
 //---------------------------------------------------------------------------
 
   /**
-   * Runs a task inside the JavaFX thread with a specified delay and number of cycles.
+   * Schedules a task to run on the JavaFX Application Thread after a specified delay,
+   * repeated for the given number of cycles. Uses Thread.sleep + Platform.runLater
+   * so the task runs in a normal event handler context that allows nested event loops
+   * (e.g., Stage.showAndWait).
    *
    * @param cycles the number of times the task should be executed (must be positive)
    * @param delayMS the delay in milliseconds before each execution of the task (must be non-negative)
    * @param runnable the task to be executed
-   * @return the {@link Timeline} controlling the scheduled executions,
-   *         already started via {@link Timeline#play()}, which can be
-   *         paused, stopped, or queried by the caller
    * @throws IllegalArgumentException if cycles is less than 1 or delayMS is negative
    */
-  public static Timeline runDelayedInFXThread(int cycles, long delayMS, Runnable runnable)
+  public static void runDelayedInFXThread(int cycles, long delayMS, Runnable runnable)
   {
     Objects.requireNonNull(runnable, "Runnable must not be null");
 
@@ -541,17 +538,23 @@ public final class Util
     if (delayMS < 0)
       throw new IllegalArgumentException("Delay must be non-negative");
 
-    Timeline timeline = new Timeline(new KeyFrame(Duration.millis(delayMS), _ ->
+    Thread thread = new Thread(() ->
     {
-      try { runnable.run(); }
-      catch (Exception e) { logThrowable(e); }
-    }));
+      for (int ndx = 0; ndx < cycles; ndx++)
+      {
+        try { Thread.sleep(delayMS); }
+        catch (InterruptedException e) { Thread.currentThread().interrupt(); return; }
 
-    timeline.setCycleCount(cycles);
+        Platform.runLater(() ->
+        {
+          try { runnable.run(); }
+          catch (Exception e) { logThrowable(e); }
+        });
+      }
+    });
 
-    timeline.play();
-
-    return timeline;
+    thread.setDaemon(true);
+    thread.start();
   }
 
 //---------------------------------------------------------------------------

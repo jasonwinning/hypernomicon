@@ -56,6 +56,7 @@ import javafx.stage.Modality;
 
 public class FolderTreeWatcher
 {
+  public static volatile boolean consoleLogging;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -123,7 +124,7 @@ public class FolderTreeWatcher
         return;
       }
 
-      if (app.debugging)
+      if (consoleLogging)
         System.out.println("Watcher start");
 
       clearKeyQueue();
@@ -447,7 +448,7 @@ public class FolderTreeWatcher
 
         // Skip printing directory modify events - they're typically noise from Dropbox, antivirus, etc.
 
-        if (app.debugging && ((watcherEvent.kind != wekModify) || (watcherEvent.isDirectory() == false)))
+        if (consoleLogging && ((watcherEvent.kind != wekModify) || (watcherEvent.isDirectory() == false)))
         {
           if (bannerPrinted == false)
           {
@@ -675,7 +676,7 @@ public class FolderTreeWatcher
         watcher.close();
         stopped = true;
 
-        if (app.debugging)
+        if (consoleLogging)
           System.out.println("Watcher closed");
       }
       catch (IOException e)

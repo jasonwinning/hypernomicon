@@ -142,6 +142,8 @@ public final class App extends Application
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
     debugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
 
+    FolderTreeWatcher.consoleLogging = debugging;
+
     BrowserPreferences.setChromiumSwitches("--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses");
 
     Preferences appPrefs = null;

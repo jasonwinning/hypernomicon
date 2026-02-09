@@ -19,6 +19,8 @@ package org.hypernomicon.util;
 
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 
+import java.util.*;
+
 import org.hypernomicon.util.PopupDialog.DialogResult;
 
 import javafx.scene.control.Alert.AlertType;
@@ -45,12 +47,20 @@ import javafx.scene.control.Alert.AlertType;
  *   <li>Deactivate with {@link #setActive(boolean)} false in a finalizer step.</li>
  * </ul>
  *
+ * <h3>Response Queue</h3>
+ * <p>For multi-dialog flows where successive popups need different responses,
+ * use {@link #enqueueResponses(DialogResult...)} to pre-load a FIFO queue.
+ * Each call to {@link #getDefaultResponse()} polls the next response from the queue.
+ * When the queue is empty, the static {@code defaultResponse} is used as a fallback.
+ * {@link #clear()} empties the queue along with recorded message and type.</p>
+ *
  * <h3>Thread Safety</h3>
  * All methods are synchronized to ensure consistent state across the FX thread
  * and test runner threads.
  *
- * <h3>Usage Example</h3>
+ * <h3>Usage Examples</h3>
  * <pre>
+ * // Single response for all dialogs
  * PopupRobot.setActive(true);
  * PopupRobot.setDefaultResponse(DialogResult.mrYes);
  *
@@ -59,6 +69,14 @@ import javafx.scene.control.Alert.AlertType;
  * assert "Proceed?".equals(PopupRobot.getLastMessage());
  * assert PopupRobot.getLastType() == Alert.AlertType.CONFIRMATION;
  * assert result == DialogResult.mrYes;
+ *
+ * PopupRobot.setActive(false);
+ * </pre>
+ * <pre>
+ * // Scripted responses for successive dialogs
+ * PopupRobot.setActive(true);
+ * PopupRobot.enqueueResponses(DialogResult.mrRetry, DialogResult.mrCancel);
+ * // First dialog returns mrRetry, second returns mrCancel
  *
  * PopupRobot.setActive(false);
  * </pre>
@@ -73,6 +91,7 @@ public final class PopupRobot
   private static String lastMessage;
   private static AlertType lastType;
   private static DialogResult defaultResponse = mrOk;
+  private static final Deque<DialogResult> responseQueue = new ArrayDeque<>();
 
 //---------------------------------------------------------------------------
 
@@ -85,7 +104,14 @@ public final class PopupRobot
   public static synchronized String getLastMessage()                        { return lastMessage; }
   public static synchronized AlertType getLastType()                        { return lastType; }
   public static synchronized void setDefaultResponse(DialogResult response) { defaultResponse = response; }
-  static synchronized DialogResult getDefaultResponse()                     { return defaultResponse; }
+  static synchronized DialogResult getDefaultResponse()                     { return responseQueue.isEmpty() ? defaultResponse : responseQueue.poll(); }
+
+//---------------------------------------------------------------------------
+
+  public static synchronized void enqueueResponses(DialogResult... responses)
+  {
+    Collections.addAll(responseQueue, responses);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -106,6 +132,7 @@ public final class PopupRobot
   {
     lastMessage = null;
     lastType = null;
+    responseQueue.clear();
   }
 
 //---------------------------------------------------------------------------
