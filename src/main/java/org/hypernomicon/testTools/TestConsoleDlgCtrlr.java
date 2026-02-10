@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
+import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
@@ -65,7 +66,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest,
                        btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter, btnTermsTabTests, btnFolderBypassTest;
-  @FXML private CheckBox chkFolderBypass;
+  @FXML private CheckBox chkFolderBypass, chkWatcherEvents;
   @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private Tab tabLinkGen;
   @FXML private TextField tfParent, tfLinkGenParent, tfFolderName, tfRefMgrUserID;
@@ -107,6 +108,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     chkFolderBypass.setSelected(db.folderDeletionBypassEnabled);
     chkFolderBypass.selectedProperty().addListener((ob, oldVal, newVal) -> db.folderDeletionBypassEnabled = newVal);
+
+    chkWatcherEvents.setSelected(FolderTreeWatcher.consoleLogging);
+    chkWatcherEvents.selectedProperty().addListener((ob, oldVal, newVal) -> FolderTreeWatcher.consoleLogging = newVal);
 
     if (db.bibLibraryIsLinked())
       tfRefMgrUserID.setText(db.getBibLibrary().getUserID());
@@ -486,7 +490,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       }
     }
 
-    return transientDBFilePath.anyOpenFilesInDir() ? null : transientDBFilePath;  // anyOpenFilesInDir shows a popup if it returns true
+    return transientDBFilePath;
   }
 
 //---------------------------------------------------------------------------
@@ -574,7 +578,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     // Delete folders last so the bypass preconditions hold (no non-folder records pointing to folders).
 
-    deleteCtr = deleteNonProtectedFolders(deleteCtr, "Records");
+    deleteNonProtectedFolders(deleteCtr, "Records");
 
     System.out.println("Record deletion complete.");
 
@@ -730,6 +734,24 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     db.rebuildMentions();
 
     System.out.println("=== Folder Bypass Test: Complete. ===");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void fileDeletionTest()
+  {
+    if (db.isOffline()) return;
+
+    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
+
+    if (db.getRootPath().equals(transientDBFilePath) == false)
+    {
+      errorPopup("This can only be done when the transient DB is loaded.");
+      return;
+    }
+
+    FileDeletionTestRunner.runTests(db.getRootPath());
   }
 
 //---------------------------------------------------------------------------

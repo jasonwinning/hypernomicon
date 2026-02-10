@@ -93,6 +93,10 @@
                 text="Test Folder Deletion Bypass" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="99.0"/>
         <CheckBox fx:id="chkFolderBypass" layoutX="230.0" layoutY="103.0" mnemonicParsing="false" selected="true"
                   text="Enable folder deletion bypass" AnchorPane.leftAnchor="230.0" AnchorPane.topAnchor="103.0"/>
+        <Button layoutX="52.0" layoutY="160.0" mnemonicParsing="false" onAction="#fileDeletionTest"
+                text="Test File Deletion API" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="191.0"/>
+        <CheckBox fx:id="chkWatcherEvents" layoutX="230.0" layoutY="195.0" mnemonicParsing="false" selected="true"
+                  text="Show watcher events" AnchorPane.leftAnchor="230.0" AnchorPane.topAnchor="195.0"/>
       </AnchorPane>
     </Tab>
     <Tab closable="false" text="Reference Mgr">

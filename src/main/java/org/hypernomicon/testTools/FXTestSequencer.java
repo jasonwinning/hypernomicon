@@ -70,7 +70,7 @@ public final class FXTestSequencer
   private volatile Runnable finalizer;
 
   private int stepCounter = 0, delayPulses = -1;
-  private long stepTotal, delayMS = -1;
+  private long stepTotal, delayMS = -1, startTime;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -295,6 +295,7 @@ public final class FXTestSequencer
     if (running == false)
     {
       running = true;
+      startTime = System.currentTimeMillis();
 
       stepTotal = queue.stream().filter(QueueEntry::printStep).count();
 
@@ -312,7 +313,16 @@ public final class FXTestSequencer
     if (entry == null)
     {
       running = false;
-      System.out.println("Test sequence completed successfully.");
+      long elapsed = System.currentTimeMillis() - startTime,
+           totalSec = elapsed / 1000,
+           ms = elapsed % 1000;
+
+      String timeStr = totalSec < 60 ?
+        totalSec + "." + String.format("%03d", ms) + "s"
+      :
+        (totalSec / 60) + "m " + (totalSec % 60) + "." + String.format("%03d", ms) + "s";
+
+      System.out.println("Test sequence completed successfully in " + timeStr + ".");
       runFinalizer();
       return;
     }
