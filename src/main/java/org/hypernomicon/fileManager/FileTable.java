@@ -101,13 +101,14 @@ class FileTable extends DragNDropContainer<FileRow>
     nameCol.setComparator(FileRow::compareTo);
 
     modDateCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getModifiedDateCellValue()));
+    setTooltipCellFactory(modDateCol, item -> dateTimeToUserReadableStr((Instant) item.getValue(), true));
 
     typeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTypeString()));
     sizeCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getSizeCellValue()));
     sizeCol.setStyle("-fx-alignment: CENTER-RIGHT;");
 
     recordsCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getHyperPath().getRecordsString()));
-    addTooltipToStringColumn(recordsCol);
+    setTooltipCellFactory(recordsCol);
 
     nameCol.setCellFactory(col -> new TableCell<>()
     {

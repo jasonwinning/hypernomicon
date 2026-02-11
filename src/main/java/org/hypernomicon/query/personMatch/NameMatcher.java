@@ -190,7 +190,7 @@ final class NameMatcher
 
         String r = reference.get(i);
 
-        if (tokensMatch(s.toLowerCase(), r.toLowerCase()))
+        if (tokensMatch(s.toLowerCase(Locale.ROOT), r.toLowerCase(Locale.ROOT)))
         {
           used.add(i);
           matched = true;
@@ -226,7 +226,7 @@ final class NameMatcher
 
       for (String r : reference)
       {
-        if (tokensMatch(s.toLowerCase(), r.toLowerCase()))
+        if (tokensMatch(s.toLowerCase(Locale.ROOT), r.toLowerCase(Locale.ROOT)))
         {
           matched = true;
           break;
@@ -261,7 +261,7 @@ final class NameMatcher
       {
         if (t.length() == 1) continue;
 
-        if (tokensMatch(s.toLowerCase(), t.toLowerCase()))
+        if (tokensMatch(s.toLowerCase(Locale.ROOT), t.toLowerCase(Locale.ROOT)))
           return true;
       }
     }

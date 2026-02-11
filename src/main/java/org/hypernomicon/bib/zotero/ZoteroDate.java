@@ -111,7 +111,7 @@ public final class ZoteroDate
 
     // Try first two characters repeated ('de-DE')
     if (jObj.containsKey(localeStr) == false)
-      localeStr = localeStr + '-' + localeStr.toUpperCase();
+      localeStr = localeStr + '-' + localeStr.toUpperCase(Locale.ROOT);
 
     // Look for another localeStr with same first two characters
     if (jObj.containsKey(localeStr) == false)

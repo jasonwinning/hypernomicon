@@ -107,10 +107,10 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
       return new SimpleObjectProperty<>(new ObjectCellValue<>(bibDate.displayToUser(), bibDate));
     });
 
-    addTooltipToStringColumn(tcAuthors);
-    addTooltipToStringColumn(tcTitle);
-    addTooltipToStringColumn(tcPublishedIn);
-    addTooltipToStringColumn(tcPublisher);
+    setTooltipCellFactory(tcAuthors);
+    setTooltipCellFactory(tcTitle);
+    setTooltipCellFactory(tcPublishedIn);
+    setTooltipCellFactory(tcPublisher);
 
     tcTitle.setComparator(Comparator.comparing(str -> makeSortKeyByType(str, hdtWork)));
 

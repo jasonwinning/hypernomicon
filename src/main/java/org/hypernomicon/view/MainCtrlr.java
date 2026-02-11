@@ -1563,9 +1563,9 @@ public final class MainCtrlr
 
     try
     {
-      ttDates.setText("Created: "    + dateTimeToUserReadableStr(record.getCreationDate()) +
-                      "\nModified: " + dateTimeToUserReadableStr(record.getModifiedDate()) +
-                      "\nAccessed: " + dateTimeToUserReadableStr(record.getViewDate()));
+      ttDates.setText("Created: "    + dateTimeToUserReadableStr(record.getCreationDate(), true) +
+                      "\nModified: " + dateTimeToUserReadableStr(record.getModifiedDate(), true) +
+                      "\nAccessed: " + dateTimeToUserReadableStr(record.getViewDate    (), true));
     }
     catch (Exception e)
     {

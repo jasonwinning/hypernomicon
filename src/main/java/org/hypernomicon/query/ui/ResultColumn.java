@@ -153,12 +153,18 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
   {
     super(caption, cell -> cell.record == null ? Instant.MIN : nullSwitch(instantFunction.apply(cell.record), Instant.MIN));
 
+    Function<HDT_Record, Instant> getInstant = record -> (record == null) || (record.getType() == hdtNone) ? null : instantFunction.apply(record);
+
     setCellValueFactory(cellData ->
     {
-      HDT_Record record = cellData.getValue().getRecord();
-      Instant i = (record == null) || (record.getType() == hdtNone) ? null : instantFunction.apply(record);
-
+      Instant i = getInstant.apply(cellData.getValue().getRecord());
       return observableCellValue(cellData, i == null ? "" : dateTimeToUserReadableStr(i));
+    });
+
+    setTooltipCellFactory(this, item ->
+    {
+      Instant i = getInstant.apply(item.record);
+      return i == null ? null : dateTimeToUserReadableStr(i, true);
     });
   }}
 

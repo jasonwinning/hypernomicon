@@ -684,7 +684,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
                    "isbn",
                    "issn",
                    "pmid",
-                   "ssrn"  -> idType.toUpperCase();
+                   "ssrn"  -> idType.toUpperCase(Locale.ROOT);
 
               default      -> formatMendeleyFieldName(idType);
             };

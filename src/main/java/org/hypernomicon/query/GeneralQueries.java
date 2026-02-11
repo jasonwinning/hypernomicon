@@ -96,7 +96,7 @@ public final class GeneralQueries
 
       @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        queryText = convertToEnglishChars(getCellText(op1)).toLowerCase();
+        queryText = convertToEnglishChars(getCellText(op1)).toLowerCase(Locale.ROOT);
       }
 
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
@@ -109,7 +109,7 @@ public final class GeneralQueries
           default -> record.getNameEngChar();
         };
 
-        return (queryText.isEmpty() == false) && nameEngChar.toLowerCase().contains(queryText);
+        return (queryText.isEmpty() == false) && nameEngChar.toLowerCase(Locale.ROOT).contains(queryText);
       }
 
       @Override public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return opNum == 1; }
@@ -134,7 +134,7 @@ public final class GeneralQueries
 
       @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        queryText = convertToEnglishChars(getCellText(op1)).toLowerCase();
+        queryText = convertToEnglishChars(getCellText(op1)).toLowerCase(Locale.ROOT);
       }
 
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
@@ -145,7 +145,7 @@ public final class GeneralQueries
         List<String> list = new ArrayList<>();
         record.getAllStrings(list, ui.queryHyperTab().getCurQueryCtrlr().getSearchLinkedRecords(), true, true);
 
-        return list.stream().anyMatch(str -> str.toLowerCase().contains(queryText));
+        return list.stream().anyMatch(str -> str.toLowerCase(Locale.ROOT).contains(queryText));
       }
 
       @Override public boolean autoShowDescription() { return true; }

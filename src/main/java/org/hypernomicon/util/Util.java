@@ -35,6 +35,7 @@ import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
@@ -254,13 +255,21 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final boolean isUsEnglish = "en".equals(Locale.getDefault().getLanguage()) && "US".equals(Locale.getDefault().getCountry());
+
   private static final DateTimeFormatter
 
-   //Formatter to display date and time in a user-readable format, using locale and time zone of the system
-   userReadableDateTimeFormatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
+   // Formatter to display date and time without seconds, using locale and time zone of the system
+   userReadableDateTimeFormatter = (isUsEnglish ? DateTimeFormatter.ofPattern("M/d/yyyy h:mm a") : DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT))
+                                     .withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
+
+   // Formatter to display date and time with seconds, using locale and time zone of the system
+   userReadableDateTimeSecsFormatter = (isUsEnglish ? DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a") : DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
+                                         .withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
 
    // Formatter to display only time in a user-readable format, using locale and time zone of the system
-   userReadableTimeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
+   userReadableTimeFormatter = (isUsEnglish ? DateTimeFormatter.ofPattern("h:mm:ss a") : DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM))
+                                 .withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
 
    // Formatter for HTTP dates following the RFC 1123 standard, using locale and time zone of the system
    httpDate = DateTimeFormatter.RFC_1123_DATE_TIME.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
@@ -283,6 +292,14 @@ public final class Util
 
   public static String timeToUserReadableStr(TemporalAccessor t)     { return userReadableTimeFormatter.format(t); }
   public static String dateTimeToUserReadableStr(TemporalAccessor t) { return userReadableDateTimeFormatter.format(t); }
+
+  public static String dateTimeToUserReadableStr(TemporalAccessor t, boolean showSeconds)
+  {
+    return showSeconds ?
+      userReadableDateTimeSecsFormatter.format(t)
+    :
+      userReadableDateTimeFormatter.format(t);
+  }
 
   public static String dateTimeToIso8601offset(TemporalAccessor t)   { return iso8601FormatOffset.format(t); }
   public static Instant parseIso8601offset(CharSequence s)           { return Instant.from(iso8601FormatOffset.parse(s)); }
@@ -1290,7 +1307,7 @@ public final class Util
 
     while (m.find())
     {
-      String found = m.group(2).toUpperCase().replace("-", "");
+      String found = m.group(2).toUpperCase(Locale.ROOT).replace("-", "");
       int sum1 = 0, sum2 = 0;
 
       for (int x = 0; x < 10; x++)
@@ -1616,7 +1633,7 @@ public final class Util
 
   public static void writeCsvFile(FilePath filePath, Stream<List<String>> rows) throws IOException
   {
-    try (FileWriter writer = new FileWriter(filePath.toFile()))
+    try (FileWriter writer = new FileWriter(filePath.toFile(), StandardCharsets.UTF_8))
     {
       for (List<String> row : streamToIterable(rows))
         writer.write(String.join(",", escapeCsv(row)) + System.lineSeparator());

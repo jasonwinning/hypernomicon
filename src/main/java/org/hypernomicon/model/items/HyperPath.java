@@ -45,13 +45,13 @@ import org.hypernomicon.util.file.FilePath;
  * <p>
  * Every {@link HDT_RecordWithPath} owns a HyperPath. The concrete record types that use it are:
  * <ul>
- *   <li>{@link HDT_Folder} — the folder itself; the parent folder pointer is the
+ *   <li>{@link HDT_Folder}: the folder itself; the parent folder pointer is the
  *       {@code rtParentFolderOfFolder} relation, and the filename is the directory name.</li>
- *   <li>{@link HDT_WorkFile} — a file attached to one or more works (via
+ *   <li>{@link HDT_WorkFile}: a file attached to one or more works (via
  *       {@code rtFolderOfWorkFile}).</li>
- *   <li>{@link HDT_MiscFile} — a miscellaneous file record (via
+ *   <li>{@link HDT_MiscFile}: a miscellaneous file record (via
  *       {@code rtFolderOfMiscFile}).</li>
- *   <li>{@link HDT_Person} — a person's picture file (via
+ *   <li>{@link HDT_Person}: a person's picture file (via
  *       {@code rtPictureFolderOfPerson}).</li>
  * </ul>
  * {@link HDT_Note} and {@link HDT_Work} also implement {@code HDT_RecordWithPath} but delegate
@@ -68,8 +68,8 @@ import org.hypernomicon.util.file.FilePath;
  * {@link org.hypernomicon.model.AbstractHyperDB#filenameMap db.filenameMap}, a map from leaf
  * filename strings to sets of HyperPath instances. This enables efficient reverse lookup from a
  * filesystem path to the record(s) that reference it (see {@link #getHyperPathSetForFilePath}).
- * Since multiple records can share the same physical file (e.g. two persons using the same
- * picture), the map values are sets.
+ * Since multiple files in different directories can share the same filename, the map values are
+ * sets.
  *
  * <h2>"In Use" Semantics</h2>
  * A file or folder is considered "in use" when its HyperPath has associated database records
@@ -508,10 +508,10 @@ public class HyperPath
    * <p>
    * This string serves two purposes in the application:
    * <ol>
-   *   <li><b>Display</b> — It populates the "Record(s)" column in the FileManager table,
+   *   <li><b>Display</b>: It populates the "Record(s)" column in the FileManager table,
    *       giving the user a quick view of which database records reference a given file or
    *       folder (e.g. {@code "Person: Smith, John; Work: Some Title"}).</li>
-   *   <li><b>"In use" determination</b> — {@link #isInUseByRecords()} delegates to this method;
+   *   <li><b>"In use" determination</b>: {@link #isInUseByRecords()} delegates to this method;
    *       a non-empty return value means the path is in use by at least one record. This drives
    *       decisions throughout the application: the FolderTreeWatcher uses it to decide whether
    *       an externally renamed/deleted file warrants a warning, the FileManager uses it to

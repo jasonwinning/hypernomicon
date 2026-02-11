@@ -22,6 +22,7 @@ import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 
 import org.hypernomicon.HyperTask.HyperThread;
 
@@ -51,8 +52,8 @@ class InterProcDaemon extends HyperThread
       while (true)
       {
         try (Socket clientSocket = serverSocket.accept();  // Wait for a connection
-             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
+             PrintWriter out = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8), true);
+             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8)))
         {
           String line = in.readLine();
 

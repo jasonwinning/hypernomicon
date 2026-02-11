@@ -19,6 +19,7 @@ package org.hypernomicon.fileManager;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Locale;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.mime.MediaType;
@@ -193,7 +194,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     determineType();
 
     return mimetype == MediaType.OCTET_STREAM ?
-      (FilenameUtils.getExtension(hyperPath.getNameStr()).toUpperCase() + " File")
+      (FilenameUtils.getExtension(hyperPath.getNameStr()).toUpperCase(Locale.ROOT) + " File")
     :
       mimetype.toString();
   }

@@ -159,11 +159,11 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public String getLast()         { return safeStr(last); }
   public String getLastFirst()    { return (first.length() > 0) && (last.length() > 0) ? (last + ", " + first) : (last + first); }
   public boolean isEmpty()        { return (getLast().length() + getFirst().length()) == 0; }
-  public PersonName toLowerCase() { return new PersonName(first.toLowerCase(), last.toLowerCase()); }
+  public PersonName toLowerCase() { return new PersonName(first.toLowerCase(Locale.ROOT), last.toLowerCase(Locale.ROOT)); }
   public String getFull()         { return (first + ' ' + last).strip(); }
   public String getSingle()       { return getLast().length() > 0 ? getLast() : getFirst(); }
   public PersonName toEngChar()   { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
-  public String getSortKey()      { return (last.isEmpty() || first.isEmpty() ? (last + first) : (last + '\u0000' + first)).toLowerCase(); }
+  public String getSortKey()      { return (last.isEmpty() || first.isEmpty() ? (last + first) : (last + '\u0000' + first)).toLowerCase(Locale.ROOT); }
 
   @Override public PersonName clone()
   { try { return (PersonName) super.clone(); } catch (CloneNotSupportedException e) { throw newAssertionError(e); }}

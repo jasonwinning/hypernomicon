@@ -19,6 +19,7 @@ package org.hypernomicon;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.hypernomicon.util.DesktopUtil.*;
@@ -138,8 +139,8 @@ public final class InterProcClient
       if (instanceID.equals(thisInstanceID)) return;
 
       try (Socket clientSocket = new Socket("localhost", instance.getPortNum());
-           PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-           BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
+           PrintWriter out = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8), true);
+           BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8)))
       {
         out.println(UPDATE_CMD);
         String line = in.readLine();

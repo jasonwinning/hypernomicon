@@ -97,7 +97,7 @@ public class QueryWhereBibField extends WorkQuery
 
   @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
-    queryText = convertToEnglishChars(getCellText(op3)).strip().toLowerCase();
+    queryText = convertToEnglishChars(getCellText(op3)).strip().toLowerCase(Locale.ROOT);
   }
 
 //---------------------------------------------------------------------------
@@ -164,7 +164,7 @@ public class QueryWhereBibField extends WorkQuery
         if (strNullOrEmpty(queryText)) return false;
 
         return nullSwitch(getBibStr(work, op1), false, str ->
-          (operator == itemOpContain) == convertToEnglishChars(str).strip().toLowerCase().contains(queryText));
+          (operator == itemOpContain) == convertToEnglishChars(str).strip().toLowerCase(Locale.ROOT).contains(queryText));
       }
     };
   }
@@ -208,7 +208,7 @@ public class QueryWhereBibField extends WorkQuery
 
   private static String getBibStr(HDT_Work record, HyperTableCell cell)
   {
-    return nullSwitch(getEnumVal(getCellID(cell), BibFieldEnum.class), null, field -> record.getBibData().getStr(field).toLowerCase().strip());
+    return nullSwitch(getEnumVal(getCellID(cell), BibFieldEnum.class), null, field -> record.getBibData().getStr(field).toLowerCase(Locale.ROOT).strip());
   }
 
 //---------------------------------------------------------------------------

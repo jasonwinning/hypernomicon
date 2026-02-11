@@ -32,7 +32,10 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.text.DecimalFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -71,7 +74,25 @@ public class AboutDlgCtrlr extends ModalDialog
 
     String manifestBuildTimeStr = manifestValue("Build-Time");
 
-    buildDate = strNullOrBlank(manifestBuildTimeStr) ? "not found" : manifestBuildTimeStr;
+    if (strNullOrBlank(manifestBuildTimeStr))
+      buildDate = "not found";
+    else
+    {
+      String localTimeStr;
+
+      try
+      {
+        DateTimeFormatter manifestFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
+        ZonedDateTime localTime = ZonedDateTime.parse(manifestBuildTimeStr, manifestFmt).withZoneSameInstant(ZoneId.systemDefault());
+        localTimeStr = dateTimeToUserReadableStr(localTime, true) + ' ' + localTime.format(DateTimeFormatter.ofPattern("z"));
+      }
+      catch (DateTimeParseException e)
+      {
+        localTimeStr = manifestBuildTimeStr;
+      }
+
+      buildDate = localTimeStr;
+    }
 
     String family = Font.getDefault().getFamily();
 
@@ -180,7 +201,7 @@ public class AboutDlgCtrlr extends ModalDialog
 
   private String getGeneralTabHtml()
   {
-    String maxHeap = app.debugging ? "Max heap space: " + new DecimalFormat("#,###").format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
+    String maxHeap = app.debugging ? "Max heap space: " + numberFormat.format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
 
     String distro = IS_OS_LINUX ? detectDistro() : "";
 

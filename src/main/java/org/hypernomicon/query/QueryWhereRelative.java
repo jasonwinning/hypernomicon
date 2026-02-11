@@ -17,6 +17,8 @@
 
 package org.hypernomicon.query;
 
+import java.util.Locale;
+
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.query.Query.ItemOperator.*;
 import static org.hypernomicon.util.StringUtil.*;
@@ -78,7 +80,7 @@ public class QueryWhereRelative extends RecordQuery
 
   @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
-    queryText = convertToEnglishChars(getCellText(op3)).strip().toLowerCase();
+    queryText = convertToEnglishChars(getCellText(op3)).strip().toLowerCase(Locale.ROOT);
   }
 
 //---------------------------------------------------------------------------
@@ -156,7 +158,7 @@ public class QueryWhereRelative extends RecordQuery
         if (strNullOrEmpty(queryText)) return false;
 
         return nullSwitch(getSubjList(record, op1), false, subjList ->
-          (operator == itemOpContain) == subjList.stream().anyMatch(subjRecord -> convertToEnglishChars(subjRecord.defaultCellText()).strip().toLowerCase().contains(queryText)));
+          (operator == itemOpContain) == subjList.stream().anyMatch(subjRecord -> convertToEnglishChars(subjRecord.defaultCellText()).strip().toLowerCase(Locale.ROOT).contains(queryText)));
       }
 
       @Override public boolean op2Change(HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)

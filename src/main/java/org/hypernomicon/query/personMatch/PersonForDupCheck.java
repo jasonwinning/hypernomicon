@@ -64,7 +64,7 @@ public class PersonForDupCheck
     this.name = name;
     this.nameEngChar = name.toEngChar();
 
-    newFullNameEngChar = removeAllParentheticals(newFullNameEngChar.toLowerCase());
+    newFullNameEngChar = removeAllParentheticals(newFullNameEngChar.toLowerCase(Locale.ROOT));
 
     newFullNameEngChar = collapseSpaces(newFullNameEngChar);
 
@@ -305,7 +305,7 @@ public class PersonForDupCheck
 
   private static String normalizeStrForTrie(String s)
   {
-    return s.replaceAll("[.]", " ").toLowerCase().replaceAll("\\s+", " ").trim();
+    return s.replaceAll("[.]", " ").toLowerCase(Locale.ROOT).replaceAll("\\s+", " ").trim();
   }
 
 //---------------------------------------------------------------------------

@@ -625,22 +625,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell  ()));
     tcDesc.setCellValueFactory(row -> new SimpleStringProperty  (row.getValue().getValue().getDescString()));
 
-    tcName.setCellFactory(col -> new TreeTableCell<>() { @Override protected void updateItem(TreeCellValue item, boolean empty)
-    {
-      super.updateItem(item, empty);
-
-      if (empty || (item == null))
-      {
-        setText(null);
-        setTooltip(null);
-        return;
-      }
-
-      setText(item.toString());
-      setTooltip(makeTooltip(item.buildPathStr()));
-    }});
-
-    addTooltipToStringColumn(tcDesc);
+    setTooltipCellFactory(tcName, TreeCellValue::buildPathStr);
+    setTooltipCellFactory(tcDesc);
 
     tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
     tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());

@@ -17,8 +17,23 @@
 
 package org.hypernomicon.view.cellValues;
 
+import java.util.Objects;
+
 //---------------------------------------------------------------------------
 
+/**
+ * A cell value for JavaFX table columns where the display text differs from the
+ * underlying sortable value. For example, a file size column displays "42 KB" but
+ * sorts numerically by the raw byte count, and a date column displays a formatted
+ * string but sorts by the underlying {@link java.time.Instant}.
+ * <p>
+ * Equality and hashing are based on both fields. Sorting is by {@code value} first,
+ * with {@code text} as a tiebreaker to ensure stable ordering when distinct display
+ * representations share the same underlying value (e.g., directories showing "" vs
+ * empty files showing "0 bytes").
+ *
+ * @param <Comp_T> the type of the underlying comparable value
+ */
 public class ObjectCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<ObjectCellValue<Comp_T>>
 {
 
@@ -26,14 +41,18 @@ public class ObjectCellValue<Comp_T extends Comparable<Comp_T>> implements Compa
 //---------------------------------------------------------------------------
 
   private final String text;
-  private final Comparable<Comp_T> sortVal;
+  private final Comparable<Comp_T> value;
 
 //---------------------------------------------------------------------------
 
-  public ObjectCellValue(String text, Comparable<Comp_T> sortVal)
+  public Comparable<Comp_T> getValue() { return value; }
+
+//---------------------------------------------------------------------------
+
+  public ObjectCellValue(String text, Comparable<Comp_T> value)
   {
-    this.text = text;
-    this.sortVal = sortVal;
+    this.text  = Objects.requireNonNull(text);
+    this.value = Objects.requireNonNull(value);
   }
 
 //---------------------------------------------------------------------------
@@ -47,7 +66,8 @@ public class ObjectCellValue<Comp_T extends Comparable<Comp_T>> implements Compa
   @SuppressWarnings("unchecked")
   @Override public int compareTo(ObjectCellValue<Comp_T> other)
   {
-    return sortVal.compareTo((Comp_T) other.sortVal);
+    int result = value.compareTo((Comp_T) other.value);
+    return result != 0 ? result : text.compareTo(other.text);
   }
 
 //---------------------------------------------------------------------------
@@ -55,10 +75,7 @@ public class ObjectCellValue<Comp_T extends Comparable<Comp_T>> implements Compa
 
   @Override public int hashCode()
   {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((sortVal == null) ? 0 : sortVal.hashCode());
-    return result;
+    return Objects.hash(text, value);
   }
 
 //---------------------------------------------------------------------------
@@ -70,10 +87,9 @@ public class ObjectCellValue<Comp_T extends Comparable<Comp_T>> implements Compa
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    if (sortVal.getClass() != ((ObjectCellValue<Comp_T>) obj).sortVal.getClass()) return false;
 
     ObjectCellValue<Comp_T> other = (ObjectCellValue<Comp_T>)obj;
-    return sortVal.equals(other.sortVal);
+    return text.equals(other.text) && value.equals(other.value);
   }
 
 //---------------------------------------------------------------------------
