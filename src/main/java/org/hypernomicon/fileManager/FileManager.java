@@ -33,7 +33,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -51,6 +50,8 @@ import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.FilePathSet;
+import org.hypernomicon.util.file.deletion.FileDeletion;
+import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tableCells.ReadOnlyCell;
@@ -695,6 +696,11 @@ public final class FileManager extends NonmodalWindow
 
     folderTreeWatcher.stop();
 
+    // Collect empty source directories to delete after move completes
+
+    final Set<FilePath>   externalEmptyDirs    = new LinkedHashSet<>();
+    final Set<HDT_Folder> internalEmptyFolders = new LinkedHashSet<>();
+
     boolean success = new HyperTask("PasteOperation", copying ? "Copying..." : "Moving...",
                                     srcToDest.size() * (copying ? 2L : 4L)) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
@@ -783,8 +789,8 @@ public final class FileManager extends NonmodalWindow
               List.copyOf(folder.notes).forEach(note -> note.folder.set(HyperPath.getFolderFromFilePath(destFilePath, false)));
           }
 
-      // If moving, remove source directories that are now empty
-      // -------------------------------------------------------
+      // If moving, collect source directories that are now empty for deletion after HyperTask
+      // -------------------------------------------------------------------------------------
 
           for (FilePath srcFilePath : srcToDest.keySet())
           {
@@ -793,9 +799,9 @@ public final class FileManager extends NonmodalWindow
             if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles(true) == false) && (srcFilePath.contains(db.getRootPath()) == false))
             {
               if (db.getRootPath().contains(srcFilePath))
-                HyperPath.getFolderFromFilePath(srcFilePath, false).delete(false);
+                internalEmptyFolders.add(HyperPath.getFolderFromFilePath(srcFilePath, false));
               else
-                srcFilePath.deleteDirectory(false);
+                externalEmptyDirs.add(srcFilePath);
             }
           }
         }
@@ -811,6 +817,24 @@ public final class FileManager extends NonmodalWindow
     }}.setShowDialogImmediately(true).runWithProgressDialog() == State.SUCCEEDED;
 
     suppressNeedRefresh = false;
+
+    // Delete empty source directories after successful move
+
+    if (success)
+    {
+      if (externalEmptyDirs.isEmpty() == false)
+        FileDeletion.ofDirsWithContents(externalEmptyDirs).interactive().execute();
+
+      for (HDT_Folder folder : internalEmptyFolders)
+      {
+        // Skip folders already deleted as children of another folder in this set.
+        // Check both: record deleted (parentFolder null) and filesystem deleted (not exists)
+
+        FilePath folderPath = folder.filePath();
+        if ((folder.parentFolder() != null) && (folderPath != null) && folderPath.exists())
+          folder.delete();
+      }
+    }
 
     FilePath pathToHilite = srcToDest.isEmpty() ? null : srcToDest.get(srcPathToHilite);
 
@@ -967,13 +991,10 @@ public final class FileManager extends NonmodalWindow
     if (item.isRelated() == false)
     {
       if (item.isDirectory())
-        return ((HDT_Folder) fileRecord).delete(true);
+        return ((HDT_Folder) fileRecord).delete();
 
-      try { Files.delete(filePath.toPath()); }
-      catch (IOException e)
-      {
-        return falseWithErrorPopup("Unable to delete the file: " + getThrowableMessage(e));
-      }
+      if (FileDeletion.ofFile(filePath).interactive().execute() == DeletionResult.CANCELLED)
+        return false;
 
       db.unmapFilePath(filePath);
       return true;
@@ -983,17 +1004,12 @@ public final class FileManager extends NonmodalWindow
 
     for (HyperPath setPath : set)
     {
-      try
-      {
-        setPath.filePath().delete(true);
-        db.unmapFilePath(setPath.filePath());
-        if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
-          db.deleteRecord(setPath.getRecord());
-      }
-      catch (IOException e)
-      {
-        return falseWithErrorPopup("An error occurred while trying to delete \"" + setPath.filePath() + "\": " + getThrowableMessage(e));
-      }
+      if (FileDeletion.ofFile(setPath.filePath()).interactive().execute() == DeletionResult.CANCELLED)
+        return false;
+
+      db.unmapFilePath(setPath.filePath());
+      if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
+        db.deleteRecord(setPath.getRecord());
     }
 
     return true;

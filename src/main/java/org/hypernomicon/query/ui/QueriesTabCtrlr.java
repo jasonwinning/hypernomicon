@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+import org.hypernomicon.util.file.deletion.FileDeletion;
+import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
 import javafx.application.Platform;
 import javafx.beans.property.Property;
@@ -482,18 +483,10 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       return;
     }
 
-    boolean startWatcher = folderTreeWatcher.stop();
+    if (FileDeletion.ofDirContentsOnly(db.resultsPath()).interactive().execute() == DeletionResult.CANCELLED)
+      return;
 
-    try
-    {
-      FileUtils.cleanDirectory(db.resultsPath().toFile());
-
-      FileManager.pruneAndRefresh(true);
-    }
-    catch (IOException e) { errorPopup("One or more files were not deleted. Reason: " + getThrowableMessage(e)); }
-
-    if (startWatcher)
-      folderTreeWatcher.createNewWatcherAndStart();
+    FileManager.pruneAndRefresh(true);
   }
 
 //---------------------------------------------------------------------------

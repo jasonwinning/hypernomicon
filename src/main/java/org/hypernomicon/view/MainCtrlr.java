@@ -70,6 +70,7 @@ import org.hypernomicon.tree.*;
 import org.hypernomicon.util.*;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.RecordFavorite;
 import org.hypernomicon.view.cellValues.*;
@@ -3637,7 +3638,7 @@ public final class MainCtrlr
     update();
 
     if ((FilePath.isEmpty(filePath) == false) && ibed.getDeleteFile())
-      filePath.deletePromptOnFail(true);
+      FileDeletion.ofFile(filePath).interactive().execute();
   }
 
 //---------------------------------------------------------------------------

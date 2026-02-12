@@ -25,7 +25,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Files;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -38,6 +37,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.util.*;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.util.http.AsyncHttpClient;
 import org.hypernomicon.util.http.FileDownloadUtility;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -334,10 +334,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
       displayFilePath(tempFile);
 
-      runOutsideFXThread(2000, () ->
-      {
-        try { Files.delete(tempFile.toPath()); } catch (IOException e) { noOp(); }
-      });
+      runOutsideFXThread(2000, () -> FileDeletion.ofFile(tempFile).nonInteractiveFailureOK().execute());
     }
     catch (IOException e)
     {
@@ -384,10 +381,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
       displayFilePath(tempFile);
 
-      runOutsideFXThread(2000, () ->
-      {
-        try { Files.delete(tempFile.toPath()); } catch (IOException e) { noOp(); }
-      });
+      runOutsideFXThread(2000, () -> FileDeletion.ofFile(tempFile).nonInteractiveFailureOK().execute());
 
       webBufferOutOfDate = false;
     }
@@ -503,7 +497,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
         db.deleteRecord(miscFile);
 
         if (rbWebAddress.isSelected() || rbClipboard.isSelected())
-          try { Files.delete(srcFilePath.toPath()); } catch (IOException e) { noOp(); }
+          FileDeletion.ofFile(srcFilePath).nonInteractiveFailureOK().execute();
 
         return false;
       }
@@ -530,7 +524,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
       if (rbWebAddress.isSelected() || rbClipboard.isSelected())
       {
         if (srcFilePath.exists())
-          try { Files.delete(srcFilePath.toPath()); } catch (IOException e) { noOp(); }
+          FileDeletion.ofFile(srcFilePath).nonInteractiveFailureOK().execute();
       }
     }
 

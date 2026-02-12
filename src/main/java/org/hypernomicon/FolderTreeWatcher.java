@@ -45,6 +45,7 @@ import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.FilePathSet;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.view.MainCtrlr.ShutDownMode;
 
 import com.google.common.base.Suppliers;
@@ -546,7 +547,7 @@ public class FolderTreeWatcher
 
         sentResponse = false;
 
-        try { Files.delete(db.getResponseMessageFilePath(false).toPath()); } catch (IOException e) { logThrowable(e); }
+        FileDeletion.ofFile(db.getResponseMessageFilePath(false)).nonInteractiveLogErrors().execute();
 
         if (requestType == hmtUnlockRequest)
         {
@@ -615,6 +616,7 @@ public class FolderTreeWatcher
   public void enable()               { disabled = false; }
   public boolean isDisabled()        { return disabled; }
   public boolean isRunning()         { return (stopped == false) && HyperThread.isRunning(watcherThread); }
+  public boolean isOnWatcherThread() { return Thread.currentThread() == watcherThread; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -35,6 +35,8 @@ import org.hypernomicon.util.*;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.deletion.FileDeletion;
+import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 import org.hypernomicon.util.http.AsyncHttpClient;
 import org.hypernomicon.util.http.FileDownloadUtility;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -501,7 +503,7 @@ public class PictureDlgCtrlr extends ModalDialog
     if (confirmDialog("Are you sure you want to permanently delete the file \"" + personHyperTab.getCurPicture().getNameOnly() + "\"?", false) == false)
       return;
 
-    if (personHyperTab.getCurPicture().deletePromptOnFail(false) == false)
+    if (FileDeletion.ofFile(personHyperTab.getCurPicture()).interactive().execute() == DeletionResult.CANCELLED)
       return;
 
     db.unmapFilePath(personHyperTab.getCurPicture());
@@ -719,7 +721,8 @@ public class PictureDlgCtrlr extends ModalDialog
       tempFile.deleteOnExit();
       webImageBuffer.saveToFile(tempFile);
       picture = new Image(tempFile.toURI().toString());
-      tempFile.delete(true);
+
+      FileDeletion.ofFile(tempFile).nonInteractiveFailureOK().execute();
 
       if (picture.isError())
         throw picture.getException();
@@ -935,14 +938,8 @@ public class PictureDlgCtrlr extends ModalDialog
         if (confirmDialog("A file with that name already exists. Okay to overwrite?", false) == false)
           return false;
 
-        try
-        {
-          newFileDest.delete(false);
-        }
-        catch (IOException e)
-        {
-          return falseWithErrorPopup("File cannot be overwritten: " + getThrowableMessage(e));
-        }
+        if (FileDeletion.ofFile(newFileDest).interactive().execute() == DeletionResult.CANCELLED)
+          return false;
       }
     }
     else if (rbCurrent.isSelected())

@@ -25,14 +25,15 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
 
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.InvalidPathException;
+import java.nio.file.*;
 import java.util.List;
 
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.deletion.FileDeletion;
+import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
 //---------------------------------------------------------------------------
 
@@ -142,7 +143,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
       String msg = "Unable to rename the folder: " + getThrowableMessage(e);
 
-      if (e instanceof java.nio.file.AccessDeniedException)
+      if (e instanceof AccessDeniedException)
         msg = msg + "\n\nIt may work to restart " + appTitle + " and try again.";
 
       return falseWithErrorPopup(msg);
@@ -162,10 +163,9 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   /**
    * Delete the folder on the file system and delete the folder record and its child folder records
-   * @param singleCall If true, means that this function isn't being called repeatedly; just a one-off
    * @return True if the folder was deleted successfully
    */
-  public boolean delete(boolean singleCall)
+  public boolean delete()
   {
     FilePath filePath = filePath();
 
@@ -180,23 +180,21 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     boolean restartWatcher = folderTreeWatcher.stop();
 
-    try
-    {
-      if (filePath.anyOpenFilesInDir())
-      {
-        folderTreeWatcher.createNewWatcherAndStart();
-        return false;
-      }
-
-      filePath.deleteDirectory(singleCall);
-      db.unmapFilePath(filePath);
-    }
-    catch (IOException e)
+    if (filePath.anyOpenFilesInDir())
     {
       folderTreeWatcher.createNewWatcherAndStart();
-      return falseWithErrorPopup("An error occurred while attempting to delete the folder \"" + filePath + "\": " + getThrowableMessage(e));
+      return false;
     }
 
+    DeletionResult result = FileDeletion.ofDirWithContents(filePath).interactive().execute();
+
+    if (result != DeletionResult.SUCCESS)
+    {
+      folderTreeWatcher.createNewWatcherAndStart();
+      return false;
+    }
+
+    db.unmapFilePath(filePath);
     deleteFolderRecordTree(this);
 
     if (restartWatcher)

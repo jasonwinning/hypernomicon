@@ -22,7 +22,6 @@ import org.hypernomicon.fileManager.FileManager;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -37,7 +36,6 @@ import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -138,59 +136,6 @@ public class FilePath implements Comparable<FilePath>
   {
     try { return new FilePath(toPath().relativize(resolvedFilePath.toPath())); }
     catch (IllegalArgumentException e) { return null; }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void delete(boolean noExistOK) throws IOException
-  {
-    if (noExistOK && (exists() == false)) return;
-
-    boolean startWatcher = folderTreeWatcher.stop();
-
-    Files.delete(toPath());
-
-    FileManager.setNeedRefresh();
-
-    if (startWatcher)
-      folderTreeWatcher.createNewWatcherAndStart();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean deleteReturnsBoolean(boolean noExistOK, StringBuilder errorSB)
-  {
-    try { delete(noExistOK); }
-    catch (IOException e)
-    {
-      if (errorSB != null) assignSB(errorSB, getThrowableMessage(e));
-      return false;
-    }
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean deletePromptOnFail(boolean noExistOK)
-  {
-    StringBuilder errorSB = new StringBuilder();
-
-    while (deleteReturnsBoolean(noExistOK, errorSB) == false)
-    {
-      String msgStr = errorSB.length() > 0 ?
-        "Attempt to delete file failed: \"" + errorSB + System.lineSeparator() + System.lineSeparator() + "Try again?"
-      :
-        "Attempt to delete file failed: \"" + this + "\". Try again?";
-
-      if (confirmDialog(msgStr, true) == false)
-        return false;
-    }
-
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -301,104 +246,6 @@ public class FilePath implements Comparable<FilePath>
   public void createDirectory() throws IOException
   {
     Files.createDirectory(toPath());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Delete the folder on the file system
-   * @param singleCall If true, means that this function isn't being called repeatedly; just a one-off
-   * @throws IOException if a file system error occurred
-   */
-  public void deleteDirectory(boolean singleCall) throws IOException
-  {
-    FilePath filePath = getDirOnly();
-
-    FileManager.setNeedRefresh();
-
-    if (singleCall && IS_OS_WINDOWS)
-    {
-      ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "RD /S /Q \"" + filePath + '"');
-      Process proc = pb.redirectErrorStream(true).start();
-
-      try
-      {
-        proc.waitFor();
-      }
-      catch (InterruptedException e)
-      {
-        throw new IOException(e);
-      }
-
-      try (InputStream is = proc.getInputStream())
-      {
-        String errStr = IOUtils.toString(is, Charset.defaultCharset());
-
-        if (errStr.length() > 0)
-        {
-          if (errStr.toLowerCase().contains("denied") || errStr.toLowerCase().contains("access"))
-            errStr = errStr + "\n\nIt may work to restart " + appTitle + " and try again.";
-
-          throw new IOException(errStr);
-        }
-      }
-
-      return;
-    }
-
-    FileUtils.deleteDirectory(filePath.toFile());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Silently deletes this directory and all its contents, suppressing all errors.
-   * <p>
-   * This method is intended for cleanup of temporary directories where failure
-   * to delete is acceptable (e.g., cleanup after filesystem probing).
-   * <p>
-   * Retries every 250ms for up to 2.5 seconds to handle Windows file handle delays.
-   * <p>
-   * No error is thrown or logged if deletion fails for any reason.
-   */
-  public void deleteDirectoryQuietly()
-  {
-    Path root = getDirOnly().toPath();
-
-    for (int attempt = 0; attempt < 10; attempt++)
-    {
-      if (attempt > 0)
-      {
-        try { Thread.sleep(250); }
-        catch (InterruptedException e) { Thread.currentThread().interrupt(); return; }
-      }
-
-      List<Path> paths;
-
-      try (var walk = Files.walk(root))
-      {
-        paths = walk.sorted(Comparator.reverseOrder()).toList();
-      }
-      catch (IOException e)
-      {
-        return;  // Can't walk the directory; nothing to delete
-      }
-
-      // Delete after closing the stream to avoid Windows file handle issues
-
-      for (Path path : paths)
-      {
-        try { Files.deleteIfExists(path); }
-        catch (IOException ignored) { }
-      }
-
-      // Check if root was successfully deleted
-
-      if (Files.exists(root) == false)
-        return;
-    }
   }
 
 //---------------------------------------------------------------------------

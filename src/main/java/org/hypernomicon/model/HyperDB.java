@@ -45,8 +45,8 @@ import org.hypernomicon.InterProcClient;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.VersionNumber;
-import org.hypernomicon.util.file.FilePath;
-import org.hypernomicon.util.file.FilenameRules;
+import org.hypernomicon.util.file.*;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.view.HyperFavorites;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
 
@@ -221,10 +221,9 @@ public final class HyperDB extends AbstractHyperDB
     if ((owner != null) && (getComputerName().equals(owner) == false))
       return owner;
 
-    getLockFilePath(true).deletePromptOnFail(true);
-
-    getRequestMessageFilePath (true).deletePromptOnFail(true);
-    getResponseMessageFilePath(true).deletePromptOnFail(true);
+    FileDeletion.ofFile(getLockFilePath           (true)).interactive().execute();
+    FileDeletion.ofFile(getRequestMessageFilePath (true)).interactive().execute();
+    FileDeletion.ofFile(getResponseMessageFilePath(true)).interactive().execute();
 
     return null;
   }
@@ -246,7 +245,7 @@ public final class HyperDB extends AbstractHyperDB
   {
     if (FilePath.isEmpty(lockFilePath)) return;
 
-    lockFilePath.deletePromptOnFail(true);
+    FileDeletion.ofFile(lockFilePath).interactive().execute();
     lockFilePath = null;
   }
 
@@ -330,7 +329,7 @@ public final class HyperDB extends AbstractHyperDB
     {
       if (confirmDialog("No more records will be assigned to the file: \"" + filePath + "\". Should the file be permanently deleted?", false))
       {
-        filePath.deletePromptOnFail(false);
+        FileDeletion.ofFile(filePath).interactive().execute();
         unmapFilePath(filePath);
       }
 
@@ -356,7 +355,7 @@ public final class HyperDB extends AbstractHyperDB
       folderTreeWatcher.disable();
     }
 
-    filePath.deletePromptOnFail(false);
+    FileDeletion.ofFile(filePath).interactive().execute();
   }
 
 //---------------------------------------------------------------------------

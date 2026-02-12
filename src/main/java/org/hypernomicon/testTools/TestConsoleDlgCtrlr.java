@@ -47,6 +47,8 @@ import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.deletion.FileDeletion;
+import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -264,13 +266,8 @@ public class TestConsoleDlgCtrlr extends ModalDialog
           return;
         }
 
-        try
+        if (FileDeletion.ofDirContentsOnly(transientDBFilePath).interactive().execute() == DeletionResult.CANCELLED)
         {
-          FileUtils.cleanDirectory(transientDBFilePath.toFile());
-        }
-        catch (IOException e)
-        {
-          errorPopup("Unable to clear the transient test database folder. Reason: " + getThrowableMessage(e));
           new TestConsoleDlgCtrlr().showModal();
           return;
         }
@@ -378,17 +375,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     if (confirmDialog(prompt, false) == false)
       return false;
 
-    try
-    {
-      FileUtils.cleanDirectory(transientDBFilePath.toFile());
-    }
-    catch (IOException e)
-    {
-      errorPopup("One or more files were not deleted. Reason: " + getThrowableMessage(e));
-      return false;
-    }
+    DeletionResult result = FileDeletion.ofDirContentsOnly(transientDBFilePath).interactive().execute();
 
-    return true;
+    return result != DeletionResult.CANCELLED;
   }
 
 //---------------------------------------------------------------------------

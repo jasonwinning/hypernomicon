@@ -18,6 +18,7 @@
 package org.hypernomicon.query;
 
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -29,7 +30,6 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,15 +113,7 @@ public final class WorkQueries
 
       @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        FilePath filePath = homeDir().resolve("data.csv");
-        if (filePath.exists()) try
-        {
-          Files.delete(filePath.toPath());
-        }
-        catch (IOException e)
-        {
-          logThrowable(e);
-        }
+        FileDeletion.ofFile(homeDir().resolve("data.csv")).nonInteractiveLogErrors().execute();
 
         csvFile = new ArrayList<>();
       }

@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.prefs.Preferences;
 
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 
 import com.ibm.icu.lang.UCharacter;
 import com.ibm.icu.lang.UProperty;
@@ -304,7 +305,9 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
   private static void cleanupLeftoverProbeDirectory(Path path)
   {
     FilePath probeDir = new FilePath(path);
-    HyperThread cleanupThread = new HyperThread("ProbeCleanup", probeDir::deleteDirectoryQuietly);
+
+    HyperThread cleanupThread = new HyperThread("ProbeCleanup", () -> FileDeletion.ofDirWithContents(probeDir).nonInteractiveFailureOK().execute());
+
     cleanupThread.setDaemon(true);
     cleanupThread.start();
   }
@@ -314,18 +317,29 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
 
   private static void cleanupLeftoverProbeDirectories(Path dir)
   {
+    Set<FilePath> probeDirs = new LinkedHashSet<>();
+
     try (var stream = Files.newDirectoryStream(dir, PROBE_DIR_PREFIX + '*'))
     {
       for (Path path : stream)
       {
         if (Files.isDirectory(path))
-          cleanupLeftoverProbeDirectory(path);
+          probeDirs.add(new FilePath(path));
       }
     }
     catch (IOException e)
     {
       // Best-effort cleanup; ignore failures
+      return;
     }
+
+    if (probeDirs.isEmpty())
+      return;
+
+    HyperThread cleanupThread = new HyperThread("ProbeCleanup", () -> FileDeletion.ofDirsWithContents(probeDirs).nonInteractiveFailureOK().execute());
+
+    cleanupThread.setDaemon(true);
+    cleanupThread.start();
   }
 
 //---------------------------------------------------------------------------
@@ -578,19 +592,11 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
     }
     finally
     {
-      try
-      {
-        if (createdBase)
-          Files.deleteIfExists(basePath);
-      }
-      catch (IOException ignored) { }
+      if (createdBase)
+        FileDeletion.ofFile(new FilePath(basePath)).nonInteractiveFailureOK().execute();
 
-      try
-      {
-        if (createdVariant)
-          Files.deleteIfExists(variantPath);
-      }
-      catch (IOException ignored) { }
+      if (createdVariant)
+        FileDeletion.ofFile(new FilePath(variantPath)).nonInteractiveFailureOK().execute();
     }
   }
 

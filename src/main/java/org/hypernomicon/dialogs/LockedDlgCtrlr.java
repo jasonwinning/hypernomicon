@@ -25,8 +25,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.InterComputerMsg;
+import org.hypernomicon.dialogs.base.ModalDialog;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
@@ -91,12 +92,12 @@ public class LockedDlgCtrlr extends ModalDialog
               if ((sentMsg.getType() == hmtUnlockRequest) && (receivedMsg.getType() == hmtUnlockComplete))
               {
                 gotResponse = true;
-                db.getRequestMessageFilePath(true).deletePromptOnFail(false);
+                FileDeletion.ofFile(db.getRequestMessageFilePath(true)).interactive().execute();
               }
               else if ((sentMsg.getType() == hmtEchoRequest) && (receivedMsg.getType() == hmtEchoReply))
               {
                 gotResponse = true;
-                db.getRequestMessageFilePath(true).deletePromptOnFail(false);
+                FileDeletion.ofFile(db.getRequestMessageFilePath(true)).interactive().execute();
               }
             }
           }
@@ -158,8 +159,8 @@ public class LockedDlgCtrlr extends ModalDialog
 
     onShown = () -> disableCache(taOutput);
 
-    db.getRequestMessageFilePath (true).deletePromptOnFail(true);
-    db.getResponseMessageFilePath(true).deletePromptOnFail(true);
+    FileDeletion.ofFile(db.getRequestMessageFilePath (true)).interactive().execute();
+    FileDeletion.ofFile(db.getResponseMessageFilePath(true)).interactive().execute();
   }
 
 //---------------------------------------------------------------------------
@@ -205,8 +206,8 @@ public class LockedDlgCtrlr extends ModalDialog
     if (btnStop.isDisabled() == false)
       stopTrying("Cancelled by user.", false);
 
-    db.getRequestMessageFilePath (true).deletePromptOnFail(true);
-    db.getResponseMessageFilePath(true).deletePromptOnFail(true);
+    FileDeletion.ofFile(db.getRequestMessageFilePath (true)).interactive().execute();
+    FileDeletion.ofFile(db.getResponseMessageFilePath(true)).interactive().execute();
 
     // Check if the lock file still has the same computer
     // info; if not, don't delete the lock file, and set
@@ -219,7 +220,7 @@ public class LockedDlgCtrlr extends ModalDialog
     }
     else
     {
-      db.getLockFilePath(true).deletePromptOnFail(true);
+      FileDeletion.ofFile(db.getLockFilePath(true)).interactive().execute();
 
       okClicked = true;
     }
@@ -265,7 +266,8 @@ public class LockedDlgCtrlr extends ModalDialog
     btnOverride.setDisable(false);
     btnStop    .setDisable(true );
     btnCancel  .setDisable(false);
-    db.getRequestMessageFilePath(true).deletePromptOnFail(true);
+
+    FileDeletion.ofFile(db.getRequestMessageFilePath(true)).interactive().execute();
 
     thread.done = true;
 

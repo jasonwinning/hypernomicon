@@ -84,8 +84,8 @@ import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.*;
 import org.hypernomicon.util.PopupDialog.DialogResult;
-import org.hypernomicon.util.file.FilePath;
-import org.hypernomicon.util.file.FilenameMap;
+import org.hypernomicon.util.file.*;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.util.prefs.XmlSupport;
 import org.hypernomicon.view.HyperFavorites;
 
@@ -1158,7 +1158,7 @@ public abstract class AbstractHyperDB
 
     clearBibLinkData();
 
-    xmlPath(BIB_FILE_NAME).deletePromptOnFail(true);
+    FileDeletion.ofFile(xmlPath(BIB_FILE_NAME)).interactive().execute();
 
     if (startWatcher)
       getFolderTreeWatcher().createNewWatcherAndStart();
@@ -1234,7 +1234,7 @@ public abstract class AbstractHyperDB
     {
       boolean startWatcher = nullSwitch(getFolderTreeWatcher(), false, FolderTreeWatcher::stop);
 
-      bibJsonFilePath.deletePromptOnFail(true);
+      FileDeletion.ofFile(bibJsonFilePath).interactive().execute();
 
       if (startWatcher)
         getFolderTreeWatcher().createNewWatcherAndStart();

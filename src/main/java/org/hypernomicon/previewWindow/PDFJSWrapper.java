@@ -49,6 +49,7 @@ import org.apache.commons.io.FileUtils;
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -304,8 +305,7 @@ public class PDFJSWrapper
     FilePath filePath = tempContextFolder();
     if (filePath.exists() == false) return;
 
-    try { FileUtils.cleanDirectory(filePath.toFile()); }
-    catch (IOException e) { noOp(); }
+    FileDeletion.ofDirContentsOnly(filePath).nonInteractiveFailureOK().execute();
   }
 
 //---------------------------------------------------------------------------

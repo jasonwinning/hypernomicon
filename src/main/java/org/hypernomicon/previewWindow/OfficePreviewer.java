@@ -28,10 +28,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.io.FileUtils;
-
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 
 import org.jodconverter.core.office.OfficeException;
 import org.jodconverter.core.office.OfficeUtils;
@@ -170,7 +169,7 @@ final class OfficePreviewer
           {
             FilePath tempDir = wrapperToTempDir.get(nextInfo.jsWrapper);
             if (tempDir != null)
-              FileUtils.deleteDirectory(tempDir.toFile());
+              FileDeletion.ofDirWithContents(tempDir).nonInteractiveFailureOK().execute();
 
             tempDir = tempOfficePreviewFolder(false, false).resolve("preview" + randomAlphanumericStr(8));
             tempPath = tempDir.resolve("preview" + randomAlphanumericStr(8) + '.' + (nextInfo.convertToHtml ? "html" : "pdf")).toFile();
@@ -314,7 +313,7 @@ final class OfficePreviewer
       if (filePath.exists())
       {
         if (clear)
-          FileUtils.cleanDirectory(filePath.toFile());
+          FileDeletion.ofDirContentsOnly(filePath).nonInteractiveFailureOK().execute();
       }
       else
       {

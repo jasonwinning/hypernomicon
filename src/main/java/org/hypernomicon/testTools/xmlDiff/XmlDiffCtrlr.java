@@ -26,6 +26,8 @@ import static org.hypernomicon.util.UIUtil.*;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.FilePathSet;
+import org.hypernomicon.util.file.deletion.FileDeletion;
+import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -127,10 +129,11 @@ public final class XmlDiffCtrlr
     FilePath srcFolderPath  = new FilePath(tfSrc .getText()),
              destFolderPath = new FilePath(tfDest.getText());
 
+    if (FileDeletion.ofDirContentsOnly(destFolderPath).interactive().execute() == DeletionResult.CANCELLED)
+      return;
+
     try
     {
-      FileUtils.cleanDirectory(destFolderPath.toFile());
-
       FilePathSet srcSet = new FilePathSet();
 
       srcFolderPath.addDirContentsToSet(srcSet);
