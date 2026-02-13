@@ -1393,14 +1393,17 @@ class DesktopUtilTest
 
   @Test
   @EnabledOnOs(org.junit.jupiter.api.condition.OS.LINUX)
-  void testProcessWebLink_Linux_ReturnsNullUri()
+  void testProcessWebLink_Linux_ReturnsUri()
   {
-    // On Linux, processWebLink returns null URI (uses openSystemSpecific instead)
+    // On Linux, processWebLink constructs a URI (browseDesktop uses urlString with xdg-open)
     UrlOpenResult result = processWebLink("https://example.com/path", true);
 
     assertEquals(UrlOpenAction.BROWSE_WEB, result.action());
     assertEquals("https://example.com/path", result.urlString());
-    assertNull(result.uri(), "Linux should return null URI");
+    assertNotNull(result.uri());
+    assertEquals("https", result.uri().getScheme());
+    assertEquals("example.com", result.uri().getHost());
+    assertEquals("/path", result.uri().getPath());
     assertNull(result.errorMessage());
   }
 
@@ -1408,12 +1411,14 @@ class DesktopUtilTest
   @EnabledOnOs(org.junit.jupiter.api.condition.OS.LINUX)
   void testProcessWebLink_Linux_PlainDomain()
   {
-    // On Linux, plain domain gets http:// prepended but no URI constructed
+    // On Linux, plain domain gets http:// prepended and URI is constructed
     UrlOpenResult result = processWebLink("example.com", true);
 
     assertEquals(UrlOpenAction.BROWSE_WEB, result.action());
     assertEquals("http://example.com", result.urlString());
-    assertNull(result.uri(), "Linux should return null URI");
+    assertNotNull(result.uri());
+    assertEquals("http", result.uri().getScheme());
+    assertEquals("example.com", result.uri().getHost());
     assertNull(result.errorMessage());
   }
 

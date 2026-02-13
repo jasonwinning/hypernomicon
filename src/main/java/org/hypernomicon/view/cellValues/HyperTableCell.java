@@ -24,10 +24,10 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.query.ui.ResultRow;
+import org.hypernomicon.util.Util.NumberComparison;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 
 //---------------------------------------------------------------------------
@@ -113,12 +113,9 @@ public interface HyperTableCell extends Cloneable, Comparable<HyperTableCell>
 
   private static int compareNumericCells(HyperTableCell cell1, HyperTableCell cell2)
   {
-    MutableInt result = new MutableInt();
+    NumberComparison cmp = compareAsNumbers(cell1.getText(), cell2.getText());
 
-    return compareNumberStrings(cell1.getText(), cell2.getText(), result) ?
-      result.intValue()
-    :
-      compareSimpleTextCells(cell1, cell2);
+    return cmp.resolved() ? cmp.result() : compareSimpleTextCells(cell1, cell2);
   }
 
 //---------------------------------------------------------------------------

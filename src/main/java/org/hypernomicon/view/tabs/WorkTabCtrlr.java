@@ -1071,16 +1071,17 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     curWork.workFiles.stream().map(HDT_RecordWithPath::filePath).forEach(files::add);
 
-    MutableBoolean allSame = new MutableBoolean();
-    FilePath folder = pickDirectory(true, files, allSame);
+    PickedDirectory picked = pickDirectoryForUnenteredSetFiles(true, files);
 
-    if (folder == null) return;
+    if (picked == null) return;
 
-    if (allSame.isTrue())
+    if (picked.allAlreadyInDest())
     {
       warningPopup("All of the files are already located in the destination folder.");
       return;
     }
+
+    FilePath folder = picked.folder();
 
     boolean startWatcher = folderTreeWatcher.stop();
 
@@ -1169,15 +1170,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
     }
 
-    MutableBoolean allSame = new MutableBoolean();
+    PickedDirectory picked = pickDirectoryForUnenteredSetFiles(false, filePaths);
 
-    FilePath folder = pickDirectory(false, filePaths, allSame);
+    if (picked == null) return;
 
-    if (folder == null) return;
-
+    FilePath folder = picked.folder();
     DialogResult moveOrCopy = mrCopy;
 
-    if (allSame.booleanValue() == false)
+    if (picked.allAlreadyInDest() == false)
     {
       moveOrCopy = new PopupDialog("Should the files be moved or copied from their present location?")
 
@@ -1269,7 +1269,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private FilePath pickDirectory(boolean moveOnly, FilePathSet files, MutableBoolean allSame)
+  private record PickedDirectory(FilePath folder, boolean allAlreadyInDest) {}
+
+  /**
+   * @return null if the user cancelled or a file conflict was found
+   */
+  private PickedDirectory pickDirectoryForUnenteredSetFiles(boolean moveOnly, FilePathSet files)
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
     FilePath folder = null,
@@ -1299,7 +1304,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         errorPopup("You must choose a subfolder of the main database folder.");
     }
 
-    allSame.setTrue();
+    boolean allAlreadyInDest = true;
 
     for (FilePath file : files)
     {
@@ -1314,10 +1319,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         }
       }
       else
-        allSame.setFalse();
+        allAlreadyInDest = false;
     }
 
-    return folder;
+    return new PickedDirectory(folder, allAlreadyInDest);
   }
 
 //---------------------------------------------------------------------------

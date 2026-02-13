@@ -914,9 +914,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     if (db.isOffline() || (curPerson == null)) return;
     if ((overwrite == false) && (curPerson.getSearchKey().length() > 0)) return;
 
-    StringBuilder sb = new StringBuilder();
-    HDT_Person.makeSearchKey(personName, curPerson, sb);
-    tfSearchKey.setText(sb.toString());
+    tfSearchKey.setText(HDT_Person.generateSearchKeyCheckingIfUsed(personName, curPerson).searchKey());
   }
 
 //---------------------------------------------------------------------------

@@ -19,9 +19,7 @@ package org.hypernomicon.util;
 
 import java.awt.Desktop;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.*;
-import java.nio.charset.Charset;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.*;
@@ -41,7 +39,6 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -106,9 +103,9 @@ public final class DesktopUtil
   /**
    * Result of processing a URL/path string for opening.
    *
-   * @param action      the action to take (BROWSE_WEB, LAUNCH_FILE, or INVALID)
-   * @param urlString   the URL/path string (or file path for LAUNCH_FILE)
-   * @param uri         the constructed URI (Windows/Mac BROWSE_WEB only; null for Linux or other actions)
+   * @param action       the action to take (BROWSE_WEB, LAUNCH_FILE, or INVALID)
+   * @param urlString    the URL/path string (or file path for LAUNCH_FILE)
+   * @param uri          the constructed URI for BROWSE_WEB (null for other actions)
    * @param errorMessage error message for INVALID action (null otherwise)
    */
   record UrlOpenResult(UrlOpenAction action, String urlString, URI uri, String errorMessage) { }
@@ -178,44 +175,16 @@ public final class DesktopUtil
     else
       url = "http://" + url;
 
-    // For BROWSE_WEB action: construct URI on Windows/Mac, skip on Linux
-
-    if (IS_OS_WINDOWS || IS_OS_MAC)
+    try
     {
-      try
-      {
-        URI uri = new URI(escapeIllegalUriChars(url));
-        return new UrlOpenResult(UrlOpenAction.BROWSE_WEB, url, uri, null);
-      }
-      catch (URISyntaxException e)
-      {
-        String errorMsg = "An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e);
-        return new UrlOpenResult(UrlOpenAction.INVALID, url, null, errorMsg);
-      }
+      URI uri = new URI(escapeIllegalUriChars(url));
+      return new UrlOpenResult(UrlOpenAction.BROWSE_WEB, url, uri, null);
     }
-
-    // Linux: return URL string without constructing URI
-
-    return new UrlOpenResult(UrlOpenAction.BROWSE_WEB, url, null, null);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void openSystemSpecific(String pathStr)
-  {
-    StringBuilder sb = new StringBuilder();
-
-    if (IS_OS_LINUX)
+    catch (URISyntaxException e)
     {
-      if (exec(false, false, sb, "kde-open"  , pathStr)) return;
-      if (exec(false, false, sb, "gnome-open", pathStr)) return;
-      if (exec(false, false, sb, "xdg-open"  , pathStr)) return;
-//      if (exec(false, false, sb, "exo-open"  , pathStr)) return;
-//      if (exec(false, false, sb, "gvfs-open" , pathStr)) return;
+      String errorMsg = "An error occurred while trying to browse to: " + url + ". " + getThrowableMessage(e);
+      return new UrlOpenResult(UrlOpenAction.INVALID, url, null, errorMsg);
     }
-
-    errorPopup("Unable to open the file: " + pathStr + (sb.length() > 0 ? "\n" + sb : "") + '.');
   }
 
 //---------------------------------------------------------------------------
@@ -223,6 +192,14 @@ public final class DesktopUtil
 
   private static void browseDesktop(String urlString, URI uri)
   {
+    // Bypass AWT Desktop on Linux to avoid deadlock (JDK-8267572, JDK-8240572)
+
+    if ((CURRENT_OS != WINDOWS) && (CURRENT_OS != MAC))
+    {
+      exec(false, "xdg-open", urlString);
+      return;
+    }
+
     try
     {
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)))
@@ -311,9 +288,11 @@ public final class DesktopUtil
   {
     if (FilePath.isEmpty(filePath)) return;
 
+    // Bypass AWT Desktop on Linux to avoid deadlock (JDK-8267572, JDK-8240572)
+
     if ((CURRENT_OS != WINDOWS) && (CURRENT_OS != MAC))
     {
-      openSystemSpecific(filePath.toString());
+      exec(false, "xdg-open", filePath.toString());
       return;
     }
 
@@ -338,9 +317,11 @@ public final class DesktopUtil
 
   public static void editFile(FilePath filePath)
   {
+    // Bypass AWT Desktop on Linux to avoid deadlock (JDK-8267572, JDK-8240572)
+
     if ((CURRENT_OS != WINDOWS) && (CURRENT_OS != MAC))
     {
-      openSystemSpecific(filePath.toString());
+      exec(false, "xdg-open", filePath.toString());
       return;
     }
 
@@ -363,46 +344,30 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean exec(boolean showErrMsg, boolean wait, StringBuilder errorSB, String... parts)
+  public static boolean exec(boolean showErrMsg, String... parts)
   {
-    return exec(showErrMsg, wait, errorSB, Lists.newArrayList(parts));
+    return exec(showErrMsg, Lists.newArrayList(parts));
   }
 
-  public static boolean exec(boolean showErrMsg, boolean wait, StringBuilder errorSB, List<String> command)
+  public static boolean exec(boolean showErrMsg, List<String> command)
   {
     ProcessBuilder pb = new ProcessBuilder(IS_OS_MAC ?
       Stream.concat(Stream.of("open", "-a"), command.stream()).toList()
     :
       command);
 
-    int exitValue = 0;
-
     try
     {
-      if (wait == false)
-      {
-        pb.redirectError (ProcessBuilder.Redirect.DISCARD)
-          .redirectOutput(ProcessBuilder.Redirect.DISCARD)
-          .start();
-      }
-      else
-      {
-        Process proc = pb.start();
-
-        exitValue = proc.waitFor();
-
-        try (InputStream is = proc.getErrorStream())
-        {
-          assignSB(errorSB, IOUtils.toString(is, Charset.defaultCharset()));
-        }
-      }
+      pb.redirectError (ProcessBuilder.Redirect.DISCARD)
+        .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+        .start();
     }
-    catch (IOException | InterruptedException e)
+    catch (IOException e)
     {
       return falseWithErrPopupCond(showErrMsg, "An error occurred while trying to start application: " + getThrowableMessage(e));
     }
 
-    return (exitValue == 0) || falseWithErrPopupCond(showErrMsg, "An error occurred while trying to start application: " + errorSB);
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -461,13 +426,7 @@ public final class DesktopUtil
 
       case LAUNCH_FILE -> launchFile(new FilePath(result.urlString()));
 
-      case BROWSE_WEB ->
-      {
-        if (result.uri() != null)
-          browseDesktop(result.urlString(), result.uri());
-        else
-          openSystemSpecific(result.urlString());  // Linux
-      }
+      case BROWSE_WEB -> browseDesktop(result.urlString(), result.uri());
     }
   }
 
@@ -518,7 +477,7 @@ public final class DesktopUtil
 
         case LINUX   ->
         {
-          if (!exec(false, false, new StringBuilder(), "nautilus", filePath.toString()))
+          if (exec(false, "nautilus", filePath.toString()) == false)
             launchFile(filePath.getDirOnly()); // won't highlight file in folder
         }
 

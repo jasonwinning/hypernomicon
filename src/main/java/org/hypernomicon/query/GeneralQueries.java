@@ -28,8 +28,6 @@ import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import java.util.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
@@ -42,10 +40,6 @@ import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import org.jsoup.nodes.Element;
-
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 
 //---------------------------------------------------------------------------
@@ -525,19 +519,8 @@ public final class GeneralQueries
         {
           MainText mainText = recordWMT.getMainText();
 
-          MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
-          Property<Element> elementProp = new SimpleObjectProperty<>();
-
-          Optional<HDT_MiscFile> optMiscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
-
-          while (optMiscFile != null)
-          {
-            if (optMiscFile.isEmpty())
-              return true;
-
-            startNdx.add(1);
-            optMiscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
-          }
+          if (MainTextUtil.findEmbeddedFileTags(mainText.getHtml()).stream().anyMatch(tag -> tag.miscFile() == null))
+            return true;
         }
 
         return false;

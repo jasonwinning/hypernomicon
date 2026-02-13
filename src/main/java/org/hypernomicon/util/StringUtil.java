@@ -23,8 +23,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import com.google.common.collect.Lists;
 
 import com.ibm.icu.text.Transliterator;
@@ -562,101 +560,99 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final Pattern WORD_PATTERN = Pattern.compile("[\\p{IsAlphabetic}]+(?:'[\\p{IsAlphabetic}]+)*");
+
+  private static final List<String> COMMON_PREFIXES = Arrays.asList("Mc", "Mac", "De", "Van", "O'", "Fitz");
+
   public static String titleCase(String str)
   {
-    MutableInt pos = new MutableInt(0);
-
     while (str.matches(".*\\h[.,:;)].*"))
       str = str.replaceFirst("\\h([.,:;)])", "$1");   // remove space before character
 
     while (str.matches(".*[(]\\h.*"))
       str = str.replaceFirst("([(])\\h", "$1");   // remove space after character
 
-    outerLoop:
-    for (String word = getNextWord(str, pos); word.length() > 0; word = getNextWord(str, pos))
+    Matcher m = WORD_PATTERN.matcher(str);
+    StringBuilder result = new StringBuilder();
+    int lastEnd = 0;
+
+    while (m.find())
     {
-      int end = pos.intValue(), start = end - word.length();
+      String word = m.group();
+      int start = m.start(), end = m.end();
 
-      String pre = "", post = "";
+      result.append(str, lastEnd, start);
+
+      String stripped = start > 0 ? str.substring(0, start).strip() : "";
       char lastChar = ' ';
-      boolean noCaps = false, endsWithDot = false;
+      boolean noCaps = false,
+              endsWithDot = (end < str.length()) && (str.charAt(end) == '.');
 
-      if (start > 0)
+      if (stripped.length() > 0)
       {
-        pre = str.substring(0, start).strip();
-        if (pre.length() > 0)
-        {
-          lastChar = pre.charAt(pre.length() - 1);
+        lastChar = stripped.charAt(stripped.length() - 1);
 
-          if ("'".equals(convertToEnglishChars(String.valueOf(lastChar))))
-            if (pre.length() > 1)
-              if (pre.charAt(pre.length() - 2) != ' ') // don't capitalize letter immediately after apostrophe
-                if (str.charAt(start - 1) != ' ')      // do capitalize letter after an apostrophe plus a space
-                  noCaps = true;
-        }
-
-        pre = str.substring(0, start);
+        if ("'".equals(convertToEnglishChars(String.valueOf(lastChar))))
+          if (stripped.length() > 1)
+            if (stripped.charAt(stripped.length() - 2) != ' ') // don't capitalize letter immediately after apostrophe
+              if (str.charAt(start - 1) != ' ')                // do capitalize letter after an apostrophe plus a space
+                noCaps = true;
       }
 
-      if (end < str.length())
-      {
-        post = str.substring(end);
-        if (post.charAt(0) == '.')
-          endsWithDot = true;
-      }
+      boolean preserveWord = false;
 
       for (String prefix : COMMON_PREFIXES)
         if (word.startsWith(prefix) && isCorrectlyCapitalized(word, prefix))
         {
-          str = pre + word + post;
-          continue outerLoop;
+          preserveWord = true;
+          break;
         }
 
-      word = word.toLowerCase();
-
-      if (noCaps == false)
+      if (preserveWord == false)
       {
-        if ((lastChar == ':') || (lastChar == '?') || (lastChar == '/') || (start == 0))
-          word = word.substring(0, 1).toUpperCase() + safeSubstring(word, 1, word.length()).toLowerCase();
-        else if ((word.length() == 1) && endsWithDot)
-          word = word.substring(0, 1).toUpperCase();
-        else
+        word = word.toLowerCase();
+
+        if (noCaps == false)
         {
-          int ndx = word.indexOf('\'');
-
-          switch (ndx == -1 ? word : word.substring(0, ndx))
+          if ((lastChar == ':') || (lastChar == '?') || (lastChar == '/') || (start == 0))
+            word = word.substring(0, 1).toUpperCase() + safeSubstring(word, 1, word.length()).toLowerCase();
+          else if ((word.length() == 1) && endsWithDot)
+            word = word.substring(0, 1).toUpperCase();
+          else
           {
-            case "\u00e0": // Latin small letter a with grave accent, as in 'vis a vis' or 'a la'
+            int ndx = word.indexOf('\'');
 
-            case "isn":    // Need 'isn't' to be lowercase if 'is' is lowercase
+            switch (ndx == -1 ? word : word.substring(0, ndx))
+            {
+              case "\u00e0": // Latin small letter a with grave accent, as in 'vis a vis' or 'a la'
 
-            case "a"    : case "also" : case "amid" : case "an"   : case "and"  :
-            case "as"   : case "at"   : case "atop" : case "but"  : case "by"   :
-            case "for"  : case "from" : case "if"   : case "in"   : case "into" :
-            case "is"   : case "it"   : case "la"   : case "lieu" : case "nor"  :
-            case "of"   : case "off"  : case "on"   : case "onto" : case "or"   :
-            case "out"  : case "per"  : case "qua"  : case "sans" : case "so"   :
-            case "than" : case "that" : case "the"  : case "then" : case "til"  :
-            case "till" : case "to"   : case "unto" : case "upon" : case "via"  :
-            case "vis"  : case "with" : case "yet"  :
-              break;
+              case "isn":    // Need 'isn't' to be lowercase if 'is' is lowercase
 
-            default :
-              word = word.substring(0, 1).toUpperCase() + safeSubstring(word, 1, word.length()).toLowerCase();
+              case "a"    : case "also" : case "amid" : case "an"   : case "and"  :
+              case "as"   : case "at"   : case "atop" : case "but"  : case "by"   :
+              case "for"  : case "from" : case "if"   : case "in"   : case "into" :
+              case "is"   : case "it"   : case "la"   : case "lieu" : case "nor"  :
+              case "of"   : case "off"  : case "on"   : case "onto" : case "or"   :
+              case "out"  : case "per"  : case "qua"  : case "sans" : case "so"   :
+              case "than" : case "that" : case "the"  : case "then" : case "til"  :
+              case "till" : case "to"   : case "unto" : case "upon" : case "via"  :
+              case "vis"  : case "with" : case "yet"  :
+                break;
+
+              default :
+                word = word.substring(0, 1).toUpperCase() + safeSubstring(word, 1, word.length()).toLowerCase();
+            }
           }
         }
       }
 
-      str = pre + word + post;
+      result.append(word);
+      lastEnd = end;
     }
 
-    return str;
+    result.append(str, lastEnd, str.length());
+    return result.toString();
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static final List<String> COMMON_PREFIXES = Arrays.asList("Mc", "Mac", "De", "Van", "O'", "Fitz");
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -670,42 +666,6 @@ public final class StringUtil
     // Check the capitalization after the prefix
     char nextChar = word.charAt(prefixLength);
     return Character.isUpperCase(nextChar) && word.substring(prefixLength + 1).equals(word.substring(prefixLength + 1).toLowerCase());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String getNextWord(String str, MutableInt posObj)
-  {
-    int start = posObj.intValue(), end;
-    boolean gotStart = false;
-
-    while ((start < str.length()) && (gotStart == false))
-    {
-      if (Character.isAlphabetic(str.charAt(start)))
-        gotStart = true;
-      else
-        start++;
-    }
-
-    if (gotStart == false) return "";
-
-    for (end = start + 1; end < str.length(); end++)
-    {
-      char c = str.charAt(end);
-
-      if ((c == '\'') && (end < (str.length() - 1)) && Character.isAlphabetic(str.charAt(end + 1)))
-        continue;  // Treat O'Connor and ain't as a word
-
-      if (Character.isAlphabetic(str.charAt(end)) == false)
-      {
-        posObj.setValue(end);
-        return str.substring(start, end);
-      }
-    }
-
-    posObj.setValue(end);
-    return str.substring(start);
   }
 
 //---------------------------------------------------------------------------

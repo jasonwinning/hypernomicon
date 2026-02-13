@@ -24,11 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import javafx.application.Platform;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.HyperTask;
@@ -41,7 +37,6 @@ import org.hypernomicon.model.unities.*;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.mainText.MainTextUtil;
-import org.jsoup.nodes.Element;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -171,23 +166,13 @@ class MentionsIndex
     {
       MainText mainText = ((HDT_RecordWithMainText) mentioner).getMainText();
 
-      MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
-      Property<Element> elementProp = new SimpleObjectProperty<>();
-
-      Optional<HDT_MiscFile> optMiscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
-
-      while (optMiscFile != null)
+      for (MainTextUtil.EmbeddedFileTag tag : MainTextUtil.findEmbeddedFileTags(mainText.getHtml()))
       {
-        if (optMiscFile.isPresent())
+        if (tag.miscFile() != null)
         {
-          HDT_MiscFile miscFile = optMiscFile.get();
-
-          mentionedAnywhereToMentioners.addForward(miscFile, mentioner);
-          mentionedInDescToMentioners  .addForward(miscFile, mentioner);
+          mentionedAnywhereToMentioners.addForward(tag.miscFile(), mentioner);
+          mentionedInDescToMentioners  .addForward(tag.miscFile(), mentioner);
         }
-
-        startNdx.add(1);
-        optMiscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
       }
 
       String plainText = mainText.getPlain();

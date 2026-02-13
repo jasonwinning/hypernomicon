@@ -204,18 +204,29 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Finds an existing person record that matches the given name. First attempts to find a person
+   * whose search key would conflict with the name (via {@link #generateSearchKeyCheckIfUsed}); if
+   * no key conflict is found, falls back to a sort-key comparison across all person records,
+   * ignoring parenthetical portions such as nicknames.
+   *
+   * <p>Used to resolve bibliographic author names to existing person records: when importing
+   * bibliography entries, when the user types a name into a person combo box, and when the
+   * Select Work dialog matches authors from a bib entry to people in the database.
+   *
+   * @param name the person name to look up
+   * @return the matching person record, or null if no match is found
+   */
   public static HDT_Person lookUpByName(PersonName name)
   {
-    StringBuilder searchKeySB = new StringBuilder();
+    PersonSearchKeyResult result = generateSearchKeyCheckingIfUsed(name, null);
 
-    HDT_Person person = makeSearchKey(name, null, searchKeySB);
-
-    if (searchKeySB.toString().isEmpty())
-      return person;
+    if (result.searchKey().isEmpty())
+      return result.existingPerson();
 
     String sortKey = removeAllParentheticals(name.toEngChar().getSortKey());
 
-    return findFirst(db.persons, p -> removeAllParentheticals(p.getSortKey()).equalsIgnoreCase(sortKey));
+    return findFirst(db.persons, _person -> removeAllParentheticals(_person.getSortKey()).equalsIgnoreCase(sortKey));
   }
 
 //---------------------------------------------------------------------------
@@ -235,9 +246,28 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Pass person=null if making a search key for a new record
+  public record PersonSearchKeyResult(String searchKey, HDT_Person existingPerson) {}
 
-  public static HDT_Person makeSearchKey(PersonName name, HDT_Person person, StringBuilder newSearchKey)
+  /**
+   * Generates a semicolon-delimited search key string from a person's name, building it from
+   * candidate key variants (e.g., "John Smith", "J. Smith", "^Smith"). Each candidate is checked
+   * against the database's keyword index: if the key is already bound to a different person record,
+   * that candidate is omitted from the result and the other person is reported via
+   * {@link PersonSearchKeyResult#existingPerson()}.
+   *
+   * <p>The generated search key is used to populate the search key text field in the Person tab
+   * and the New Person dialog, where it updates live as the user types a name. The
+   * {@code existingPerson} field serves two purposes: in {@link #lookUpByName}, it identifies
+   * an existing person record that already owns the search key for a given name; in the UI,
+   * callers use only the {@code searchKey} portion to auto-fill the text field.
+   *
+   * @param name   the person name to derive search key variants from
+   * @param person the person record being edited, so its own keys are not treated as conflicts;
+   *               null when generating a key for a name that has no record yet
+   * @return the generated search key string and, if any candidate was already claimed by another
+   *         person, that person; otherwise {@code existingPerson} is null
+   */
+  public static PersonSearchKeyResult generateSearchKeyCheckingIfUsed(PersonName name, HDT_Person person)
   {
     HDT_Person otherPerson = null;
     StringBuilder keys = new StringBuilder();
@@ -261,8 +291,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
       }
     }
 
-    assignSB(newSearchKey, keys.toString());
-    return otherPerson;
+    return new PersonSearchKeyResult(keys.toString(), otherPerson);
   }
 
 //---------------------------------------------------------------------------

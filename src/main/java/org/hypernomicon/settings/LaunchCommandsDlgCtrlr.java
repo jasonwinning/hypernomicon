@@ -195,13 +195,13 @@ public class LaunchCommandsDlgCtrlr extends ModalDialog
 
         if (list.size() > 1)
         {
-          exec(true, false, new StringBuilder(), list);
+          exec(true, list);
           return;
         }
       }
     }
 
-    exec(true, false, new StringBuilder(), appPath, filePath.toString());
+    exec(true, appPath, filePath.toString());
   }
 
 //---------------------------------------------------------------------------

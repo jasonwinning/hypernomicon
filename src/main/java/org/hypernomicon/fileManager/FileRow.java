@@ -33,6 +33,7 @@ import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.tree.AbstractTreeRow;
 import org.hypernomicon.tree.TreeModel;
+import org.hypernomicon.util.Util.PrefixAndNumber;
 import org.hypernomicon.util.file.FilenameRules;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.cellValues.ObjectCellValue;
@@ -259,14 +260,11 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     if (Character.isDigit(fileNameStr1.charAt(fileNameStr1.length() - 1)) &&
         Character.isDigit(fileNameStr2.charAt(fileNameStr2.length() - 1)))
     {
-      StringBuilder prefix1 = new StringBuilder(),
-                    prefix2 = new StringBuilder();
+      PrefixAndNumber pn1 = splitIntoPrefixAndNumber(fileNameStr1),
+                      pn2 = splitIntoPrefixAndNumber(fileNameStr2);
 
-      int num1 = splitIntoPrefixAndNumber(fileNameStr1, prefix1),
-          num2 = splitIntoPrefixAndNumber(fileNameStr2, prefix2);
-
-      if ((num1 >= 0) && (num2 >= 0) && rules.normalize(prefix1.toString()).equals(rules.normalize(prefix2.toString())))
-        return num1 - num2;
+      if ((pn1.number() >= 0) && (pn2.number() >= 0) && rules.normalize(pn1.prefix()).equals(rules.normalize(pn2.prefix())))
+        return pn1.number() - pn2.number();
     }
 
     return rules.normalize(fileNameStr1).compareTo(rules.normalize(fileNameStr2));

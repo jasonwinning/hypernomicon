@@ -27,8 +27,6 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.mutable.MutableBoolean;
-
 import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.*;
@@ -41,7 +39,6 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperCB;
 
-import javafx.beans.property.Property;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
@@ -347,7 +344,13 @@ public final class SelectTermDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean uniteWith(HDT_RecordWithMainText otherSpoke, MutableBoolean createdNewTerm, Property<HDT_Concept> conceptProp) throws HyperDataException
+  public record UniteResult(boolean createdNewTerm, HDT_Concept concept) {}
+
+  /**
+   * @return null if the unite operation was cancelled; otherwise a result containing the concept and
+   *         whether a new term was created
+   */
+  public UniteResult uniteWith(HDT_RecordWithMainText otherSpoke) throws HyperDataException
   {
     HDT_Concept selectedConcept = term.getConcept(getGlossary(), getSense());
 
@@ -355,15 +358,12 @@ public final class SelectTermDlgCtrlr extends ModalDialog
       throw new HDB_InternalError(89681);
 
     if (MainCtrlr.uniteRecords(otherSpoke, selectedConcept) == false)
-      return false;
-
-    createdNewTerm.setValue(creatingNewTerm);
-    conceptProp   .setValue(selectedConcept);
+      return null;
 
     if (creatingNewTerm)
       selectedConcept.term.get().setName(otherSpoke.defaultCellText());
 
-    return true;
+    return new UniteResult(creatingNewTerm, selectedConcept);
   }
 
 //---------------------------------------------------------------------------

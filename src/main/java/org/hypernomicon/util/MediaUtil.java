@@ -23,6 +23,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.Base64;
 
 import org.apache.commons.lang3.Strings;
@@ -456,6 +457,26 @@ public final class MediaUtil
     catch (NullPointerException e)
     {
       throw new IOException(e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Copy a classpath resource to a file on disk, replacing the file if it already exists.
+   *
+   * @param resourcePath the relative path of the resource (resolved against {@link App})
+   * @param dest the destination file path
+   */
+  public static void copyResourceToFile(String resourcePath, FilePath dest) throws IOException
+  {
+    try (InputStream is = App.class.getResourceAsStream(resourcePath))
+    {
+      if (is == null)
+        throw new IOException("Resource not found: " + resourcePath);
+
+      Files.copy(is, dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
   }
 

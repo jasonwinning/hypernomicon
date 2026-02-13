@@ -2623,6 +2623,35 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Collects records that are related to the given record through the database's relation
+   * system, populating {@code set} with up to {@code max} results. This is used in two
+   * contexts: the File Manager populates its record table with relatives of whatever folder
+   * or file is selected, and {@link org.hypernomicon.model.items.HyperPath#getRecordsString()
+   * HyperPath.getRecordsString()} builds a summary of associated records for display in
+   * tooltips and for determining whether a folder is in use.
+   *
+   * <p>When {@code gettingNotesForFile} is true, note records associated with the parent
+   * folder are included first. This handles two File Manager scenarios: if the selected file
+   * has no associated record (in which case {@code record} is the parent folder and only its
+   * notes are returned), or if the file does have a record (in which case the parent folder's
+   * notes are prepended to the record's own relatives).
+   *
+   * <p>After any folder notes, the method traverses all relation types where the record's type
+   * appears as subject or object (excluding {@code rtParentFolderOfFolder}), collecting the
+   * related records from both sides.
+   *
+   * <p>Results are added in insertion order (the set is a {@link LinkedHashSet}). If the
+   * number of results reaches {@code max}, collection stops early and the method returns
+   * {@code true} to indicate that more results exist. Pass a negative value for {@code max}
+   * to collect all relatives with no limit.
+   *
+   * @param record             the record whose relatives to collect
+   * @param set                receives the collected relatives; cleared before use
+   * @param max                maximum number of relatives to collect, or negative for no limit
+   * @param gettingNotesForFile if true, include notes from the parent folder (see above)
+   * @return true if collection was truncated because the result count reached {@code max}
+   */
   public boolean getRelatives(HDT_RecordWithPath record, LinkedHashSet<HDT_Record> set, int max, boolean gettingNotesForFile)
   {
     set.clear();

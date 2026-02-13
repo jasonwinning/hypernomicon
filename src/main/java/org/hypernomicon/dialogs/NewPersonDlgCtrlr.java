@@ -264,9 +264,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
     if (((personToUse == null) && rbMerge.isSelected()) || ((tf == tfDupSearchKey) && (dupPerson != null)))
       personToUse = dupPerson;
 
-    StringBuilder sb = new StringBuilder();
-    HDT_Person.makeSearchKey(name, personToUse, sb);
-    tf.setText(sb.toString());
+    tf.setText(HDT_Person.generateSearchKeyCheckingIfUsed(name, personToUse).searchKey());
   }
 
 //---------------------------------------------------------------------------

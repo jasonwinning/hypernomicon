@@ -24,7 +24,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
-
 import org.hypernomicon.util.file.FilenameRules.CaseFoldingMode;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
@@ -258,15 +257,15 @@ class FilenameMapTest
   void computeIfAbsent_functionReceivesNormalizedKey()
   {
     FilenameMap<String> map = new FilenameMap<>(WINDOWS_HEURISTIC);
-    AtomicReference<String> receivedKey = new AtomicReference<>();
+    String[] receivedKey = { null };
 
     map.computeIfAbsent("MixedCase.TXT", k ->
     {
-      receivedKey.set(k);
+      receivedKey[0] = k;
       return "value";
     });
 
-    assertEquals("mixedcase.txt", receivedKey.get());
+    assertEquals("mixedcase.txt", receivedKey[0]);
   }
 
   @Test
@@ -274,15 +273,15 @@ class FilenameMapTest
   {
     FilenameMap<String> map = new FilenameMap<>(WINDOWS_HEURISTIC);
     map.put("file.txt", "old");
-    AtomicReference<String> receivedKey = new AtomicReference<>();
+    String[] receivedKey = { null };
 
     map.compute("FILE.TXT", (k, v) ->
     {
-      receivedKey.set(k);
+      receivedKey[0] = k;
       return v;
     });
 
-    assertEquals("file.txt", receivedKey.get());
+    assertEquals("file.txt", receivedKey[0]);
   }
 
 //---------------------------------------------------------------------------

@@ -27,9 +27,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.prefs.Preferences;
 
-import org.apache.commons.lang3.mutable.MutableBoolean;
-
 import org.hypernomicon.dialogs.SelectTermDlgCtrlr;
+import org.hypernomicon.dialogs.SelectTermDlgCtrlr.UniteResult;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
@@ -40,8 +39,6 @@ import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -367,12 +364,12 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
     if (selectTermDlgCtrlr.showModal() == false) return;
 
-    MutableBoolean createdNewTerm = new MutableBoolean();
-    Property<HDT_Concept> conceptProp = new SimpleObjectProperty<>();
+    UniteResult uniteResult;
 
     try
     {
-      if (selectTermDlgCtrlr.uniteWith(source, createdNewTerm, conceptProp) == false)
+      uniteResult = selectTermDlgCtrlr.uniteWith(source);
+      if (uniteResult == null)
         return;
     }
     catch (HyperDataException e)
@@ -381,13 +378,13 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
       return;
     }
 
-    if (createdNewTerm.isFalse())
+    if (uniteResult.createdNewTerm() == false)
     {
       ui.update();
       return;
     }
 
-    ui.goToRecord(conceptProp.getValue(), false);
+    ui.goToRecord(uniteResult.concept(), false);
   }
 
 //---------------------------------------------------------------------------

@@ -42,33 +42,33 @@ class CollapseSpacesTest
   @Test
   void testEmptyString()
   {
-    String in = "";
-    String out = collapseSpaces(in);
+    String in  = "",
+           out = collapseSpaces(in);
     assertSame(in, out, "Empty string should be returned as-is");
   }
 
   @Test
   void testNoSpaces()
   {
-    String in = "abcdef";
-    String out = collapseSpaces(in);
+    String in  = "abcdef",
+           out = collapseSpaces(in);
     assertSame(in, out, "String with no spaces should be returned as-is");
   }
 
   @Test
   void testOnlySingleSpaces()
   {
-    String in = "a b c d";
-    String out = collapseSpaces(in);
+    String in  = "a b c d",
+           out = collapseSpaces(in);
     assertSame(in, out, "String with only single spaces should be returned as-is");
   }
 
   @Test
   void testExactlyTwoSpaces()
   {
-    String in = "a  b";
-    String expected = "a b";
-    String out = collapseSpaces(in);
+    String in       = "a  b",
+           expected = "a b",
+           out      = collapseSpaces(in);
 
     assertEquals(expected, out);
     assertNotSame(in, out, "Collapsed string must be a new instance when spaces are removed");
@@ -77,40 +77,40 @@ class CollapseSpacesTest
   @Test
   void testThreeSpaces()
   {
-    String in = "a   b";
-    String out = collapseSpaces(in);
+    String in  = "a   b",
+           out = collapseSpaces(in);
     assertEquals("a b", out);
   }
 
   @Test
   void testMultipleRunsOfSpaces()
   {
-    String in = "foo    bar     baz";
-    String out = collapseSpaces(in);
+    String in  = "foo    bar     baz",
+           out = collapseSpaces(in);
     assertEquals("foo bar baz", out);
   }
 
   @Test
   void testLeadingSpaces()
   {
-    String in = "   hello";
-    String out = collapseSpaces(in);
+    String in  = "   hello",
+           out = collapseSpaces(in);
     assertEquals(" hello", out, "Leading runs of spaces should collapse to single space");
   }
 
   @Test
   void testTrailingSpaces()
   {
-    String in = "world   ";
-    String out = collapseSpaces(in);
+    String in  = "world   ",
+           out = collapseSpaces(in);
     assertEquals("world ", out, "Trailing runs of spaces should collapse to single space");
   }
 
   @Test
   void testAllSpaces()
   {
-    String in = "     ";
-    String out = collapseSpaces(in);
+    String in  = "     ",
+           out = collapseSpaces(in);
     assertEquals(" ", out, "String of only spaces should collapse to one space");
   }
 
@@ -119,9 +119,8 @@ class CollapseSpacesTest
   {
     // Build a 200-char string with a run of two spaces in the middle
 
-    String in = "x".repeat(90) + "  " + "y".repeat(108);  // two spaces to collapse
-
-    String out = collapseSpaces(in);
+    String in  = "x".repeat(90) + "  " + "y".repeat(108),  // two spaces to collapse
+           out = collapseSpaces(in);
 
     assertEquals(199, out.length(), "Length should shrink by exactly one");
     assertTrue(out.startsWith("x"), "Prefix preserved");
@@ -133,8 +132,8 @@ class CollapseSpacesTest
   void testDoesNotTouchTabsOrOtherWhitespace()
   {
     // Only spaces should be collapsed; tabs remain
-    String in = "A\t \t  \tB";
-    String out = collapseSpaces(in);
+    String in  = "A\t \t  \tB",
+           out = collapseSpaces(in);
     // The two spaces between the two tabs should collapse to one
     assertEquals("A\t \t \tB", out);
   }

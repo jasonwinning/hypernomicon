@@ -250,7 +250,7 @@ public final class FileManager extends NonmodalWindow
         history.add(new FolderHistoryItem(newValue.getValue(), null, null));
 
       fileTable.update(folder, newValue);
-      setCurrentFileRow(null, false);
+      updateRecordTable(null, false);
       stage.setTitle(dialogTitle + " - " + folder.filePath());
     });
 
@@ -265,7 +265,7 @@ public final class FileManager extends NonmodalWindow
       if (newValue == oldValue) return;
 
       PreviewWindow.disablePreviewUpdating = true;
-      setCurrentFileRow(newValue, false);
+      updateRecordTable(newValue, false);
       PreviewWindow.disablePreviewUpdating = false;
 
       history.updateCurrent(new FolderHistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
@@ -274,7 +274,7 @@ public final class FileManager extends NonmodalWindow
         PreviewWindow.setPreview(pvsManager, newValue.getFilePath());
     });
 
-    recordTable.setOnShowMore(() -> setCurrentFileRow(fileTV.getSelectionModel().getSelectedItem(), true));
+    recordTable.setOnShowMore(() -> updateRecordTable(fileTV.getSelectionModel().getSelectedItem(), true));
 
     fileTV.setRowFactory(thisTV ->
     {
@@ -1201,7 +1201,7 @@ public final class FileManager extends NonmodalWindow
     fileTable.update(curFolder, folderTree.selectedItem());
 
     if (FilePath.isEmpty(filePath))
-      setCurrentFileRow(null, false);
+      updateRecordTable(null, false);
 
     stage.setTitle(dialogTitle + " - " + curFolder.filePath());
 
@@ -1338,8 +1338,8 @@ public final class FileManager extends NonmodalWindow
       {
         case hdtWorkFile :
         {
-          HDT_WorkFile workFile = (HDT_WorkFile)record;
-          if (workFile.works.size() > 0)
+          HDT_WorkFile workFile = (HDT_WorkFile) record;
+          if (workFile.works.isEmpty() == false)
           {
             PreviewWindow.setPreview(pvsManager, workFile, workFile.works.getFirst());
             return;
@@ -1351,6 +1351,7 @@ public final class FileManager extends NonmodalWindow
 
         case hdtWork :
         {
+          HDT_Work work = (HDT_Work) record;
           HDT_WorkFile workFile = null;
 
           if (FilePath.isEmpty(fileTablePath) == false)
@@ -1360,12 +1361,12 @@ public final class FileManager extends NonmodalWindow
               workFile = (HDT_WorkFile) recordWP;
           }
 
-          if ((workFile == null) && (FilePath.isEmpty(filePath) == false))
-            workFile = (HDT_WorkFile) HyperPath.getRecordFromFilePath(filePath);
+          if ((workFile == null) && (work.workFiles.isEmpty() == false))
+            workFile = work.workFiles.getFirst();
 
           if (workFile != null)
           {
-            PreviewWindow.setPreview(pvsManager, workFile, (HDT_Work) record);
+            PreviewWindow.setPreview(pvsManager, workFile, work);
             return;
           }
 
@@ -1387,44 +1388,62 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setCurrentFileRow(FileRow fileRow, boolean showingMore)
+  /**
+   * Populates the record table with records related to the given file row, or related to the
+   * current folder if no file row is given. Handles three cases:
+   * <ol>
+   *   <li><b>Folder</b> ({@code fileRow} is null or a directory): shows the folder's relatives
+   *       and attempts to auto-select a record row for the preview window.</li>
+   *   <li><b>File without a database record</b>: shows notes associated with the file's parent
+   *       folder. The caller is responsible for previewing the file itself.</li>
+   *   <li><b>File with a database record</b> (WorkFile, MiscFile, etc.): adds the file's own
+   *       record as the first row, then shows its relatives. The caller is responsible for
+   *       preview handling in this case as well.</li>
+   * </ol>
+   *
+   * @param fileRow     the selected row in the file table, or null if no file is selected
+   * @param showingMore if true, retrieves all relatives with no limit (triggered by "show more")
+   */
+  private void updateRecordTable(FileRow fileRow, boolean showingMore)
   {
-    HDT_Folder folderRecord = null;
+    HDT_RecordWithPath recordForRelatives;
     LinkedHashSet<HDT_Record> relatives = new LinkedHashSet<>();
-    boolean hasMore;
+    boolean hasMore = false,
+            gettingNotesForFile = (fileRow != null) && (fileRow.isDirectory() == false),
+            hasFileRecord = false;
 
     recordTable.clear();
 
     if (fileRow == null)
-      folderRecord = curFolder;
+      recordForRelatives = curFolder;
     else if (fileRow.isDirectory())
-      folderRecord = fileRow.getRecord();
-
-    if (folderRecord != null)
-    {
-      clearRecordDesc();
-
-      hasMore = db.getRelatives(folderRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, false);
-    }
+      recordForRelatives = fileRow.getRecord();
     else
     {
-      HDT_RecordWithPath fileRecord = fileRow.getRecord();
+      recordForRelatives = fileRow.getRecord();
 
-      if (fileRecord == null)
-      {
-        clearRecordDesc();
-
-        folderRecord = fileRow.getFolder();
-        hasMore = db.getRelatives(folderRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, true);
-      }
+      if (recordForRelatives != null)
+        hasFileRecord = true;
       else
-      {
-        hasMore = db.getRelatives(fileRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, true);
+        recordForRelatives = fileRow.getFolder();
+    }
 
-        HyperTableRow row = recordTable.newDataRow();
-        row.setCellValue(0, fileRecord, getTypeName(fileRecord.getType()));
-        row.setCellValue(1, fileRecord);
-      }
+    if (recordForRelatives == null) // This would only happen if nothing is selected in the Folder Tree, which should never happen
+    {
+      clearRecordDesc();
+      return;
+    }
+
+    if (hasFileRecord == false)
+      clearRecordDesc();
+
+    hasMore = db.getRelatives(recordForRelatives, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, gettingNotesForFile);
+
+    if (hasFileRecord)
+    {
+      HyperTableRow row = recordTable.newDataRow();
+      row.setCellValue(0, recordForRelatives, getTypeName(recordForRelatives.getType()));
+      row.setCellValue(1, recordForRelatives);
     }
 
     Iterator<HDT_Record> relIt = relatives.iterator();
@@ -1446,7 +1465,7 @@ public final class FileManager extends NonmodalWindow
         HyperTableRow row = recordTable.newDataRow();
         row.setCellValue(0, relative, getTypeName(relativeType));
 
-        String displayText = (folderRecord != null) && (relativeType == hdtNote) ?
+        String displayText = (hasFileRecord == false) && (relativeType == hdtNote) ?
           ((HDT_Note) relative).extendedText(false)
         :
           relative.defaultChoiceText();
@@ -1455,8 +1474,8 @@ public final class FileManager extends NonmodalWindow
       }
     }
 
-    if ((folderRecord != null) && (selectNonBlankRecordRow() == false))
-      PreviewWindow.setPreview(pvsManager, folderRecord.filePath());
+    if ((hasFileRecord == false) && (selectNonBlankRecordRow() == false))
+      PreviewWindow.clearPreview(pvsManager);
   }
 
 //---------------------------------------------------------------------------

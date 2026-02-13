@@ -179,12 +179,14 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
+  private record PagedResponse(JsonArray data, String nextUrl) {}
+
+  private PagedResponse doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
   {
-    return doHttpRequest(url, requestType, jsonData, mediaType, nextUrl, null);
+    return doHttpRequest(url, requestType, jsonData, mediaType, null);
   }
 
-  private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl, Instant ifUnmodifiedSince) throws UnsupportedOperationException, ParseException, CancelledTaskException, IOException
+  private PagedResponse doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, Instant ifUnmodifiedSince) throws UnsupportedOperationException, ParseException, CancelledTaskException, IOException
   {
     HyperTask.throwExceptionIfCancelled(syncTask);
 
@@ -226,6 +228,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
       throw e;
     }
 
+    String[] nextUrl = { null };
     HttpHeaders headers = jsonClient.getHeaders();
 
     if (headers != null)
@@ -238,7 +241,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
               endNdx   = headerValue.indexOf('>');
 
           if ((startNdx >= 0) && (endNdx > startNdx))
-            assignSB(nextUrl, headerValue.substring(startNdx + 1, endNdx));
+            nextUrl[0] = headerValue.substring(startNdx + 1, endNdx);
         }
       });
     }
@@ -269,10 +272,10 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
           }
           catch (InterruptedException | ExecutionException e)
           {
-            return jsonArray;
+            return new PagedResponse(jsonArray, nextUrl[0]);
           }
 
-          return doHttpRequest(url, requestType, jsonData, mediaType, nextUrl, ifUnmodifiedSince);
+          return doHttpRequest(url, requestType, jsonData, mediaType, ifUnmodifiedSince);
         }
 
         if (jsonObj.getStrSafe("errorId").startsWith("oauth"))
@@ -282,7 +285,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     HyperTask.throwExceptionIfCancelled(syncTask);
 
-    return jsonArray;
+    return new PagedResponse(jsonArray, nextUrl[0]);
   }
 
 //---------------------------------------------------------------------------
@@ -614,14 +617,13 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
       }
     };
 
-    StringBuilder nextUrl = new StringBuilder();
-    JsonArray jsonArray = doHttpRequest(url, HttpRequestType.get, null, mediaType, nextUrl);
+    PagedResponse response = doHttpRequest(url, HttpRequestType.get, null, mediaType);
+    JsonArray jsonArray = response.data();
 
-    while (nextUrl.length() > 0)
+    while (response.nextUrl() != null)
     {
-      url = nextUrl.toString();
-      assignSB(nextUrl, "");
-      doHttpRequest(url, HttpRequestType.get, null, mediaType, nextUrl).getObjs().forEach(jsonArray::add);
+      response = doHttpRequest(response.nextUrl(), HttpRequestType.get, null, mediaType);
+      response.data().getObjs().forEach(jsonArray::add);
     }
 
     return switch (jsonClient.getStatusCode())
@@ -646,8 +648,8 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
     JsonArray jsonArray = doHttpRequest("https://api.mendeley.com/documents",                // URL
                                         HttpRequestType.post,                                // request type
                                         document.exportStandaloneJsonObj(false).toString(),  // JSON data
-                                        "application/vnd.mendeley-document.1+json",          // media type
-                                        null);                                               // next URL
+                                        "application/vnd.mendeley-document.1+json")          // media type
+                                        .data();
 
     return switch (jsonClient.getStatusCode())
     {
@@ -670,8 +672,8 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
                                         HttpRequestType.patch,                                      // request type
                                         document.exportStandaloneJsonObj(true).toString(),          // JSON data
                                         "application/vnd.mendeley-document.1+json",                 // media type
-                                        null,                                                       // next URL
-                                        document.lastModifiedOnServer());                           // if modified since
+                                        document.lastModifiedOnServer())                            // if modified since
+                                        .data();
 
     return switch (jsonClient.getStatusCode())
     {
@@ -879,8 +881,8 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
       JsonArray jsonArray = doHttpRequest("https://api.mendeley.com/document_types",
                                           HttpRequestType.get,
                                           null,
-                                          "application/vnd.mendeley-document-type.1+json",
-                                          null);
+                                          "application/vnd.mendeley-document-type.1+json")
+                                          .data();
 
       EnumSet<EntryType> unusedTypes = EnumSet.copyOf(entryTypeMap.keySet());
 

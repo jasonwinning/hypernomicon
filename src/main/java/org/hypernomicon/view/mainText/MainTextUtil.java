@@ -53,8 +53,6 @@ import org.jsoup.parser.Parser;
 
 import com.google.common.collect.Ordering;
 
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.input.*;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -574,14 +572,16 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void appendKeyWorkBody(Iterable<KeyWork> keyWorks, StringBuilder innerHtml, boolean sortByName)
+  private static void appendKeyWorkBody(List<KeyWork> keyWorks, StringBuilder innerHtml, boolean sortByName)
   {
-    List<String> searchKeys = new ArrayList<>();
+    innerHtml.append(keyWorks.stream()
+      .sorted(sortByName ? Comparator.comparing(kw -> kw.getSearchKey(true), String::compareToIgnoreCase) : Comparator.naturalOrder())
+      .map(keyWork ->
+    {
+      String searchKeyHtml = htmlEscaper.escape(keyWork.getSearchKey(true)).replace(" ", "&nbsp;");
+      return getKeywordLink(searchKeyHtml, new KeywordLink(0, searchKeyHtml.length(), new KeywordBinding(searchKeyHtml, keyWork.getRecord())));
 
-    Map<String, String> linkMap = keyWorkLinkMap(keyWorks, searchKeys, sortByName);
-
-    innerHtml.append(searchKeys.stream().map(linkMap::get)
-                                        .collect(Collectors.joining(", ")));
+    }).collect(Collectors.joining(", ")));
   }
 
 //---------------------------------------------------------------------------
@@ -808,28 +808,6 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static Map<String, String> keyWorkLinkMap(Iterable<KeyWork> keyWorks, List<String> sortedKeys, boolean sortByName)
-  {
-    Map<String, String> linkMap = new HashMap<>();
-    Map<String, KeyWork> keyToKeyWork = new HashMap<>();
-
-    keyWorks.forEach(keyWork ->
-    {
-      String searchKeyHtml = htmlEscaper.escape(keyWork.getSearchKey(true)).replace(" ", "&nbsp;");
-
-      linkMap.put(searchKeyHtml, getKeywordLink(searchKeyHtml, new KeywordLink(0, searchKeyHtml.length(), new KeywordBinding(searchKeyHtml, keyWork.getRecord()))));
-      keyToKeyWork.put(searchKeyHtml, keyWork);
-      sortedKeys.add(searchKeyHtml);
-    });
-
-    sortedKeys.sort(sortByName ? String::compareToIgnoreCase : Comparator.comparing(keyToKeyWork::get));
-
-    return linkMap;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private static String convertPlainMainTextToHtml(String input)
   {
     input = trimLines(input).replace("\t", "<span class=\"Apple-tab-span\" style=\"white-space:pre\"> </span>");
@@ -866,44 +844,47 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 
   /**
-   * Gets the next Misc. File referred to in a record's main text by a misc-file tag
-   * @param str The html of the record's main text
-   * @param startNdx Where in the main text to start looking; this will be set to the starting positon of the current misc-file tag
-   * @param endNdx This will be set to the ending position of the current misc-file tag
-   * @param elementProp This will be set to the parsed, current misc-file element
-   * @return Optional containing the Misc. File record, or empty Optional if the tag refers to a non-existing Misc. File record, or null if no such tag was found
+   * An embedded misc-file tag found in a record's main text HTML.
+   * @param startNdx Starting position of the tag in the HTML string
+   * @param endNdx Ending position (exclusive) of the tag in the HTML string
+   * @param element The parsed misc-file element (from jsoup)
+   * @param miscFile The referenced MiscFile record, or null if the tag references a non-existing record (orphaned)
    */
-  public static Optional<HDT_MiscFile> nextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, Property<Element> elementProp)
+  public record EmbeddedFileTag(int startNdx, int endNdx, Element element, HDT_MiscFile miscFile) {}
+
+  /**
+   * Finds all embedded misc-file tags in a record's main text HTML.
+   * Tags with invalid IDs or malformed markup are silently skipped.
+   * @param str The HTML of the record's main text
+   * @return List of embedded file tags found, in document order
+   */
+  public static List<EmbeddedFileTag> findEmbeddedFileTags(String str)
   {
-    startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.intValue()));
-    elementProp.setValue(null);
+    List<EmbeddedFileTag> tags = new ArrayList<>();
+    String searchToken = "&lt;" + EMBEDDED_FILE_TAG;
+    int startNdx = str.indexOf(searchToken);
 
-    while (startNdx.intValue() >= 0)
+    while (startNdx >= 0)
     {
-      endNdx.setValue(str.indexOf("&gt;", startNdx.intValue()));
+      int endNdx = str.indexOf("&gt;", startNdx);
 
-      if (endNdx.intValue() >= 0)
+      if (endNdx >= 0)
       {
-        endNdx.add(4);
-        String tag = Parser.unescapeEntities(str.substring(startNdx.intValue(), endNdx.intValue()), true);
+        endNdx += 4;
+        String tagText = Parser.unescapeEntities(str.substring(startNdx, endNdx), true);
 
-        Document doc = jsoupParse(tag);
+        Element element = jsoupParse(tagText).getElementsByTag(EMBEDDED_FILE_TAG).first();
 
-        elementProp.setValue(doc.getElementsByTag(EMBEDDED_FILE_TAG).first());
-
-        int miscFileID = nullSwitch(elementProp.getValue(), -1, element -> parseInt(element.attr("id"), -1));
+        int miscFileID = nullSwitch(element, -1, el -> parseInt(el.attr("id"), -1));
 
         if (miscFileID >= 1)
-        {
-          HDT_MiscFile miscFile = db.miscFiles.getByID(miscFileID);
-          return Optional.ofNullable(miscFile);
-        }
+          tags.add(new EmbeddedFileTag(startNdx, endNdx, element, db.miscFiles.getByID(miscFileID)));
       }
 
-      startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.intValue() + 1));
+      startNdx = str.indexOf(searchToken, startNdx + 1);
     }
 
-    return null;
+    return tags;
   }
 
 //---------------------------------------------------------------------------
@@ -935,36 +916,44 @@ public final class MainTextUtil
     if (forEditor)
       return str;
 
-    MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
-    Property<Element> elementProp = new SimpleObjectProperty<>();
+    List<EmbeddedFileTag> tags = findEmbeddedFileTags(str);
 
-    Optional<HDT_MiscFile> optMiscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
-
-    while (optMiscFile != null)
+    if (tags.isEmpty() == false)
     {
-      if (optMiscFile.isPresent())
+      StringBuilder result = new StringBuilder();
+      int lastEnd = 0;
+
+      for (EmbeddedFileTag tag : tags)
       {
-        HDT_MiscFile miscFile = optMiscFile.get();
+        result.append(str, lastEnd, tag.startNdx());
 
-        String heightAttr = elementProp.getValue().attr("height"),
-               widthAttr  = elementProp.getValue().attr("width");
+        if (tag.miscFile() != null)
+        {
+          String heightAttr = tag.element().attr("height"),
+                 widthAttr  = tag.element().attr("width");
 
-        if (heightAttr.isBlank() == false)
-          heightAttr = " height=\"" + heightAttr + '"';
+          if (heightAttr.isBlank() == false)
+            heightAttr = " height=\"" + heightAttr + '"';
 
-        if (widthAttr.isBlank() == false)
-          widthAttr = " width=\"" + widthAttr + '"';
+          if (widthAttr.isBlank() == false)
+            widthAttr = " width=\"" + widthAttr + '"';
 
-        String url = nullSwitch(miscFile.filePath(), "", FilePath::toURLString);
+          String url = nullSwitch(tag.miscFile().filePath(), "", FilePath::toURLString);
 
-        String tag = "<img src=\"" + url + "\" alt=\"\"" + heightAttr + widthAttr + "/><br>" +
-              "<a hypncon=\"true\" href=\"\" title=\"Go to this misc. file record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + miscFile.name() + "</a>";
+          result.append("<img src=\"").append(url).append("\" alt=\"\"").append(heightAttr).append(widthAttr).append("/><br>")
+                .append("<a hypncon=\"true\" href=\"\" title=\"Go to this misc. file record\" onclick=\"javascript:openRecord(")
+                .append(getOpenRecordParms(tag.miscFile())).append("); return false;\">").append(tag.miscFile().name()).append("</a>");
+        }
+        else
+        {
+          result.append(str, tag.startNdx(), tag.endNdx());
+        }
 
-        str = str.substring(0, startNdx.intValue()) + tag + safeSubstring(str, endNdx.intValue(), str.length());
+        lastEnd = tag.endNdx();
       }
 
-      startNdx.add(1);
-      optMiscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
+      result.append(str, lastEnd, str.length());
+      str = result.toString();
     }
 
     return str;

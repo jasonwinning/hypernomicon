@@ -56,7 +56,6 @@ import javafx.util.Duration;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.commons.lang3.*;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
@@ -977,36 +976,29 @@ public final class Util
 
   public static int compareNumberStrings(String str1, String str2)
   {
-    MutableInt result = new MutableInt();
+    NumberComparison cmp = compareAsNumbers(str1, str2);
 
-    if (compareNumberStrings(str1, str2, result))
-      return result.intValue();
-
-    return str1.compareToIgnoreCase(str2);
+    return cmp.resolved ? cmp.result : str1.compareToIgnoreCase(str2);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * If str1 and str2 are integers, returns the result of integer comparison.
-   * If they are strings, returns the result of string comparison.
-   * If one is an integer and the other isn't, the integer is sorted earlier.
-   * @param str1 First string to compare
-   * @param str2 Second string to compare
-   * @param result Output parameter for result of the comparson
-   * @return True if both strings are integers; false otherwise
+   * Tries to compare str1 and str2 as integers.
+   * If both are integers, the result is their numeric difference.
+   * If one is an integer and the other is not, the integer is sorted earlier.
+   * If neither is an integer, {@code resolved} is false and the caller should fall back to text comparison.
    */
-  public static boolean compareNumberStrings(String str1, String str2, MutableInt result)
+  public record NumberComparison(boolean resolved, int result) {}
+
+  public static NumberComparison compareAsNumbers(String str1, String str2)
   {
     boolean numeric1 = true, numeric2 = true;
     int int1 = 0, int2 = 0;
 
     if (strNullOrEmpty(str1) && strNullOrEmpty(str2))
-    {
-      result.setValue(0);
-      return true;
-    }
+      return new NumberComparison(true, 0);
 
     try { int1 = Integer.parseInt(safeStr(str1)); }
     catch (NumberFormatException e) { numeric1 = false; }
@@ -1015,24 +1007,15 @@ public final class Util
     catch (NumberFormatException e) { numeric2 = false; }
 
     if (numeric1 && numeric2)
-    {
-      result.setValue(int1 - int2);
-      return true;
-    }
+      return new NumberComparison(true, int1 - int2);
 
     if (numeric1)
-    {
-      result.setValue(1);
-      return true;
-    }
+      return new NumberComparison(true, 1);
 
     if (numeric2)
-    {
-      result.setValue(-1);
-      return true;
-    }
+      return new NumberComparison(true, -1);
 
-    return false;
+    return new NumberComparison(false, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -1052,7 +1035,11 @@ public final class Util
    * @param prefix If there was a number at the end, this will be set to the part of the string before the number, and will be blank otherwise.
    * @return The number at the end if there was one; -1 otherwise
    */
-  public static int splitIntoPrefixAndNumber(String str, StringBuilder prefix)
+  public record PrefixAndNumber(String prefix, int number) {}
+
+  private static final PrefixAndNumber NO_PREFIX_AND_NUMBER = new PrefixAndNumber("", -1);
+
+  public static PrefixAndNumber splitIntoPrefixAndNumber(String str)
   {
     int ndx;
     boolean lastWasDot = false;
@@ -1072,23 +1059,15 @@ public final class Util
       if (Character.digit(c, 10) < 0) break;
 
       if (lastWasDot)
-      {
-        assignSB(prefix, "");
-        return -1;  // The name ends with a decimal number, not a whole number
-      }
+        return NO_PREFIX_AND_NUMBER;  // The name ends with a decimal number, not a whole number
     }
 
     ndx = ndx + (lastWasDot ? 2 : 1);  // Now ndx is the starting index of the numeric portion
 
     if ((ndx < 1) || (ndx >= str.length()))
-    {
-      assignSB(prefix, "");
-      return -1;
-    }
+      return NO_PREFIX_AND_NUMBER;
 
-    assignSB(prefix, str.substring(0, ndx));
-
-    return parseInt(str.substring(ndx), -1);
+    return new PrefixAndNumber(str.substring(0, ndx), parseInt(str.substring(ndx), -1));
   }
 
 //---------------------------------------------------------------------------
