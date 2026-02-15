@@ -18,6 +18,7 @@
 package org.hypernomicon.util.http;
 
 import java.io.IOException;
+import java.io.Serial;
 
 //---------------------------------------------------------------------------
 
@@ -31,7 +32,7 @@ public class HttpResponseException extends IOException
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   private final int statusCode;
   private final String url, serverMessage;

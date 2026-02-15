@@ -77,6 +77,7 @@ public final class PreviewWindow extends NonmodalWindow
   private static final String dialogTitle = "Preview Work/File",
                               TEXT_TO_SHOW_IF_NONE = "(none)";
 
+  private static final Object LOCK = new Object();
   private static final Map<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
 
   private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new EnumMap<>(PreviewSource.class);
@@ -744,7 +745,7 @@ public final class PreviewWindow extends NonmodalWindow
   {
     return () ->
     {
-      synchronized(tabToWrapper)
+      synchronized(LOCK)
       {
         if (it.hasNext())
         {

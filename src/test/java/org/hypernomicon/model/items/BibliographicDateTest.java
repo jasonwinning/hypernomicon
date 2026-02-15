@@ -95,72 +95,69 @@ class BibliographicDateTest
   @Test
   void dateEqualityTest()
   {
-    BibliographicDate date1 = BibliographicDate.EMPTY_DATE,
-                      date2 = null;
+    assertEquals(BibliographicDate.EMPTY_DATE, null, "Empty date should equal null");  // null must be in second parameter or it won't work
 
-    assertEquals(date1, date2, "Empty date should equal null");
-
-    date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, null));
-    assertEquals(date1, null, "Empty date should equal null");
+    BibliographicDate date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, null));
+    assertEquals(date1, null, "Empty date should equal null");  // null must be in second parameter or it won't work
 
     date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertEquals(date1, null, "Empty date should equal null");
+    assertEquals(date1, null, "Empty date should equal null");  // null must be in second parameter or it won't work
 
     date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertEquals(date1, BibliographicDate.EMPTY_DATE, "Empty dates should be equal");
+    assertEquals(BibliographicDate.EMPTY_DATE, date1, "Empty dates should be equal");
 
     assertTrue(BibliographicDate.isEmpty(date1), "Empty date should be empty");
     assertTrue(BibliographicDate.isEmpty(BibliographicDate.EMPTY_DATE), "Empty date should be empty");
     assertTrue(BibliographicDate.isEmpty(null), "Null date should be empty");
 
     date1 = new BibliographicDate(1, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertNotEquals(date1, BibliographicDate.EMPTY_DATE, "Date with only a day should not equal empty");
+    assertNotEquals(BibliographicDate.EMPTY_DATE, date1, "Date with only a day should not equal empty");
 
     assertFalse(BibliographicDate.isEmpty(date1), "Date with only a day should not be empty");
 
     date1 = new BibliographicDate(0, 1, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertNotEquals(date1, BibliographicDate.EMPTY_DATE, "Date with only a month should not equal empty");
+    assertNotEquals(BibliographicDate.EMPTY_DATE, date1, "Date with only a month should not equal empty");
 
     assertFalse(BibliographicDate.isEmpty(date1), "Date with only a month should not be empty");
 
     date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(1, ""));
-    assertNotEquals(date1, BibliographicDate.EMPTY_DATE, "Date with only a year should not equal empty");
+    assertNotEquals(BibliographicDate.EMPTY_DATE, date1, "Date with only a year should not equal empty");
 
     assertFalse(BibliographicDate.isEmpty(date1), "Date with only a year should not be empty");
 
     date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(-1, ""));
-    assertNotEquals(date1, BibliographicDate.EMPTY_DATE, "Date with only a negative year should not equal empty");
+    assertNotEquals(BibliographicDate.EMPTY_DATE, date1, "Date with only a negative year should not equal empty");
 
     assertFalse(BibliographicDate.isEmpty(date1), "Date with only a negative year should not be empty");
 
     date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, "Q"));
-    assertNotEquals(date1, BibliographicDate.EMPTY_DATE, "Date with only an alphabetic year should not equal empty");
+    assertNotEquals(BibliographicDate.EMPTY_DATE, date1, "Date with only an alphabetic year should not equal empty");
 
     assertFalse(BibliographicDate.isEmpty(date1), "Date with only an alphabetic year should not be empty");
 
     date1 = new BibliographicDate(-1, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertEquals(date1, BibliographicDate.EMPTY_DATE, "Date with invalid day and nothing else should be equal to empty date");
+    assertEquals(BibliographicDate.EMPTY_DATE, date1, "Date with invalid day and nothing else should be equal to empty date");
 
     date1 = new BibliographicDate(32, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertEquals(date1, BibliographicDate.EMPTY_DATE, "Date with invalid day and nothing else should be equal to empty date");
+    assertEquals(BibliographicDate.EMPTY_DATE, date1, "Date with invalid day and nothing else should be equal to empty date");
 
     date1 = new BibliographicDate(0, -1, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertEquals(date1, BibliographicDate.EMPTY_DATE, "Date with invalid month and nothing else should be equal to empty date");
+    assertEquals(BibliographicDate.EMPTY_DATE, date1, "Date with invalid month and nothing else should be equal to empty date");
 
     date1 = new BibliographicDate(0, 13, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertEquals(date1, BibliographicDate.EMPTY_DATE, "Date with invalid month and nothing else should be equal to empty date");
+    assertEquals(BibliographicDate.EMPTY_DATE, date1, "Date with invalid month and nothing else should be equal to empty date");
 
-    date1 = new BibliographicDate(1, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    date2 = new BibliographicDate(2, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertNotEquals(date1, date2, "Dates with only different days should not be equal");
+    BibliographicDate date2 = new BibliographicDate(1, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
+    date1                   = new BibliographicDate(2, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
+    assertNotEquals(date2, date1, "Dates with only different days should not be equal");
 
-    date1 = new BibliographicDate(0, 1, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    date2 = new BibliographicDate(0, 2, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
-    assertNotEquals(date1, date2, "Dates with only different months should not be equal");
+    date2 = new BibliographicDate(0, 1, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
+    date1 = new BibliographicDate(0, 2, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""));
+    assertNotEquals(date2, date1, "Dates with only different months should not be equal");
 
-    date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(1, ""));
-    date2 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(2, ""));
-    assertNotEquals(date1, date2, "Dates with only different years should not be equal");
+    date2 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(1, ""));
+    date1 = new BibliographicDate(0, 0, BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(2, ""));
+    assertNotEquals(date2, date1, "Dates with only different years should not be equal");
   }
 
 //---------------------------------------------------------------------------
@@ -265,10 +262,10 @@ class BibliographicDateTest
     BibliographicYear year1 = BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, ""),
                       year2 = null;
 
-    assertEquals(year1, year2, "Empty year should equal null");
+    assertEquals(year1, year2, "Empty year should equal null");  // null must be in second parameter or it won't work
 
     year1 = BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, null);
-    assertEquals(year1, null, "Empty year should equal null");
+    assertEquals(year1, null, "Empty year should equal null");  // null must be in second parameter or it won't work
 
     assertTrue(BibliographicYear.isEmpty(year1), "Empty date should be empty");
     assertTrue(BibliographicYear.isEmpty(BibliographicYear.fromRawStrAndNumberWhereMinusOneEqualsOneBC(0, "")), "Empty date should be empty");
@@ -362,71 +359,71 @@ class BibliographicDateTest
   @Test
   void yearParseTest()
   {
-    String msg = "Should parse BC, AD, etc.";
+    String parseMsg = "Should parse BC, AD, etc.";
 
     BibliographicYear bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("300 BC");
-    assertEquals(-300, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("300 BC", bibYear.rawValue, msg);
+    assertEquals(-300, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("300 BC", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("250 B.C.");
-    assertEquals(-250, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("250 B.C.", bibYear.rawValue, msg);
+    assertEquals(-250, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("250 B.C.", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("26 BCE");
-    assertEquals(-26, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("26 BCE", bibYear.rawValue, msg);
+    assertEquals(-26, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("26 BCE", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("955 B.C.E.");
-    assertEquals(-955, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("955 B.C.E.", bibYear.rawValue, msg);
+    assertEquals(-955, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("955 B.C.E.", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("300 AD");
-    assertEquals(300, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("300 AD", bibYear.rawValue, msg);
+    assertEquals(300, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("300 AD", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("955 A.D.");
-    assertEquals(955, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("955 A.D.", bibYear.rawValue, msg);
+    assertEquals(955, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("955 A.D.", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("300 CE");
-    assertEquals(300, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("300 CE", bibYear.rawValue, msg);
+    assertEquals(300, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("300 CE", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("955 C.E.");
-    assertEquals(955, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("955 C.E.", bibYear.rawValue, msg);
+    assertEquals(955, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("955 C.E.", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("300 bc");
-    assertEquals(-300, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("300 bc", bibYear.rawValue, msg);
+    assertEquals(-300, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("300 bc", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("250 b.c.");
-    assertEquals(-250, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("250 b.c.", bibYear.rawValue, msg);
+    assertEquals(-250, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("250 b.c.", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("26 bce");
-    assertEquals(-26, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("26 bce", bibYear.rawValue, msg);
+    assertEquals(-26, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("26 bce", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("955 b.c.e.");
-    assertEquals(-955, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("955 b.c.e.", bibYear.rawValue, msg);
+    assertEquals(-955, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("955 b.c.e.", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("300 ad");
-    assertEquals(300, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("300 ad", bibYear.rawValue, msg);
+    assertEquals(300, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("300 ad", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("955 a.d.");
-    assertEquals(955, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("955 a.d.", bibYear.rawValue, msg);
+    assertEquals(955, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("955 a.d.", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("300 ce");
-    assertEquals(300, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("300 ce", bibYear.rawValue, msg);
+    assertEquals(300, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("300 ce", bibYear.rawValue, parseMsg);
 
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("955 c.e.");
-    assertEquals(955, bibYear.numericValueWhereMinusOneEqualsOneBC(), msg);
-    assertEquals("955 c.e.", bibYear.rawValue, msg);
+    assertEquals(955, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
+    assertEquals("955 c.e.", bibYear.rawValue, parseMsg);
   }
 
 //---------------------------------------------------------------------------

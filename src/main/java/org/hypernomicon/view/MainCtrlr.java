@@ -190,6 +190,7 @@ public final class MainCtrlr
   private Instant lastImportTime = Instant.EPOCH;
   private FilePath lastImportFilePath = null;
 
+  private static final Object LOCK = new Object();
   private static final String TREE_SELECT_BTN_CAPTION = "Select";
 
   public static final String AUTOFILL_TOOLTIP = "Try to automatically fill in missing bibliographic information",
@@ -285,7 +286,7 @@ public final class MainCtrlr
 
   private MainCtrlr(Stage stage) throws IOException
   {
-    synchronized(MainCtrlr.class)
+    synchronized(LOCK)
     {
       if (ui != null)
         throw new UnsupportedOperationException("MainCtrlr can only be instantiated once.");

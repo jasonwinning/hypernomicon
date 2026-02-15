@@ -33,7 +33,6 @@ import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_RecordWithPath;
 import org.hypernomicon.tree.AbstractTreeRow;
 import org.hypernomicon.tree.TreeModel;
-import org.hypernomicon.util.Util.PrefixAndNumber;
 import org.hypernomicon.util.file.FilenameRules;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.cellValues.ObjectCellValue;

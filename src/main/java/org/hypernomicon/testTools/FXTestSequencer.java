@@ -65,8 +65,10 @@ public final class FXTestSequencer
 //---------------------------------------------------------------------------
 
   private final Queue<QueueEntry> queue = new ArrayDeque<>();
-  private boolean running = false;
-  private Runnable finalizer;
+
+  private volatile boolean running = false;
+  private volatile Runnable finalizer;
+
   private int stepCounter = 0, delayPulses = -1;
   private long stepTotal, delayMS = -1;
 

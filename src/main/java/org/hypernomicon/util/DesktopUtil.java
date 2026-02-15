@@ -745,7 +745,7 @@ public final class DesktopUtil
         AtomicReference<State> state = new AtomicReference<>(State.READY);
         AtomicReference<Throwable> throwable = new AtomicReference<>();
 
-        HyperThread innerThread = new HyperThread(() ->
+        HyperThread innerThread = new HyperThread("CheckForInternetInner", () ->
         {
           state.set(State.RUNNING);
 
@@ -774,7 +774,7 @@ public final class DesktopUtil
             throwable.set(e);
           }
 
-        }, "CheckForInternetInner");
+        });
 
         innerThread.setDaemon(true);
         innerThread.start();

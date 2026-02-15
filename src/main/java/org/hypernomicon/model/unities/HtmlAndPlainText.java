@@ -50,8 +50,8 @@ class HtmlAndPlainText
 
 //---------------------------------------------------------------------------
 
-  String getPlainText() { ensureInitialized(); return plainText; }
-  String getHtml     () { ensureInitialized(); return html;      }
+  synchronized String getPlainText() { ensureInitialized(); return plainText; }
+  synchronized String getHtml     () { ensureInitialized(); return html;      }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

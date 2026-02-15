@@ -32,6 +32,7 @@ public class BidiOneToManyMap<T>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private final Object lock = new Object();
   private final Map<T, Set<T>> forwardMap = new ConcurrentHashMap<>(),
                                reverseMap = new ConcurrentHashMap<>();
 
@@ -46,19 +47,25 @@ public class BidiOneToManyMap<T>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public synchronized void addForward(T key, T value)
+  public void addForward(T key, T value)
   {
-    getSet(forwardMap, key  ).add(value);
-    getSet(reverseMap, value).add(key  );
+    synchronized (lock)
+    {
+      getSet(forwardMap, key  ).add(value);
+      getSet(reverseMap, value).add(key  );
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public synchronized void removeForward(T key, T value)
+  public void removeForward(T key, T value)
   {
-    getSet(forwardMap, key  ).remove(value);
-    getSet(reverseMap, value).remove(key  );
+    synchronized (lock)
+    {
+      getSet(forwardMap, key  ).remove(value);
+      getSet(reverseMap, value).remove(key  );
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -106,7 +113,7 @@ public class BidiOneToManyMap<T>
     if ((oldItem == null) || (newItem == null) || (oldItem == newItem))
       return;
 
-    synchronized (this)
+    synchronized (lock)
     {
       replaceInMap(forwardMap, reverseMap, oldItem, newItem);
       replaceInMap(reverseMap, forwardMap, oldItem, newItem);

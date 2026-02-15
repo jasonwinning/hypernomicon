@@ -27,7 +27,6 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.query.ui.ResultRow;
-import org.hypernomicon.util.Util.NumberComparison;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod;
 
 //---------------------------------------------------------------------------

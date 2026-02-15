@@ -44,8 +44,8 @@ public abstract class HyperTask
 
   public static class HyperThread extends Thread
   {
-    protected HyperThread(                   String name) { super(          newThreadName(name)); }
-    public    HyperThread(Runnable runnable, String name) { super(runnable, newThreadName(name)); }
+    protected HyperThread(String name                   ) { super(          newThreadName(name)); }
+    public    HyperThread(String name, Runnable runnable) { super(runnable, newThreadName(name)); }
 
     protected HyperThread(HyperTask task)
     {

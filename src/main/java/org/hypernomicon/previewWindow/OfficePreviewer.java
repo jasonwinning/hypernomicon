@@ -50,6 +50,7 @@ final class OfficePreviewer
 
   private static OfficePreviewThread bkgThread;
 
+  private static final Object LOCK = new Object();
   private static final Map<PDFJSWrapper, Boolean> wrapperStopped = new ConcurrentHashMap<>();
 
   private static volatile OfficePreviewInfo lastInfo, nextInfo;
@@ -61,60 +62,69 @@ final class OfficePreviewer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static synchronized void preview(String mimetypeStr, FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
+  static void preview(String mimetypeStr, FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
   {
     assert (previewWrapper == null) || (jsWrapper == previewWrapper.getJSWrapper());
 
-    String officePath = app.prefs.get(PrefKey.OFFICE_PATH, "");
-
-    if (officePath.isBlank())
+    synchronized(LOCK)
     {
-      if (lastInfo != null)
-        wrapperStopped.put(jsWrapper, true);
+      String officePath = app.prefs.get(PrefKey.OFFICE_PATH, "");
 
-      jsWrapper.setNoOfficeInstallation();
-      return;
+      if (officePath.isBlank())
+      {
+        if (lastInfo != null)
+          wrapperStopped.put(jsWrapper, true);
+
+        jsWrapper.setNoOfficeInstallation();
+        return;
+      }
+
+      if (bkgThread == null)
+        (bkgThread = new OfficePreviewThread()).start();
+
+      if ((lastInfo == null) || (lastInfo.officePath.equals(officePath) == false))
+        jsWrapper.setStartingConverter();
+      else
+        jsWrapper.setGenerating(filePath, false);
+
+      boolean convertToHtml = mimetypeStr.contains("spreadsheetml.sheet")      ||  // xlsx (Microsoft Excel XML)
+                              mimetypeStr.contains("ms-excel")                 ||  // xls  (Microsoft Excel)
+                              "text/csv".equalsIgnoreCase(mimetypeStr)         ||  // csv  (Comma-separated values)
+                              mimetypeStr.contains("tab-separated-values")     ||  // tsv  (Tab-separated values)
+                              mimetypeStr.contains("opendocument.spreadsheet") ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
+                              mimetypeStr.contains("sun.xml.calc");                // sxc  (OpenOffice.org 1.0 spreadsheet)
+
+      // If a preview is currently being generated in a different tab from the one a preview is now being requested in, set the other tab as needing refresh
+
+      if ((lastInfo != nextInfo) && (nextInfo != null) && (nextInfo.jsWrapper != jsWrapper) && (nextInfo.previewWrapper != null))
+        nextInfo.previewWrapper.setNeedsRefresh(nextInfo.filePath);
+
+      nextInfo = new OfficePreviewInfo(previewWrapper, jsWrapper, filePath, pageNum, convertToHtml, officePath);
     }
-
-    if (bkgThread == null)
-      (bkgThread = new OfficePreviewThread()).start();
-
-    if ((lastInfo == null) || (lastInfo.officePath.equals(officePath) == false))
-      jsWrapper.setStartingConverter();
-    else
-      jsWrapper.setGenerating(filePath, false);
-
-    boolean convertToHtml = mimetypeStr.contains("spreadsheetml.sheet")      ||  // xlsx (Microsoft Excel XML)
-                            mimetypeStr.contains("ms-excel")                 ||  // xls  (Microsoft Excel)
-                            "text/csv".equalsIgnoreCase(mimetypeStr)         ||  // csv  (Comma-separated values)
-                            mimetypeStr.contains("tab-separated-values")     ||  // tsv  (Tab-separated values)
-                            mimetypeStr.contains("opendocument.spreadsheet") ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
-                            mimetypeStr.contains("sun.xml.calc");                // sxc  (OpenOffice.org 1.0 spreadsheet)
-
-    // If a preview is currently being generated in a different tab from the one a preview is now being requested in, set the other tab as needing refresh
-
-    if ((lastInfo != nextInfo) && (nextInfo != null) && (nextInfo.jsWrapper != jsWrapper) && (nextInfo.previewWrapper != null))
-      nextInfo.previewWrapper.setNeedsRefresh(nextInfo.filePath);
-
-    nextInfo = new OfficePreviewInfo(previewWrapper, jsWrapper, filePath, pageNum, convertToHtml, officePath);
   }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private static synchronized void stopPreview()
+  private static void stopPreview()
   {
-    wrapperStopped.keySet().forEach(jsWrapper -> wrapperStopped.put(jsWrapper, true));
+    synchronized(LOCK)
+    {
+      wrapperStopped.keySet().forEach(jsWrapper -> wrapperStopped.put(jsWrapper, true));
 
-    nextInfo = null;
-  }
-
-  static synchronized void stopPreview(PDFJSWrapper jsWrapper)
-  {
-    wrapperStopped.put(jsWrapper, true);
-
-    if ((nextInfo != null) && (nextInfo.jsWrapper == jsWrapper))
       nextInfo = null;
+    }
+  }
+
+  static void stopPreview(PDFJSWrapper jsWrapper)
+  {
+    synchronized(LOCK)
+    {
+      wrapperStopped.put(jsWrapper, true);
+
+      if ((nextInfo != null) && (nextInfo.jsWrapper == jsWrapper))
+        nextInfo = null;
+    }
   }
 
   //---------------------------------------------------------------------------
@@ -154,7 +164,7 @@ final class OfficePreviewer
         if (shutDown)
           break;
 
-        synchronized(OfficePreviewer.class)
+        synchronized(LOCK)
         {
           try
           {
@@ -197,7 +207,7 @@ final class OfficePreviewer
         }
         catch (OfficeException e)
         {
-          synchronized(OfficePreviewer.class)
+          synchronized(LOCK)
           {
             if ((nextInfo == lastInfo) || ((nextInfo != null) && (lastInfo.jsWrapper != nextInfo.jsWrapper)))
               lastInfo.jsWrapper.setUnable(lastInfo.filePath);
@@ -209,7 +219,7 @@ final class OfficePreviewer
           }
         }
 
-        synchronized(OfficePreviewer.class)
+        synchronized(LOCK)
         {
           if (shutDown || Boolean.TRUE.equals(wrapperStopped.get(lastInfo.jsWrapper)) || ((nextInfo != null) && (lastInfo != nextInfo) && (lastInfo.jsWrapper == nextInfo.jsWrapper)))
             continue;
@@ -338,7 +348,7 @@ final class OfficePreviewer
   {
     stopPreview();
 
-    new HyperThread(OfficePreviewThread::cleanup, "OfficePreviewCleanup").start();
+    new HyperThread("OfficePreviewCleanup", OfficePreviewThread::cleanup).start();
   }
 
 //---------------------------------------------------------------------------

@@ -63,6 +63,7 @@ public final class XmlDiffCtrlr
 
   private final Stage stage;
 
+  private static final Object LOCK = new Object();
   private static final List<String> fileNames = List.of("Arguments.xml", "Debates.xml", "Files.xml", "Hubs.xml", "Institutions.xml", "Investigations.xml",
                                                         "Notes.xml", "Other.xml", "People.xml", "Positions.xml", "Settings.xml", "Terms.xml", "Works.xml");
 
@@ -76,7 +77,7 @@ public final class XmlDiffCtrlr
 
   private XmlDiffCtrlr(Stage stage) throws IOException
   {
-    synchronized(XmlDiffCtrlr.class)
+    synchronized(LOCK)
     {
       if (xmlDiffCtrlr != null)
         throw new UnsupportedOperationException("XmlDiffCtrlr can only be instantiated once.");

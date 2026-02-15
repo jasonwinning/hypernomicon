@@ -49,8 +49,11 @@ public class LicenseReportEngine extends ReportEngine
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final Object LOCK = new Object();
+
+  private static volatile StringBuilder license = null, notice = null;
+
   private HyperTable ht;
-  private static StringBuilder license = null, notice = null;
 
 //---------------------------------------------------------------------------
 
@@ -69,7 +72,7 @@ public class LicenseReportEngine extends ReportEngine
       new HyperTableRow(FXCollections.observableArrayList(new GenericNonRecordHTC("NOTICE.html" , hdtNone)), ht)
     );
 
-    synchronized (LicenseReportEngine.class)
+    synchronized (LOCK)
     {
       if (license == null)
       {

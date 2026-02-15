@@ -62,6 +62,8 @@ public final class HyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  static final Object DB_LOCK = new Object();
+
   public static AbstractHyperDB db;
 
   private final FolderTreeWatcher folderTreeWatcher;
@@ -74,7 +76,7 @@ public final class HyperDB extends AbstractHyperDB
   {
     this.folderTreeWatcher = folderTreeWatcher;
 
-    synchronized(HyperDB.class)
+    synchronized(DB_LOCK)
     {
       if (db != null)
         throw new UnsupportedOperationException("Only one database can be instantiated.");

@@ -43,6 +43,8 @@ public final class XmlDiffApp extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final Object LOCK = new Object();
+
   public static XmlDiffApp xmlDiffApp;
   public static XmlDiffCtrlr xmlDiffCtrlr;
 
@@ -56,7 +58,7 @@ public final class XmlDiffApp extends Application
   {
     super();
 
-    synchronized(XmlDiffApp.class)
+    synchronized(LOCK)
     {
       if (xmlDiffApp != null)
         throw new UnsupportedOperationException("XmlDiffApp can only be instantiated once.");

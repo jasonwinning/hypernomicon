@@ -50,6 +50,8 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final Object LOCK = new Object();
+
   private static volatile TikaConfig tikaConfig;
 
   private MediaUtil() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
@@ -64,7 +66,7 @@ public final class MediaUtil
   {
     if (tikaConfig == null)
     {
-      synchronized (MediaUtil.class)
+      synchronized (LOCK)
       {
         if (tikaConfig == null)
           tikaConfig = TikaConfig.getDefaultConfig();

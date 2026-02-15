@@ -304,7 +304,7 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
   private static void cleanupLeftoverProbeDirectory(Path path)
   {
     FilePath probeDir = new FilePath(path);
-    HyperThread cleanupThread = new HyperThread(probeDir::deleteDirectoryQuietly, "ProbeCleanup");
+    HyperThread cleanupThread = new HyperThread("ProbeCleanup", probeDir::deleteDirectoryQuietly);
     cleanupThread.setDaemon(true);
     cleanupThread.start();
   }

@@ -91,6 +91,7 @@ public final class PopupRobot
   private static String lastMessage;
   private static AlertType lastType;
   private static DialogResult defaultResponse = mrOk;
+
   private static final Deque<DialogResult> responseQueue = new ArrayDeque<>();
 
 //---------------------------------------------------------------------------
@@ -99,19 +100,14 @@ public final class PopupRobot
 
 //---------------------------------------------------------------------------
 
-  public static synchronized void setActive(boolean value)                  { active = value; }
-  public static synchronized boolean isActive()                             { return active; }
-  public static synchronized String getLastMessage()                        { return lastMessage; }
-  public static synchronized AlertType getLastType()                        { return lastType; }
-  public static synchronized void setDefaultResponse(DialogResult response) { defaultResponse = response; }
-  static synchronized DialogResult getDefaultResponse()                     { return responseQueue.isEmpty() ? defaultResponse : responseQueue.poll(); }
+  public static synchronized void setActive(boolean value)                    { active = value; }
+  public static synchronized boolean isActive()                               { return active; }
+  public static synchronized String getLastMessage()                          { return lastMessage; }
+  public static synchronized AlertType getLastType()                          { return lastType; }
+  public static synchronized void setDefaultResponse(DialogResult response)   { defaultResponse = response; }
+  public static synchronized void enqueueResponses(DialogResult... responses) { Collections.addAll(responseQueue, responses); }
 
-//---------------------------------------------------------------------------
-
-  public static synchronized void enqueueResponses(DialogResult... responses)
-  {
-    Collections.addAll(responseQueue, responses);
-  }
+  static synchronized DialogResult getDefaultResponse()                       { return responseQueue.isEmpty() ? defaultResponse : responseQueue.poll(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

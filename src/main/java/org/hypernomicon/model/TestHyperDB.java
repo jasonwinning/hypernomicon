@@ -81,7 +81,7 @@ public final class TestHyperDB extends AbstractHyperDB
 
   private TestHyperDB()
   {
-    synchronized(HyperDB.class)
+    synchronized(HyperDB.DB_LOCK)
     {
       if (HyperDB.db != null)
         throw new UnsupportedOperationException("Only one database can be instantiated.");

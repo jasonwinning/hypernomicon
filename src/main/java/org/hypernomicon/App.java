@@ -102,6 +102,7 @@ public final class App extends Application
 
   private static int total, ctr, lastPercent;
 
+  private static final Object LOCK = new Object();
   private static final double baseDisplayScale = 81.89306640625;
 
   public static App app;
@@ -129,7 +130,7 @@ public final class App extends Application
   {
     super();
 
-    synchronized(App.class)
+    synchronized(LOCK)
     {
       if (app != null)
         throw new UnsupportedOperationException("App can only be instantiated once.");

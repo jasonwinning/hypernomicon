@@ -538,7 +538,7 @@ public final class Util
     if (delayMS < 0)
       throw new IllegalArgumentException("Delay must be non-negative");
 
-    Thread thread = new Thread(() ->
+    HyperThread thread = new HyperThread("Util", () ->
     {
       for (int ndx = 0; ndx < cycles; ndx++)
       {
@@ -581,7 +581,7 @@ public final class Util
    */
   public static void runOutsideFXThread(Runnable runnable)
   {
-    new HyperThread(runnable, "Util").start();
+    new HyperThread("Util", runnable).start();
   }
 
 //---------------------------------------------------------------------------

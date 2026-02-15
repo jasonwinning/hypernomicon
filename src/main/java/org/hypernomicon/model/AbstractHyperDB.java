@@ -2646,9 +2646,9 @@ public abstract class AbstractHyperDB
    * {@code true} to indicate that more results exist. Pass a negative value for {@code max}
    * to collect all relatives with no limit.
    *
-   * @param record             the record whose relatives to collect
-   * @param set                receives the collected relatives; cleared before use
-   * @param max                maximum number of relatives to collect, or negative for no limit
+   * @param record              the record whose relatives to collect
+   * @param set                 receives the collected relatives; cleared before use
+   * @param max                 maximum number of relatives to collect, or negative for no limit
    * @param gettingNotesForFile if true, include notes from the parent folder (see above)
    * @return true if collection was truncated because the result count reached {@code max}
    */

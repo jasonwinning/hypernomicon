@@ -519,8 +519,7 @@ public final class GeneralQueries
         {
           MainText mainText = recordWMT.getMainText();
 
-          if (MainTextUtil.findEmbeddedFileTags(mainText.getHtml()).stream().anyMatch(tag -> tag.miscFile() == null))
-            return true;
+          return MainTextUtil.findEmbeddedFileTags(mainText.getHtml()).stream().anyMatch(tag -> tag.miscFile() == null);
         }
 
         return false;

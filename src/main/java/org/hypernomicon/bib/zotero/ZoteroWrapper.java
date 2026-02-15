@@ -81,7 +81,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
   private static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
 
-  private static EnumMap<EntryType, JsonObj> templates = null;
+  private static volatile EnumMap<EntryType, JsonObj> templates = null;
 
   private enum ZoteroCmd
   {
