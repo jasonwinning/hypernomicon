@@ -20,7 +20,6 @@ package org.hypernomicon.testTools.xmlDiff;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.testTools.xmlDiff.XmlDiffApp.*;
 import static org.hypernomicon.util.DesktopUtil.*;
-import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
@@ -29,7 +28,6 @@ import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.FilePathSet;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
@@ -38,7 +36,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -304,9 +301,7 @@ public final class XmlDiffCtrlr
         {
           try (InputStream is = proc.getErrorStream())
           {
-            StringBuilder errorSB = new StringBuilder();
-            assignSB(errorSB, IOUtils.toString(is, StandardCharsets.UTF_8));
-            errorPopup(errorSB.toString());
+            errorPopup(IOUtils.toString(is, StandardCharsets.UTF_8));
           }
           catch (IOException e)
           {
@@ -335,70 +330,67 @@ public final class XmlDiffCtrlr
   {
     for (String fileName : fileNames)
     {
-      // 1. Read original lines
-      List<String> originalLines = FileUtils.readLines(Path.of(srcPathStr, fileName).toFile(), Charset.defaultCharset());
+      List<String> originalLines = FileUtils.readLines(Path.of(srcPathStr, fileName).toFile(), StandardCharsets.UTF_8);
 
-      // 2. First pass: split at each "&gt;" (after) and "&lt;" (before),
-      //    stripping trailing/leading spaces on each fragment
-      List<String> intermediateLines = new ArrayList<>();
+      FileUtils.writeLines(Path.of(destPathStr, fileName).toFile(), processLines(originalLines));
+    }
+  }
 
-      for (String line : originalLines)
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Put each escaped HTML tag on its own line so the external diff tool
+  // can compare them individually rather than showing entire description
+  // blocks as single-line changes.
+
+  static List<String> processLines(Iterable<String> originalLines)
+  {
+    List<String> processedLines = new ArrayList<>();
+
+    for (String line : originalLines)
+    {
+      String nextLine = line.stripTrailing();
+      boolean splitHappened = false;
+
+      while (true)
       {
-        String nextLine = line.stripTrailing();
-        boolean splitHappened = false;
+        int posGT = nextLine.indexOf(ESCAPED_GT),
+            posLT = nextLine.indexOf(ESCAPED_LT, 1);  // skip position 0 (already starts this line)
 
-        while (true)
+        if ((posGT == -1) && (posLT == -1))
+          break;
+
+        int splitPos;
+        if ((posGT != -1) && ((posLT == -1) || (posGT < posLT)))
         {
-          int posGT = nextLine.indexOf(ESCAPED_GT),
-              posLT = nextLine.isEmpty() ? -1 : nextLine.indexOf(ESCAPED_LT, 1);
-
-          // no more tags; bail out
-          if ((posGT == -1) && (posLT == -1))
-            break;
-
-          int splitPos;
-          if ((posGT != -1) && ((posLT == -1) || (posGT < posLT)))
-          {
-            // split *after* "&gt;"
-            splitPos = posGT + ESCAPED_GT_LEN;
-          }
-          else
-          {
-            // split *before* "&lt;"
-            splitPos = posLT;
-          }
-
-          // take the chunk up to splitPos
-          String newLine = nextLine.substring(0, splitPos).strip();
-          if (newLine.isEmpty() == false)
-            intermediateLines.add(newLine);
-
-          // continue with the rest
-          nextLine = nextLine.substring(splitPos).stripLeading();
-
-          splitHappened = true;
+          splitPos = posGT + ESCAPED_GT_LEN;   // split *after* "&gt;"
+        }
+        else
+        {
+          splitPos = posLT;                     // split *before* "&lt;"
         }
 
-        // whatever remains, add as its own line
-        if ((splitHappened == false) || (nextLine.isEmpty() == false))
-          intermediateLines.add(splitHappened ? nextLine.strip() : nextLine.stripTrailing());
+        String newLine = nextLine.substring(0, splitPos).stripTrailing();
+        if (newLine.isEmpty() == false)
+          processedLines.add(newLine);
+
+        nextLine = nextLine.substring(splitPos).stripLeading();
+
+        splitHappened = true;
       }
 
-      // 3. Rejoin for any cross-line regex work
-      String content = String.join("\n", intermediateLines);
-
-      // 4. Normalize line breaks before &lt; when needed
-      content = content.replaceAll("(?<=[^>;\\s])\\s*(?=&lt;)", "\n");
-
-      // 5. Remove indent in lines that follow &gt;
-      content = content.replaceAll("(?<=&gt;\\n)\\s+", "");
-
-      // 6. Split back out into final lines
-      List<String> finalLines = Arrays.asList(content.split("\n", -1));
-
-      // 7. Write the result
-      FileUtils.writeLines(Path.of(destPathStr, fileName).toFile(), finalLines);
+      if ((splitHappened == false) || (nextLine.isEmpty() == false))
+        processedLines.add(nextLine.stripTrailing());
     }
+
+    // Lines following an escaped closing tag (e.g. &lt;/html&gt;) may have
+    // inherited indentation from the original XML; strip it so the diff is clean.
+
+    for (int ndx = 1; ndx < processedLines.size(); ndx++)
+      if (processedLines.get(ndx - 1).endsWith(ESCAPED_GT))
+        processedLines.set(ndx, processedLines.get(ndx).stripLeading());
+
+    return processedLines;
   }
 
 //---------------------------------------------------------------------------
