@@ -98,7 +98,8 @@ public final class Const
     IGNORE_ARROW_KEYS_IN_TAB_PANE_MS = 300,
     FILENAME_LENGTH_TO_SHOW_TOOLTIP = 30,
     MAX_TOOLTIP_WIDTH = 1100,
-    HDB_MRU_SIZE = 4;
+    HDB_MRU_SIZE = 8,
+    WELCOME_MRU_SIZE = 4;
 
   public static final String
 

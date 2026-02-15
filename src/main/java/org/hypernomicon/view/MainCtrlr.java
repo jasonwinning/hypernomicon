@@ -141,7 +141,7 @@ public final class MainCtrlr
   @FXML private HBox topHBox, bottomToolBar;
   @FXML private ImageView ivDates;
   @FXML private Label lblProgress, lblFindToast;
-  @FXML private Menu mnuFolders;
+  @FXML private Menu mnuFolders, mnuOpenRecent;
   @FXML private MenuBar menuBar;
   @FXML private MenuItem mnuAddToQueryResults, mnuChangeID, mnuCloseDatabase, mnuExitNoSave, mnuFindNextAll, mnuFindNextInName,
                          mnuFindPreviousAll, mnuFindPreviousInName, mnuFindWithinAnyField, mnuFindWithinName, mnuImportBibClipboard,
@@ -408,6 +408,9 @@ public final class MainCtrlr
 
     hcbGoTo.setEnterKeyHandler(this::recordLookup);
     hcbGoTo.dontCreateNewRecord = true;
+
+    mnuOpenRecent.getItems().add(new MenuItem("(None)"));
+    mnuOpenRecent.setOnShowing(event -> populateOpenRecentMenu());
 
     mnuImportWork        .setOnAction(event -> importWorkFile(null, null, true));
     mnuImportFile        .setOnAction(event -> importMiscFile(null, null));
@@ -2630,7 +2633,7 @@ public final class MainCtrlr
 
     if (success)
     {
-      List<String> mruList = getHdbMRUs();
+      List<String> mruList = getHdbMRUs(Integer.MAX_VALUE);
       mruList.addFirst(hdbPath.toString());
       saveHdbMRUs(mruList);
 
@@ -2672,7 +2675,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static List<String> getHdbMRUs()
+  public static List<String> getHdbMRUs(int max)
   {
     List<String> mruList = new ArrayList<>();
 
@@ -2680,7 +2683,42 @@ public final class MainCtrlr
       mruList.add(app.prefs.get(PrefKey.HDB_MRU + (ndx + 1), ""));
 
     mruList.removeIf(String::isBlank);
+
+    if (mruList.size() > max)
+      mruList.subList(max, mruList.size()).clear();
+
     return mruList;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void populateOpenRecentMenu()
+  {
+    mnuOpenRecent.getItems().clear();
+
+    List<String> mruList = getHdbMRUs(Integer.MAX_VALUE);
+
+    if (mruList.isEmpty())
+    {
+      MenuItem none = new MenuItem("(None)");
+      none.setDisable(true);
+      mnuOpenRecent.getItems().add(none);
+      return;
+    }
+
+    for (String mru : mruList)
+    {
+      MenuItem item = new MenuItem(mru);
+      item.setOnAction(event -> openDB(new FilePath(mru)));
+      mnuOpenRecent.getItems().add(item);
+    }
+
+    mnuOpenRecent.getItems().add(new SeparatorMenuItem());
+
+    MenuItem clearItem = new MenuItem("Clear");
+    clearItem.setOnAction(event -> { saveHdbMRUs(new ArrayList<>()); populateOpenRecentMenu(); });
+    mnuOpenRecent.getItems().add(clearItem);
   }
 
 //---------------------------------------------------------------------------

@@ -55,6 +55,7 @@
         <Menu mnemonicParsing="false" text="_File">
           <MenuItem fx:id="mnuNewDatabase" onAction="#mnuNewDatabaseClick" text="_New Database..." />
           <MenuItem onAction="#mnuOpenClick" text="_Open Database..." />
+          <Menu fx:id="mnuOpenRecent" text="Open _Recent" />
           <SeparatorMenuItem mnemonicParsing="false" />
           <MenuItem fx:id="mnuCloseDatabase" onAction="#mnuCloseClick" text="_Close Database..." />
           <SeparatorMenuItem mnemonicParsing="false" />

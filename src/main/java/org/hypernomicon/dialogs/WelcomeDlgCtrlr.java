@@ -21,6 +21,7 @@ import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.util.file.FilePath;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 
@@ -84,7 +85,7 @@ public class WelcomeDlgCtrlr extends ModalDialog
     linkWiki         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/wiki/Home/"));
     linkNews         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/news/"));
 
-    List<String> mruList = MainCtrlr.getHdbMRUs();
+    List<String> mruList = MainCtrlr.getHdbMRUs(WELCOME_MRU_SIZE);
 
     double layoutY = 3;
     for (String mru : mruList)
