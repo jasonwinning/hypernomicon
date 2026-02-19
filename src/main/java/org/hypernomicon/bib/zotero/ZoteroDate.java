@@ -79,7 +79,7 @@ public final class ZoteroDate
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setLocale(String newLocale)
+  public static synchronized void setLocale(String newLocale)
   {
     if (strNullOrBlank(newLocale))
       return;

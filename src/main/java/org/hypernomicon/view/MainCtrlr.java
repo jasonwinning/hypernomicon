@@ -146,11 +146,10 @@ public final class MainCtrlr
   @FXML private MenuBar menuBar;
   @FXML private MenuItem mnuAddToQueryResults, mnuChangeID, mnuCloseDatabase, mnuExitNoSave, mnuFindNextAll, mnuFindNextInName,
                          mnuFindPreviousAll, mnuFindPreviousInName, mnuFindWithinAnyField, mnuFindWithinName, mnuImportBibClipboard,
-                         mnuImportBibFile, mnuNewCountry, mnuNewDatabase, mnuNewField, mnuNewPersonStatus, mnuNewRank, mnuVideos,
-                         mnuRecordSelect, mnuRevertToXmlVersion, mnuSaveReloadAll, mnuToggleFavorite, mnuImportWork, mnuImportFile,
-                         mnuShortcuts, mnuChangeFieldOrder, mnuChangeRankOrder, mnuChangeCountryOrder, mnuChangePersonStatusOrder,
-                         mnuChangeFileTypeOrder, mnuChangeWorkTypeOrder, mnuChangeArgVerdictOrder, mnuChangePosVerdictOrder,
-                         mnuChangeInstitutionTypeOrder, mnuTestConsole;
+                         mnuImportBibFile, mnuNewRank, mnuVideos, mnuRecordSelect, mnuRevertToXmlVersion, mnuSaveReloadAll,
+                         mnuToggleFavorite, mnuImportWork, mnuImportFile, mnuChangeFieldOrder, mnuChangeRankOrder,
+                         mnuChangeCountryOrder, mnuChangePersonStatusOrder, mnuChangeFileTypeOrder, mnuChangeWorkTypeOrder,
+                         mnuChangeArgVerdictOrder, mnuChangePosVerdictOrder, mnuChangeInstitutionTypeOrder, mnuTestConsole;
 
   @FXML private MenuButton mbCreateNew;
   @FXML private ProgressBar progressBar;

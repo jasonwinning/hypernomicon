@@ -110,28 +110,28 @@ class UnitiesTest
 
     assertNull(hub.getPosition());
 
-    assertEquals(position.getMainText().getHtml(), html2);
-    assertEquals(note    .getMainText().getHtml(), html2);
-    assertEquals(label   .getMainText().getHtml(), html2);
-    assertEquals(hub     .getMainText().getHtml(), html2);
+    assertEquals(html2, position.getMainText().getHtml());
+    assertEquals(html2, note    .getMainText().getHtml());
+    assertEquals(html2, label   .getMainText().getHtml());
+    assertEquals(html2, hub     .getMainText().getHtml());
 
     position.getMainText().setHtml(html1);
 
-    assertNotEquals(position.getMainText().getHtml(), html2);
+    assertNotEquals(html2, position.getMainText().getHtml());
 
-    assertEquals(note .getMainText().getHtml(), html2);
-    assertEquals(label.getMainText().getHtml(), html2);
-    assertEquals(hub  .getMainText().getHtml(), html2);
+    assertEquals(html2, note .getMainText().getHtml());
+    assertEquals(html2, label.getMainText().getHtml());
+    assertEquals(html2, hub  .getMainText().getHtml());
 
     final String html3 = "<html><head></head><body>Something else</body></html>";
 
     note.getMainText().setHtml(html3);
 
-    assertNotEquals(position.getMainText().getHtml(), html3);
+    assertNotEquals(html3, position.getMainText().getHtml());
 
-    assertEquals(note .getMainText().getHtml(), html3);
-    assertEquals(label.getMainText().getHtml(), html3);
-    assertEquals(hub  .getMainText().getHtml(), html3);
+    assertEquals(html3, note .getMainText().getHtml());
+    assertEquals(html3, label.getMainText().getHtml());
+    assertEquals(html3, hub  .getMainText().getHtml());
 
     assertFalse(hub.disuniteRecord(hdtPosition));
 

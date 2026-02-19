@@ -53,7 +53,7 @@
     <HBox fx:id="topHBox" style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
       <MenuBar fx:id="menuBar" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
         <Menu mnemonicParsing="false" text="_File">
-          <MenuItem fx:id="mnuNewDatabase" onAction="#mnuNewDatabaseClick" text="_New Database..." />
+          <MenuItem onAction="#mnuNewDatabaseClick" text="_New Database..." />
           <MenuItem onAction="#mnuOpenClick" text="_Open Database..." />
           <Menu fx:id="mnuOpenRecent" text="Open _Recent" />
           <SeparatorMenuItem mnemonicParsing="false" />
@@ -72,10 +72,10 @@
           <MenuItem onAction="#mnuSettingsClick" text="_Settings" />
           <MenuItem fx:id="mnuTestConsole" mnemonicParsing="false" onAction="#mnuTestConsoleClick" text="Test Console" />
           <Menu mnemonicParsing="false" text="Create new category record...">
-            <MenuItem fx:id="mnuNewField" mnemonicParsing="false" onAction="#mnuNewFieldClick" text="Academic Field" />
-            <MenuItem fx:id="mnuNewCountry" mnemonicParsing="false" onAction="#mnuNewCountryClick" text="Country" />
+            <MenuItem mnemonicParsing="false" onAction="#mnuNewFieldClick" text="Academic Field" />
+            <MenuItem mnemonicParsing="false" onAction="#mnuNewCountryClick" text="Country" />
             <MenuItem fx:id="mnuNewRank" mnemonicParsing="false" onAction="#mnuNewRankClick" text="Academic Rank" />
-            <MenuItem fx:id="mnuNewPersonStatus" mnemonicParsing="false" onAction="#mnuNewPersonStatusClick" text="Person Status" />
+            <MenuItem mnemonicParsing="false" onAction="#mnuNewPersonStatusClick" text="Person Status" />
           </Menu>
           <Menu mnemonicParsing="false" text="Change category listing order...">
             <MenuItem fx:id="mnuChangeFieldOrder" mnemonicParsing="false" text="Academic Fields" />
@@ -105,7 +105,7 @@
           <MenuItem onAction="#showWelcomeWindow" text="Show _Welcome Window" />
           <SeparatorMenuItem mnemonicParsing="false" />
           <MenuItem fx:id="mnuVideos" mnemonicParsing="false" text="Tutorial Videos" />
-          <MenuItem fx:id="mnuShortcuts" onAction="#mnuShortcutsClick" text="_Keyboard Shortcuts" />
+          <MenuItem onAction="#mnuShortcutsClick" text="_Keyboard Shortcuts" />
           <SeparatorMenuItem mnemonicParsing="false" />
           <MenuItem onAction="#mnuAboutClick" text="_About" />
         </Menu>

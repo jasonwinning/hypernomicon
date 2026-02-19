@@ -29,8 +29,8 @@ import java.util.function.Predicate;
 import java.util.stream.*;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.fileManager.FileManager;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.deletion.FileDeletion.*;
 
@@ -262,28 +262,35 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
 //---------------------------------------------------------------------------
 
   /**
-   * Phase 1 of interactive mode: auto-retry with indeterminate progress for up to 3 seconds (Windows only).
-   * On non-Windows, attempts once without progress dialog since POSIX deletions don't benefit from retry.
-   * When running without the main UI (e.g., standalone tools), retries without the progress dialog.
+   * Phase 1 of interactive mode: auto-retry with indeterminate progress dialog.
+   * On Windows, retries for up to 3 seconds to handle lingering file handles.
+   * On non-Windows with the main UI present, runs a single attempt via HyperTask so the
+   * JavaFX thread stays responsive and the delayed-show progress dialog appears for slow
+   * operations (e.g. cloud-storage paths like Dropbox). The timeout of 0 means the loop
+   * exits after one pass regardless of outcome, which is correct for POSIX semantics.
+   * Without the main UI (e.g. standalone tools), attempts directly without a dialog.
    * Returns SUCCESS if all tasks complete, CANCELLED if user cancels, FAILED if timeout/failure.
    */
   protected DeletionResult executeInteractiveAutoRetryPhase()
   {
-    // On non-Windows (timeout is 0), just attempt once without progress dialog
+    // Without UI: attempt directly (no progress dialog, no cancel support)
 
-    if (INTERACTIVE_AUTO_RETRY_MS == 0)
+    if ((INTERACTIVE_AUTO_RETRY_MS == 0) && (ui == null))
     {
       tasks.removeIf(DeletionTask::attemptOnce);
 
       return tasks.isEmpty() ? SUCCESS : FAILED;
     }
 
-    // Without the main UI, retry without progress dialog (no cancel support)
+    // Without the main UI (Windows): retry without progress dialog (no cancel support)
 
     if (ui == null)
       return retryWithTimeout(INTERACTIVE_AUTO_RETRY_MS, DeletionTask::attemptOnce);
 
-    // Windows: auto-retry with progress dialog
+    // With main UI: run via HyperTask to keep JavaFX thread responsive.
+    // On Windows: retries for up to INTERACTIVE_AUTO_RETRY_MS milliseconds.
+    // On non-Windows: INTERACTIVE_AUTO_RETRY_MS is 0, so the timeout check fires
+    // immediately after one pass; exactly one attempt, but on a background thread.
 
     final long[] startTime = { System.currentTimeMillis() };
     final DeletionResult[] result = { FAILED };

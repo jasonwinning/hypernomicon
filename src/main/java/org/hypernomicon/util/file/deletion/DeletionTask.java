@@ -62,7 +62,9 @@ class DeletionTask
 
   /**
    * Attempt deletion once. Returns true if successful, false if failed.
-   * Does not retry or prompt; just one attempt.
+   * Does not prompt. Directory tree walks may perform multiple internal passes
+   * to handle cloud-storage sync interference, but this counts as one attempt
+   * from the retry engine's perspective.
    */
   boolean attemptOnce()
   {
@@ -107,7 +109,7 @@ class DeletionTask
     {
       return switch (effectiveType())
       {
-        case FILE_ONLY                 -> { Files.deleteIfExists(filePath.toPath()); yield (Files.exists(filePath.toPath()) == false); }
+        case FILE_ONLY                 -> { Files.deleteIfExists(filePath.toPath()); yield Files.exists(filePath.toPath()) == false; }
 
         case DIR_WITH_CONTENTS         -> deleteDirectorySilentOnce(filePath.toPath(), true);
         case DIR_CONTENTS_ONLY         -> deleteDirectorySilentOnce(filePath.toPath(), false);
@@ -146,46 +148,67 @@ class DeletionTask
    * <p>
    * Each attempt makes maximum progress by continuing past individual file failures,
    * which works well with the retry engine when Windows file handles linger.
+   * <p>
+   * Up to three walk passes are performed. Extra passes handle cloud-storage filesystems
+   * (e.g. Dropbox on macOS) where a sync daemon may create metadata files between the
+   * initial enumeration and the actual deletion, leaving directories non-empty even
+   * after the first pass deletes everything it found.
    */
   private static void deleteDirectoryTreeWalk(Path root, boolean deleteRoot) throws IOException
   {
-    List<Path> paths;
-
-    try (Stream<Path> walk = Files.walk(root))
-    {
-      paths = walk.sorted(Comparator.reverseOrder()).toList();
-    }
-
-    // Delete after closing the stream to avoid Windows file handle issues
-
     IOException lastError = null;
 
-    for (Path path : paths)
+    for (int pass = 0; pass < 3; pass++)
     {
-      if ((deleteRoot == false) && path.equals(root))
-        continue;
+      List<Path> paths;
 
-      try
+      try (Stream<Path> walk = Files.walk(root))
       {
-        Files.deleteIfExists(path);
+        paths = walk.sorted(Comparator.reverseOrder()).toList();
       }
-      catch (IOException e)
+
+      // Delete after closing the stream to avoid Windows file handle issues
+
+      for (Path path : paths)
       {
-        lastError = e;
+        if ((deleteRoot == false) && path.equals(root))
+          continue;
+
+        try
+        {
+          Files.deleteIfExists(path);
+        }
+        catch (IOException e)
+        {
+          lastError = e;
+        }
+      }
+
+      // Check if goal was achieved despite errors
+
+      if (deleteRoot)
+      {
+        if (Files.exists(root) == false)
+          return;
+      }
+      else
+      {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(root))
+        {
+          if (stream.iterator().hasNext() == false)
+            return;
+        }
       }
     }
 
-    // Check if goal was achieved despite errors
+    // Goal not achieved after all passes
 
     if (deleteRoot)
     {
-      if (Files.exists(root))
-      {
-        if (lastError != null)
-          throw lastError;
+      if (lastError != null)
+        throw lastError;
 
-        throw new IOException("Failed to delete directory: " + root);
-      }
+      throw new IOException("Failed to delete directory: " + root);
     }
     else
     {

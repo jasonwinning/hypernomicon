@@ -22,6 +22,7 @@ import org.hypernomicon.fileManager.FileManager;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -330,6 +331,13 @@ public class FilePath implements Comparable<FilePath>
 
   public boolean anyOpenFilesInDir()
   {
+    // On POSIX systems, open file handles reference inodes rather than paths,
+    // so files can be deleted, moved, or renamed while open. Lock checking is
+    // unnecessary and just causes a slow tree walk.
+
+    if (IS_OS_WINDOWS == false)
+      return false;
+
     try
     {
       Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<>()

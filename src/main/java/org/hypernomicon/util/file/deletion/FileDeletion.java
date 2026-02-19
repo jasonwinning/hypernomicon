@@ -61,8 +61,9 @@ import org.hypernomicon.util.file.FilePath;
  *   <li>{@code nonInteractive()}: On Windows, retry silently for up to 5 seconds with 250ms delays. On Mac/Linux,
  *       attempts once. For background operations.</li>
  *   <li>{@code interactive()}: On Windows, auto-retry for up to 3 seconds with progress dialog, then prompt
- *       user with [Try Again] [Cancel] options. On Mac/Linux, attempts once and shows error dialog immediately
- *       if failed (no progress dialog). Loops until success or user cancels (returns {@code CANCELLED}).</li>
+ *       user with [Try Again] [Cancel] options. On Mac/Linux, performs a single attempt via background thread
+ *       with progress dialog (keeps UI responsive for slow operations such as cloud-storage paths), then shows
+ *       error dialog if failed. Loops until success or user cancels (returns {@code CANCELLED}).</li>
  *   <li>{@code nonInteractiveFailureOK()}: Best-effort cleanup. On Windows, retries for up to 5 seconds. On Mac/Linux,
  *       attempts once. Never throws, never prompts. Always returns SUCCESS.</li>
  *   <li>{@code nonInteractiveLogErrors()}: Same as {@code nonInteractiveFailureOK()}, but logs errors via
@@ -155,9 +156,11 @@ import org.hypernomicon.util.file.FilePath;
  * {@code Files} API with per-file granularity; directory trees are walked bottom-up so that each retry
  * attempt makes maximum progress as lingering handles close.
  * <p>
- * <b>Mac/Linux:</b> Retry is disabled (single attempt) because POSIX systems use "unlink" semantics where
- * files can be deleted even while open. If a deletion fails, retrying won't help; the cause is typically
- * permissions, non-empty directories, or filesystem errors.
+ * <b>Mac/Linux:</b> Outer retry is disabled (single attempt) because POSIX systems use "unlink" semantics
+ * where files can be deleted even while open. If a deletion fails, retrying won't help; the cause is
+ * typically permissions or filesystem errors. However, directory tree walks perform up to three internal
+ * passes to handle cloud-storage sync daemons (e.g. Dropbox) that may recreate metadata files between
+ * the walk enumeration and the actual deletion.
  */
 public final class FileDeletion
 {

@@ -301,7 +301,6 @@ public final class Util
   public static Instant parseIso8601offset(CharSequence s)           { return Instant.from(iso8601FormatOffset.parse(s)); }
 
   public static String dateTimeToHttpDate(TemporalAccessor t)        { return httpDate.format(t); }
-  public static Instant parseHttpDate(CharSequence s)                { return Instant.from(httpDate.parse(s)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

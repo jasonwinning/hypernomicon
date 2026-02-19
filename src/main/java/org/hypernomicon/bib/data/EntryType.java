@@ -20,8 +20,6 @@ package org.hypernomicon.bib.data;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 
-import java.util.*;
-
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 
@@ -105,7 +103,6 @@ public enum EntryType
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final Map<String, EntryType> nameToType;
   private final String userFriendlyName;
 
 //---------------------------------------------------------------------------
@@ -114,17 +111,7 @@ public enum EntryType
 
 //---------------------------------------------------------------------------
 
-  static
-  {
-    nameToType = new HashMap<>();
-    Arrays.stream(values()).filter(et -> et.userFriendlyName.length() > 0)
-                           .forEachOrdered(et -> nameToType.put(et.userFriendlyName, et));
-  }
-
-//---------------------------------------------------------------------------
-
-  public String getUserFriendlyName()      { return userFriendlyName; }
-  public static EntryType parse(String et) { return nameToType.getOrDefault(et, null); }
+  public String getUserFriendlyName() { return userFriendlyName; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
