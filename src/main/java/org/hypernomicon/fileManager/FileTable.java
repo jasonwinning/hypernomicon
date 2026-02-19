@@ -194,7 +194,7 @@ class FileTable extends DragNDropContainer<FileRow>
     if ((folderPath == null) || (folderPath.exists() == false))
       return;
 
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(folderPath.toPath(), "**"))
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(folderPath.toPath()))
     {
       for (Path entry: stream)
       {

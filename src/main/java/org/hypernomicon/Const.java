@@ -105,7 +105,8 @@ public final class Const
 
     HDB_DEFAULT_FILENAME = "database.hdb",
     BLANK_DB_RESOURCE_NAME = "resources/blank_db.zip",
-    EXT_1 = "ext1://";
+    EXT_1 = "ext1://",
+    LOCK_PROBE_SUFFIX = ".hntmp_";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

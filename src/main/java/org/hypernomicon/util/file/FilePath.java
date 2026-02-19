@@ -21,6 +21,7 @@ import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.fileManager.FileManager;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
@@ -37,6 +38,7 @@ import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -307,19 +309,70 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Check whether this path can likely be moved or deleted without conflict.
+   * <p>
+   * On Windows, the behavior depends on whether this path is a file or directory:
+   * <ul>
+   *   <li><b>Regular files:</b> Attempts to open in read-write mode and acquire an
+   *       exclusive lock via {@link FileChannel#tryLock()}. This catches the common
+   *       case where an application holds the file open without
+   *       {@code FILE_SHARE_DELETE}. Read-only files return {@code true} because the
+   *       read-only attribute does not prevent moves or deletes on Windows.</li>
+   *   <li><b>Directories:</b> Performs a probe rename (rename to a temporary sibling
+   *       name, then rename back). This detects directory-level locks such as a
+   *       terminal window whose working directory is the folder. It does not detect
+   *       locked files inside the directory; use {@link #anyOpenFilesInDir()} for
+   *       that.</li>
+   * </ul>
+   * <p>
+   * On POSIX systems (macOS, Linux), always returns {@code true} because open
+   * file handles reference inodes rather than paths, so files and directories can
+   * be moved or deleted while open.
+   * <p>
+   * This check is subject to TOCTOU races. It is a best-effort pre-check to
+   * catch the common case, not a guarantee.
+   * <p>
+   * If the JVM crashes between the two renames of a directory probe, the
+   * directory will be left with a {@link org.hypernomicon.Const#LOCK_PROBE_SUFFIX}
+   * suffix. These leftovers are cleaned up at database load time by
+   * {@code HyperDB.checkWhetherFoldersExist()}.
+   *
+   * @return true if the path appears unlocked
+   * @throws IOException if an unexpected I/O error occurs (including failure to
+   *         rename a directory back to its original name after a successful probe)
+   */
   public boolean canObtainLock() throws IOException
   {
+    if (IS_OS_WINDOWS == false) return true;
+
     if (exists() == false) return true;
 
     if (isDirectory())
     {
+      // Probe-rename: rename to a temp sibling, then rename back.
+      // If the rename fails, the directory is locked (e.g., terminal working directory).
+
+      Path src = toPath(),
+           tmp = src.resolveSibling(src.getFileName().toString() + LOCK_PROBE_SUFFIX + System.nanoTime());
+
       try
       {
-        FileUtils.touch(toFile());
+        Files.move(src, tmp);
       }
       catch (IOException e)
       {
         return false;
+      }
+
+      try
+      {
+        Files.move(tmp, src);
+      }
+      catch (IOException e)
+      {
+        throw new IOException("Lock probe renamed \"" + src.getFileName()
+          + "\" to \"" + tmp.getFileName() + "\" but could not rename back", e);
       }
 
       return true;
@@ -333,7 +386,11 @@ public class FilePath implements Comparable<FilePath>
     }
     catch (FileNotFoundException e)
     {
-      return false;
+      // RandomAccessFile("rw") throws FileNotFoundException for read-only files.
+      // The read-only attribute does not prevent moves or deletes on Windows.
+      // Only return false if the file genuinely does not exist.
+
+      return exists();
     }
 
     return true;
@@ -342,6 +399,20 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Check whether any file or directory within this directory tree appears to be
+   * locked by another process.
+   * <p>
+   * On POSIX systems, always returns {@code false} (see {@link #canObtainLock()}).
+   * <p>
+   * On Windows, walks the tree to collect all paths (files and directories), then
+   * checks each with {@link #canObtainLock()}. Files are tested via
+   * {@link FileChannel#tryLock()}; directories are tested via probe-rename.
+   * If any path is locked, shows an error popup identifying the specific path and
+   * returns {@code true}.
+   *
+   * @return true if any path in the tree is locked (operation should be aborted)
+   */
   public boolean anyOpenFilesInDir()
   {
     // On POSIX systems, open file handles reference inodes rather than paths,
@@ -351,15 +422,23 @@ public class FilePath implements Comparable<FilePath>
     if (IS_OS_WINDOWS == false)
       return false;
 
+    // Phase 1: collect all paths (files and directories) in the tree
+
+    List<FilePath> paths = new ArrayList<>();
+
     try
     {
       Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<>()
       {
-        @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+        @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
         {
-          if (new FilePath(file).canObtainLock() == false)
-            throw new IOException("Unable to obtain lock for file: " + file.toString());
+          paths.add(new FilePath(file));
+          return FileVisitResult.CONTINUE;
+        }
 
+        @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+        {
+          paths.add(new FilePath(dir));
           return FileVisitResult.CONTINUE;
         }
 
@@ -367,18 +446,46 @@ public class FilePath implements Comparable<FilePath>
         {
           return FileVisitResult.SKIP_SUBTREE;
         }
-
-        @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException
-        {
-          FileUtils.touch(dir.toFile());
-
-          return FileVisitResult.CONTINUE;
-        }
       });
     }
     catch (IOException e)
     {
       errorPopup(e);
+      return true;
+    }
+
+    // Phase 2: check each path with canObtainLock()
+    // Prefer reporting locked files over locked directories, since a locked
+    // interior file also causes ancestor directories to fail the probe-rename.
+
+    FilePath firstLockedDir = null;
+
+    for (FilePath filePath : paths)
+    {
+      try
+      {
+        if (filePath.canObtainLock() == false)
+        {
+          if (filePath.isFile())
+          {
+            errorPopup("Unable to obtain lock for path: " + filePath);
+            return true;
+          }
+
+          if (firstLockedDir == null)
+            firstLockedDir = filePath;
+        }
+      }
+      catch (IOException e)
+      {
+        errorPopup(e);
+        return true;
+      }
+    }
+
+    if (firstLockedDir != null)
+    {
+      errorPopup("Unable to obtain lock for path: " + firstLockedDir);
       return true;
     }
 
@@ -446,7 +553,7 @@ public class FilePath implements Comparable<FilePath>
   {
     if (checkSubdirs == false)
     {
-      try (DirectoryStream<Path> stream = Files.newDirectoryStream(getDirOnly().toPath(), "**"))
+      try (DirectoryStream<Path> stream = Files.newDirectoryStream(getDirOnly().toPath()))
       {
         if (findFirst(stream, entry -> new FilePath(entry).isDirectory()) != null)
           return true;

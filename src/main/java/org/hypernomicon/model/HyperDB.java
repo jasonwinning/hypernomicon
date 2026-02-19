@@ -33,7 +33,8 @@ import java.io.IOException;
 
 import javafx.scene.control.Alert.AlertType;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -443,6 +444,8 @@ public final class HyperDB extends AbstractHyperDB
 
   @Override protected void checkWhetherFoldersExist()
   {
+    cleanupLeftoverLockProbeDirectories();
+
     List<FilePath> missingFolders = new ArrayList<>();
     getRootFolder().checkExists(missingFolders);
 
@@ -457,6 +460,60 @@ public final class HyperDB extends AbstractHyperDB
     String title = missingFolders.size() == 1 ? "Missing Folder" : missingFolders.size() + " Missing Folders";
 
     longMessagePopup(title, AlertType.WARNING, headerText, folderList);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Scan the database folder tree for directories left behind by a crashed
+   * {@link FilePath#canObtainLock()} probe-rename and rename them back to
+   * their original names. Best-effort; failures are logged and skipped.
+   */
+  private void cleanupLeftoverLockProbeDirectories()
+  {
+    try
+    {
+      Files.walkFileTree(getRootPath().toPath(), new SimpleFileVisitor<>()
+      {
+        @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+        {
+          String dirName = dir.getFileName().toString();
+          int probeNdx = dirName.indexOf(LOCK_PROBE_SUFFIX);
+
+          if (probeNdx > 0)
+          {
+            String originalName = dirName.substring(0, probeNdx);
+            Path originalPath = dir.resolveSibling(originalName);
+
+            if (Files.exists(originalPath) == false)
+            {
+              try
+              {
+                Files.move(dir, originalPath);
+              }
+              catch (IOException e)
+              {
+                logThrowable(e);
+              }
+            }
+
+            return FileVisitResult.SKIP_SUBTREE;
+          }
+
+          return FileVisitResult.CONTINUE;
+        }
+
+        @Override public FileVisitResult visitFileFailed(Path file, IOException e)
+        {
+          return FileVisitResult.SKIP_SUBTREE;
+        }
+      });
+    }
+    catch (IOException e)
+    {
+      logThrowable(e);
+    }
   }
 
 //---------------------------------------------------------------------------
