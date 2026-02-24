@@ -98,7 +98,7 @@ public class Builder extends DeletionBuilderBase<Builder>
         .showModal();
 
       if (response != DialogResult.mrRetry)
-        return CANCELLED;
+        return ABORTED;
 
       // Loop back to Phase 1
     }

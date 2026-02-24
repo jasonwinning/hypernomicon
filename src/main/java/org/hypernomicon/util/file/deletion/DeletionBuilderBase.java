@@ -269,7 +269,7 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
    * operations (e.g. cloud-storage paths like Dropbox). The timeout of 0 means the loop
    * exits after one pass regardless of outcome, which is correct for POSIX semantics.
    * Without the main UI (e.g. standalone tools), attempts directly without a dialog.
-   * Returns SUCCESS if all tasks complete, CANCELLED if user cancels, FAILED if timeout/failure.
+   * Returns SUCCESS if all tasks complete, ABORTED if user aborts, FAILED if timeout/failure.
    */
   protected DeletionResult executeInteractiveAutoRetryPhase()
   {
@@ -340,7 +340,7 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
     State state = hyperTask.runWithProgressDialog();
 
     if (state == State.CANCELLED)
-      return CANCELLED;
+      return ABORTED;
 
     return result[0];
   }

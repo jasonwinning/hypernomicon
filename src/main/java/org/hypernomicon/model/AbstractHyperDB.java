@@ -402,7 +402,7 @@ public abstract class AbstractHyperDB
   public FilePath topicalPath  () { return topicalFolder  .filePath(); }
 
   public FilePath getRootPath  (String fileNameStr) { return rootFilePath.resolve(fileNameStr); }
-  public FilePath xmlPath      (String fileNameStr) { return rootFilePath.resolve(DEFAULT_XML_PATH).resolve(fileNameStr); }
+  public FilePath xmlPath      (String fileNameStr) { return rootFilePath.resolve(DEFAULT_XML_PATH, fileNameStr); }
 
   public FilePath booksPath    (String fileNameStr) { return booksFolder    .filePath().resolve(fileNameStr); }
   public FilePath papersPath   (String fileNameStr) { return papersFolder   .filePath().resolve(fileNameStr); }

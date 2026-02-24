@@ -184,7 +184,7 @@ public final class KeywordLinkScanner
    * @param text             the full source string
    * @param textStartOffset  where in <code>input</code> to start matching
    * @param keyword          the keyword text to match (exact chars + single spaces)
-   * @return                 the number of input chars consumed on success, or –1 if no match
+   * @return                 the number of input chars consumed on success, or -1 if no match
    */
   private static int matchNormalizedLength(CharSequence text, int textStartOffset, CharSequence keyword)
   {
@@ -257,7 +257,7 @@ public final class KeywordLinkScanner
    * matched keyword should be extended forward to consume additional characters
    * as part of the same link. The rules are:
    * <ul>
-   *   <li>Alphabetic characters (A–Z, a–z) are always considered part of a link.</li>
+   *   <li>Alphabetic characters (A-Z, a-z) are always considered part of a link.</li>
    *   <li>A hyphen ('-') is considered part of a link only if it is followed by
    *       another alphabetic character. In that case, the following letter is
    *       treated as the effective character for the check.</li>

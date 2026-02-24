@@ -483,7 +483,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       return;
     }
 
-    if (FileDeletion.ofDirContentsOnly(db.resultsPath()).interactive().execute() == DeletionResult.CANCELLED)
+    if (FileDeletion.ofDirContentsOnly(db.resultsPath()).interactive().execute() == DeletionResult.ABORTED)
       return;
 
     FileManager.pruneAndRefresh(true);

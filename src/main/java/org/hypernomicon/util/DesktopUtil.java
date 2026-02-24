@@ -561,11 +561,11 @@ public final class DesktopUtil
    *
    * <h4>Platform-specific behavior</h4>
    * <ul>
-   *   <li><b>Windows</b> – Executes {@code wmic csproduct get UUID} and parses the UUID from the output.</li>
-   *   <li><b>macOS</b> – Executes {@code system_profiler SPHardwareDataType} and extracts the UUID from the
+   *   <li><b>Windows</b>: Executes {@code wmic csproduct get UUID} and parses the UUID from the output.</li>
+   *   <li><b>macOS</b>: Executes {@code system_profiler SPHardwareDataType} and extracts the UUID from the
    *       "Hardware UUID" field.</li>
-   *   <li><b>Linux</b> – Reads the machine identifier from {@code /etc/machine-id}.</li>
-   *   <li><b>Other</b> – No UUID is retrieved; only the host name is used.</li>
+   *   <li><b>Linux</b>: Reads the machine identifier from {@code /etc/machine-id}.</li>
+   *   <li><b>Other</b>: No UUID is retrieved; only the host name is used.</li>
    * </ul>
    *
    * <p>

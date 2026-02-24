@@ -390,9 +390,9 @@ public class FolderTreeWatcher
 
                   runInFXThread(() ->
                   {
-                    if (!confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
-                                       "This may or may not cause a data integrity problem." + System.lineSeparator() +
-                                       "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?", true))
+                    if (confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
+                                      "This may or may not cause a data integrity problem." + System.lineSeparator() +
+                                      "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?", true) == false)
                       return;
 
                     if (newPath.exists() == false)
@@ -412,7 +412,7 @@ public class FolderTreeWatcher
                     {
                       HDT_WorkFile workFile = (HDT_WorkFile) record;
 
-                      if (workFile.works.contains(ui.activeRecord()))
+                      if ((ui.activeRecord() instanceof HDT_Work activeWork) && workFile.works.contains(activeWork))
                       {
                         if      (ui.workHyperTab().wdc != null) ui.workHyperTab().wdc.btnCancel.fire();
                         else if (ui.workHyperTab().fdc != null) ui.workHyperTab().fdc.btnCancel.fire();
@@ -621,7 +621,7 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("resource")
+  @SuppressWarnings("resource")  // WatchService stored in field, closed by stop()
   public synchronized boolean createNewWatcherAndStart()
   {
     stop();

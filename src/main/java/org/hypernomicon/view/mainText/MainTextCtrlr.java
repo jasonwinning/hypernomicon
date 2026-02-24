@@ -400,7 +400,7 @@ public class MainTextCtrlr
    * <p>
    * A non-printing key or key combination is one that does not directly change the text that is
    * selected by overwriting it. This includes modifier keys (e.g. Ctrl, Alt), navigation keys
-   * (e.g. arrows, Home, End), function keys (e.g. F1–F12), media keys, and special keys
+   * (e.g. arrows, Home, End), function keys (e.g. F1-F12), media keys, and special keys
    * such as Escape, Insert, and PrintScreen.
    * <p>
    * The method also accounts for platform-specific modifier keys (e.g. Meta, Command, Alt),

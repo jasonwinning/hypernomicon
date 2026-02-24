@@ -104,7 +104,7 @@ public class BatchBuilder extends DeletionBuilderBase<BatchBuilder>
 
       DeletionResult phaseOneResult = executeInteractiveAutoRetryPhase();
 
-      if ((phaseOneResult == SUCCESS) || (phaseOneResult == CANCELLED))
+      if ((phaseOneResult == SUCCESS) || (phaseOneResult == ABORTED))
         return phaseOneResult;
 
       // Phase 2: Prompt user about all failures together
@@ -127,7 +127,7 @@ public class BatchBuilder extends DeletionBuilderBase<BatchBuilder>
 
         default:
 
-          return CANCELLED;
+          return ABORTED;
       }
     }
   }

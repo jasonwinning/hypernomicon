@@ -58,12 +58,12 @@ import org.hypernomicon.util.file.FilePath;
  * on Windows where file handles can linger after processes close them. On Mac/Linux, deletions are attempted
  * once since POSIX systems don't have this issue.</p>
  * <ul>
- *   <li>{@code nonInteractive()}: On Windows, retry silently for up to 5 seconds with 250ms delays. On Mac/Linux,
+ *   <li>{@code nonInteractive()}: On Windows, retry silently for up to 5 seconds with 250 ms delays. On Mac/Linux,
  *       attempts once. For background operations.</li>
  *   <li>{@code interactive()}: On Windows, auto-retry for up to 3 seconds with progress dialog, then prompt
  *       user with [Try Again] [Cancel] options. On Mac/Linux, performs a single attempt via background thread
  *       with progress dialog (keeps UI responsive for slow operations such as cloud-storage paths), then shows
- *       error dialog if failed. Loops until success or user cancels (returns {@code CANCELLED}).</li>
+ *       error dialog if failed. Loops until success or user aborts (returns {@code ABORTED}).</li>
  *   <li>{@code nonInteractiveFailureOK()}: Best-effort cleanup. On Windows, retries for up to 5 seconds. On Mac/Linux,
  *       attempts once. Never throws, never prompts. Always returns SUCCESS.</li>
  *   <li>{@code nonInteractiveLogErrors()}: Same as {@code nonInteractiveFailureOK()}, but logs errors via
@@ -89,7 +89,7 @@ import org.hypernomicon.util.file.FilePath;
  *   <li>{@code SUCCESS}: All items deleted successfully (or didn't exist).</li>
  *   <li>{@code PARTIAL}: (Batch only) Some items deleted, some skipped or failed.</li>
  *   <li>{@code FAILED}: Deletion failed after all retry attempts (non-failure-OK modes only).</li>
- *   <li>{@code CANCELLED}: User cancelled the operation (interactive mode only).</li>
+ *   <li>{@code ABORTED}: User aborted the operation (interactive mode only).</li>
  * </ul>
  * <p>
  * Note: {@code nonInteractiveFailureOK()} and {@code nonInteractiveLogErrors()} always return {@code SUCCESS}
@@ -221,8 +221,8 @@ public final class FileDeletion
     /** Deletion failed after all retry attempts */
     FAILED,
 
-    /** User cancelled the operation */
-    CANCELLED
+    /** User aborted the operation */
+    ABORTED
   }
 
 //---------------------------------------------------------------------------

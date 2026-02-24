@@ -811,7 +811,7 @@ class FileDeletionTest
 
 //---------------------------------------------------------------------------
 
-  // Builder Nonexistent Path × FOK/LOG
+  // Builder Nonexistent Path x FOK/LOG
 
   @Test
   void builder_nonexistentDirWithContents_failureOK_returnsSuccess()
@@ -867,7 +867,7 @@ class FileDeletionTest
 
 //---------------------------------------------------------------------------
 
-  // Batch Empty List × FOK/LOG
+  // Batch Empty List x FOK/LOG
 
   @Test
   void batchBuilder_emptyFiles_failureOK_returnsSuccess()
@@ -941,7 +941,7 @@ class FileDeletionTest
 
 //---------------------------------------------------------------------------
 
-  // Batch Nonexistent Paths × Other Types
+  // Batch Nonexistent Paths x Other Types
 
   @Test
   void batchBuilder_allNonexistentDirsWithContents_nonInteractive_returnsSuccess()

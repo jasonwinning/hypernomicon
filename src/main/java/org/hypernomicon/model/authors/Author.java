@@ -135,7 +135,7 @@ public abstract class Author
    * Returns a concise, comma-separated list of author names.
    *
    * <p>If the stream contains exactly one author and fullNameIfSingleton is false,
-   * the author’s initials-first form is used; otherwise the last-name-first form is applied.
+   * the author's initials-first form is used; otherwise the last-name-first form is applied.
    * An ampersand (&) precedes the final name when multiple authors are present.
    * Optionally sorts the list and appends editor notation.
    *

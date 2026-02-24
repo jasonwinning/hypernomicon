@@ -993,7 +993,7 @@ public final class FileManager extends NonmodalWindow
       if (item.isDirectory())
         return ((HDT_Folder) fileRecord).delete();
 
-      if (FileDeletion.ofFile(filePath).interactive().execute() == DeletionResult.CANCELLED)
+      if (FileDeletion.ofFile(filePath).interactive().execute() == DeletionResult.ABORTED)
         return false;
 
       db.unmapFilePath(filePath);
@@ -1004,7 +1004,7 @@ public final class FileManager extends NonmodalWindow
 
     for (HyperPath setPath : set)
     {
-      if (FileDeletion.ofFile(setPath.filePath()).interactive().execute() == DeletionResult.CANCELLED)
+      if (FileDeletion.ofFile(setPath.filePath()).interactive().execute() == DeletionResult.ABORTED)
         return false;
 
       db.unmapFilePath(setPath.filePath());
@@ -1424,7 +1424,7 @@ public final class FileManager extends NonmodalWindow
   {
     HDT_RecordWithPath recordForRelatives;
     LinkedHashSet<HDT_Record> relatives = new LinkedHashSet<>();
-    boolean hasMore = false,
+    boolean hasMore,
             gettingNotesForFile = (fileRow != null) && (fileRow.isDirectory() == false),
             hasFileRecord = false;
 

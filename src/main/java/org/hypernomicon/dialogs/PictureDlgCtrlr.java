@@ -503,7 +503,7 @@ public class PictureDlgCtrlr extends ModalDialog
     if (confirmDialog("Are you sure you want to permanently delete the file \"" + personHyperTab.getCurPicture().getNameOnly() + "\"?", false) == false)
       return;
 
-    if (FileDeletion.ofFile(personHyperTab.getCurPicture()).interactive().execute() == DeletionResult.CANCELLED)
+    if (FileDeletion.ofFile(personHyperTab.getCurPicture()).interactive().execute() == DeletionResult.ABORTED)
       return;
 
     db.unmapFilePath(personHyperTab.getCurPicture());
@@ -938,7 +938,7 @@ public class PictureDlgCtrlr extends ModalDialog
         if (confirmDialog("A file with that name already exists. Okay to overwrite?", false) == false)
           return false;
 
-        if (FileDeletion.ofFile(newFileDest).interactive().execute() == DeletionResult.CANCELLED)
+        if (FileDeletion.ofFile(newFileDest).interactive().execute() == DeletionResult.ABORTED)
           return false;
       }
     }
@@ -1024,7 +1024,7 @@ public class PictureDlgCtrlr extends ModalDialog
         replacingPictureForSamePerson = true;
       }
 
-      if (newFileSrc.equals(newFileDest) == false)
+      if (newFileDest.equals(newFileSrc) == false)
       {
         if (newFileDest.exists() && (replacingPictureForSamePerson == false))
           return falseWithErrorPopup("Unable to move/rename file: A file with that name already exists.");
@@ -1079,6 +1079,9 @@ public class PictureDlgCtrlr extends ModalDialog
         else
         {
           HDT_Folder destFolder = HyperPath.getFolderFromFilePath(newFileDest.getDirOnly(), true);
+
+          if (destFolder == null)
+            return falseWithErrorPopup("Unable to find or create folder record for destination.");
 
           for (HyperPath hyperPath : setOfHyperPathsAlreadyAssignedToSourcePathOfNewFile)
           {

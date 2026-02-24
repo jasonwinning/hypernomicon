@@ -203,7 +203,7 @@ class FileTable extends DragNDropContainer<FileRow>
         Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
         boolean isDir = filePath.isDirectory();
 
-        if (set.size() > 0)
+        if (set.isEmpty() == false)
         {
           FileRow row = new FileRow(set.iterator().next(), isDir);
 

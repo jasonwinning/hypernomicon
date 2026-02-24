@@ -270,7 +270,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
           return;
         }
 
-        if (FileDeletion.ofDirContentsOnly(transientDBFilePath).interactive().execute() == DeletionResult.CANCELLED)
+        if (FileDeletion.ofDirContentsOnly(transientDBFilePath).interactive().execute() == DeletionResult.ABORTED)
         {
           new TestConsoleDlgCtrlr().showModal();
           return;
@@ -381,7 +381,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     DeletionResult result = FileDeletion.ofDirContentsOnly(transientDBFilePath).interactive().execute();
 
-    return result != DeletionResult.CANCELLED;
+    return result != DeletionResult.ABORTED;
   }
 
 //---------------------------------------------------------------------------

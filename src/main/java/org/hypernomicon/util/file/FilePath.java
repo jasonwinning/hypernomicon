@@ -68,7 +68,7 @@ public class FilePath implements Comparable<FilePath>
   public long size() throws IOException { return Files.size(toPath()); }
   public boolean isFile()               { return toFile().isFile();  }
   public boolean isDirectory()          { return toFile().isDirectory(); }
-  public FilePath getParent()           { return nullSwitch(nullSwitch(toPath(), null, Path::getParent), (FilePath)null, FilePath::new); }
+  public FilePath getParent()           { return nullSwitch(nullSwitch(toPath(), null, Path::getParent), null, FilePath::new); }
   public Instant lastModified()         { return Instant.ofEpochMilli(toFile().lastModified()); }
 
   /**
@@ -126,6 +126,19 @@ public class FilePath implements Comparable<FilePath>
    * this = base, parameter = relative, output = resolved
    */
   public FilePath resolve(String relativeStr) { return new FilePath(toPath().resolve(Paths.get(relativeStr.strip()))); }
+
+  /**
+   * this = base, parameters = relative parts, output = resolved
+   */
+  public FilePath resolve(String... relativeStrs)
+  {
+    Path path = toPath();
+
+    for (String part : relativeStrs)
+      path = path.resolve(Paths.get(part.strip()));
+
+    return new FilePath(path);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -190,7 +190,7 @@ class DocIdentifiersTest
   @Test
   void testPrepareForIDMatchThroughMatchDOI()
   {
-    String input = "Testing prepareForIDMatch – Hyphen and STX 10.1000\u0002x–yz";
+    String input = "Testing prepareForIDMatch: Hyphen and STX 10.1000\u0002x–yz";
     String expected = "10.1000/x-yz"; assertEquals(expected, matchDOI(input)); }
 
 //---------------------------------------------------------------------------

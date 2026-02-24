@@ -129,7 +129,7 @@ public final class XmlDiffCtrlr
     FilePath srcFolderPath  = new FilePath(tfSrc .getText()),
              destFolderPath = new FilePath(tfDest.getText());
 
-    if (FileDeletion.ofDirContentsOnly(destFolderPath).interactive().execute() == DeletionResult.CANCELLED)
+    if (FileDeletion.ofDirContentsOnly(destFolderPath).interactive().execute() == DeletionResult.ABORTED)
       return;
 
     try

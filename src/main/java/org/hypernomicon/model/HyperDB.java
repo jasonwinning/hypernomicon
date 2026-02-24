@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 
@@ -315,7 +316,7 @@ public final class HyperDB extends AbstractHyperDB
   {
     String fileName = recordType == hdtDebate ? "Debate" : FilePath.removeInvalidFileNameChars(getTag(recordType).header);
 
-    return xmlPath().resolve(DESC_TEMPLATE_FOLDER_NAME).resolve(fileName + ".html");
+    return xmlPath().resolve(DESC_TEMPLATE_FOLDER_NAME, fileName + ".html");
   }
 
 //---------------------------------------------------------------------------
@@ -451,14 +452,11 @@ public final class HyperDB extends AbstractHyperDB
     String headerText = "Each folder shown below is referred to by one or more database records but cannot be found." + System.lineSeparator() +
                         "Next time, only use the " + appTitle + " File Manager to move, rename, or delete database folders.";
 
-    StringBuilder folderList = new StringBuilder();
-
-    for (FilePath folder : missingFolders)
-      folderList.append(folder).append(System.lineSeparator());
+    String folderList = missingFolders.stream().map(folder -> folder + System.lineSeparator()).collect(Collectors.joining());
 
     String title = missingFolders.size() == 1 ? "Missing Folder" : missingFolders.size() + " Missing Folders";
 
-    longMessagePopup(title, AlertType.WARNING, headerText, folderList.toString());
+    longMessagePopup(title, AlertType.WARNING, headerText, folderList);
   }
 
 //---------------------------------------------------------------------------

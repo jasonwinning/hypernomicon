@@ -304,7 +304,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
     if (anyModifier)
       return false;
 
-    // Treat A–Z, 0–9, punctuation as "character".
+    // Treat A-Z, 0-9, punctuation as "character".
     return isCharacterLike(k);
   }
 

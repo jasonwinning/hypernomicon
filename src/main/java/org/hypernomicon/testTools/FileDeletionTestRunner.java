@@ -21,6 +21,7 @@ import static org.hypernomicon.App.app;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
@@ -302,8 +303,8 @@ public final class FileDeletionTestRunner
     {
       try
       {
-        FilePath real = createTestFile(testRoot, "batch_real.txt");
-        FilePath ghost = testRoot.resolve("batch_ghost.txt");
+        FilePath real  = createTestFile(testRoot, "batch_real.txt"),
+                 ghost = testRoot.resolve("batch_ghost.txt");
 
         var batch = FileDeletion.ofFiles(List.of(real, ghost)).nonInteractive();
         DeletionResult result = batch.execute();
@@ -344,7 +345,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 13: Type validation — directory passed to ofFiles
+    // Step 13: Type validation: directory passed to ofFiles
 
     seq.thenRunAfterDelay(() ->
     {
@@ -370,7 +371,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 14: Type validation — file passed to ofDirsWithContents
+    // Step 14: Type validation: file passed to ofDirsWithContents
 
     seq.thenRunAfterDelay(() ->
     {
@@ -439,7 +440,7 @@ public final class FileDeletionTestRunner
 
         DeletionResult result = FileDeletion.ofFile(locked).interactive().execute();
 
-        assertEquals(CANCELLED, result, "Step 16 result");
+        assertEquals(ABORTED, result, "Step 16 result");
         assertExists(locked, "Step 16 locked file should still exist");
         assertEquals(1, PopupRobot.getInvocationCount(), "Step 16 popup count");
         assertTrue(PopupRobot.getLastMessage().contains("Unable to delete"), "Step 16 popup message");
@@ -523,10 +524,10 @@ public final class FileDeletionTestRunner
         var batch = FileDeletion.ofFiles(List.of(locked)).interactive();
         DeletionResult result = batch.execute();
 
-        assertEquals(CANCELLED, result, "Step 19 result");
+        assertEquals(ABORTED, result, "Step 19 result");
         assertExists(locked, "Step 19 locked file should still exist");
 
-        System.out.println("Step 19: CANCELLED as expected");
+        System.out.println("Step 19: ABORTED as expected");
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
       finally { closeQuietly(raf); }
@@ -602,8 +603,8 @@ public final class FileDeletionTestRunner
     {
       try
       {
-        FilePath target = createTestFile(testRoot, "symlink_target.txt");
-        FilePath link = testRoot.resolve("symlink_to_file");
+        FilePath target = createTestFile(testRoot, "symlink_target.txt"),
+                 link   = testRoot.resolve("symlink_to_file");
 
         try
         {
@@ -741,8 +742,8 @@ public final class FileDeletionTestRunner
         createTestFile(dir1, "sub/file.txt");
         createTestFile(dir2, "sub/file.txt");
 
-        DeletionResult result1 = FileDeletion.ofDirWithContents(dir1).nonInteractive().execute();
-        DeletionResult result2 = FileDeletion.ofFileOrDirWithContents(dir2).nonInteractive().execute();
+        DeletionResult result1 = FileDeletion.ofDirWithContents(dir1).nonInteractive().execute(),
+                       result2 = FileDeletion.ofFileOrDirWithContents(dir2).nonInteractive().execute();
 
         assertEquals(SUCCESS, result1, "Step 28 ofDirWithContents result");
         assertEquals(SUCCESS, result2, "Step 28 ofFileOrDirWithContents result");
@@ -794,10 +795,10 @@ public final class FileDeletionTestRunner
     });
 
     // -----------------------------------------------------------------------
-    // Phase 14: Builder × FOK/LOG on actual files (steps 31-38)
+    // Phase 14: Builder x FOK/LOG on actual files (steps 31-38)
     // -----------------------------------------------------------------------
 
-    // Step 31: FILE × FOK
+    // Step 31: FILE x FOK
 
     seq.thenRunAfterDelay(() ->
     {
@@ -810,7 +811,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 32: FILE × LOG
+    // Step 32: FILE x LOG
 
     seq.thenRunAfterDelay(() ->
     {
@@ -823,7 +824,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 33: DWC × FOK
+    // Step 33: DWC x FOK
 
     seq.thenRunAfterDelay(() ->
     {
@@ -837,7 +838,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 34: DWC × LOG
+    // Step 34: DWC x LOG
 
     seq.thenRunAfterDelay(() ->
     {
@@ -851,7 +852,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 35: DCO × FOK
+    // Step 35: DCO x FOK
 
     seq.thenRunAfterDelay(() ->
     {
@@ -868,7 +869,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 36: DCO × LOG
+    // Step 36: DCO x LOG
 
     seq.thenRunAfterDelay(() ->
     {
@@ -885,7 +886,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 37: FODWC × FOK (auto-detect as dir)
+    // Step 37: FODWC x FOK (auto-detect as dir)
 
     seq.thenRunAfterDelay(() ->
     {
@@ -899,7 +900,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 38: FODWC × LOG (auto-detect as file)
+    // Step 38: FODWC x LOG (auto-detect as file)
 
     seq.thenRunAfterDelay(() ->
     {
@@ -913,10 +914,10 @@ public final class FileDeletionTestRunner
     });
 
     // -----------------------------------------------------------------------
-    // Phase 15: Builder × interactive on actual unlocked dirs (steps 39-41)
+    // Phase 15: Builder x interactive on actual unlocked dirs (steps 39-41)
     // -----------------------------------------------------------------------
 
-    // Step 39: DWC × I
+    // Step 39: DWC x I
 
     seq.thenRunAfterDelay(() ->
     {
@@ -935,7 +936,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 40: DCO × I
+    // Step 40: DCO x I
 
     seq.thenRunAfterDelay(() ->
     {
@@ -957,7 +958,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 41: FODWC × I (auto-detect as dir)
+    // Step 41: FODWC x I (auto-detect as dir)
 
     seq.thenRunAfterDelay(() ->
     {
@@ -977,10 +978,10 @@ public final class FileDeletionTestRunner
     });
 
     // -----------------------------------------------------------------------
-    // Phase 16: Batch × DCO/FODWC × NI (steps 42-43)
+    // Phase 16: Batch x DCO/FODWC x NI (steps 42-43)
     // -----------------------------------------------------------------------
 
-    // Step 42: Batch DCO × NI
+    // Step 42: Batch DCO x NI
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1003,14 +1004,14 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 43: Batch FODWC × NI (one file + one dir)
+    // Step 43: Batch FODWC x NI (one file + one dir)
 
     seq.thenRunAfterDelay(() ->
     {
       try
       {
-        FilePath f = createTestFile(testRoot, "batch_fodwc_file.txt");
-        FilePath dir = testRoot.resolve("batch_fodwc_dir");
+        FilePath f = createTestFile(testRoot, "batch_fodwc_file.txt"),
+                 dir = testRoot.resolve("batch_fodwc_dir");
         createTestFile(dir, "child.txt");
 
         var batch = FileDeletion.ofFilesOrDirsWithContents(List.of(f, dir)).nonInteractive();
@@ -1023,10 +1024,10 @@ public final class FileDeletionTestRunner
     });
 
     // -----------------------------------------------------------------------
-    // Phase 17: Batch × FOK/LOG on actual files (steps 44-51)
+    // Phase 17: Batch x FOK/LOG on actual files (steps 44-51)
     // -----------------------------------------------------------------------
 
-    // Step 44: Batch FILE × FOK
+    // Step 44: Batch FILE x FOK
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1044,7 +1045,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 45: Batch FILE × LOG
+    // Step 45: Batch FILE x LOG
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1062,7 +1063,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 46: Batch DWC × FOK
+    // Step 46: Batch DWC x FOK
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1080,7 +1081,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 47: Batch DWC × LOG
+    // Step 47: Batch DWC x LOG
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1098,7 +1099,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 48: Batch DCO × FOK
+    // Step 48: Batch DCO x FOK
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1119,7 +1120,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 49: Batch DCO × LOG
+    // Step 49: Batch DCO x LOG
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1140,14 +1141,14 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 50: Batch FODWC × FOK (file + dir)
+    // Step 50: Batch FODWC x FOK (file + dir)
 
     seq.thenRunAfterDelay(() ->
     {
       try
       {
-        FilePath f = createTestFile(testRoot, "bfok_fodwc_file.txt");
-        FilePath dir = testRoot.resolve("bfok_fodwc_dir");
+        FilePath f = createTestFile(testRoot, "bfok_fodwc_file.txt"),
+                 dir = testRoot.resolve("bfok_fodwc_dir");
         createTestFile(dir, "child.txt");
 
         assertEquals(SUCCESS, FileDeletion.ofFilesOrDirsWithContents(List.of(f, dir)).nonInteractiveFailureOK().execute(), "Step 50 result");
@@ -1157,14 +1158,14 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 51: Batch FODWC × LOG (file + dir)
+    // Step 51: Batch FODWC x LOG (file + dir)
 
     seq.thenRunAfterDelay(() ->
     {
       try
       {
-        FilePath f = createTestFile(testRoot, "blog_fodwc_file.txt");
-        FilePath dir = testRoot.resolve("blog_fodwc_dir");
+        FilePath f = createTestFile(testRoot, "blog_fodwc_file.txt"),
+                 dir = testRoot.resolve("blog_fodwc_dir");
         createTestFile(dir, "child.txt");
 
         assertEquals(SUCCESS, FileDeletion.ofFilesOrDirsWithContents(List.of(f, dir)).nonInteractiveLogErrors().execute(), "Step 51 result");
@@ -1175,10 +1176,10 @@ public final class FileDeletionTestRunner
     });
 
     // -----------------------------------------------------------------------
-    // Phase 18: Batch × interactive clean success (steps 52-55)
+    // Phase 18A: Batch x interactive clean success (steps 52-55)
     // -----------------------------------------------------------------------
 
-    // Step 52: Batch FILE × I
+    // Step 52: Batch FILE x I
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1199,7 +1200,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 53: Batch DWC × I
+    // Step 53: Batch DWC x I
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1222,7 +1223,7 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 54: Batch DCO × I
+    // Step 54: Batch DCO x I
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1248,14 +1249,14 @@ public final class FileDeletionTestRunner
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
 
-    // Step 55: Batch FODWC × I (file + dir)
+    // Step 55: Batch FODWC x I (file + dir)
 
     seq.thenRunAfterDelay(() ->
     {
       try
       {
-        FilePath f = createTestFile(testRoot, "bi_fodwc_file.txt");
-        FilePath dir = testRoot.resolve("bi_fodwc_dir");
+        FilePath f = createTestFile(testRoot, "bi_fodwc_file.txt"),
+                 dir = testRoot.resolve("bi_fodwc_dir");
         createTestFile(dir, "child.txt");
 
         PopupRobot.clear();
@@ -1271,7 +1272,7 @@ public final class FileDeletionTestRunner
     });
 
     // -----------------------------------------------------------------------
-    // Phase 18B: Multi-pass directory tree walk — cloud-storage simulation (step 56)
+    // Phase 18B: Multi-pass directory tree walk, cloud-storage simulation (step 56)
     //
     // Exercises the 3-pass retry in deleteDirectoryTreeWalk by having a background
     // thread inject a new file into a subdirectory while deletion is in progress.
@@ -1282,7 +1283,7 @@ public final class FileDeletionTestRunner
     // the injected.get() log count reports whether the race was actually exercised.
     // -----------------------------------------------------------------------
 
-    // Step 56: DCO multi-pass — injected file cleaned up by retry
+    // Step 56: DCO multi-pass; injected file cleaned up by retry
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1300,7 +1301,7 @@ public final class FileDeletionTestRunner
         try (ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor())
         {
           // Inject a file shortly after deletion begins to simulate a sync daemon
-          // creating a metadata file between walk passes. The 5ms delay targets the
+          // creating a metadata file between walk passes. The 5 ms delay targets the
           // deletion phase (after the walk has closed its stream) so the injected file
           // is not in the collected path list and survives pass 1.
 
@@ -1334,7 +1335,7 @@ public final class FileDeletionTestRunner
     // Phase 19: FAILED result via nonInteractive (steps 57-59, Windows-only)
     // -----------------------------------------------------------------------
 
-    // Step 57: Builder NI on locked file → FAILED
+    // Step 57: Builder NI on locked file -> FAILED
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1352,7 +1353,7 @@ public final class FileDeletionTestRunner
       finally { closeQuietly(raf); }
     }).windowsOnly();
 
-    // Step 58: Batch NI on two locked files → FAILED
+    // Step 58: Batch NI on two locked files -> FAILED
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1374,7 +1375,7 @@ public final class FileDeletionTestRunner
       finally { closeQuietly(raf1); closeQuietly(raf2); }
     }).windowsOnly();
 
-    // Step 59: Batch NI on locked + unlocked → PARTIAL
+    // Step 59: Batch NI on locked + unlocked -> PARTIAL
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1399,7 +1400,7 @@ public final class FileDeletionTestRunner
     // Phase 20: Batch type validation gap (step 60)
     // -----------------------------------------------------------------------
 
-    // Step 60: ofDirsContentsOnly with file path → IllegalArgumentException
+    // Step 60: ofDirsContentsOnly with file path -> IllegalArgumentException
 
     seq.thenRunAfterDelay(() ->
     {
@@ -1434,7 +1435,7 @@ public final class FileDeletionTestRunner
     // On non-Windows, all timed steps are SKIPPED because POSIX doesn't
     // prevent deletion of files with open handles.
 
-    // Builder timed tests: 5 targets × 10 progressions = 50 tests (steps 61-110)
+    // Builder timed tests: 5 targets x 10 progressions = 50 tests (steps 61-110)
 
     TestTarget[] builderTargets =
     {
@@ -1446,27 +1447,27 @@ public final class FileDeletionTestRunner
 
     for (TestTarget target : builderTargets)
     {
-      // NI: fail → success within 5s
+      // NI: fail -> success within 5s
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "NI",
           1500, SUCCESS, true, false);
 
-      // NI: fail → timeout → FAILED
+      // NI: fail -> timeout -> FAILED
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "NI",
           -1, FAILED, false, false);
 
-      // FOK: fail → success within 5s
+      // FOK: fail -> success within 5s
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "FOK",
           1500, SUCCESS, true, false);
 
-      // FOK: fail → timeout → SUCCESS (file stays)
+      // FOK: fail -> timeout -> SUCCESS (file stays)
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "FOK",
           -1, SUCCESS, false, false);
 
-      // LOG: fail → success within 5s (no log)
+      // LOG: fail -> success within 5s (no log)
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "LOG",
           1500, SUCCESS, true, false);
 
-      // LOG: fail → timeout → SUCCESS (logged)
+      // LOG: fail -> timeout -> SUCCESS (logged)
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "LOG",
           -1, SUCCESS, false, true);
 
@@ -1474,20 +1475,20 @@ public final class FileDeletionTestRunner
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "I",
           1500, SUCCESS, true, false, mrCancel);
 
-      // I: prompt → retry → success
+      // I: prompt -> retry -> success
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "I",
           4000, SUCCESS, true, false, mrRetry, mrCancel);
 
-      // I: prompt → retry → prompt → retry → success
+      // I: prompt -> retry -> prompt -> retry -> success
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "I",
           7000, SUCCESS, true, false, mrRetry, mrRetry, mrCancel);
 
-      // I: prompt → cancel → CANCELLED
+      // I: prompt -> cancel -> ABORTED
       addBuilderTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "I",
-          -1, CANCELLED, false, false, mrCancel);
+          -1, ABORTED, false, false, mrCancel);
     }
 
-    // Batch timed tests: 4 targets × 13 progressions = 52 tests (steps 111-162)
+    // Batch timed tests: 4 targets x 13 progressions = 52 tests (steps 111-162)
 
     TestTarget[] batchTargets =
     {
@@ -1505,11 +1506,11 @@ public final class FileDeletionTestRunner
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "NI",
           3, new long[] { 0, 1500, 3000 }, SUCCESS, 0, false);
 
-      // NI: some succeed + timeout → PARTIAL
+      // NI: some succeed + timeout -> PARTIAL
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "NI",
           3, new long[] { 1000, -1, -1 }, PARTIAL, 2, false);
 
-      // NI: all timeout → FAILED
+      // NI: all timeout -> FAILED
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "NI",
           3, new long[] { -1, -1, -1 }, FAILED, 3, false);
 
@@ -1517,7 +1518,7 @@ public final class FileDeletionTestRunner
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "FOK",
           3, new long[] { 500, 1500, 2500 }, SUCCESS, 0, false);
 
-      // FOK: all fail → SUCCESS (items remain)
+      // FOK: all fail -> SUCCESS (items remain)
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "FOK",
           3, new long[] { -1, -1, -1 }, SUCCESS, 0, false);
 
@@ -1525,7 +1526,7 @@ public final class FileDeletionTestRunner
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "LOG",
           3, new long[] { 500, 1500, 2500 }, SUCCESS, 0, false);
 
-      // LOG: all fail → SUCCESS (logged)
+      // LOG: all fail -> SUCCESS (logged)
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "LOG",
           3, new long[] { -1, -1, -1 }, SUCCESS, 0, true);
 
@@ -1533,27 +1534,27 @@ public final class FileDeletionTestRunner
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "I",
           3, new long[] { 500, 1000, 1500 }, SUCCESS, 0, false, mrCancel);
 
-      // I: 1 retry round → all succeed
+      // I: 1 retry round -> all succeed
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "I",
           3, new long[] { 1000, 4000, 4500 }, SUCCESS, 0, false, mrRetry, mrCancel);
 
-      // I: 2 retry rounds → all succeed
+      // I: 2 retry rounds -> all succeed
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "I",
           3, new long[] { 1000, 4000, 7000 }, SUCCESS, 0, false, mrRetry, mrRetry, mrCancel);
 
-      // I: partial + user skip → PARTIAL
+      // I: partial + user skip -> PARTIAL
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "I",
           2, new long[] { 1000, -1 }, PARTIAL, 1, false, mrIgnore);
 
-      // I: all fail + user cancel → CANCELLED
+      // I: all fail + user cancel -> ABORTED
       addBatchTimedStep(seq, testRoot, logFile, "Step " + stepNum++, target, "I",
-          2, new long[] { -1, -1 }, CANCELLED, 0, false, mrCancel);
+          2, new long[] { -1, -1 }, ABORTED, 0, false, mrCancel);
     }
 
     // -----------------------------------------------------------------------
-    // Phase 23: Builder × Interactive Phase 1 Cancel (steps 163-167, Windows-only)
+    // Phase 23: Builder x Interactive Phase 1 Cancel (steps 163-167, Windows-only)
     //
-    // Tests that cancelling the progress dialog (Phase 1) returns CANCELLED
+    // Tests that cancelling the progress dialog (Phase 1) returns ABORTED
     // without ever reaching Phase 2. One test per TestTarget.
     // -----------------------------------------------------------------------
 
@@ -1576,7 +1577,7 @@ public final class FileDeletionTestRunner
 
           DeletionResult result = executeBuilder(targetPath, target, "I");
 
-          assertEquals(CANCELLED, result, label + " result (" + target + ')');
+          assertEquals(ABORTED, result, label + " result (" + target + ')');
           assertTargetPresent(targetPath, target, label);
           assertEquals(0, PopupRobot.getInvocationCount(), label + " popup count (Phase 2 should not be reached)");
 
@@ -1591,9 +1592,9 @@ public final class FileDeletionTestRunner
     }
 
     // -----------------------------------------------------------------------
-    // Phase 24A: Batch × Interactive Phase 1 Cancel, all locked (steps 168-171, Windows-only)
+    // Phase 24A: Batch x Interactive Phase 1 Cancel, all locked (steps 168-171, Windows-only)
     //
-    // Both items locked, cancel at progress dialog. Verifies CANCELLED result,
+    // Both items locked, cancel at progress dialog. Verifies ABORTED result,
     // both targets present, zero popups, empty failedPaths.
     // -----------------------------------------------------------------------
 
@@ -1620,11 +1621,11 @@ public final class FileDeletionTestRunner
           var batch = executeBatch(List.of(path1, path2), target, "I");
           DeletionResult result = batch.execute();
 
-          assertEquals(CANCELLED, result, label + " result (" + target + ')');
+          assertEquals(ABORTED, result, label + " result (" + target + ')');
           assertTargetPresent(path1, target, label + " item 1");
           assertTargetPresent(path2, target, label + " item 2");
           assertEquals(0, PopupRobot.getInvocationCount(), label + " popup count");
-          assertTrue(batch.getFailedPaths().isEmpty(), label + " failedPaths should be empty on CANCELLED");
+          assertTrue(batch.getFailedPaths().isEmpty(), label + " failedPaths should be empty on ABORTED");
 
           System.out.println(label + ": Phase 1 cancel batch " + target + " (all locked) OK");
         }
@@ -1638,11 +1639,11 @@ public final class FileDeletionTestRunner
     }
 
     // -----------------------------------------------------------------------
-    // Phase 24B: Batch × Interactive Phase 1 Cancel, partial progress (steps 172-175, Windows-only)
+    // Phase 24B: Batch x Interactive Phase 1 Cancel, partial progress (steps 172-175, Windows-only)
     //
-    // Two items locked; first lock released at 100ms so it's deleted during
+    // Two items locked; first lock released at 100 ms so it's deleted during
     // the pre-dialog retry window. Second stays locked. Progress dialog cancel
-    // fires at 300ms. Verifies first item gone, second present, zero popups.
+    // fires at 300 ms. Verifies first item gone, second present, zero popups.
     // -----------------------------------------------------------------------
 
     for (TestTarget target : batchTargets)
@@ -1661,7 +1662,7 @@ public final class FileDeletionTestRunner
           raf1 = lockTarget(path1, target);
           raf2 = lockTarget(path2, target);
 
-          // Release first lock at 100ms so it's deleted during retry window
+          // Release first lock at 100 ms so it's deleted during retry window
           final RandomAccessFile handle1 = raf1;
           executor.schedule(() -> closeQuietly(handle1), 100, TimeUnit.MILLISECONDS);
 
@@ -1672,11 +1673,11 @@ public final class FileDeletionTestRunner
           var batch = executeBatch(List.of(path1, path2), target, "I");
           DeletionResult result = batch.execute();
 
-          assertEquals(CANCELLED, result, label + " result (" + target + ')');
+          assertEquals(ABORTED, result, label + " result (" + target + ')');
           assertTargetGone(path1, target, label + " item 1 (released)");
           assertTargetPresent(path2, target, label + " item 2 (locked)");
           assertEquals(0, PopupRobot.getInvocationCount(), label + " popup count");
-          assertTrue(batch.getFailedPaths().isEmpty(), label + " failedPaths should be empty on CANCELLED");
+          assertTrue(batch.getFailedPaths().isEmpty(), label + " failedPaths should be empty on ABORTED");
 
           raf1 = null;  // already released by scheduler
 
@@ -1694,7 +1695,7 @@ public final class FileDeletionTestRunner
     // -----------------------------------------------------------------------
     // Phase 25: External deletion during interactive retry (steps 176-180, Windows-only)
     //
-    // Target is locked, then lock released + target deleted externally at 600ms.
+    // Target is locked, then lock released + target deleted externally at 600 ms.
     // The retry loop discovers the target is gone and returns SUCCESS.
     // Exercises different code paths per target type:
     //   FILE/FODWC_AS_FILE: deleteIfExists returns false (file already gone)
@@ -1759,11 +1760,8 @@ public final class FileDeletionTestRunner
    * @param responses For interactive mode: the first N-1 are enqueued, the last is the default.
    *                  For non-interactive: ignored (pass nothing).
    */
-  private static void addBuilderTimedStep
-  ( FXTestSequencer seq, FilePath localTestRoot, FilePath logFile,
-    String stepLabel, TestTarget target, String retryMode,
-    long releaseMs, DeletionResult expected, boolean expectGone,
-    boolean expectLog, DialogResult... responses)
+  private static void addBuilderTimedStep(FXTestSequencer seq, FilePath localTestRoot, FilePath logFile, String stepLabel, TestTarget target,
+    String retryMode, long releaseMs, DeletionResult expected, boolean expectGone, boolean expectLog, DialogResult... responses)
   {
     seq.thenRunAfterDelay(() ->
     {
@@ -1805,7 +1803,7 @@ public final class FileDeletionTestRunner
 
         // Assert result
 
-        assertEquals(expected, result, stepLabel + " result (" + target + " × " + retryMode + ')');
+        assertEquals(expected, result, stepLabel + " result (" + target + " x " + retryMode + ')');
 
         // Assert file state
 
@@ -1825,7 +1823,7 @@ public final class FileDeletionTestRunner
         {
           int expectedPopups = (expected == SUCCESS) ? responses.length - 1 : responses.length;
           assertEquals(expectedPopups, PopupRobot.getInvocationCount(),
-              stepLabel + " popup count (" + target + " × " + retryMode + ')');
+              stepLabel + " popup count (" + target + " x " + retryMode + ')');
         }
 
         // Mark lock as consumed by scheduled release (if applicable)
@@ -1854,11 +1852,8 @@ public final class FileDeletionTestRunner
    * @param responses For interactive mode: the first N-1 are enqueued, the last is the default.
    */
   @SuppressWarnings("resource") // locks are closed in the finally block via closeQuietly
-  private static void addBatchTimedStep
-  ( FXTestSequencer seq, FilePath localTestRoot, FilePath logFile,
-    String stepLabel, TestTarget target, String retryMode,
-    int itemCount, long[] releaseMs, DeletionResult expected,
-    int expectedFailCount, boolean expectLog, DialogResult... responses)
+  private static void addBatchTimedStep(FXTestSequencer seq, FilePath localTestRoot, FilePath logFile, String stepLabel, TestTarget target, String retryMode,
+    int itemCount, long[] releaseMs, DeletionResult expected, int expectedFailCount, boolean expectLog, DialogResult... responses)
   {
     seq.thenRunAfterDelay(() ->
     {
@@ -1870,8 +1865,7 @@ public final class FileDeletionTestRunner
 
         for (int ndx = 0; ndx < itemCount; ndx++)
         {
-          FilePath targetPath = createTarget(localTestRoot,
-              stepLabel.replace(' ', '_') + '_' + target + '_' + ndx, target);
+          FilePath targetPath = createTarget(localTestRoot, stepLabel.replace(' ', '_') + '_' + target + '_' + ndx, target);
           paths.add(targetPath);
 
           RandomAccessFile raf = lockTarget(targetPath, target);
@@ -1913,14 +1907,12 @@ public final class FileDeletionTestRunner
 
         // Assert result
 
-        assertEquals(expected, result,
-            stepLabel + " result (" + target + " × " + retryMode + ')');
+        assertEquals(expected, result, stepLabel + " result (" + target + " x " + retryMode + ')');
 
         // Assert failed paths count (for NI modes that track failures)
 
         if ((expected == PARTIAL) || (expected == FAILED))
-          assertEquals(expectedFailCount, batch.getFailedPaths().size(),
-              stepLabel + " failedPaths count");
+          assertEquals(expectedFailCount, batch.getFailedPaths().size(), stepLabel + " failedPaths count");
 
         // Assert log output
 
@@ -1950,8 +1942,7 @@ public final class FileDeletionTestRunner
         if (responses.length > 0)
         {
           int expectedPopups = (expected == SUCCESS) ? responses.length - 1 : responses.length;
-          assertEquals(expectedPopups, PopupRobot.getInvocationCount(),
-              stepLabel + " popup count (" + target + " × " + retryMode + ')');
+          assertEquals(expectedPopups, PopupRobot.getInvocationCount(), stepLabel + " popup count (" + target + " x " + retryMode + ')');
         }
 
         // Assert failedPaths content for PARTIAL/FAILED results
@@ -1963,11 +1954,9 @@ public final class FileDeletionTestRunner
           for (int ndx = 0; ndx < itemCount; ndx++)
           {
             if (releaseMs[ndx] == -1)
-              assertTrue(failedSet.contains(paths.get(ndx)),
-                  stepLabel + " failedPaths should contain item " + ndx);
+              assertTrue(failedSet.contains(paths.get(ndx)), stepLabel + " failedPaths should contain item " + ndx);
             else
-              assertFalse(failedSet.contains(paths.get(ndx)),
-                  stepLabel + " failedPaths should not contain item " + ndx);
+              assertFalse(failedSet.contains(paths.get(ndx)), stepLabel + " failedPaths should not contain item " + ndx);
           }
         }
 
@@ -2057,10 +2046,8 @@ public final class FileDeletionTestRunner
           try (var walk = Files.walk(root))
           {
             for (Path p : walk.sorted(Comparator.reverseOrder()).toList())
-            {
               if (p.equals(root) == false)
                 Files.deleteIfExists(p);
-            }
           }
         }
       }
@@ -2080,18 +2067,19 @@ public final class FileDeletionTestRunner
   {
     var builder = switch (target)
     {
-      case FILE              -> FileDeletion.ofFile(path);
-      case DIR_WITH_CONTENTS -> FileDeletion.ofDirWithContents(path);
-      case DIR_CONTENTS_ONLY -> FileDeletion.ofDirContentsOnly(path);
+      case FILE                        -> FileDeletion.ofFile                 (path);
+      case DIR_WITH_CONTENTS           -> FileDeletion.ofDirWithContents      (path);
+      case DIR_CONTENTS_ONLY           -> FileDeletion.ofDirContentsOnly      (path);
       case FODWC_AS_FILE, FODWC_AS_DIR -> FileDeletion.ofFileOrDirWithContents(path);
     };
 
     return switch (retryMode)
     {
-      case "NI"  -> builder.nonInteractive().execute();
+      case "NI"  -> builder.nonInteractive         ().execute();
       case "FOK" -> builder.nonInteractiveFailureOK().execute();
       case "LOG" -> builder.nonInteractiveLogErrors().execute();
-      case "I"   -> builder.interactive().execute();
+      case "I"   -> builder.interactive            ().execute();
+
       default    -> throw new IllegalArgumentException("Unknown retry mode: " + retryMode);
     };
   }
@@ -2107,9 +2095,9 @@ public final class FileDeletionTestRunner
   {
     var builder = switch (target)
     {
-      case FILE              -> FileDeletion.ofFiles(paths);
-      case DIR_WITH_CONTENTS -> FileDeletion.ofDirsWithContents(paths);
-      case DIR_CONTENTS_ONLY -> FileDeletion.ofDirsContentsOnly(paths);
+      case FILE                        -> FileDeletion.ofFiles                  (paths);
+      case DIR_WITH_CONTENTS           -> FileDeletion.ofDirsWithContents       (paths);
+      case DIR_CONTENTS_ONLY           -> FileDeletion.ofDirsContentsOnly       (paths);
       case FODWC_AS_FILE, FODWC_AS_DIR -> FileDeletion.ofFilesOrDirsWithContents(paths);
     };
 
@@ -2119,6 +2107,7 @@ public final class FileDeletionTestRunner
       case "FOK" -> builder.nonInteractiveFailureOK();
       case "LOG" -> builder.nonInteractiveLogErrors();
       case "I"   -> builder.interactive();
+
       default    -> throw new IllegalArgumentException("Unknown retry mode: " + retryMode);
     };
   }
@@ -2137,7 +2126,7 @@ public final class FileDeletionTestRunner
   {
     if (target == TestTarget.DIR_CONTENTS_ONLY)
     {
-      assertExists(path, label + " DCO dir should still exist");
+      assertExists  (path, label + " DCO dir should still exist");
       assertDirEmpty(path, label + " DCO dir should be empty");
 
       // Clean up the empty directory
