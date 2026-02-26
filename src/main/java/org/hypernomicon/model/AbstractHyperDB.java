@@ -2866,7 +2866,7 @@ public abstract class AbstractHyperDB
    * database must have.
    * @return The return value just described
    */
-  private Stream<HDT_Folder> specialFolders()
+  Stream<HDT_Folder> specialFolders()
   {
     return Stream.of(xmlFolder, picturesFolder, booksFolder, papersFolder, resultsFolder, unenteredFolder, miscFilesFolder, topicalFolder);
   }

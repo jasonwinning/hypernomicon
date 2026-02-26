@@ -318,12 +318,14 @@ public class FilePath implements Comparable<FilePath>
    *       exclusive lock via {@link FileChannel#tryLock()}. This catches the common
    *       case where an application holds the file open without
    *       {@code FILE_SHARE_DELETE}. Read-only files return {@code true} because the
-   *       read-only attribute does not prevent moves or deletes on Windows.</li>
+   *       read-only attribute does not prevent moves or deletes on Windows.
+   *       Sharing violations (file opened by another process) are distinguished
+   *       from read-only files via {@link Files#isWritable(Path)}.</li>
    *   <li><b>Directories:</b> Performs a probe rename (rename to a temporary sibling
    *       name, then rename back). This detects directory-level locks such as a
    *       terminal window whose working directory is the folder. It does not detect
-   *       locked files inside the directory; use {@link #anyOpenFilesInDir()} for
-   *       that.</li>
+   *       locked files inside the directory; use {@link #findLockedFileInDir()} or
+   *       {@link #anyOpenFilesInDir()} for that.</li>
    * </ul>
    * <p>
    * On POSIX systems (macOS, Linux), always returns {@code true} because open
@@ -386,11 +388,13 @@ public class FilePath implements Comparable<FilePath>
     }
     catch (FileNotFoundException e)
     {
-      // RandomAccessFile("rw") throws FileNotFoundException for read-only files.
-      // The read-only attribute does not prevent moves or deletes on Windows.
-      // Only return false if the file genuinely does not exist.
+      // RandomAccessFile("rw") throws FileNotFoundException for both read-only
+      // files and sharing violations (another process has the file open).
+      // Read-only files can still be moved/deleted on Windows; sharing
+      // violations cannot. Files.isWritable checks the attribute, not the
+      // sharing state, so it distinguishes the two.
 
-      return exists();
+      return (exists() == false) || (Files.isWritable(toPath()) == false);
     }
 
     return true;
@@ -400,27 +404,17 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 
   /**
-   * Check whether any file or directory within this directory tree appears to be
-   * locked by another process.
+   * Walks the directory tree and returns the first locked file found, or the
+   * first locked directory if no locked file is found, or {@code null} if
+   * everything is unlocked. On POSIX systems, always returns {@code null}.
    * <p>
-   * On POSIX systems, always returns {@code false} (see {@link #canObtainLock()}).
-   * <p>
-   * On Windows, walks the tree to collect all paths (files and directories), then
-   * checks each with {@link #canObtainLock()}. Files are tested via
-   * {@link FileChannel#tryLock()}; directories are tested via probe-rename.
-   * If any path is locked, shows an error popup identifying the specific path and
-   * returns {@code true}.
-   *
-   * @return true if any path in the tree is locked (operation should be aborted)
+   * Prefers reporting locked files over locked directories, since a locked
+   * interior file also causes ancestor directories to fail the probe-rename.
    */
-  public boolean anyOpenFilesInDir()
+  public FilePath findLockedFileInDir()
   {
-    // On POSIX systems, open file handles reference inodes rather than paths,
-    // so files can be deleted, moved, or renamed while open. Lock checking is
-    // unnecessary and just causes a slow tree walk.
-
     if (IS_OS_WINDOWS == false)
-      return false;
+      return null;
 
     // Phase 1: collect all paths (files and directories) in the tree
 
@@ -450,13 +444,10 @@ public class FilePath implements Comparable<FilePath>
     }
     catch (IOException e)
     {
-      errorPopup(e);
-      return true;
+      return null;
     }
 
     // Phase 2: check each path with canObtainLock()
-    // Prefer reporting locked files over locked directories, since a locked
-    // interior file also causes ancestor directories to fail the probe-rename.
 
     FilePath firstLockedDir = null;
 
@@ -467,10 +458,7 @@ public class FilePath implements Comparable<FilePath>
         if (filePath.canObtainLock() == false)
         {
           if (filePath.isFile())
-          {
-            errorPopup("Unable to obtain lock for path: " + filePath);
-            return true;
-          }
+            return filePath;
 
           if (firstLockedDir == null)
             firstLockedDir = filePath;
@@ -478,18 +466,25 @@ public class FilePath implements Comparable<FilePath>
       }
       catch (IOException e)
       {
-        errorPopup(e);
-        return true;
+        return null;
       }
     }
 
-    if (firstLockedDir != null)
-    {
-      errorPopup("Unable to obtain lock for path: " + firstLockedDir);
-      return true;
-    }
+    return firstLockedDir;
+  }
 
-    return false;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean anyOpenFilesInDir()
+  {
+    FilePath lockedPath = findLockedFileInDir();
+
+    if (lockedPath == null)
+      return false;
+
+    errorPopup("Unable to obtain lock for path: " + lockedPath);
+    return true;
   }
 
 //---------------------------------------------------------------------------

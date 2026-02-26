@@ -484,8 +484,6 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private enum PasteAnswer { check, overwriteNone, overwriteAll }
-
   private boolean doPasteChecks(FileRow destRow, Map<FilePath, FilePath> srcToDest, boolean copying, boolean dragging, Set<FilePath> reparentRoots)
   {
     final FilePathSet srcSet = new FilePathSet(), destSet = new FilePathSet();
@@ -548,8 +546,8 @@ public final class FileManager extends NonmodalWindow
 
     }}.runWithProgressDialog() != State.SUCCEEDED) return false;
 
-    PasteAnswer paUnrelated = PasteAnswer.check,
-                paRelated   = PasteAnswer.check;
+    OverwriteResolver unrelatedResolver = new OverwriteResolver(),
+                      relatedResolver   = new OverwriteResolver();
 
     Iterator<Entry<FilePath, FilePath>> it = srcToDest.entrySet().iterator();
 
@@ -562,90 +560,31 @@ public final class FileManager extends NonmodalWindow
 
       if ((isRelated == false) && entry.getValue().exists())
       {
-        switch (paUnrelated)
-        {
-          case check:
+        var response = unrelatedResolver.needsUserPrompt()
+          ? seriesConfirmDialog("Okay to overwrite existing file \"" + entry.getValue() + "\"?")
+          : null;
 
-            switch (seriesConfirmDialog("Okay to overwrite existing file \"" + entry.getValue() + "\"?"))
-            {
-              case mrNo:
-
-                it.remove();
-                break;
-
-              case mrNoToAll:
-
-                it.remove();
-                paUnrelated = PasteAnswer.overwriteNone;
-                break;
-
-              case mrYesToAll:
-
-                paUnrelated = PasteAnswer.overwriteAll;
-                break;
-
-              default:
-                break;
-            }
-
-            break;
-
-          case overwriteNone:
-
-            it.remove();
-            break;
-
-          default:
-            break;
-        }
+        if (unrelatedResolver.resolve(response) == OverwriteResolver.Decision.SKIP)
+          it.remove();
       }
       else if (isRelated) // destination file is associated with a database record
       {
-        switch (paRelated)
+        if (relatedResolver.needsUserPrompt())
         {
-          case check:
+          StringBuilder confirmMessage = new StringBuilder("The file \"" + entry.getValue() + "\" is assigned to the following record(s):\n\n");
 
-            StringBuilder confirmMessage = new StringBuilder("The file \"" + entry.getValue() + "\" is assigned to the following record(s):\n\n");
+          set.stream().filter(hyperPath -> hyperPath.getRecordType() != hdtNone).forEach(hyperPath ->
+            confirmMessage.append(getTypeName(hyperPath.getRecord().getType())).append(" ID ")
+                          .append(hyperPath.getRecord().getID()).append(": ")
+                          .append(hyperPath.getRecord().defaultChoiceText()).append('\n'));
 
-            set.stream().filter(hyperPath -> hyperPath.getRecordType() != hdtNone).forEach(hyperPath ->
-              confirmMessage.append(getTypeName(hyperPath.getRecord().getType())).append(" ID ")
-                            .append(hyperPath.getRecord().getID()).append(": ")
-                            .append(hyperPath.getRecord().defaultChoiceText()).append('\n'));
+          confirmMessage.append("\nOkay to overwrite the file with \"").append(entry.getKey()).append("\"?");
 
-            confirmMessage.append("\nOkay to overwrite the file with \"").append(entry.getKey()).append("\"?");
-
-            switch (seriesConfirmDialog(confirmMessage.toString()))
-            {
-              case mrNo:
-
-                it.remove();
-                break;
-
-              case mrNoToAll:
-
-                it.remove();
-                paRelated = PasteAnswer.overwriteNone;
-                break;
-
-              case mrYesToAll:
-
-                paRelated = PasteAnswer.overwriteAll;
-                break;
-
-              default:
-                break;
-            }
-
-            break;
-
-          case overwriteNone:
-
+          if (relatedResolver.resolve(seriesConfirmDialog(confirmMessage.toString())) == OverwriteResolver.Decision.SKIP)
             it.remove();
-            break;
-
-          default:
-            break;
         }
+        else if (relatedResolver.resolve(null) == OverwriteResolver.Decision.SKIP)
+          it.remove();
       }
     }
 
@@ -705,11 +644,7 @@ public final class FileManager extends NonmodalWindow
           reparentRoots.add(srcPath);
       }
 
-      // Remove nested roots (where another root is an ancestor)
-
-      reparentRoots.removeIf(root ->
-        reparentRoots.stream().anyMatch(other ->
-          (other.equals(root) == false) && other.contains(root)));
+      removeNestedPaths(reparentRoots);
     }
 
     if (doPasteChecks(destRow, srcToDest, copying, dragging, reparentRoots) == false)
@@ -897,6 +832,18 @@ public final class FileManager extends NonmodalWindow
       if (FilePath.isEmpty(pathToHilite) == false)
         goToFilePath(pathToHilite, true);
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Removes any path from the set whose ancestor is also in the set.
+   * After this call, only the topmost roots remain.
+   */
+  static void removeNestedPaths(Set<FilePath> filePaths)
+  {
+    filePaths.removeIf(descendant -> filePaths.stream().anyMatch(ancestor -> (ancestor.equals(descendant) == false) && ancestor.contains(descendant)));
   }
 
 //---------------------------------------------------------------------------

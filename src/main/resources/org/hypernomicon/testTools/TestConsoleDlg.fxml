@@ -99,6 +99,16 @@
                   text="Show watcher events" AnchorPane.leftAnchor="230.0" AnchorPane.topAnchor="195.0"/>
       </AnchorPane>
     </Tab>
+    <Tab closable="false" text="File Manager">
+      <AnchorPane>
+        <Button fx:id="btnSetupFMTest" layoutX="52.0" layoutY="37.0" mnemonicParsing="false"
+                onAction="#setupFileManagerTest" text="Set Up Test Files"
+                AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0"/>
+        <Button fx:id="btnRunFMTest" layoutX="52.0" layoutY="68.0" mnemonicParsing="false"
+                onAction="#fileManagerTest" text="Test File Manager Operations" disable="true"
+                AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="68.0"/>
+      </AnchorPane>
+    </Tab>
     <Tab closable="false" text="Reference Mgr">
       <AnchorPane>
         <Button fx:id="btnSaveRefMgrSecrets" layoutX="52.0" layoutY="37.0" mnemonicParsing="false"

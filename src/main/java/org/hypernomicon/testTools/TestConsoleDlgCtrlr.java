@@ -41,6 +41,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import org.hypernomicon.FolderTreeWatcher;
+import org.hypernomicon.fileManager.FileManagerTestRunner;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
@@ -65,7 +66,8 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 
   @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest,
-                       btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter, btnTermsTabTests, btnFolderBypassTest;
+                       btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter, btnTermsTabTests, btnFolderBypassTest,
+                       btnSetupFMTest, btnRunFMTest;
   @FXML private CheckBox chkFolderBypass, chkWatcherEvents;
   @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private Tab tabLinkGen;
@@ -752,6 +754,49 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     }
 
     FileDeletionTestRunner.runTests(db.getRootPath());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void setupFileManagerTest()
+  {
+    if (db.isOffline()) return;
+
+    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
+
+    if (db.getRootPath().equals(transientDBFilePath) == false)
+    {
+      errorPopup("This can only be done when the transient DB is loaded.");
+      return;
+    }
+
+    FileManagerTestRunner.setupTestFiles(db.getRootPath().resolve("_test_fm"));
+
+    btnSetupFMTest.setDisable(true);
+    btnRunFMTest.setDisable(false);
+
+    infoPopup("Test files created. Wait for all files to sync before running tests.");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void fileManagerTest()
+  {
+    if (db.isOffline()) return;
+
+    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
+
+    if (db.getRootPath().equals(transientDBFilePath) == false)
+    {
+      errorPopup("This can only be done when the transient DB is loaded.");
+      return;
+    }
+
+    btnRunFMTest.setDisable(true);
+
+    FileManagerTestRunner.runTests(db.getRootPath().resolve("_test_fm"), () -> btnSetupFMTest.setDisable(false));
   }
 
 //---------------------------------------------------------------------------

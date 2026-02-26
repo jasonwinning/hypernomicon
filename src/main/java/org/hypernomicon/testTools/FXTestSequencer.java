@@ -62,13 +62,13 @@ public final class FXTestSequencer
 
   private static final class QueueEntry
   {
-    final int pulses;
-    final long millis;
-    final Runnable task;
-    final boolean printStep;
+    private final int pulses;
+    private final long millis;
+    private final Runnable task;
+    private final boolean printStep;
 
-    boolean runCondition = true;
-    String skipReason;
+    private boolean runCondition = true;
+    private String skipReason;
 
     QueueEntry(int pulses, long millis, Runnable task, boolean printStep)
     {
