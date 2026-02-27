@@ -66,6 +66,8 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.FileSystemException;
 import java.time.Month;
 import java.util.*;
 import java.util.function.Consumer;
@@ -1187,31 +1189,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         .showModal();
     }
 
-    try
-    {
-      for (FilePath srcFilePath : filePaths)
-      {
-        if ((moveOrCopy == mrMove) && (srcFilePath.canObtainLock() == false))
-        {
-          errorPopup("Unable to obtain lock on path: \"" + srcFilePath + '"');
-          return;
-        }
-
-        FilePath destFilePath = folder.getDirOnly().resolve(srcFilePath.getNameOnly());
-
-        if (destFilePath.canObtainLock() == false)
-        {
-          errorPopup("Unable to obtain lock on path: \"" + destFilePath + '"');
-          return;
-        }
-      }
-    }
-    catch (IOException e)
-    {
-      errorPopup("An error occurred: " + getThrowableMessage(e));
-      return;
-    }
-
     boolean startWatcher = folderTreeWatcher.stop();
 
     for (FilePath srcFilePath : filePaths)
@@ -1232,7 +1209,25 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         }
         catch (IOException e)
         {
-          errorPopup("Unable to " + (moveOrCopy == mrCopy ? "copy" : "move") + " the file: \"" + srcFilePath.getNameOnly() + "\". Reason: " + getThrowableMessage(e));
+          if ((e instanceof AccessDeniedException) || (e.getClass() == FileSystemException.class))
+          {
+            try
+            {
+              if (srcFilePath.canObtainLock() == false)
+                errorPopup("Unable to obtain lock on path: \"" + srcFilePath + '"');
+              else if (destFilePath.canObtainLock() == false)
+                errorPopup("Unable to obtain lock on path: \"" + destFilePath + '"');
+              else
+                errorPopup("Access denied while trying to " + (moveOrCopy == mrCopy ? "copy" : "move") + " the file: \"" + srcFilePath.getNameOnly() + '"');
+            }
+            catch (IOException lockEx)
+            {
+              errorPopup("Access denied while trying to " + (moveOrCopy == mrCopy ? "copy" : "move") + " the file: \"" + srcFilePath.getNameOnly() + '"');
+            }
+          }
+          else
+            errorPopup("Unable to " + (moveOrCopy == mrCopy ? "copy" : "move") + " the file: \"" + srcFilePath.getNameOnly() + "\". Reason: " + getThrowableMessage(e));
+
           ui.update();
           FileManager.setNeedRefresh();
 

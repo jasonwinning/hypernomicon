@@ -129,24 +129,19 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     try
     {
-      if (srcFilePath.anyOpenFilesInDir())
-      {
-        folderTreeWatcher.createNewWatcherAndStart();
-        return false;
-      }
-
       srcFilePath.renameDirectory(destFilePath);
+    }
+    catch (AccessDeniedException e)
+    {
+      srcFilePath.anyOpenFilesInDir(); // shows popup identifying the locked path, if any
+
+      folderTreeWatcher.createNewWatcherAndStart();
+      return false;
     }
     catch (IOException e)
     {
       folderTreeWatcher.createNewWatcherAndStart();
-
-      String msg = "Unable to rename the folder: " + getThrowableMessage(e);
-
-      if (e instanceof AccessDeniedException)
-        msg = msg + "\n\nIt may work to restart " + appTitle + " and try again.";
-
-      return falseWithErrorPopup(msg);
+      return falseWithErrorPopup("Unable to rename the folder: " + getThrowableMessage(e));
     }
 
     db.unmapFilePath(srcFilePath);
@@ -162,7 +157,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 
   /**
-   * Move this folder (and its entire subtree) to a new parent folder by reparenting the
+   * Move this folder (and its entire subtree) to a new parent folder by re-parenting the
    * existing record rather than creating new records and deleting old ones. This preserves
    * record IDs and all associations (notes, work files, misc files).
    * <p>
@@ -201,10 +196,15 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (destFilePath.exists())
       return falseWithErrorPopup("Unable to move the folder: A file or folder already exists at \"" + destFilePath + "\".");
 
-    if (srcFilePath.anyOpenFilesInDir())
+    try
+    {
+      Files.move(srcFilePath.toPath(), destFilePath.toPath());
+    }
+    catch (AccessDeniedException e)
+    {
+      srcFilePath.anyOpenFilesInDir(); // shows popup identifying the locked path
       return false;
-
-    Files.move(srcFilePath.toPath(), destFilePath.toPath());
+    }
 
     db.unmapFilePath(srcFilePath);
     path.assign(newParent, new FilePath(name()));

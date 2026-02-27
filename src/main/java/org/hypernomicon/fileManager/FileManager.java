@@ -32,6 +32,7 @@ import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -484,7 +485,7 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean doPasteChecks(FileRow destRow, Map<FilePath, FilePath> srcToDest, boolean copying, boolean dragging, Set<FilePath> reparentRoots)
+  private boolean doPasteChecks(FileRow destRow, Map<FilePath, FilePath> srcToDest, boolean copying, boolean dragging)
   {
     final FilePathSet srcSet = new FilePathSet(), destSet = new FilePathSet();
     srcPathToHilite = null;
@@ -590,33 +591,7 @@ public final class FileManager extends NonmodalWindow
 
     folderTreeWatcher.stop();
 
-    return (new HyperTask("ObtainLocks", "Obtaining locks...", srcToDest.size()) { @Override protected void call() throws CancelledTaskException, HyperDataException
-    {
-      try
-      {
-        for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
-        {
-          incrementAndUpdateProgress();
-
-          // Skip lock check for paths covered by a re-parented directory
-
-          FilePath srcFilePath = entry.getKey();
-          if (reparentRoots.stream().anyMatch(root -> root.equals(srcFilePath) || root.contains(srcFilePath)))
-            continue;
-
-          if ((copying == false) && (srcFilePath.canObtainLock() == false))
-            throw new HyperDataException("Unable to obtain lock on path: \"" + srcFilePath + '"');
-
-          if (entry.getValue().canObtainLock() == false)
-            throw new HyperDataException("Unable to obtain lock on path: \"" + entry.getValue() + '"');
-        }
-      }
-      catch (IOException e)
-      {
-        throw new HyperDataException("Unable to obtain lock: " + getThrowableMessage(e), e);
-      }
-
-    }}.runWithProgressDialog() == State.SUCCEEDED) && (srcToDest.isEmpty() == false);
+    return srcToDest.isEmpty() == false;
   }
 
 //---------------------------------------------------------------------------
@@ -647,7 +622,7 @@ public final class FileManager extends NonmodalWindow
       removeNestedPaths(reparentRoots);
     }
 
-    if (doPasteChecks(destRow, srcToDest, copying, dragging, reparentRoots) == false)
+    if (doPasteChecks(destRow, srcToDest, copying, dragging) == false)
     {
       if (folderTreeWatcher.isRunning() == false)
         folderTreeWatcher.createNewWatcherAndStart();
@@ -785,7 +760,25 @@ public final class FileManager extends NonmodalWindow
       }
       catch (IOException e)
       {
-        throw new HyperDataException("An error occurred while trying to " + (copying ? "copy" : "move") + " the item(s): " + getThrowableMessage(e), e);
+        String verb = copying ? "copy" : "move";
+
+        if (e instanceof AccessDeniedException)
+        {
+          for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
+          {
+            try
+            {
+              if ((copying == false) && (entry.getKey().canObtainLock() == false))
+                throw new HyperDataException("Unable to " + verb + ": locked path: \"" + entry.getKey() + '"', e);
+
+              if (entry.getValue().canObtainLock() == false)
+                throw new HyperDataException("Unable to " + verb + ": locked path: \"" + entry.getValue() + '"', e);
+            }
+            catch (IOException lockEx) { /* diagnosis failed; fall through to generic message */ }
+          }
+        }
+
+        throw new HyperDataException("An error occurred while trying to " + verb + " the item(s): " + getThrowableMessage(e), e);
       }
       finally
       {
