@@ -24,11 +24,11 @@ import com.google.common.collect.HashBiMap;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
 
 //---------------------------------------------------------------------------
 
@@ -46,8 +46,9 @@ public class PopupDialog
 
 //---------------------------------------------------------------------------
 
-  private final Alert dlg = new Alert(AlertType.CONFIRMATION);
-  private final BiMap<ButtonType, DialogResult> bTypeToResult = HashBiMap.create(new LinkedHashMap<>());
+  private final String message;
+  private final LinkedHashMap<String, DialogResult> buttons = new LinkedHashMap<>();
+  private final LinkedHashMap<String, String> tooltips = new LinkedHashMap<>();
 
   private DialogResult defaultButton;
 
@@ -55,11 +56,7 @@ public class PopupDialog
 
   public PopupDialog(String message)
   {
-    dlg.setTitle(appTitle);
-    dlg.setHeaderText(message);
-    dlg.setContentText("Please select an option.");
-    dlg.setResizable(false);
-    dlg.getButtonTypes().clear();
+    this.message = message;
   }
 
 //---------------------------------------------------------------------------
@@ -67,9 +64,16 @@ public class PopupDialog
 
   public PopupDialog addDefaultButton(String caption, DialogResult result)
   {
+    return addDefaultButton(caption, result, null);
+  }
+
+//---------------------------------------------------------------------------
+
+  public PopupDialog addDefaultButton(String caption, DialogResult result, String tooltip)
+  {
     defaultButton = result;
 
-    return addButton(caption, result);
+    return addButton(caption, result, tooltip);
   }
 
 //---------------------------------------------------------------------------
@@ -77,9 +81,20 @@ public class PopupDialog
 
   public PopupDialog addButton(String caption, DialogResult result)
   {
-    ButtonType bType = new ButtonType(caption);
-    bTypeToResult.put(bType, result);
-    dlg.getButtonTypes().add(bType);
+    return addButton(caption, result, null);
+  }
+
+//---------------------------------------------------------------------------
+
+  public PopupDialog addButton(String caption, DialogResult result, String tooltip)
+  {
+    if (buttons.containsKey(caption))
+      throw new IllegalArgumentException("Duplicate button caption: " + caption);
+
+    buttons.put(caption, result);
+
+    if (tooltip != null)
+      tooltips.put(caption, tooltip);
 
     return this;
   }
@@ -95,23 +110,48 @@ public class PopupDialog
 
     if (PopupRobot.isActive())
     {
-      PopupRobot.record(dlg.getHeaderText(), AlertType.CONFIRMATION);
+      PopupRobot.record(message, AlertType.CONFIRMATION);
       DialogResult response = PopupRobot.getDefaultResponse();
 
       // Return the response if it matches a configured button
 
-      if (bTypeToResult.containsValue(response))
+      if (buttons.containsValue(response))
         return response;
 
       // Otherwise return the default button's result, or the first configured button
 
-      return defaultButton != null ? defaultButton : bTypeToResult.values().iterator().next();
+      return defaultButton != null ? defaultButton : buttons.values().iterator().next();
     }
 
-    if (defaultButton != null)
-      Platform.runLater(() -> dlg.getDialogPane().lookupButton(bTypeToResult.inverse().get(defaultButton)).requestFocus());
+    DialogResult[] result = { null };
 
-    return bTypeToResult.get(showAndWait(dlg));
+    runInFXThread(() ->
+    {
+      Alert dlg = new Alert(AlertType.CONFIRMATION);
+      dlg.setTitle(appTitle);
+      dlg.setHeaderText(message);
+      dlg.setContentText("Please select an option.");
+      dlg.setResizable(false);
+      dlg.getButtonTypes().clear();
+
+      BiMap<ButtonType, DialogResult> bTypeToResult = HashBiMap.create(new LinkedHashMap<>());
+
+      buttons.forEach((caption, dialogResult) ->
+      {
+        ButtonType bType = new ButtonType(caption);
+        bTypeToResult.put(bType, dialogResult);
+        dlg.getButtonTypes().add(bType);
+
+        setToolTip((Control) dlg.getDialogPane().lookupButton(bType), tooltips.get(caption));
+      });
+
+      if (defaultButton != null)
+        Platform.runLater(() -> dlg.getDialogPane().lookupButton(bTypeToResult.inverse().get(defaultButton)).requestFocus());
+
+      result[0] = bTypeToResult.get(showAndWait(dlg));
+    }, true);
+
+    return result[0];
   }
 
 //---------------------------------------------------------------------------
