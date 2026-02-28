@@ -118,7 +118,7 @@ public class HyperPath
       return;
     }
 
-    if (getHyperPathSetForFilePath(filePath).size() > 0)
+    if (getHyperPathSetForFilePath(filePath).isEmpty() == false)
     {
       internalErrorPopup(90178);
       return;
@@ -517,13 +517,8 @@ public class HyperPath
    *   <li><b>Display</b>: It populates the "Record(s)" column in the FileManager table,
    *       giving the user a quick view of which database records reference a given file or
    *       folder (e.g. {@code "Person: Smith, John; Work: Some Title"}).</li>
-   *   <li><b>"In use" determination</b>: {@link #isInUseByRecords()} delegates to this method;
-   *       a non-empty return value means the path is in use by at least one record. This drives
-   *       decisions throughout the application: the FolderTreeWatcher uses it to decide whether
-   *       an externally renamed/deleted file warrants a warning, the FileManager uses it to
-   *       determine whether deleting a file requires confirmation and record cleanup, and
-   *       {@link org.hypernomicon.model.records.HDT_Folder#checkExists HDT_Folder.checkExists}
-   *       uses it to decide whether a missing folder should be reported.</li>
+   *   <li><b>"In use" determination</b>: {@link #isInUseByRecords()} uses the same logic with
+   *       a lower limit to short-circuit after finding the first association.</li>
    * </ol>
    * <p>
    * The string is assembled in two parts:
@@ -531,9 +526,9 @@ public class HyperPath
    *   <li>For person and misc-file records, all same-type records sharing this exact file path
    *       are listed (since multiple persons or misc-file records can reference the same
    *       physical file).</li>
-   *   <li>Then, up to 10 related records (both subject-side and object-side relations, excluding
-   *       parent-folder relations) are appended via
-   *       {@link org.hypernomicon.model.AbstractHyperDB#getRelatives getRelatives}.</li>
+   *   <li>Then, related records (both subject-side and object-side relations) are appended via
+   *       {@link org.hypernomicon.model.AbstractHyperDB#getRelatives getRelatives}, up to the
+   *       specified limit.</li>
    * </ul>
    * For folders with no direct associations, if any child folder is in use by records, the string
    * {@code "(Subfolders have associated records)"} is returned instead. This check is indirectly
@@ -543,6 +538,13 @@ public class HyperPath
    * @return A semicolon-separated description of associated records, or an empty string if none
    */
   public String getRecordsString()
+  {
+    return getRecordsString(10);
+  }
+
+//---------------------------------------------------------------------------
+
+  private String getRecordsString(int maxRelatives)
   {
     if (getRecord() == null) return "";
 
@@ -570,12 +572,10 @@ public class HyperPath
     }
 
     LinkedHashSet<HDT_Record> set = new LinkedHashSet<>();
-    db.getRelatives(getRecord(), set, 10, false);
+    db.getRelatives(getRecord(), set, maxRelatives, false);
 
     set.forEach(relative ->
     {
-      if (relative.getType() == hdtFolder) return;
-
       if (val.length() > 0) val.append("; ");
       val.append(getTypeName(relative.getType())).append(": ").append(relative.defaultChoiceText());
     });
@@ -600,12 +600,14 @@ public class HyperPath
   }
 
   /**
-   * Returns true if {@link #getRecordsString()} returns non-empty.
+   * Returns true if this path has associated database records. Uses
+   * {@link #getRecordsString(int) getRecordsString(1)} to short-circuit
+   * after finding the first relative.
    * @return The return value just described
    */
   public boolean isInUseByRecords()
   {
-    return strNotNullOrEmpty(getRecordsString());
+    return strNotNullOrEmpty(getRecordsString(1));
   }
 
   /**
@@ -618,7 +620,7 @@ public class HyperPath
   }
 
   /**
-   * Returns true if non-null and {@link #getRecordsString()} returns non-empty.
+   * Returns true if non-null and {@link #isInUseByRecords()} returns true.
    * @return The return value just described
    */
   public static boolean isInUseByRecords(HyperPath hyperPath)

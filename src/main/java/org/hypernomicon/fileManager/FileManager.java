@@ -200,11 +200,6 @@ public final class FileManager extends NonmodalWindow
       event.consume();
     });
 
-    webView.setOnDragOver   (Event::consume);
-    webView.setOnDragDropped(Event::consume);
-
-    webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
-
     registerShortcuts();
 
     app.shortcuts.addListener((obs, ov, nv) -> registerShortcuts());
@@ -240,8 +235,9 @@ public final class FileManager extends NonmodalWindow
     {
       if ((newValue == null) || (newValue == oldValue)) return;
 
-      FilePath filePath = Objects.requireNonNull(newValue.getValue().getFilePath(),
-        "Folder/record sync invariant violated: Selected folder TreeItem has no file path (HDT_Folder record expired)");
+      FilePath filePath = newValue.getValue().getFilePath();
+
+      if (filePath == null) return;  // Folder record expired during deletion; ignore transient selection
 
       HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
 
@@ -335,6 +331,9 @@ public final class FileManager extends NonmodalWindow
     });
 
     recordTV.setPlaceholder(new Text("The selected file or folder has no associated records."));
+
+    webView.setOnDragOver   (Event::consume);
+    webView.setOnDragDropped(Event::consume);
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -721,8 +720,6 @@ public final class FileManager extends NonmodalWindow
       return;
     }
 
-    folderTreeWatcher.stop();
-
     // Build set of all source paths covered by re-parent operations
 
     final Set<FilePath> coveredBySrcPath = new FilePathSet();
@@ -891,7 +888,7 @@ public final class FileManager extends NonmodalWindow
 
     Platform.runLater(() ->
     {
-      pruneAndRefresh(true);
+      pruneAndRefresh(false);
 
       folderTreeWatcher.createNewWatcherAndStart();
 
@@ -1048,13 +1045,13 @@ public final class FileManager extends NonmodalWindow
       return true;
     }
 
+    if (FileDeletion.ofFile(filePath).interactive().execute() == DeletionResult.ABORTED)
+      return false;
+
     Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
 
     for (HyperPath setPath : set)
     {
-      if (FileDeletion.ofFile(setPath.filePath()).interactive().execute() == DeletionResult.ABORTED)
-        return false;
-
       db.unmapFilePath(setPath.filePath());
       if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
         db.deleteRecord(setPath.getRecord());
@@ -1524,18 +1521,15 @@ public final class FileManager extends NonmodalWindow
 
       RecordType relativeType = relative.getType();
 
-      if (relativeType != hdtFolder)
-      {
-        HyperTableRow row = recordTable.newDataRow();
-        row.setCellValue(0, relative, getTypeName(relativeType));
+      HyperTableRow row = recordTable.newDataRow();
+      row.setCellValue(0, relative, getTypeName(relativeType));
 
-        String displayText = (hasFileRecord == false) && (relativeType == hdtNote) ?
-          ((HDT_Note) relative).extendedText(false)
-        :
-          relative.defaultChoiceText();
+      String displayText = (hasFileRecord == false) && (relativeType == hdtNote) ?
+        ((HDT_Note) relative).extendedText(false)
+      :
+        relative.defaultChoiceText();
 
-        row.setCellValue(1, relative, displayText);
-      }
+      row.setCellValue(1, relative, displayText);
     }
 
     if ((hasFileRecord == false) && (selectNonBlankRecordRow() == false))

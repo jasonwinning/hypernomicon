@@ -71,28 +71,38 @@ final class FolderHistory
       if (item.folder() == folder)
       {
         // Update cursorNdx if it points to or follows the deleted entry
+
         if (ndx <= cursorNdx)
           cursorNdx--;
 
         // Remove the matching item
+
         history.remove(ndx);
         ndx--; // Adjust index to recheck after removal
       }
       else if ((ndx > 0) && (history.get(ndx - 1).folder() == item.folder()))
       {
+        // Update cursorNdx if it points to or follows the removed duplicate
+
+        if (ndx <= cursorNdx)
+          cursorNdx--;
+
         // Remove adjacent duplicates
+
         history.remove(ndx);
         ndx--; // Adjust index for recheck
       }
     }
 
     // Ensure cursorNdx is valid after all deletions
+
     if (cursorNdx < 0)
       cursorNdx = 0; // Default to the first folder if no valid preceding folder exists
     else if (cursorNdx >= history.size())
       cursorNdx = history.size() - 1; // Default to the last folder if out of bounds
 
     // Update navigation buttons
+
     updateButtons();
   }
 

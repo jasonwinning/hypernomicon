@@ -87,6 +87,8 @@ public class FolderTreeWatcher
 
   private final class WatcherThread extends HyperThread
   {
+    private enum RefreshNeeded { NONE, REFRESH, PRUNE_AND_REFRESH }
+
     private boolean done = false;
     private boolean sentResponse = false;
     private HDB_MessageType requestType;
@@ -275,6 +277,7 @@ public class FolderTreeWatcher
     private void processEventList(List<WatcherEvent> eventList) throws IOException
     {
       boolean bannerPrinted = false;
+      RefreshNeeded refreshNeeded = RefreshNeeded.NONE;
 
       for (WatcherEvent watcherEvent : eventList)
       {
@@ -313,7 +316,8 @@ public class FolderTreeWatcher
               }});
             }
 
-            Platform.runLater(FileManager::refresh);
+            if (refreshNeeded.ordinal() < RefreshNeeded.REFRESH.ordinal())
+              refreshNeeded = RefreshNeeded.REFRESH;
 
             break;
           }
@@ -339,15 +343,22 @@ public class FolderTreeWatcher
                   });
                 }
               }
-              else if (watcherEvent.isDirectory())
-                HDT_Folder.deleteFolderRecordTree((HDT_Folder) hyperPath.getRecord());
+//              else if (watcherEvent.isDirectory())
+//              {
+
+                // Not-in-use folder deletions are handled by pruneAndRefresh on the FX thread.
+                // Calling deleteFolderRecordTree here (on the watcher thread) would race with
+                // the FX thread's pruneNode, with both problematically modifying the HyperCore
+                // concurrently.
+
+//              }
             }
 
             // There is no need to stop the watcher because nothing else should need to be deleted.
             // Also, if it is restarted, state information about the inter-computer request and
             // response is lost.
 
-            Platform.runLater(() -> FileManager.pruneAndRefresh(false));
+            refreshNeeded = RefreshNeeded.PRUNE_AND_REFRESH;
 
             break;
           }
@@ -438,7 +449,8 @@ public class FolderTreeWatcher
               registerTree(newPath);
             }
 
-            Platform.runLater(FileManager::refresh);
+            if (refreshNeeded.ordinal() < RefreshNeeded.REFRESH.ordinal())
+              refreshNeeded = RefreshNeeded.REFRESH;
 
             break;
           }
@@ -468,6 +480,13 @@ public class FolderTreeWatcher
                               "\" to: \""         + watcherEvent.newPathInfo.getFilePath().getNameOnly() + '"';
           });
         }
+      }
+
+      switch (refreshNeeded)
+      {
+        case PRUNE_AND_REFRESH : Platform.runLater(() -> FileManager.pruneAndRefresh(false)); break;
+        case REFRESH           : Platform.runLater(FileManager::refresh); break;
+        default                : break;
       }
     }
 

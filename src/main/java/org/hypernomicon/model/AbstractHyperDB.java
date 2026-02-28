@@ -2640,8 +2640,8 @@ public abstract class AbstractHyperDB
    * notes are prepended to the record's own relatives).
    *
    * <p>After any folder notes, the method traverses all relation types where the record's type
-   * appears as subject or object (excluding {@code rtParentFolderOfFolder}), collecting the
-   * related records from both sides.
+   * appears as subject or object, skipping any relation whose target type is {@code hdtFolder}
+   * since no caller uses folder relatives.
    *
    * <p>Results are added in insertion order (the set is a {@link LinkedHashSet}). If the
    * number of results reaches {@code max}, collection stops early and the method returns
@@ -2667,7 +2667,7 @@ public abstract class AbstractHyperDB
 
       if (record.getType() == hdtFolder)
       {
-        HDT_Folder folder = (HDT_Folder)record;
+        HDT_Folder folder = (HDT_Folder) record;
 
         for (HDT_Note note : folder.notes)
         {
@@ -2695,33 +2695,29 @@ public abstract class AbstractHyperDB
 
     for (RelationType relType : getRelationsForSubjType(record.getType(), false))
     {
-      if (relType != rtParentFolderOfFolder)
+      if (getObjType(relType) == hdtFolder)
+        continue;
+
+      for (HDT_Record obj : getObjectList(relType, record, false))
       {
-        HyperObjList<HDT_Record, HDT_Record> list = getObjectList(relType, record, false);
+        if (set.size() == max)
+          return true;
 
-        for (HDT_Record obj : list)
-        {
-          if (set.size() == max)
-            return true;
-
-          set.add(obj);
-        }
+        set.add(obj);
       }
     }
 
     for (RelationType relType : getRelationsForObjType(record.getType(), false))
     {
-      if (relType != rtParentFolderOfFolder)
+      if (getSubjType(relType) == hdtFolder)
+        continue;
+
+      for (HDT_Record subj : getSubjectList(relType, record))
       {
-        HyperSubjList<HDT_Record, HDT_Record> list = getSubjectList(relType, record);
+        if (set.size() == max)
+          return true;
 
-        for (HDT_Record subj : list)
-        {
-          if (set.size() == max)
-            return true;
-
-          set.add(subj);
-        }
+        set.add(subj);
       }
     }
 

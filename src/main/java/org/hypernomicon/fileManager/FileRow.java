@@ -157,7 +157,12 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
   ObjectCellValue<Instant> getModifiedDateCellValue()
   {
-    Instant i = hyperPath.filePath().lastModified();
+    FilePath filePath = hyperPath.filePath();
+
+    if (FilePath.isEmpty(filePath))
+      return new ObjectCellValue<>("", null);
+
+    Instant i = filePath.lastModified();
 
     return new ObjectCellValue<>(dateTimeToUserReadableStr(i), i);
   }
