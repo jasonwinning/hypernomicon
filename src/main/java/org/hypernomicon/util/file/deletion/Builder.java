@@ -17,11 +17,14 @@
 
 package org.hypernomicon.util.file.deletion;
 
+import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult.*;
 
 import java.util.stream.Stream;
 
+import org.hypernomicon.HyperTask;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.file.FilePath;
@@ -83,14 +86,22 @@ public class Builder extends DeletionBuilderBase<Builder>
       if (phaseOneResult != FAILED)
         return phaseOneResult;
 
-      // Phase 2: Prompt user
+      // Phase 2: On Windows, scan for locked files to provide diagnostic info
 
-      String errorMsg = task.getLastError() != null ? getThrowableMessage(task.getLastError()) : "";
+      FilePath lockedFile = scanForLockedFile();
 
-      String message = "Unable to delete \"" + task.getFilePath() + '"' + (errorMsg.isEmpty() == false ?
-        (":\n" + errorMsg + "\n\nTry again?")
-      :
-        ". Try again?");
+      // Phase 3: Prompt user with specific or generic error message
+
+      String errorMsg = task.getLastError() != null ? getThrowableMessage(task.getLastError()) : "",
+             message;
+
+      if (lockedFile != null)
+        message = "Unable to delete \"" + task.getFilePath() + "\": the file is locked:\n\""
+          + lockedFile + "\"\n\nClose the application using this file, then try again.";
+      else if (errorMsg.isEmpty() == false)
+        message = "Unable to delete \"" + task.getFilePath() + "\":\n" + errorMsg + "\n\nTry again?";
+      else
+        message = "Unable to delete \"" + task.getFilePath() + "\". Try again?";
 
       DialogResult response = new PopupDialog(message)
         .addDefaultButton("Try Again", DialogResult.mrRetry)
@@ -102,6 +113,35 @@ public class Builder extends DeletionBuilderBase<Builder>
 
       // Loop back to Phase 1
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Scans for a locked file inside the target directory. On POSIX, returns
+   * {@code null} immediately. On Windows, runs the scan on a background
+   * thread with an indeterminate progress dialog.
+   */
+  private FilePath scanForLockedFile()
+  {
+    if ((IS_OS_WINDOWS == false) || (filePath.isDirectory() == false))
+      return null;
+
+    if (ui == null)
+      return filePath.findLockedFileInDir();
+
+    FilePath[] result = { null };
+
+    new HyperTask("LockedFileScan", "Scanning for locked files...", false)
+    {
+      @Override protected void call()
+      {
+        result[0] = filePath.findLockedFileInDir();
+      }
+    }.runWithProgressDialog();
+
+    return result[0];
   }
 
 //---------------------------------------------------------------------------

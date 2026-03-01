@@ -226,17 +226,13 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     boolean restartWatcher = folderTreeWatcher.stop();
 
-    if (filePath.anyOpenFilesInDir())
-    {
-      folderTreeWatcher.createNewWatcherAndStart();
-      return false;
-    }
-
     DeletionResult result = FileDeletion.ofDirWithContents(filePath).interactive().execute();
 
     if (result != DeletionResult.SUCCESS)
     {
-      folderTreeWatcher.createNewWatcherAndStart();
+      if (restartWatcher)
+        folderTreeWatcher.createNewWatcherAndStart();
+
       return false;
     }
 
