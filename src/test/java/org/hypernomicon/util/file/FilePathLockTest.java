@@ -34,11 +34,12 @@ import org.junit.jupiter.api.io.TempDir;
 //---------------------------------------------------------------------------
 
 /**
- * Unit tests for {@link FilePath#canObtainLock()} and
+ * Unit tests for {@link FilePath#canObtainLock()},
+ * {@link FilePath#findLockedFileInDir()}, and
  * {@link FilePath#anyOpenFilesInDir()}.
  * <p>
  * Lock checking is Windows-specific; on POSIX systems the methods return
- * early (true / false respectively). OS-specific tests use
+ * early (true / false / null respectively). OS-specific tests use
  * {@code assumeTrue}/{@code assumeFalse} so they are skipped on the
  * wrong platform rather than failing.
  */
@@ -158,6 +159,60 @@ class FilePathLockTest
     Path file = Files.writeString(tempDir.resolve("posix_file.txt"), "data");
 
     assertTrue(new FilePath(file).canObtainLock());
+  }
+
+//---------------------------------------------------------------------------
+//endregion
+//region findLockedFileInDir()
+//---------------------------------------------------------------------------
+
+  @Test
+  void findLockedFileInDir_posix_returnsNull()
+  {
+    assumeFalse(IS_OS_WINDOWS, "Test only runs on POSIX systems");
+
+    assertNull(new FilePath(tempDir).findLockedFileInDir());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void findLockedFileInDir_emptyDirectory_returnsNull() throws IOException
+  {
+    assumeTrue(IS_OS_WINDOWS, "Lock checking only applies on Windows");
+
+    Path dir = Files.createDirectory(tempDir.resolve("empty_dir"));
+
+    assertNull(new FilePath(dir).findLockedFileInDir());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void findLockedFileInDir_unlockedFiles_returnsNull() throws IOException
+  {
+    assumeTrue(IS_OS_WINDOWS, "Lock checking only applies on Windows");
+
+    Path dir = Files.createDirectory(tempDir.resolve("unlocked_dir"));
+    Files.writeString(dir.resolve("a.txt"), "data");
+    Files.writeString(dir.resolve("b.txt"), "data");
+
+    assertNull(new FilePath(dir).findLockedFileInDir());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void findLockedFileInDir_nestedUnlockedSubdirs_returnsNull() throws IOException
+  {
+    assumeTrue(IS_OS_WINDOWS, "Lock checking only applies on Windows");
+
+    Path dir = Files.createDirectory(tempDir.resolve("nested_dir")),
+         sub = Files.createDirectories(dir.resolve("sub1").resolve("sub2"));
+    Files.writeString(sub.resolve("deep.txt"), "data");
+    Files.writeString(dir.resolve("top.txt"), "data");
+
+    assertNull(new FilePath(dir).findLockedFileInDir());
   }
 
 //---------------------------------------------------------------------------

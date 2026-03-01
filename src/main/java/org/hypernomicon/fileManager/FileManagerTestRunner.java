@@ -73,7 +73,8 @@ public final class FileManagerTestRunner
 //---------------------------------------------------------------------------
 
   /**
-   * Run the full FileManager paste-move test suite as an FXTestSequencer sequence.
+   * Run the full FileManager paste test suite (move and copy) as an
+   * FXTestSequencer sequence.
    *
    * @param testRootDir path under the DB root to use as test root (e.g. dbRoot/_test_fm)
    * @param onFinished  callback invoked after the last step completes and cleanup finishes; may be null
@@ -1495,20 +1496,2017 @@ public final class FileManagerTestRunner
         lockProc = startLockProcess(lockedFile);
 
         PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrCancel);  // Stop the paste at the retry/skip/stop dialog
         pasteMove(entitiesOf(tree), destDir);
 
         // Move should have failed: source tree still exists
         assertExists(tree, "source tree should still exist after failed move");
 
-        // The popup should identify the specific locked file, not an ancestor directory
+        // The combined dialog should identify the specific locked file
         String lastMsg = PopupRobot.getLastMessage();
         assertNotNull(lastMsg, "a popup should have been shown");
         assertTrue(lastMsg.contains("s2.txt"),
           "popup should name the locked file 's2.txt', got: " + lastMsg);
+
+        PopupRobot.setDefaultResponse(mrOk);
       }
       catch (Exception e) { throw new AssertionError(e); }
       finally { destroyQuietly(lockProc); }
     }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 11: Baseline Mixed Moves (2 steps)
+    // =====================================================================
+
+    // Step 55: External nested dir tree + sibling file into internal dest
+    seq.thenRunAfterDelay(() ->
+    {
+      try
+      {
+        FilePath srcNested  = extRoot.resolve("p11s55", "src", "nested"),
+                 srcSibling = extRoot.resolve("p11s55", "src", "sibling.txt"),
+                 destDir    = createTestDir("p11s55", "dest");
+
+        pasteMove(entitiesOf(srcNested, srcSibling), destDir);
+
+        assertExists(destDir.resolve("nested", "top.txt"), "dest top.txt");
+        assertExists(destDir.resolve("nested", "child1", "c1.txt"), "dest c1.txt");
+        assertExists(destDir.resolve("nested", "child1", "child2", "c2.txt"), "dest c2.txt");
+        assertExists(destDir.resolve("sibling.txt"), "dest sibling.txt");
+        assertGone(srcNested, "source nested");
+        assertGone(srcSibling, "source sibling.txt");
+
+        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("nested"), false),
+          "nested folder record should exist");
+        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("nested", "child1"), false),
+          "child1 folder record should exist");
+        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("nested", "child1", "child2"), false),
+          "child2 folder record should exist");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+    });
+
+    // Step 56: Mixed siblings: folder (re-parent) + WorkFile + unassociated file
+    seq.thenRunAfterDelay(() ->
+    {
+      try
+      {
+        FilePath srcParent = createTestDir("p11s56", "src"),
+                 destDir   = createTestDir("p11s56", "dest"),
+
+                 folder    = srcParent.resolve("folder"),
+                 workPdf   = srcParent.resolve("work.pdf"),
+                 loose     = srcParent.resolve("loose.txt");
+
+        HDT_Folder folderRec = HyperPath.getFolderFromFilePath(folder, true);
+        int folderID = folderRec.getID();
+
+        HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+        int wfID = wfRec.getID();
+
+        pasteMove(entitiesOf(folder, workPdf, loose), destDir);
+
+        assertEquals(folderID, HyperPath.getFolderFromFilePath(destDir.resolve("folder"), false).getID(),
+          "folder record ID should be preserved after re-parent");
+        assertEquals(destDir.resolve("work.pdf"), db.workFiles.getByID(wfID).filePath(),
+          "WorkFile should resolve to dest");
+        assertExists(destDir.resolve("loose.txt"), "dest loose.txt");
+        assertGone(folder, "source folder");
+        assertGone(workPdf, "source work.pdf");
+        assertGone(loose, "source loose.txt");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+    });
+
+    // =====================================================================
+    //  Phase 12: Re-Parent Loop Skip (4 steps, Windows-only)
+    // =====================================================================
+
+    // Step 57: Skip locked dir, move clean dir (locked first in list)
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p12s57", "src"),
+                 destDir   = createTestDir("p12s57", "dest"),
+                 lockedDir = srcParent.resolve("locked_dir"),
+                 cleanDir  = srcParent.resolve("clean"),
+                 lockFile  = lockedDir.resolve("nested", "target.txt");
+
+        HyperPath.getFolderFromFilePath(lockedDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+        HyperPath.getFolderFromFilePath(cleanDir, true);
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore);
+
+        pasteMove(entitiesOf(lockedDir, cleanDir), destDir);
+
+        assertExists(srcParent.resolve("locked_dir"), "locked_dir should still exist");
+        assertExists(destDir.resolve("clean", "a.txt"), "dest clean/a.txt");
+        assertGone(srcParent.resolve("clean"), "source clean should be gone");
+
+        assertTrue(PopupRobot.getLastMessage().contains("target.txt"),
+          "popup should mention target.txt: " + PopupRobot.getLastMessage());
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get exactly 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 58: Skip locked dir, move clean dir (clean first in list)
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p12s58", "src"),
+                 destDir   = createTestDir("p12s58", "dest"),
+
+                 cleanDir  = srcParent.resolve("clean"),
+                 lockedDir = srcParent.resolve("locked_dir"),
+                 lockFile  = lockedDir.resolve("nested", "target.txt");
+
+        HyperPath.getFolderFromFilePath(cleanDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore);
+
+        pasteMove(entitiesOf(cleanDir, lockedDir), destDir);
+
+        assertExists(destDir.resolve("clean", "a.txt"), "dest clean/a.txt");
+        assertGone(srcParent.resolve("clean"), "source clean should be gone");
+        assertExists(srcParent.resolve("locked_dir"), "locked_dir should still exist");
+
+        assertTrue(PopupRobot.getLastMessage().contains("target.txt"),
+          "popup should mention target.txt: " + PopupRobot.getLastMessage());
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get exactly 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 59: Skip locked dir, move clean dir + extra file
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p12s59", "src"),
+                 destDir   = createTestDir("p12s59", "dest"),
+
+                 cleanDir  = srcParent.resolve("clean"),
+                 lockedDir = srcParent.resolve("locked_dir"),
+                 extraFile = srcParent.resolve("extra.txt"),
+                 lockFile  = lockedDir.resolve("nested", "target.txt");
+
+        HyperPath.getFolderFromFilePath(cleanDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore);
+
+        pasteMove(entitiesOf(cleanDir, lockedDir, extraFile), destDir);
+
+        assertExists(destDir.resolve("clean", "a.txt"), "dest clean/a.txt");
+        assertExists(srcParent.resolve("locked_dir"), "locked_dir should still exist");
+        assertExists(destDir.resolve("extra.txt"), "dest extra.txt");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get exactly 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 60: Stop at locked dir (mrCancel); file loop never runs
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p12s60", "src"),
+                 destDir   = createTestDir("p12s60", "dest"),
+
+                 cleanDir  = srcParent.resolve("clean"),
+                 lockedDir = srcParent.resolve("locked_dir"),
+                 extraFile = srcParent.resolve("extra.txt"),
+                 lockFile  = lockedDir.resolve("nested", "target.txt");
+
+        HyperPath.getFolderFromFilePath(cleanDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrCancel);
+
+        pasteMove(entitiesOf(cleanDir, lockedDir, extraFile), destDir);
+
+        // clean was already moved before Stop was hit on locked_dir
+        assertExists(destDir.resolve("clean", "a.txt"), "dest clean/a.txt (already moved)");
+        assertExists(srcParent.resolve("locked_dir"), "locked_dir should still exist");
+        // extra.txt should remain at source because file loop never ran after Stop
+        assertExists(srcParent.resolve("extra.txt"), "extra.txt should still be at source");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get exactly 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 13: Re-Parent Loop Stop and Retry (3 steps, Windows-only)
+    // =====================================================================
+
+    // Step 61: Stop at locked dir; second dir not moved
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p13s61", "src"),
+                 destDir   = createTestDir("p13s61", "dest"),
+
+                 firstDir  = srcParent.resolve("first"),
+                 secondDir = srcParent.resolve("second"),
+                 lockFile  = firstDir .resolve("a.txt");
+
+        HyperPath.getFolderFromFilePath(firstDir, true);
+        HyperPath.getFolderFromFilePath(secondDir, true);
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrCancel);
+
+        pasteMove(entitiesOf(firstDir, secondDir), destDir);
+
+        assertExists(srcParent.resolve("first"), "first should still exist");
+        assertExists(srcParent.resolve("second"), "second should still exist (Stop aborted)");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get exactly 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 62: Retry then Stop on locked dir
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p13s62", "src"),
+                 destDir   = createTestDir("p13s62", "dest"),
+
+                 retryDir  = srcParent.resolve("retrydir"),
+                 lockFile  = retryDir.resolve("locked.txt");
+
+        HyperPath.getFolderFromFilePath(retryDir, true);
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry, mrCancel);
+
+        pasteMove(entitiesOf(retryDir), destDir);
+
+        assertExists(srcParent.resolve("retrydir"), "retrydir should still exist");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (Retry then Stop)");
+        assertTrue(PopupRobot.getLastMessage().contains("locked.txt"),
+          "popup should mention locked.txt: " + PopupRobot.getLastMessage());
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 63: Retry then Skip on locked dir; extra file still moves
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p13s63", "src"),
+                 destDir   = createTestDir("p13s63", "dest"),
+
+                 retryDir  = srcParent.resolve("retrydir"),
+                 extraFile = srcParent.resolve("extra.txt"),
+                 lockFile  = retryDir .resolve("locked.txt");
+
+        HyperPath.getFolderFromFilePath(retryDir, true);
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry, mrIgnore);
+
+        pasteMove(entitiesOf(retryDir, extraFile), destDir);
+
+        assertExists(srcParent.resolve("retrydir"), "retrydir should still exist");
+        assertExists(destDir.resolve("extra.txt"), "dest extra.txt");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (Retry then Skip)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 14: File Move Loop Lock (4 steps, Windows-only)
+    // =====================================================================
+
+    // Step 64: Skip locked file; other files move (external, HashMap order)
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir  = extRoot.resolve("p14s64", "src"),
+                 destDir = createTestDir("p14s64", "dest"),
+
+                 fileA   = srcDir.resolve("a.txt"),
+                 fileB   = srcDir.resolve("b.txt"),
+                 fileC   = srcDir.resolve("c.txt");
+
+        lockProc = startLockProcess(fileB);
+
+        PopupRobot.clear();
+        PopupRobot.setDefaultResponse(mrIgnore);
+
+        pasteMove(entitiesOf(fileA, fileB, fileC), destDir);
+
+        assertExists(destDir.resolve("a.txt"), "dest a.txt");
+        assertExists(destDir.resolve("c.txt"), "dest c.txt");
+        assertExists(srcDir.resolve("b.txt"), "source b.txt should still exist (locked)");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup for locked file");
+
+        PopupRobot.setDefaultResponse(mrOk);
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 65: Stop at locked file (HashMap order unpredictable)
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir  = extRoot.resolve("p14s65", "src"),
+                 destDir = createTestDir("p14s65", "dest"),
+
+                 fileA   = srcDir.resolve("a.txt"),
+                 fileB   = srcDir.resolve("b.txt"),
+                 fileC   = srcDir.resolve("c.txt");
+
+        lockProc = startLockProcess(fileB);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrCancel);
+
+        pasteMove(entitiesOf(fileA, fileB, fileC), destDir);
+
+        assertExists(srcDir.resolve("b.txt"), "source b.txt should still exist (locked)");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+        // Cannot assert a.txt/c.txt state due to HashMap iteration order
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 66: Two locked files, both skipped
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc1 = null, lockProc2 = null;
+
+      try
+      {
+        FilePath srcDir  = extRoot.resolve("p14s66", "src"),
+                 destDir = createTestDir("p14s66", "dest"),
+
+                 fileX   = srcDir.resolve("x.txt"),
+                 fileY   = srcDir.resolve("y.txt");
+
+        lockProc1 = startLockProcess(fileX);
+        lockProc2 = startLockProcess(fileY);
+
+        PopupRobot.clear();
+        PopupRobot.setDefaultResponse(mrIgnore);
+
+        pasteMove(entitiesOf(fileX, fileY), destDir);
+
+        assertExists(srcDir.resolve("x.txt"), "source x.txt should still exist (locked)");
+        assertExists(srcDir.resolve("y.txt"), "source y.txt should still exist (locked)");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups");
+
+        PopupRobot.setDefaultResponse(mrOk);
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        destroyQuietly(lockProc1);
+        destroyQuietly(lockProc2);
+      }
+    }).windowsOnly();
+
+    // Step 67: Retry then Stop on locked file
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir     = extRoot.resolve("p14s67", "src"),
+                 destDir    = createTestDir("p14s67", "dest"),
+                 lockedFile = srcDir.resolve("locked.txt");
+
+        lockProc = startLockProcess(lockedFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry, mrCancel);
+
+        pasteMove(entitiesOf(lockedFile), destDir);
+
+        assertExists(srcDir.resolve("locked.txt"), "source locked.txt should still exist");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (Retry then Stop)");
+
+        String lastMsg = PopupRobot.getLastMessage();
+        assertTrue(lastMsg.contains("locked.txt"), "popup should mention locked.txt: " + lastMsg);
+        assertTrue(lastMsg.toLowerCase().contains("access denied"),
+          "popup should mention access denied: " + lastMsg);
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 15: Cross-Loop Scenarios (5 steps, Windows-only)
+    // =====================================================================
+
+    // Step 68: Locked dir skipped; loose file moves in file loop
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p15s68", "src"),
+                 destDir   = createTestDir("p15s68", "dest"),
+
+                 lockedDir = srcParent.resolve("locked_dir"),
+                 looseFile = srcParent.resolve("loose.txt"),
+                 lockFile  = lockedDir.resolve("nested", "target.txt");
+
+        HyperPath.getFolderFromFilePath(lockedDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore);
+
+        pasteMove(entitiesOf(lockedDir, looseFile), destDir);
+
+        assertExists(srcParent.resolve("locked_dir"), "locked_dir should still exist");
+        assertExists(destDir.resolve("loose.txt"), "dest loose.txt");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 69: Folder re-parents OK; locked unassociated file skipped
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent  = createTestDir("p15s69", "src"),
+                 destDir    = createTestDir("p15s69", "dest"),
+                 folder     = srcParent.resolve("folder"),
+                 lockedFile = srcParent.resolve("locked.txt");
+
+        HyperPath.getFolderFromFilePath(folder, true);
+
+        lockProc = startLockProcess(lockedFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore);
+
+        pasteMove(entitiesOf(folder, lockedFile), destDir);
+
+        assertExists(destDir.resolve("folder", "inner.txt"), "dest folder/inner.txt");
+        assertGone(srcParent.resolve("folder"), "source folder should be gone");
+        assertExists(lockedFile, "locked.txt should still exist");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 70: Stop at locked dir; file loop never runs, extra.txt stays
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p15s70", "src"),
+                 destDir   = createTestDir("p15s70", "dest"),
+
+                 lockedDir = srcParent.resolve("locked_dir"),
+                 extraFile = srcParent.resolve("extra.txt"),
+                 lockFile  = lockedDir.resolve("nested", "target.txt");
+
+        HyperPath.getFolderFromFilePath(lockedDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrCancel);
+
+        pasteMove(entitiesOf(lockedDir, extraFile), destDir);
+
+        assertExists(srcParent.resolve("locked_dir"), "locked_dir should still exist");
+        assertExists(srcParent.resolve("extra.txt"), "extra.txt should still be at source");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 71: Both dir and unassociated file locked; both skipped
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc1 = null, lockProc2 = null;
+
+      try
+      {
+        FilePath srcParent  = createTestDir("p15s71", "src"),
+                 destDir    = createTestDir("p15s71", "dest"),
+
+                 lockedDir  = srcParent.resolve("locked_dir"),
+                 lockedFile = srcParent.resolve("locked_file.txt"),
+                 lockFile1  = lockedDir.resolve("nested", "target.txt");
+
+        HyperPath.getFolderFromFilePath(lockedDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+
+        lockProc1 = startLockProcess(lockFile1);
+        lockProc2 = startLockProcess(lockedFile);
+
+        PopupRobot.clear();
+        PopupRobot.setDefaultResponse(mrIgnore);
+
+        pasteMove(entitiesOf(lockedDir, lockedFile), destDir);
+
+        assertExists(srcParent.resolve("locked_dir"), "locked_dir should still exist");
+        assertExists(lockedFile, "locked_file.txt should still exist");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups");
+
+        PopupRobot.setDefaultResponse(mrOk);
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        destroyQuietly(lockProc1);
+        destroyQuietly(lockProc2);
+      }
+    }).windowsOnly();
+
+    // Step 72: Folder re-parents; locked WorkFile skipped, record path unchanged
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p15s72", "src"),
+                 destDir   = createTestDir("p15s72", "dest"),
+                 folder    = srcParent.resolve("folder"),
+                 workPdf   = srcParent.resolve("work.pdf");
+
+        HyperPath.getFolderFromFilePath(folder, true);
+
+        HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+        int wfID = wfRec.getID();
+
+        lockProc = startLockProcess(workPdf);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore);
+
+        pasteMove(entitiesOf(folder, workPdf), destDir);
+
+        assertExists(destDir.resolve("folder", "inner.txt"), "dest folder/inner.txt (re-parented)");
+        assertExists(srcParent.resolve("work.pdf"), "source work.pdf should still exist (locked)");
+        assertEquals(workPdf, db.workFiles.getByID(wfID).filePath(),
+          "WorkFile record path should still point to source");
+
+        String lastMsg = PopupRobot.getLastMessage();
+        assertTrue(lastMsg.contains("work.pdf"), "popup should mention work.pdf: " + lastMsg);
+        assertTrue(lastMsg.toLowerCase().contains("access denied"),
+          "popup should mention access denied: " + lastMsg);
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 16: Read-Only (2 steps, Windows-only)
+    // =====================================================================
+
+    // Step 73: Read-only file can still be moved
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath destFile = null;
+
+      try
+      {
+        FilePath srcDir  = createTestDir("p16s73", "src"),
+                 destDir = createTestDir("p16s73", "dest"),
+                 roFile  = srcDir.resolve("readonly.txt");
+
+        roFile.toFile().setReadOnly();
+
+        pasteMove(entitiesOf(roFile), destDir);
+
+        destFile = destDir.resolve("readonly.txt");
+        assertExists(destFile, "dest readonly.txt");
+        assertGone(roFile, "source readonly.txt should be gone");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        if (destFile != null) destFile.toFile().setWritable(true);
+      }
+    }).windowsOnly();
+
+    // Step 74: Read-only file inside dir; dir re-parent still works
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath destRoFile = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p16s74", "src"),
+                 destDir   = createTestDir("p16s74", "dest"),
+                 roDir     = srcParent.resolve("rodir"),
+                 roFile    = roDir.resolve("readonly.txt");
+
+        HyperPath.getFolderFromFilePath(roDir, true);
+
+        roFile.toFile().setReadOnly();
+
+        pasteMove(entitiesOf(roDir), destDir);
+
+        assertExists(destDir.resolve("rodir", "normal.txt"), "dest normal.txt");
+        destRoFile = destDir.resolve("rodir", "readonly.txt");
+        assertExists(destRoFile, "dest readonly.txt");
+        assertGone(srcParent.resolve("rodir"), "source rodir should be gone");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        if (destRoFile != null) destRoFile.toFile().setWritable(true);
+      }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 17: Copy Operations (3 steps)
+    // =====================================================================
+
+    // Step 75: Simple file copy
+    seq.thenRunAfterDelay(() ->
+    {
+      try
+      {
+        FilePath srcDir  = createTestDir("p17s75", "src"),
+                 destDir = createTestDir("p17s75", "dest"),
+                 srcFile = srcDir.resolve("original.txt");
+
+        pasteCopy(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist after copy");
+        assertExists(destDir.resolve("original.txt"), "dest copy should exist");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+    });
+
+    // Step 76: Copy external dir tree
+    seq.thenRunAfterDelay(() ->
+    {
+      try
+      {
+        FilePath srcDir  = extRoot.resolve("p17s76", "src"),
+                 destDir = createTestDir("p17s76", "dest"),
+                 topdir  = srcDir.resolve("topdir");
+
+        pasteCopy(entitiesOf(topdir), destDir);
+
+        // Source files should still exist
+        assertExists(topdir.resolve("a.txt"), "source a.txt should still exist");
+        assertExists(topdir.resolve("sub", "b.txt"), "source sub/b.txt should still exist");
+
+        // Dest copies should exist
+        assertExists(destDir.resolve("topdir", "a.txt"), "dest a.txt");
+        assertExists(destDir.resolve("topdir", "sub", "b.txt"), "dest sub/b.txt");
+
+        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("topdir"), false),
+          "topdir folder record should exist at dest");
+        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("topdir", "sub"), false),
+          "sub folder record should exist at dest");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+    });
+
+    // Step 77: Protected file can be copied but not moved (contrast with Step 29)
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath destCopy = null;
+
+      try
+      {
+        FilePath destDir = createTestDir("p17s77", "dest"),
+                 hdbFile = db.getHdbPath();
+
+        // Step 29 verifies that moveCopy rejects database.hdb when copying=false.
+        // Here we verify that copying succeeds because doPasteChecks only calls
+        // isProtectedFile when copying == false.
+
+        pasteCopy(entitiesOf(hdbFile), destDir);
+
+        destCopy = destDir.resolve(hdbFile.getNameOnly());
+
+        assertExists(hdbFile, "source database.hdb should still exist");
+        assertExists(destCopy, "dest copy of database.hdb should exist");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        if ((destCopy != null) && destCopy.exists())
+          FileDeletion.ofFile(destCopy).nonInteractiveLogErrors().execute();
+      }
+    });
+
+    // =====================================================================
+    //  Phase 18: Cross-Condition Interactions (4 steps)
+    // =====================================================================
+
+    // Step 78: Locked dir skipped; WorkFile moves OK (Windows-only)
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p18s78", "src"),
+                 destDir   = createTestDir("p18s78", "dest"),
+
+                 lockedDir = srcParent.resolve("locked_dir"),
+                 workPdf   = srcParent.resolve("work.pdf"),
+                 lockFile  = lockedDir.resolve("nested", "target.txt");
+
+        HyperPath.getFolderFromFilePath(lockedDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+
+        HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+        int wfID = wfRec.getID();
+
+        lockProc = startLockProcess(lockFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore);
+
+        pasteMove(entitiesOf(lockedDir, workPdf), destDir);
+
+        assertExists(srcParent.resolve("locked_dir"), "locked_dir should still exist");
+        assertEquals(destDir.resolve("work.pdf"), db.workFiles.getByID(wfID).filePath(),
+          "WorkFile should resolve to dest");
+        assertExists(destDir.resolve("work.pdf"), "dest work.pdf");
+        assertGone(workPdf, "source work.pdf should be gone");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 79: Copy with overwrite (mrYes)
+    seq.thenRunAfterDelay(() ->
+    {
+      try
+      {
+        FilePath srcDir   = createTestDir("p18s79", "src"),
+                 destDir  = createTestDir("p18s79", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes);
+
+        pasteCopy(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist after copy");
+        assertFileContent(destFile, "file.txt", "dest should have source content after overwrite");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 overwrite prompt");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+    });
+
+    // Step 80: Copy over record-associated file
+    seq.thenRunAfterDelay(() ->
+    {
+      try
+      {
+        FilePath srcDir   = createTestDir("p18s80", "src"),
+                 destDir  = createTestDir("p18s80", "dest"),
+                 srcFile  = srcDir.resolve("work.pdf"),
+                 destFile = destDir.resolve("work.pdf");
+
+        HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, destFile);
+        int wfID = wfRec.getID();
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes);
+
+        pasteCopy(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist after copy");
+        assertExists(destFile, "dest should exist");
+        assertEquals(destFile, db.workFiles.getByID(wfID).filePath(),
+          "WorkFile record should still point to dest");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 overwrite prompt");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+    });
+
+    // Step 81: External dir with locked file; unlocked files move, dir remains (Windows-only)
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath destDir    = createTestDir("p18s81", "dest"),
+                 extDir     = extRoot.resolve("p18s81", "src", "extdir"),
+                 lockedFile = extDir.resolve("locked.txt");
+
+        lockProc = startLockProcess(lockedFile);
+
+        PopupRobot.clear();
+        PopupRobot.setDefaultResponse(mrIgnore);
+
+        pasteMove(entitiesOf(extDir), destDir);
+
+        assertExists(destDir.resolve("extdir", "a.txt"), "dest extdir/a.txt");
+        assertExists(lockedFile, "locked.txt should still exist");
+        assertExists(extDir, "source extdir should still exist (has locked file)");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+
+        PopupRobot.setDefaultResponse(mrOk);
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 19: Record-Associated File Lock Extended (3 steps, Windows-only)
+    // =====================================================================
+
+    // Step 82: Folder re-parents; locked WorkFile stopped, record path unchanged
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p19s82", "src"),
+                 destDir   = createTestDir("p19s82", "dest"),
+                 folder    = srcParent.resolve("folder"),
+                 workPdf   = srcParent.resolve("work.pdf");
+
+        HyperPath.getFolderFromFilePath(folder, true);
+
+        HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+        int wfID = wfRec.getID();
+
+        lockProc = startLockProcess(workPdf);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrCancel);
+
+        pasteMove(entitiesOf(folder, workPdf), destDir);
+
+        assertExists(destDir.resolve("folder", "inner.txt"), "dest folder/inner.txt");
+        assertExists(srcParent.resolve("work.pdf"), "source work.pdf should still exist");
+        assertEquals(workPdf, db.workFiles.getByID(wfID).filePath(),
+          "WorkFile record path should still point to source");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 83: Retry then Skip on locked WorkFile
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir  = createTestDir("p19s83", "src"),
+                 destDir = createTestDir("p19s83", "dest"),
+                 workPdf = srcDir.resolve("work.pdf");
+
+        HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+
+        lockProc = startLockProcess(workPdf);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry, mrIgnore);
+
+        pasteMove(entitiesOf(workPdf), destDir);
+
+        assertExists(srcDir.resolve("work.pdf"), "source work.pdf should still exist");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (Retry then Skip)");
+        assertTrue(PopupRobot.getLastMessage().contains("work.pdf"),
+          "popup should mention work.pdf: " + PopupRobot.getLastMessage());
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 84: Locked WorkFile skipped; unassociated loose file moves
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir    = createTestDir("p19s84", "src"),
+                 destDir   = createTestDir("p19s84", "dest"),
+                 workPdf   = srcDir.resolve("work.pdf"),
+                 looseFile = srcDir.resolve("loose.txt");
+
+        HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+
+        lockProc = startLockProcess(workPdf);
+
+        PopupRobot.clear();
+        PopupRobot.setDefaultResponse(mrIgnore);
+
+        pasteMove(entitiesOf(workPdf, looseFile), destDir);
+
+        assertExists(srcDir.resolve("work.pdf"), "source work.pdf should still exist");
+        assertExists(destDir.resolve("loose.txt"), "dest loose.txt");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+
+        PopupRobot.setDefaultResponse(mrOk);
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 20: Copy Path Lock (3 steps, Windows-only)
+    // =====================================================================
+
+    // Step 85: Copy over locked dest file; overwrite prompt then access denied skip
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p20s85", "src"),
+                 destDir  = createTestDir("p20s85", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        lockProc = startLockProcess(destFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrIgnore);
+
+        pasteCopy(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist");
+        assertExists(destFile, "dest should still exist (locked original)");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (overwrite + access denied)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 86: Copy over locked dest file; overwrite then Stop
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p20s86", "src"),
+                 destDir  = createTestDir("p20s86", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        lockProc = startLockProcess(destFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrCancel);
+
+        pasteCopy(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist");
+        assertExists(destFile, "dest should still exist");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (overwrite + Stop)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 87: Copy over locked dest file; overwrite, Retry, then Skip
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p20s87", "src"),
+                 destDir  = createTestDir("p20s87", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        lockProc = startLockProcess(destFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrRetry, mrIgnore);
+
+        pasteCopy(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist");
+        assertExists(destFile, "dest should still exist");
+        assertEquals(3, PopupRobot.getInvocationCount(),
+          "should get 3 popups (overwrite + Retry + Skip)");
+
+        String lastMsg = PopupRobot.getLastMessage();
+        assertTrue(lastMsg.contains("file.txt"), "popup should mention file.txt: " + lastMsg);
+        assertTrue(lastMsg.toLowerCase().contains("access denied"),
+          "popup should mention access denied: " + lastMsg);
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 21: Timed-Release Retry (14 steps, Windows-only)
+    // =====================================================================
+
+    // Step 88: Re-parent internal folder; retry succeeds after lock released
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p21s88", "src"),
+                 destDir   = createTestDir("p21s88", "dest"),
+                 rdir      = srcParent.resolve("rdir"),
+                 lockFile  = rdir.resolve("locked.txt");
+
+        HyperPath.getFolderFromFilePath(rdir, true);
+
+        lockProc = startLockProcess(lockFile);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry);
+        PopupRobot.setPreResponseAction(() -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(rdir), destDir);
+
+        assertExists(destDir.resolve("rdir", "inner.txt"), "inner.txt at dest");
+        assertExists(destDir.resolve("rdir", "locked.txt"), "locked.txt at dest");
+        assertGone(rdir, "src rdir should be gone");
+        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("rdir"), false),
+          "folder record should exist at dest");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+
+        lockProc = null;  // already destroyed by preResponseAction
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 89: Move external file; retry succeeds after lock released
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath destDir    = createTestDir("p21s89", "dest"),
+                 lockedFile = extRoot.resolve("p21s89", "src", "locked.txt");
+
+        lockProc = startLockProcess(lockedFile);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry);
+        PopupRobot.setPreResponseAction(() -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(lockedFile), destDir);
+
+        assertExists(destDir.resolve("locked.txt"), "locked.txt at dest");
+        assertGone(lockedFile, "src locked.txt should be gone");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 90: Move record-associated file; retry succeeds, record updated
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir  = createTestDir("p21s90", "src"),
+                 destDir = createTestDir("p21s90", "dest"),
+                 workPdf = srcDir.resolve("work.pdf");
+
+        HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+        int wfID = wfRec.getID();
+
+        lockProc = startLockProcess(workPdf);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry);
+        PopupRobot.setPreResponseAction(() -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(workPdf), destDir);
+
+        assertExists(destDir.resolve("work.pdf"), "work.pdf at dest");
+        assertGone(workPdf, "src work.pdf should be gone");
+        assertEquals(destDir.resolve("work.pdf"), db.workFiles.getByID(wfID).filePath(),
+          "WorkFile record should point to dest");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 91: Re-parent retry succeeds + sibling file moves
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p21s91", "src"),
+                 destDir   = createTestDir("p21s91", "dest"),
+                 rdir      = srcParent.resolve("rdir"),
+                 lockFile  = rdir.resolve("locked.txt"),
+                 extraFile = srcParent.resolve("extra.txt");
+
+        HyperPath.getFolderFromFilePath(rdir, true);
+
+        lockProc = startLockProcess(lockFile);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry);
+        PopupRobot.setPreResponseAction(() -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(rdir, extraFile), destDir);
+
+        assertExists(destDir.resolve("rdir", "locked.txt"), "locked.txt at dest");
+        assertGone(rdir, "src rdir should be gone");
+        assertExists(destDir.resolve("extra.txt"), "extra.txt at dest");
+        assertGone(extraFile, "src extra.txt should be gone");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 92: Folder re-parents OK + locked record file retry succeeds
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p21s92", "src"),
+                 destDir   = createTestDir("p21s92", "dest"),
+                 folder    = srcParent.resolve("folder"),
+                 workPdf   = srcParent.resolve("work.pdf");
+
+        HyperPath.getFolderFromFilePath(folder, true);
+
+        HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+        int wfID = wfRec.getID();
+
+        lockProc = startLockProcess(workPdf);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry);
+        PopupRobot.setPreResponseAction(() -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(folder, workPdf), destDir);
+
+        assertExists(destDir.resolve("folder", "inner.txt"), "inner.txt at dest (re-parented)");
+        assertExists(destDir.resolve("work.pdf"), "work.pdf at dest");
+        assertGone(workPdf, "src work.pdf should be gone");
+        assertEquals(destDir.resolve("work.pdf"), db.workFiles.getByID(wfID).filePath(),
+          "WorkFile record should point to dest");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 93: Copy over locked dest file; overwrite then retry succeeds
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p21s93", "src"),
+                 destDir  = createTestDir("p21s93", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        lockProc = startLockProcess(destFile);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrRetry);
+        PopupRobot.setPreResponseAction(1, () -> destroyQuietly(procToRelease));
+
+        pasteCopy(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist after copy");
+        assertFileContent(destFile, "file.txt", "dest should have source content after retry");
+        assertEquals(2, PopupRobot.getInvocationCount(),
+          "should get 2 popups (overwrite + lock)");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 94: External folder with locked interior file; retry succeeds, dir cleaned up
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath destDir    = createTestDir("p21s94", "dest"),
+                 edir       = extRoot.resolve("p21s94", "src", "edir"),
+                 lockedFile = edir.resolve("locked.txt");
+
+        lockProc = startLockProcess(lockedFile);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry);
+        PopupRobot.setPreResponseAction(() -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(edir), destDir);
+
+        assertExists(destDir.resolve("edir", "a.txt"), "a.txt at dest");
+        assertExists(destDir.resolve("edir", "locked.txt"), "locked.txt at dest");
+        assertGone(edir, "src edir should be gone (cleaned up)");
+        assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 95: Re-parent folder; first retry fails, second retry succeeds
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p21s95", "src"),
+                 destDir   = createTestDir("p21s95", "dest"),
+                 rdir      = srcParent.resolve("rdir"),
+                 lockFile  = rdir.resolve("locked.txt");
+
+        HyperPath.getFolderFromFilePath(rdir, true);
+
+        lockProc = startLockProcess(lockFile);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry, mrRetry);
+        PopupRobot.setPreResponseAction(1, () -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(rdir), destDir);
+
+        assertExists(destDir.resolve("rdir", "locked.txt"), "locked.txt at dest");
+        assertGone(rdir, "src rdir should be gone (succeeded on second retry)");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 96: Two folders, skip first locked, retry-succeed second
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc1 = null, lockProc2 = null;
+
+      try
+      {
+        FilePath srcParent = createTestDir("p21s96", "src"),
+                 destDir   = createTestDir("p21s96", "dest"),
+                 dir1      = srcParent.resolve("dir1"),
+                 dir2      = srcParent.resolve("dir2"),
+                 lockFile1 = dir1.resolve("locked1.txt"),
+                 lockFile2 = dir2.resolve("locked2.txt");
+
+        HyperPath.getFolderFromFilePath(dir1, true);
+        HyperPath.getFolderFromFilePath(dir2, true);
+
+        lockProc1 = startLockProcess(lockFile1);
+        lockProc2 = startLockProcess(lockFile2);
+
+        Process lockToRelease = lockProc2;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore, mrRetry);
+        PopupRobot.setPreResponseAction(1, () -> destroyQuietly(lockToRelease));
+
+        pasteMove(entitiesOf(dir1, dir2), destDir);
+
+        assertExists(dir1, "src dir1 should still exist (skipped)");
+        assertExists(destDir.resolve("dir2", "locked2.txt"), "locked2.txt at dest");
+        assertGone(dir2, "src dir2 should be gone (retry succeeded)");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups");
+
+        lockProc2 = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        destroyQuietly(lockProc1);
+        destroyQuietly(lockProc2);
+      }
+    }).windowsOnly();
+
+    // Step 97: Folder locked (Skip); sibling file locked (Retry succeeds)
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc1 = null, lockProc2 = null;
+
+      try
+      {
+        FilePath srcParent  = createTestDir("p21s97", "src"),
+                 destDir    = createTestDir("p21s97", "dest"),
+                 lockedDir  = srcParent.resolve("locked_dir"),
+                 lockFile1  = lockedDir.resolve("nested", "target.txt"),
+                 lockedFile = srcParent.resolve("locked_file.txt");
+
+        HyperPath.getFolderFromFilePath(lockedDir, true);
+        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+
+        lockProc1 = startLockProcess(lockFile1);
+        lockProc2 = startLockProcess(lockedFile);
+
+        Process fileToRelease = lockProc2;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore, mrRetry);
+        PopupRobot.setPreResponseAction(1, () -> destroyQuietly(fileToRelease));
+
+        pasteMove(entitiesOf(lockedDir, lockedFile), destDir);
+
+        assertExists(lockedDir, "src locked_dir should still exist (skipped)");
+        assertExists(destDir.resolve("locked_file.txt"), "locked_file.txt at dest");
+        assertGone(lockedFile, "src locked_file.txt should be gone");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups");
+
+        lockProc2 = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        destroyQuietly(lockProc1);
+        destroyQuietly(lockProc2);
+      }
+    }).windowsOnly();
+
+    // Step 98: Copy file; first retry fails, second retry succeeds (double retry)
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p21s98", "src"),
+                 destDir  = createTestDir("p21s98", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        lockProc = startLockProcess(destFile);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrRetry, mrRetry);
+        PopupRobot.setPreResponseAction(2, () -> destroyQuietly(procToRelease));
+
+        pasteCopy(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist after copy");
+        assertFileContent(destFile, "file.txt", "dest should have source content after double retry");
+        assertEquals(3, PopupRobot.getInvocationCount(),
+          "should get 3 popups (overwrite + 2 lock retries)");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 99: Two external files, both locked; skip first, retry-succeed second
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc1 = null, lockProc2 = null;
+
+      try
+      {
+        FilePath destDir = createTestDir("p21s101", "dest"),
+                 srcDir  = extRoot.resolve("p21s101", "src"),
+                 file1   = srcDir.resolve("f1.txt"),
+                 file2   = srcDir.resolve("f2.txt");
+
+        lockProc1 = startLockProcess(file1);
+        lockProc2 = startLockProcess(file2);
+
+        Process lp1 = lockProc1, lp2 = lockProc2;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrIgnore, mrRetry);
+        PopupRobot.setPreResponseAction(1, () ->
+        {
+          destroyQuietly(lp1);
+          destroyQuietly(lp2);
+        });
+
+        pasteMove(entitiesOf(file1, file2), destDir);
+
+        // HashMap order is unpredictable; one file was skipped, the other retried and moved
+        boolean f1Moved = destDir.resolve("f1.txt").exists(),
+                f2Moved = destDir.resolve("f2.txt").exists();
+
+        assertTrue(f1Moved || f2Moved, "at least one file should have moved to dest");
+        assertFalse(f1Moved && f2Moved, "both files should not have moved (one was skipped)");
+
+        boolean f1AtSrc = file1.exists(),
+                f2AtSrc = file2.exists();
+
+        assertTrue(f1AtSrc || f2AtSrc, "at least one file should remain at source (skipped)");
+        assertFalse(f1AtSrc && f2AtSrc, "both files should not remain at source (one was moved)");
+
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups");
+
+        lockProc1 = null;
+        lockProc2 = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        destroyQuietly(lockProc1);
+        destroyQuietly(lockProc2);
+      }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 22: Retry Escalation (4 steps, Windows-only)
+    // =====================================================================
+
+    // Step 100: Unassociated file move → Retry → Skip
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath destDir    = createTestDir("p22s100", "dest"),
+                 lockedFile = extRoot.resolve("p22s100", "src", "locked.txt");
+
+        lockProc = startLockProcess(lockedFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry, mrIgnore);
+
+        pasteMove(entitiesOf(lockedFile), destDir);
+
+        assertExists(lockedFile, "source locked.txt should still exist (skipped after retry)");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (Retry then Skip)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 101: Record-associated file move → Retry → Stop
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir  = createTestDir("p22s101", "src"),
+                 destDir = createTestDir("p22s101", "dest"),
+                 workPdf = srcDir.resolve("work.pdf");
+
+        HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+        int wfID = wfRec.getID();
+
+        lockProc = startLockProcess(workPdf);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry, mrCancel);
+
+        pasteMove(entitiesOf(workPdf), destDir);
+
+        assertExists(workPdf, "source work.pdf should still exist");
+        assertEquals(workPdf, db.workFiles.getByID(wfID).filePath(),
+          "WorkFile record should still point to source");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (Retry then Stop)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 102: Copy → Retry → Stop
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p22s102", "src"),
+                 destDir  = createTestDir("p22s102", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        lockProc = startLockProcess(destFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrRetry, mrCancel);
+
+        pasteCopy(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist");
+        assertExists(destFile, "dest should still exist (locked original)");
+        assertEquals(3, PopupRobot.getInvocationCount(),
+          "should get 3 popups (overwrite + Retry + Stop)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 103: Record-associated file move → Double retry → Succeed
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir  = createTestDir("p22s103", "src"),
+                 destDir = createTestDir("p22s103", "dest"),
+                 workPdf = srcDir.resolve("work.pdf");
+
+        HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
+        int wfID = wfRec.getID();
+
+        lockProc = startLockProcess(workPdf);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrRetry, mrRetry);
+        PopupRobot.setPreResponseAction(1, () -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(workPdf), destDir);
+
+        assertExists(destDir.resolve("work.pdf"), "work.pdf at dest");
+        assertGone(workPdf, "src work.pdf should be gone");
+        assertEquals(destDir.resolve("work.pdf"), db.workFiles.getByID(wfID).filePath(),
+          "WorkFile record should point to dest");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (2 retries)");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 23: Move + Overwrite + Source Lock (4 steps, Windows-only)
+    // =====================================================================
+
+    // Step 104: Move + overwrite → source locked → Skip
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p23s104", "src"),
+                 destDir  = createTestDir("p23s104", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        lockProc = startLockProcess(srcFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrIgnore);
+
+        pasteMove(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist (locked)");
+        assertGone(destFile, "dest deleted by REPLACE_EXISTING before move failed");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (overwrite + Skip)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 105: Move + overwrite → source locked → Stop
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p23s105", "src"),
+                 destDir  = createTestDir("p23s105", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        lockProc = startLockProcess(srcFile);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrCancel);
+
+        pasteMove(entitiesOf(srcFile), destDir);
+
+        assertExists(srcFile, "source should still exist (locked)");
+        assertGone(destFile, "dest deleted by REPLACE_EXISTING before move failed");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (overwrite + Stop)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 106: Move + overwrite → source locked → Retry → Succeed
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p23s106", "src"),
+                 destDir  = createTestDir("p23s106", "dest"),
+                 srcFile  = srcDir.resolve("file.txt"),
+                 destFile = destDir.resolve("file.txt");
+
+        lockProc = startLockProcess(srcFile);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrRetry);
+        PopupRobot.setPreResponseAction(1, () -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(srcFile), destDir);
+
+        assertGone(srcFile, "source should be gone (moved after retry)");
+        assertFileContent(destFile, "file.txt", "dest should have source content");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (overwrite + Retry)");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 107: Move + related overwrite → source locked → Retry → Succeed
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = createTestDir("p23s107", "src"),
+                 destDir  = createTestDir("p23s107", "dest"),
+                 srcFile  = srcDir.resolve("incoming.txt"),
+                 destFile = destDir.resolve("incoming.txt");
+
+        HDT_RecordWithPath destWfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, destFile);
+        int destWfID = destWfRec.getID();
+
+        lockProc = startLockProcess(srcFile);
+
+        Process procToRelease = lockProc;
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrRetry);
+        PopupRobot.setPreResponseAction(1, () -> destroyQuietly(procToRelease));
+
+        pasteMove(entitiesOf(srcFile), destDir);
+
+        assertGone(srcFile, "source should be gone (moved after retry)");
+        assertFileContent(destFile, "incoming.txt", "dest should have source content");
+        assertEquals(destFile, db.workFiles.getByID(destWfID).filePath(),
+          "dest WorkFile record should still point to dest");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (overwrite + Retry)");
+
+        lockProc = null;
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 24: Multi-File Copy + Lock (3 steps, Windows-only)
+    // =====================================================================
+
+    // Step 108: Two files copy; one locked dest → Skip → other copies fine
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath srcDir   = extRoot.resolve("p24s108", "src"),
+                 destDir  = createTestDir("p24s108", "dest"),
+                 srcA     = srcDir.resolve("a.txt"),
+                 srcB     = srcDir.resolve("b.txt"),
+                 destB    = destDir.resolve("b.txt");
+
+        lockProc = startLockProcess(destB);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrIgnore);
+
+        pasteCopy(entitiesOf(srcA, srcB), destDir);
+
+        destroyQuietly(lockProc);
+        lockProc = null;
+
+        assertExists(srcA, "source a.txt should still exist (copy)");
+        assertExists(srcB, "source b.txt should still exist (copy)");
+        assertExists(destDir.resolve("a.txt"), "dest a.txt should exist (copied)");
+        assertFileContent(destB, "original_b", "dest b.txt should be unchanged (locked)");
+        assertEquals(2, PopupRobot.getInvocationCount(), "should get 2 popups (overwrite + Skip)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally { destroyQuietly(lockProc); }
+    }).windowsOnly();
+
+    // Step 109: Two files copy; both locked dests → Stop on first
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc1 = null, lockProc2 = null;
+
+      try
+      {
+        FilePath srcDir  = extRoot.resolve("p24s109", "src"),
+                 destDir = createTestDir("p24s109", "dest"),
+                 destA   = destDir.resolve("a.txt"),
+                 destB   = destDir.resolve("b.txt");
+
+        lockProc1 = startLockProcess(destA);
+        lockProc2 = startLockProcess(destB);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrYes, mrCancel);
+
+        pasteCopy(entitiesOf(srcDir.resolve("a.txt"), srcDir.resolve("b.txt")), destDir);
+
+        destroyQuietly(lockProc1);
+        destroyQuietly(lockProc2);
+        lockProc1 = null;
+        lockProc2 = null;
+
+        assertFileContent(destA, "orig_a", "dest a.txt should be unchanged");
+        assertFileContent(destB, "orig_b", "dest b.txt should be unchanged");
+        assertEquals(3, PopupRobot.getInvocationCount(),
+          "should get 3 popups (2 overwrites + 1 Stop)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        destroyQuietly(lockProc1);
+        destroyQuietly(lockProc2);
+      }
+    }).windowsOnly();
+
+    // Step 110: Two files copy; both locked dests → Skip both
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc1 = null, lockProc2 = null;
+
+      try
+      {
+        FilePath srcDir  = extRoot.resolve("p24s110", "src"),
+                 destDir = createTestDir("p24s110", "dest"),
+                 destA   = destDir.resolve("a.txt"),
+                 destB   = destDir.resolve("b.txt");
+
+        lockProc1 = startLockProcess(destA);
+        lockProc2 = startLockProcess(destB);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrYes, mrIgnore, mrIgnore);
+
+        pasteCopy(entitiesOf(srcDir.resolve("a.txt"), srcDir.resolve("b.txt")), destDir);
+
+        destroyQuietly(lockProc1);
+        destroyQuietly(lockProc2);
+        lockProc1 = null;
+        lockProc2 = null;
+
+        assertFileContent(destA, "orig_a", "dest a.txt should be unchanged");
+        assertFileContent(destB, "orig_b", "dest b.txt should be unchanged");
+        assertEquals(4, PopupRobot.getInvocationCount(),
+          "should get 4 popups (2 overwrites + 2 Skips)");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        destroyQuietly(lockProc1);
+        destroyQuietly(lockProc2);
+      }
+    }).windowsOnly();
+
+    // =====================================================================
+    //  Phase 25: Multi-Item Folder Tree Move with Record Associations
+    //            (1 step)
+    // =====================================================================
+
+    // Step 111: Move a loose file + sibling folder tree; files associated
+    //           with WorkFile, MiscFile, and Person; notes associated with
+    //           srcParent (not moved) and inner (moved). Verifies folder
+    //           structure, parent/child relations, and all record/note
+    //           associations after the move.
+    seq.thenRunAfterDelay(() ->
+    {
+      try
+      {
+        FilePath srcParent = createTestDir("p25s111", "src"),
+                 destDir   = createTestDir("p25s111", "dest"),
+                 loose     = srcParent.resolve("loose.txt"),
+                 tree      = srcParent.resolve("tree"),
+                 mid       = tree.resolve("mid.pdf"),
+                 inner     = tree.resolve("inner"),
+                 deep      = inner.resolve("deep.jpg");
+
+        // Create folder records for the tree hierarchy
+        HDT_Folder innerFolder    = HyperPath.getFolderFromFilePath(inner, true),
+                   treeFolder     = HyperPath.getFolderFromFilePath(tree, false),
+                   srcParFolder   = HyperPath.getFolderFromFilePath(srcParent, false);
+        assertNotNull(treeFolder, "tree folder record");
+        assertNotNull(innerFolder, "inner folder record");
+        assertNotNull(srcParFolder, "srcParent folder record");
+
+        // Associate the 3 files with different record types
+        HDT_RecordWithPath workFile = HyperPath.createRecordAssignedToPath(hdtWorkFile, loose);
+        assertNotNull(workFile, "WorkFile for loose.txt");
+
+        HDT_RecordWithPath miscFile = HyperPath.createRecordAssignedToPath(hdtMiscFile, mid);
+        assertNotNull(miscFile, "MiscFile for mid.pdf");
+
+        HDT_Person person = db.createNewBlankRecord(hdtPerson);
+        person.setName(new PersonName("Test", "Person111"));
+        person.getPath().assign(innerFolder, deep.getNameOnly());
+
+        // Associate notes with srcParent (not moved) and inner (moved)
+        HDT_Note srcParNote = db.createNewBlankRecord(hdtNote);
+        srcParNote.setName("Test note srcParent p25s111");
+        srcParNote.folder.set(srcParFolder);
+
+        HDT_Note innerNote = db.createNewBlankRecord(hdtNote);
+        innerNote.setName("Test note inner p25s111");
+        innerNote.folder.set(innerFolder);
+
+        int wfID = workFile.getID(), mfID = miscFile.getID(),
+            personID = person.getID(),
+            srcParNoteID = srcParNote.getID(), innerNoteID = innerNote.getID(),
+            treeFolderID = treeFolder.getID(), innerFolderID = innerFolder.getID(),
+            srcParFolderID = srcParFolder.getID();
+
+        // Select both the loose file and the tree folder; move to dest
+        pasteMove(entitiesOf(loose, tree), destDir);
+
+        // Source should be completely gone
+        assertGone(loose, "source loose.txt");
+        assertGone(tree, "source tree dir");
+
+        // Destination structure should be correct
+        FilePath destLoose = destDir.resolve("loose.txt"),
+                 destTree  = destDir.resolve("tree"),
+                 destMid   = destTree.resolve("mid.pdf"),
+                 destInner = destTree.resolve("inner"),
+                 destDeep  = destInner.resolve("deep.jpg");
+
+        assertExists(destLoose, "dest loose.txt");
+        assertExists(destTree, "dest tree dir");
+        assertExists(destMid, "dest mid.pdf");
+        assertExists(destInner, "dest inner dir");
+        assertExists(destDeep, "dest deep.jpg");
+
+        // Folder records should be preserved with proper parent/child structure
+        HDT_Folder destTreeFolder = HyperPath.getFolderFromFilePath(destTree, false);
+        assertNotNull(destTreeFolder, "dest tree folder record");
+        assertEquals(treeFolderID, destTreeFolder.getID(), "tree folder record ID preserved");
+
+        HDT_Folder destInnerFolder = HyperPath.getFolderFromFilePath(destInner, false);
+        assertNotNull(destInnerFolder, "dest inner folder record");
+        assertEquals(innerFolderID, destInnerFolder.getID(), "inner folder record ID preserved");
+        assertEquals(destTreeFolder, destInnerFolder.parentFolder(), "inner should be child of tree");
+
+        HDT_Folder destDirFolder = HyperPath.getFolderFromFilePath(destDir, false);
+        assertNotNull(destDirFolder, "dest dir folder record");
+        assertEquals(destDirFolder, destTreeFolder.parentFolder(), "tree should be child of destDir");
+
+        // File record associations should resolve to new locations
+        assertEquals(destLoose, db.workFiles.getByID(wfID).filePath(),
+          "WorkFile should resolve to dest/loose.txt");
+        assertEquals(destMid, db.miscFiles.getByID(mfID).filePath(),
+          "MiscFile should resolve to dest/tree/mid.pdf");
+        assertEquals(destDeep, db.persons.getByID(personID).getPath().filePath(),
+          "Person picture should resolve to dest/tree/inner/deep.jpg");
+
+        // srcParent note: folder was not moved, so record and path are unchanged
+        assertEquals(srcParFolder, db.notes.getByID(srcParNoteID).folder.get(),
+          "srcParent note should still reference srcParent folder");
+        assertEquals(srcParFolderID, srcParFolder.getID(),
+          "srcParent folder record ID unchanged");
+        assertEquals(srcParent, srcParFolder.filePath(),
+          "srcParent folder path should be unchanged");
+
+        // inner note: folder record preserved, path resolves to new location
+        assertEquals(innerFolder, db.notes.getByID(innerNoteID).folder.get(),
+          "inner note should still reference the same folder record");
+        assertEquals(destInner, innerFolder.filePath(),
+          "inner folder filePath() should resolve to dest location");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+    });
 
     // Start the sequence
     seq.start();
@@ -1818,6 +3816,253 @@ public final class FileManagerTestRunner
     setupFile(testRoot, "p10s54", "src", "tree", "sub1", "sub2", "s2.txt");
     setupFile(testRoot, "p10s54", "src", "tree", "sub1", "sub2", "unlocked.txt");
     setupFile(testRoot, "p10s54", "src", "tree", "sibling", "sib.txt");
+
+    // Phase 11: Baseline mixed moves (Steps 55-56)
+
+    setupFile(extRoot,  "p11s55", "src", "nested", "top.txt");
+    setupFile(extRoot,  "p11s55", "src", "nested", "child1", "c1.txt");
+    setupFile(extRoot,  "p11s55", "src", "nested", "child1", "child2", "c2.txt");
+    setupFile(extRoot,  "p11s55", "src", "sibling.txt");
+    setupDir (testRoot, "p11s55", "dest");
+
+    setupFile(testRoot, "p11s56", "src", "folder", "inner.txt");
+    setupFile(testRoot, "p11s56", "src", "work.pdf");
+    setupFile(testRoot, "p11s56", "src", "loose.txt");
+    setupDir (testRoot, "p11s56", "dest");
+
+    // Phase 12: Re-parent loop Skip scenarios (Steps 57-60)
+
+    setupFile(testRoot, "p12s57", "src", "locked_dir", "ok.txt");
+    setupFile(testRoot, "p12s57", "src", "locked_dir", "nested", "target.txt");
+    setupFile(testRoot, "p12s57", "src", "clean", "a.txt");
+    setupDir (testRoot, "p12s57", "dest");
+
+    setupFile(testRoot, "p12s58", "src", "clean", "a.txt");
+    setupFile(testRoot, "p12s58", "src", "locked_dir", "ok.txt");
+    setupFile(testRoot, "p12s58", "src", "locked_dir", "nested", "target.txt");
+    setupDir (testRoot, "p12s58", "dest");
+
+    setupFile(testRoot, "p12s59", "src", "clean", "a.txt");
+    setupFile(testRoot, "p12s59", "src", "locked_dir", "nested", "target.txt");
+    setupFile(testRoot, "p12s59", "src", "extra.txt");
+    setupDir (testRoot, "p12s59", "dest");
+
+    setupFile(testRoot, "p12s60", "src", "clean", "a.txt");
+    setupFile(testRoot, "p12s60", "src", "locked_dir", "nested", "target.txt");
+    setupFile(testRoot, "p12s60", "src", "extra.txt");
+    setupDir (testRoot, "p12s60", "dest");
+
+    // Phase 13: Re-parent loop Stop and Retry (Steps 61-63)
+
+    setupFile(testRoot, "p13s61", "src", "first", "a.txt");
+    setupFile(testRoot, "p13s61", "src", "second", "b.txt");
+    setupDir (testRoot, "p13s61", "dest");
+
+    setupFile(testRoot, "p13s62", "src", "retrydir", "inner.txt");
+    setupFile(testRoot, "p13s62", "src", "retrydir", "locked.txt");
+    setupDir (testRoot, "p13s62", "dest");
+
+    setupFile(testRoot, "p13s63", "src", "retrydir", "inner.txt");
+    setupFile(testRoot, "p13s63", "src", "retrydir", "locked.txt");
+    setupFile(testRoot, "p13s63", "src", "extra.txt");
+    setupDir (testRoot, "p13s63", "dest");
+
+    // Phase 14: File move loop lock scenarios (Steps 64-67)
+
+    setupFile(extRoot,  "p14s64", "src", "a.txt");
+    setupFile(extRoot,  "p14s64", "src", "b.txt");
+    setupFile(extRoot,  "p14s64", "src", "c.txt");
+    setupDir (testRoot, "p14s64", "dest");
+
+    setupFile(extRoot,  "p14s65", "src", "a.txt");
+    setupFile(extRoot,  "p14s65", "src", "b.txt");
+    setupFile(extRoot,  "p14s65", "src", "c.txt");
+    setupDir (testRoot, "p14s65", "dest");
+
+    setupFile(extRoot,  "p14s66", "src", "x.txt");
+    setupFile(extRoot,  "p14s66", "src", "y.txt");
+    setupDir (testRoot, "p14s66", "dest");
+
+    setupFile(extRoot,  "p14s67", "src", "locked.txt");
+    setupDir (testRoot, "p14s67", "dest");
+
+    // Phase 15: Cross-loop scenarios (Steps 68-72)
+
+    setupFile(testRoot, "p15s68", "src", "locked_dir", "nested", "target.txt");
+    setupFile(testRoot, "p15s68", "src", "loose.txt");
+    setupDir (testRoot, "p15s68", "dest");
+
+    setupFile(testRoot, "p15s69", "src", "folder", "inner.txt");
+    setupFile(testRoot, "p15s69", "src", "locked.txt");
+    setupDir (testRoot, "p15s69", "dest");
+
+    setupFile(testRoot, "p15s70", "src", "locked_dir", "nested", "target.txt");
+    setupFile(testRoot, "p15s70", "src", "extra.txt");
+    setupDir (testRoot, "p15s70", "dest");
+
+    setupFile(testRoot, "p15s71", "src", "locked_dir", "nested", "target.txt");
+    setupFile(testRoot, "p15s71", "src", "locked_file.txt");
+    setupDir (testRoot, "p15s71", "dest");
+
+    setupFile(testRoot, "p15s72", "src", "folder", "inner.txt");
+    setupFile(testRoot, "p15s72", "src", "work.pdf");
+    setupDir (testRoot, "p15s72", "dest");
+
+    // Phase 16: Read-only (Steps 73-74)
+
+    setupFile(testRoot, "p16s73", "src", "readonly.txt");
+    setupDir (testRoot, "p16s73", "dest");
+
+    setupFile(testRoot, "p16s74", "src", "rodir", "normal.txt");
+    setupFile(testRoot, "p16s74", "src", "rodir", "readonly.txt");
+    setupDir (testRoot, "p16s74", "dest");
+
+    // Phase 17: Copy operations (Steps 75-77)
+
+    setupFile(testRoot, "p17s75", "src", "original.txt");
+    setupDir (testRoot, "p17s75", "dest");
+
+    setupFile(extRoot,  "p17s76", "src", "topdir", "a.txt");
+    setupFile(extRoot,  "p17s76", "src", "topdir", "sub", "b.txt");
+    setupDir (testRoot, "p17s76", "dest");
+
+    setupDir (testRoot, "p17s77", "dest");
+
+    // Phase 18: Cross-condition interaction tests (Steps 78-81)
+
+    setupFile(testRoot, "p18s78", "src", "locked_dir", "nested", "target.txt");
+    setupFile(testRoot, "p18s78", "src", "work.pdf");
+    setupDir (testRoot, "p18s78", "dest");
+
+    setupFile(testRoot, "p18s79", "src", "file.txt");
+    setupFile(testRoot, "p18s79", "dest", "file.txt");
+
+    setupFile(testRoot, "p18s80", "src", "work.pdf");
+    setupFile(testRoot, "p18s80", "dest", "work.pdf");
+
+    setupFile(extRoot,  "p18s81", "src", "extdir", "a.txt");
+    setupFile(extRoot,  "p18s81", "src", "extdir", "locked.txt");
+    setupDir (testRoot, "p18s81", "dest");
+
+    // Phase 19: Record-associated file lock extended (Steps 82-84)
+
+    setupFile(testRoot, "p19s82", "src", "folder", "inner.txt");
+    setupFile(testRoot, "p19s82", "src", "work.pdf");
+    setupDir (testRoot, "p19s82", "dest");
+
+    setupFile(testRoot, "p19s83", "src", "work.pdf");
+    setupDir (testRoot, "p19s83", "dest");
+
+    setupFile(testRoot, "p19s84", "src", "work.pdf");
+    setupFile(testRoot, "p19s84", "src", "loose.txt");
+    setupDir (testRoot, "p19s84", "dest");
+
+    // Phase 20: Copy path lock scenarios (Steps 85-87)
+
+    setupFile(testRoot, "p20s85", "src", "file.txt");
+    setupFile(testRoot, "p20s85", "dest", "file.txt");
+
+    setupFile(testRoot, "p20s86", "src", "file.txt");
+    setupFile(testRoot, "p20s86", "dest", "file.txt");
+
+    setupFile(testRoot, "p20s87", "src", "file.txt");
+    setupFile(testRoot, "p20s87", "dest", "file.txt");
+
+    // Phase 21: Timed-release retry (Steps 88-101)
+
+    setupFile(testRoot, "p21s88", "src", "rdir", "inner.txt");
+    setupFile(testRoot, "p21s88", "src", "rdir", "locked.txt");
+    setupDir (testRoot, "p21s88", "dest");
+
+    setupFile(extRoot,  "p21s89", "src", "locked.txt");
+    setupDir (testRoot, "p21s89", "dest");
+
+    setupFile(testRoot, "p21s90", "src", "work.pdf");
+    setupDir (testRoot, "p21s90", "dest");
+
+    setupFile(testRoot, "p21s91", "src", "rdir", "locked.txt");
+    setupFile(testRoot, "p21s91", "src", "extra.txt");
+    setupDir (testRoot, "p21s91", "dest");
+
+    setupFile(testRoot, "p21s92", "src", "folder", "inner.txt");
+    setupFile(testRoot, "p21s92", "src", "work.pdf");
+    setupDir (testRoot, "p21s92", "dest");
+
+    setupFile(testRoot, "p21s93", "src", "file.txt");
+    setupFile(testRoot, "p21s93", "dest", "file.txt");
+
+    setupFile(extRoot,  "p21s94", "src", "edir", "a.txt");
+    setupFile(extRoot,  "p21s94", "src", "edir", "locked.txt");
+    setupDir (testRoot, "p21s94", "dest");
+
+    setupFile(testRoot, "p21s95", "src", "rdir", "locked.txt");
+    setupDir (testRoot, "p21s95", "dest");
+
+    setupFile(testRoot, "p21s96", "src", "dir1", "locked1.txt");
+    setupFile(testRoot, "p21s96", "src", "dir2", "locked2.txt");
+    setupDir (testRoot, "p21s96", "dest");
+
+    setupFile(testRoot, "p21s97", "src", "locked_dir", "nested", "target.txt");
+    setupFile(testRoot, "p21s97", "src", "locked_file.txt");
+    setupDir (testRoot, "p21s97", "dest");
+
+    setupFile(testRoot, "p21s98", "src", "file.txt");
+    setupFile(testRoot, "p21s98", "dest", "file.txt");
+
+    setupFile(extRoot,  "p21s99", "src", "f1.txt");
+    setupFile(extRoot,  "p21s101", "src", "f2.txt");
+    setupDir (testRoot, "p21s101", "dest");
+
+    // Phase 22: Retry escalation (Steps 100-103)
+
+    setupFile(extRoot,  "p22s100", "src", "locked.txt");
+    setupDir (testRoot, "p22s100", "dest");
+
+    setupFile(testRoot, "p22s101", "src", "work.pdf");
+    setupDir (testRoot, "p22s101", "dest");
+
+    setupFile(testRoot, "p22s102", "src", "file.txt");
+    setupFile(testRoot, "p22s102", "dest", "file.txt");
+
+    setupFile(testRoot, "p22s103", "src", "work.pdf");
+    setupDir (testRoot, "p22s103", "dest");
+
+    // Phase 23: Move + overwrite + source lock (Steps 104-107)
+
+    setupFile      (testRoot, "p23s104", "src", "file.txt");
+    setupFileCustom(testRoot, "original", "p23s104", "dest", "file.txt");
+
+    setupFile      (testRoot, "p23s105", "src", "file.txt");
+    setupFileCustom(testRoot, "original", "p23s105", "dest", "file.txt");
+
+    setupFile      (testRoot, "p23s106", "src", "file.txt");
+    setupFileCustom(testRoot, "original", "p23s106", "dest", "file.txt");
+
+    setupFile      (testRoot, "p23s107", "src", "incoming.txt");
+    setupFileCustom(testRoot, "original_related", "p23s107", "dest", "incoming.txt");
+
+    // Phase 24: Multi-file copy + lock (Steps 108-110)
+
+    setupFile      (extRoot,  "p24s108", "src", "a.txt");
+    setupFile      (extRoot,  "p24s108", "src", "b.txt");
+    setupFileCustom(testRoot, "original_b", "p24s108", "dest", "b.txt");
+
+    setupFile      (extRoot,  "p24s109", "src", "a.txt");
+    setupFile      (extRoot,  "p24s109", "src", "b.txt");
+    setupFileCustom(testRoot, "orig_a", "p24s109", "dest", "a.txt");
+    setupFileCustom(testRoot, "orig_b", "p24s109", "dest", "b.txt");
+
+    setupFile      (extRoot,  "p24s110", "src", "a.txt");
+    setupFile      (extRoot,  "p24s110", "src", "b.txt");
+    setupFileCustom(testRoot, "orig_a", "p24s110", "dest", "a.txt");
+    setupFileCustom(testRoot, "orig_b", "p24s110", "dest", "b.txt");
+
+    // Phase 25: Multi-item folder tree move with records (Step 111)
+
+    setupFile(testRoot, "p25s111", "src", "loose.txt");
+    setupFile(testRoot, "p25s111", "src", "tree", "mid.pdf");
+    setupFile(testRoot, "p25s111", "src", "tree", "inner", "deep.jpg");
+    setupDir (testRoot, "p25s111", "dest");
   }
 
 //---------------------------------------------------------------------------
@@ -1854,6 +4099,20 @@ public final class FileManagerTestRunner
 
     FileRow destRow = new FileRow(destFolder.getPath(), true);
     FileManager.instance().paste(destRow, false, false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void pasteCopy(List<EntityWithPath> items, FilePath destDir)
+  {
+    assertTrue(FileManager.instance().moveCopy(items, true, false), "moveCopy(copy) failed");
+
+    HDT_Folder destFolder = HyperPath.getFolderFromFilePath(destDir, true);
+    assertNotNull(destFolder, "Destination folder record should exist: " + destDir);
+
+    FileRow destRow = new FileRow(destFolder.getPath(), true);
+    FileManager.instance().paste(destRow, true, false);
   }
 
 //---------------------------------------------------------------------------

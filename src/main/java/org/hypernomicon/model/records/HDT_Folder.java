@@ -196,15 +196,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (destFilePath.exists())
       return falseWithErrorPopup("Unable to move the folder: A file or folder already exists at \"" + destFilePath + "\".");
 
-    try
-    {
-      Files.move(srcFilePath.toPath(), destFilePath.toPath());
-    }
-    catch (AccessDeniedException e)
-    {
-      srcFilePath.anyOpenFilesInDir(); // shows popup identifying the locked path
-      return false;
-    }
+    Files.move(srcFilePath.toPath(), destFilePath.toPath());
 
     db.unmapFilePath(srcFilePath);
     path.assign(newParent, new FilePath(name()));

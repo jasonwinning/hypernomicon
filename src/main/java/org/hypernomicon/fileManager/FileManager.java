@@ -26,14 +26,16 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.PopupDialog.DialogResult.*;
+
+import org.hypernomicon.util.PopupDialog.DialogResult;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -49,6 +51,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithDescription;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
+import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.FilePathSet;
 import org.hypernomicon.util.file.deletion.FileDeletion;
@@ -561,9 +564,10 @@ public final class FileManager extends NonmodalWindow
 
       if ((isRelated == false) && entry.getValue().exists())
       {
-        var response = unrelatedResolver.needsUserPrompt()
-          ? seriesConfirmDialog("Okay to overwrite existing file \"" + entry.getValue() + "\"?")
-          : null;
+        var response = unrelatedResolver.needsUserPrompt() ?
+          seriesConfirmDialog("Okay to overwrite existing file \"" + entry.getValue() + "\"?")
+        :
+          null;
 
         if (unrelatedResolver.resolve(response) == OverwriteResolver.Decision.SKIP)
           it.remove();
@@ -592,6 +596,26 @@ public final class FileManager extends NonmodalWindow
     folderTreeWatcher.stop();
 
     return srcToDest.isEmpty() == false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static DialogResult showFileAccessDialog(FileSystemException e, FilePath srcFilePath, boolean copying) throws FileSystemException
+  {
+    if (((e instanceof AccessDeniedException) == false) && (e.getClass() != FileSystemException.class))
+      throw e;
+
+    String verb = copying ? "copy" : "move";
+
+    String message = "Unable to " + verb + " \"" + srcFilePath.getNameOnly() + "\": access denied."
+      + "\n\nClose the application using this file, then try again.";
+
+    return new PopupDialog(message)
+      .addDefaultButton("Retry", mrRetry, "Attempt the " + verb + " again")
+      .addButton("Skip", mrIgnore, "Skip this file, continue with the rest")
+      .addButton("Stop", mrCancel, "Cancel the remaining " + verb + " operations")
+      .showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -648,8 +672,10 @@ public final class FileManager extends NonmodalWindow
     final Set<FilePath>   externalEmptyDirs    = new LinkedHashSet<>();
     final Set<HDT_Folder> internalEmptyFolders = new LinkedHashSet<>();
 
+    long uncoveredCount = srcToDest.size() - coveredBySrcPath.size();
+
     boolean success = new HyperTask("PasteOperation", copying ? "Copying..." : "Moving...",
-                                    srcToDest.size() * (copying ? 2L : 4L) + reparentRoots.size()) { @Override protected void call() throws CancelledTaskException, HyperDataException
+                                    uncoveredCount + reparentRoots.size()) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
       suppressNeedRefresh = true;
 
@@ -661,12 +687,10 @@ public final class FileManager extends NonmodalWindow
 
         for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
         {
-          incrementAndUpdateProgress();
-
           FilePath srcFilePath  = entry.getKey(),
                    destFilePath = entry.getValue();
 
-          if (srcFilePath.isDirectory() && (coveredBySrcPath.contains(srcFilePath) == false))
+          if ((coveredBySrcPath.contains(srcFilePath) == false) && srcFilePath.isDirectory())
             destFilePath.createDirectories();
         }
 
@@ -683,7 +707,28 @@ public final class FileManager extends NonmodalWindow
                      destFilePath = entry.getValue();
 
             if (srcFilePath.isDirectory() == false)
-              srcFilePath.copyTo(entry.getValue(), false);
+            {
+              while (true)
+              {
+                try
+                {
+                  srcFilePath.copyTo(entry.getValue(), false);
+                  break;
+                }
+                catch (FileSystemException e)
+                {
+                  DialogResult response = showFileAccessDialog(e, srcFilePath, true);
+
+                  if (response == mrRetry)
+                    continue;
+
+                  if (response == mrIgnore)
+                    break;
+
+                  throw new CancelledTaskException();
+                }
+              }
+            }
 
             HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
           }
@@ -706,8 +751,39 @@ public final class FileManager extends NonmodalWindow
             HDT_Folder srcFolder = HyperPath.getFolderFromFilePath(srcRootPath, false),
                        destParent = HyperPath.getFolderFromFilePath(destRootPath.getParent(), true);
 
-            if (srcFolder.moveToNewParent(destParent) == false)
-              throw new CancelledTaskException();  // Error popup already shown by moveToNewParent
+            while (true)
+            {
+              try
+              {
+                if (srcFolder.moveToNewParent(destParent) == false)
+                  throw new CancelledTaskException();  // Validation failure; popup already shown
+
+                break;
+              }
+              catch (AccessDeniedException e)
+              {
+                FilePath lockedFile = srcRootPath.findLockedFileInDir();
+
+                String message = lockedFile != null
+                  ? "Unable to move \"" + srcRootPath.getNameOnly() + "\": the file is locked:\n\""
+                    + lockedFile + "\"\n\nClose the application using this file, then try again."
+                  : "Unable to move \"" + srcRootPath.getNameOnly() + "\": " + getThrowableMessage(e);
+
+                DialogResult response = new PopupDialog(message)
+                  .addDefaultButton("Retry", mrRetry, "Attempt the move again")
+                  .addButton("Skip", mrIgnore, "Skip this folder")
+                  .addButton("Stop", mrCancel, "Cancel the remaining paste operations")
+                  .showModal();
+
+                if (response == mrRetry)
+                  continue;
+
+                if (response == mrIgnore)
+                  break;
+
+                throw new CancelledTaskException();
+              }
+            }
           }
 
         // Move remaining files not covered by re-parented directories
@@ -715,12 +791,12 @@ public final class FileManager extends NonmodalWindow
 
           for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
           {
-            incrementAndUpdateProgress();
-
             FilePath srcFilePath = entry.getKey(),
                      destFilePath = entry.getValue();
 
             if (coveredBySrcPath.contains(srcFilePath)) continue;
+
+            incrementAndUpdateProgress();
 
             HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
 
@@ -729,13 +805,57 @@ public final class FileManager extends NonmodalWindow
             if (set.isEmpty())
             {
               if (srcFilePath.isDirectory() == false)
-                srcFilePath.moveTo(destFilePath, false);
+              {
+                while (true)
+                {
+                  try
+                  {
+                    srcFilePath.moveTo(destFilePath, false);
+                    break;
+                  }
+                  catch (FileSystemException e)
+                  {
+                    DialogResult response = showFileAccessDialog(e, srcFilePath, false);
+
+                    if (response == mrRetry)
+                      continue;
+
+                    if (response == mrIgnore)
+                      break;
+
+                    throw new CancelledTaskException();
+                  }
+                }
+              }
             }
             else
             {
               for (HyperPath hyperPath : set)
+              {
                 if (hyperPath.getRecordType() != hdtFolder)
-                  hyperPath.moveToFolder(folder.getID(), false, false, "");
+                {
+                  while (true)
+                  {
+                    try
+                    {
+                      hyperPath.moveToFolder(folder.getID(), false, false, "");
+                      break;
+                    }
+                    catch (FileSystemException e)
+                    {
+                      DialogResult response = showFileAccessDialog(e, srcFilePath, false);
+
+                      if (response == mrRetry)
+                        continue;
+
+                      if (response == mrIgnore)
+                        break;
+
+                      throw new CancelledTaskException();
+                    }
+                  }
+                }
+              }
             }
           }
 
@@ -744,7 +864,7 @@ public final class FileManager extends NonmodalWindow
 
           for (FilePath srcFilePath : srcToDest.keySet())
           {
-            incrementAndUpdateProgress();
+            // Fast operation; not worth calling incrementAndUpdateProgress
 
             if (coveredBySrcPath.contains(srcFilePath)) continue;
 
@@ -760,25 +880,7 @@ public final class FileManager extends NonmodalWindow
       }
       catch (IOException e)
       {
-        String verb = copying ? "copy" : "move";
-
-        if (e instanceof AccessDeniedException)
-        {
-          for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
-          {
-            try
-            {
-              if ((copying == false) && (entry.getKey().canObtainLock() == false))
-                throw new HyperDataException("Unable to " + verb + ": locked path: \"" + entry.getKey() + '"', e);
-
-              if (entry.getValue().canObtainLock() == false)
-                throw new HyperDataException("Unable to " + verb + ": locked path: \"" + entry.getValue() + '"', e);
-            }
-            catch (IOException lockEx) { /* diagnosis failed; fall through to generic message */ }
-          }
-        }
-
-        throw new HyperDataException("An error occurred while trying to " + verb + " the item(s): " + getThrowableMessage(e), e);
+        throw new HyperDataException("An error occurred while trying to " + (copying ? "copy" : "move") + " the item(s): " + getThrowableMessage(e), e);
       }
       finally
       {
