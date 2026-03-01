@@ -28,7 +28,6 @@ import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 
-import org.hypernomicon.util.PopupDialog.DialogResult;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
@@ -52,8 +51,10 @@ import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.PopupDialog;
+import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.FilePathSet;
+import org.hypernomicon.util.file.deletion.BatchBuilder;
 import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -764,10 +765,10 @@ public final class FileManager extends NonmodalWindow
               {
                 FilePath lockedFile = srcRootPath.findLockedFileInDir();
 
-                String message = lockedFile != null
-                  ? "Unable to move \"" + srcRootPath.getNameOnly() + "\": the file is locked:\n\""
-                    + lockedFile + "\"\n\nClose the application using this file, then try again."
-                  : "Unable to move \"" + srcRootPath.getNameOnly() + "\": " + getThrowableMessage(e);
+                String message = ("Unable to move \"" + srcRootPath.getNameOnly() + "\": ") + (lockedFile != null ?
+                  "The file is locked:\n\"" + lockedFile + "\"\n\nClose the application using this file, then try again."
+                :
+                  getThrowableMessage(e));
 
                 DialogResult response = new PopupDialog(message)
                   .addDefaultButton("Retry", mrRetry, "Attempt the move again")
@@ -1052,7 +1053,64 @@ public final class FileManager extends NonmodalWindow
 
     suppressNeedRefresh = true;
 
-    noOp(rowInfoList.stream().allMatch(FileManager::deleteRow)); // Deletes rows until deleteRow returns false
+    // Pass 1: Delete directories one at a time (each needs its own record tree cleanup)
+
+    boolean aborted = false;
+
+    for (AbstractEntityWithPath item : rowInfoList)
+    {
+      if (item.isDirectory() && (deleteRow(item) == false))
+      {
+        aborted = true;
+        break;
+      }
+    }
+
+    // Pass 2: Batch delete all files
+
+    if (aborted == false)
+    {
+      var fileItems = rowInfoList.stream()
+        .filter(item -> item.isDirectory() == false)
+        .toList();
+
+      if (fileItems.isEmpty() == false)
+      {
+        List<FilePath> filePaths = fileItems.stream()
+          .map(AbstractEntityWithPath::getFilePath)
+          .toList();
+
+        BatchBuilder batch = FileDeletion.ofFiles(filePaths).interactive();
+        DeletionResult result = batch.execute();
+
+        if (result != DeletionResult.ABORTED)
+        {
+          Set<FilePath> failedPaths = batch.getFailedPaths();
+
+          for (AbstractEntityWithPath item : fileItems)
+          {
+            FilePath filePath = item.getFilePath();
+
+            if (failedPaths.contains(filePath))
+              continue;
+
+            if (item.isRelated())
+            {
+              Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
+
+              for (HyperPath setPath : set)
+              {
+                db.unmapFilePath(setPath.filePath());
+                if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
+                  db.deleteRecord(setPath.getRecord());
+              }
+            }
+            else
+              db.unmapFilePath(filePath);
+          }
+        }
+      }
+    }
 
     folderTree.prune();
 

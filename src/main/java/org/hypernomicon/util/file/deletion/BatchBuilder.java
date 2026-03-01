@@ -109,7 +109,7 @@ public class BatchBuilder extends DeletionBuilderBase<BatchBuilder>
 
       // Phase 2: Prompt user about all failures together
 
-      switch (promptBatchFailures(tasks.size(), totalCount))
+      switch (promptBatchFailures(tasks, totalCount))
       {
         case mrRetry:
 
@@ -136,13 +136,25 @@ public class BatchBuilder extends DeletionBuilderBase<BatchBuilder>
 //---------------------------------------------------------------------------
 
   /**
-   * Show batch failure prompt dialog.
+   * Show batch failure prompt dialog listing the failed file names.
    */
-  private static DialogResult promptBatchFailures(int failedCount, int totalCount)
+  private static DialogResult promptBatchFailures(List<DeletionTask> failedTasks, int totalCount)
   {
-    String message = failedCount + " of " + totalCount + " items could not be deleted.";
+    StringBuilder sb = new StringBuilder();
 
-    return new PopupDialog(message)
+    sb.append(failedTasks.size()).append(" of ").append(totalCount).append(" items could not be deleted:\n\n");
+
+    int maxToShow = 10;
+
+    for (int ndx = 0; ndx < Math.min(failedTasks.size(), maxToShow); ndx++)
+      sb.append(failedTasks.get(ndx).getFilePath().getNameOnly()).append('\n');
+
+    if (failedTasks.size() > maxToShow)
+      sb.append("... and ").append(failedTasks.size() - maxToShow).append(" more\n");
+
+    sb.append("\nTry again?");
+
+    return new PopupDialog(sb.toString())
       .addDefaultButton("Try Again", DialogResult.mrRetry)
       .addButton("Skip", DialogResult.mrIgnore)
       .addButton("Cancel", DialogResult.mrCancel)
