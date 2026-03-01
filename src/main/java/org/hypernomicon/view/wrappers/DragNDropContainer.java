@@ -24,17 +24,12 @@ import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.tree.AbstractTreeRow;
 
+import java.util.concurrent.*;
+
+import javafx.application.Platform;
 import javafx.geometry.Orientation;
-import javafx.scene.control.Cell;
-import javafx.scene.control.Control;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableRow;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
 
 //---------------------------------------------------------------------------
 
@@ -47,6 +42,9 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   private long dragMilliCtr;
   private double lastDragX, lastDragY;
   private ScrollBar scrollBar = null;
+  private ScheduledFuture<?> expandFuture;
+  private ScheduledExecutorService expandExecutor;
+  private TreeItem<?> pendingExpandItem;
 
 //---------------------------------------------------------------------------
 
@@ -83,6 +81,19 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
     lastDragX = -1;
     lastDragY = -1;
 
+    if (expandFuture != null)
+    {
+      expandFuture.cancel(false);
+      expandFuture = null;
+    }
+
+    if (expandExecutor != null)
+    {
+      expandExecutor.shutdownNow();
+      expandExecutor = null;
+    }
+
+    pendingExpandItem = null;
     App.dragInProgress = false;
   }
 
@@ -120,18 +131,27 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 
   protected void expand(TreeItem<RowType> treeItem)
   {
-    if (dragMilliCtr == 0) return;
+    if ((dragMilliCtr == 0) || (treeItem == pendingExpandItem)) return;
 
-    runDelayedInFXThread(1, 650, () ->
+    pendingExpandItem = treeItem;
+
+    if (expandFuture != null)
+      expandFuture.cancel(false);
+
+    if (expandExecutor == null)
+      expandExecutor = Executors.newSingleThreadScheduledExecutor(r ->
+      { Thread t = new Thread(r, "ExpandTimer"); t.setDaemon(true); return t; });
+
+    expandFuture = expandExecutor.schedule(() -> Platform.runLater(() ->
     {
-      long diff = System.currentTimeMillis() - dragMilliCtr;
+      pendingExpandItem = null;
 
-      if ((diff > 650) && (treeItem.isExpanded() == false))
+      if (treeItem.isExpanded() == false)
       {
         treeItem.setExpanded(true);
         dragMilliCtr = System.currentTimeMillis();
       }
-    });
+    }), 650, TimeUnit.MILLISECONDS);
   }
 
 //---------------------------------------------------------------------------
