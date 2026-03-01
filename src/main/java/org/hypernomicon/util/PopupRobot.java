@@ -62,9 +62,17 @@ import javafx.scene.control.Alert.AlertType;
  * consumption by {@link #shouldCancelProgressDialog()}, so subsequent progress
  * dialogs proceed normally.</p>
  *
+ * <h3>Pre-Response Actions</h3>
+ * <p>Use {@link #setPreResponseAction(Runnable)} to register a one-shot action
+ * that fires synchronously inside {@link #getDefaultResponse()} just before the
+ * response is returned. The action auto-clears after firing.</p>
+ *
+ * <p>Use {@link #setPreResponseAction(int, Runnable)} with a {@code skipCount}
+ * to defer the action past that many {@code getDefaultResponse()} calls.</p>
+ *
  * <h3>Resetting State</h3>
  * <p>{@link #clear()} resets all mutable state: recorded message and type,
- * invocation count, progress cancel flag, and the response queue.</p>
+ * invocation count, progress cancel flag, response queue, and pre-response action.</p>
  *
  * <h3>Thread Safety</h3>
  * <p>All methods are synchronized to ensure consistent state across the FX
@@ -114,8 +122,11 @@ public final class PopupRobot
   private static AlertType lastType;
   private static DialogResult defaultResponse = mrOk;
   private static int invocationCount = 0;
-  
+
   private static final Deque<DialogResult> responseQueue = new ArrayDeque<>();
+
+  private static Runnable preResponseAction;
+  private static int preResponseSkipCount;
 
 //---------------------------------------------------------------------------
 
@@ -131,7 +142,63 @@ public final class PopupRobot
   public static synchronized void setDefaultResponse(DialogResult response)   { defaultResponse = response; }
   public static synchronized void enqueueResponses(DialogResult... responses) { Collections.addAll(responseQueue, responses); }
 
-  static synchronized DialogResult getDefaultResponse()                       { return responseQueue.isEmpty() ? defaultResponse : responseQueue.poll(); }
+  /**
+   * Register a one-shot action that fires synchronously inside
+   * {@link #getDefaultResponse()} just before the response is returned.
+   * The action fires on the very next {@code getDefaultResponse()} call
+   * and auto-clears afterward (subsequent calls return the response without
+   * running any action). Example use: releasing a file lock between dialog
+   * prompts so the next retry succeeds.
+   *
+   * @param action the action to run; must not block the FX thread for long
+   */
+  public static synchronized void setPreResponseAction(Runnable action)
+  {
+    preResponseAction = action;
+    preResponseSkipCount = 0;
+  }
+
+  /**
+   * Register a one-shot action that fires synchronously inside
+   * {@link #getDefaultResponse()}, but only after {@code skipCount}
+   * invocations of {@code getDefaultResponse()} have passed. Each
+   * skipped invocation decrements the counter without running the action.
+   * Once the counter reaches zero, the action fires and auto-clears.
+   * <p>
+   * This is useful when multiple dialogs appear in sequence and the
+   * action (e.g. releasing a file lock) should fire at a specific point.
+   * For example, {@code setPreResponseAction(1, () -> releaseLock())}
+   * skips the first {@code getDefaultResponse()} call (e.g. an overwrite
+   * dialog) and fires on the second (e.g. a lock retry dialog).
+   *
+   * @param skipCount number of {@code getDefaultResponse()} calls to skip
+   *                  before firing; 0 fires on the very next call
+   * @param action    the action to run; must not block the FX thread for long
+   */
+  public static synchronized void setPreResponseAction(int skipCount, Runnable action)
+  {
+    preResponseAction = action;
+    preResponseSkipCount = skipCount;
+  }
+
+//---------------------------------------------------------------------------
+
+  static synchronized DialogResult getDefaultResponse()
+  {
+    if (preResponseAction != null)
+    {
+      if (preResponseSkipCount > 0)
+        preResponseSkipCount--;
+      else
+      {
+        Runnable action = preResponseAction;
+        preResponseAction = null;
+        action.run();
+      }
+    }
+
+    return responseQueue.isEmpty() ? defaultResponse : responseQueue.poll();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -168,6 +235,8 @@ public final class PopupRobot
     invocationCount = 0;
     cancelNextProgressDialog = false;
     responseQueue.clear();
+    preResponseAction = null;
+    preResponseSkipCount = 0;
   }
 
 //---------------------------------------------------------------------------

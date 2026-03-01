@@ -23,6 +23,7 @@ import org.hypernomicon.util.PopupRobot;
 
 import javafx.scene.control.Alert.AlertType;
 
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -59,12 +60,29 @@ public final class FXTestSequencer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private record QueueEntry(int pulses, long millis, Runnable task, boolean printStep) { }
+  private static final class QueueEntry
+  {
+    final int pulses;
+    final long millis;
+    final Runnable task;
+    final boolean printStep;
+
+    boolean runCondition = true;
+    String skipReason;
+
+    QueueEntry(int pulses, long millis, Runnable task, boolean printStep)
+    {
+      this.pulses = pulses;
+      this.millis = millis;
+      this.task = task;
+      this.printStep = printStep;
+    }
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final Queue<QueueEntry> queue = new ArrayDeque<>();
+  private final Deque<QueueEntry> queue = new ArrayDeque<>();
 
   private volatile boolean running = false;
   private volatile Runnable finalizer;
@@ -277,6 +295,43 @@ public final class FXTestSequencer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Marks the most recently enqueued task as conditional. If {@code condition}
+   * is false at execution time, the step is skipped with the given reason.
+   *
+   * @param condition whether the step should run
+   * @param skipReason human-readable reason printed when skipped
+   * @return this sequencer for chaining
+   * @throws IllegalStateException if no task has been enqueued yet
+   */
+  public synchronized FXTestSequencer underCondition(boolean condition, String skipReason)
+  {
+    QueueEntry last = queue.peekLast();
+
+    if (last == null) throw new IllegalStateException("No task queued");
+
+    last.runCondition = condition;
+    last.skipReason = skipReason;
+
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Convenience wrapper for {@link #underCondition(boolean, String)} that
+   * restricts the most recently enqueued task to Windows only.
+   *
+   * @return this sequencer for chaining
+   */
+  public FXTestSequencer windowsOnly()
+  {
+    return underCondition(IS_OS_WINDOWS, "not on Windows");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private synchronized void enqueue(QueueEntry entry)
   {
     queue.add(entry);
@@ -297,7 +352,7 @@ public final class FXTestSequencer
       running = true;
       startTime = System.currentTimeMillis();
 
-      stepTotal = queue.stream().filter(QueueEntry::printStep).count();
+      stepTotal = queue.stream().filter(entry -> entry.printStep).count();
 
       scheduleNext();
     }
@@ -324,6 +379,15 @@ public final class FXTestSequencer
 
       System.out.println("Test sequence completed successfully in " + timeStr + ".");
       runFinalizer();
+      return;
+    }
+
+    if (entry.runCondition == false)
+    {
+      if (entry.printStep)
+        System.out.println("Step " + ++stepCounter + " of " + stepTotal + " SKIPPED (" + entry.skipReason + ')');
+
+      scheduleNext();
       return;
     }
 

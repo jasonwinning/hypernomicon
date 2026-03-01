@@ -18,7 +18,6 @@
 package org.hypernomicon.testTools;
 
 import static org.hypernomicon.App.app;
-import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult.*;
@@ -428,8 +427,6 @@ public final class FileDeletionTestRunner
 
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false) { System.out.println("Step 16 SKIPPED (not on Windows)"); return; }
-
       RandomAccessFile raf = null;
 
       try
@@ -451,14 +448,12 @@ public final class FileDeletionTestRunner
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
       finally { closeQuietly(raf); }
-    });
+    }).windowsOnly();
 
     // Step 17: Batch interactive, skip locked
 
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false) { System.out.println("Step 17 SKIPPED (not on Windows)"); return; }
-
       RandomAccessFile raf = null;
 
       try
@@ -481,14 +476,12 @@ public final class FileDeletionTestRunner
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
       finally { closeQuietly(raf); }
-    });
+    }).windowsOnly();
 
     // Step 18: Batch interactive, retry then skip
 
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false) { System.out.println("Step 18 SKIPPED (not on Windows)"); return; }
-
       RandomAccessFile raf = null;
 
       try
@@ -511,14 +504,12 @@ public final class FileDeletionTestRunner
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
       finally { closeQuietly(raf); }
-    });
+    }).windowsOnly();
 
     // Step 19: Batch interactive, cancel
 
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false) { System.out.println("Step 19 SKIPPED (not on Windows)"); return; }
-
       RandomAccessFile raf = null;
 
       try
@@ -539,14 +530,12 @@ public final class FileDeletionTestRunner
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
       finally { closeQuietly(raf); }
-    });
+    }).windowsOnly();
 
     // Step 20: nonInteractiveLogErrors on locked file logs error
 
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false) { System.out.println("Step 20 SKIPPED (not on Windows)"); return; }
-
       RandomAccessFile raf = null;
 
       try
@@ -567,7 +556,7 @@ public final class FileDeletionTestRunner
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
       finally { closeQuietly(raf); }
-    });
+    }).windowsOnly();
 
     // -----------------------------------------------------------------------
     // Phase 7: Special filenames
@@ -1349,8 +1338,6 @@ public final class FileDeletionTestRunner
 
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false) { System.out.println("Step 57 SKIPPED (not on Windows)"); return; }
-
       RandomAccessFile raf = null;
 
       try
@@ -1363,14 +1350,12 @@ public final class FileDeletionTestRunner
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
       finally { closeQuietly(raf); }
-    });
+    }).windowsOnly();
 
     // Step 58: Batch NI on two locked files → FAILED
 
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false) { System.out.println("Step 58 SKIPPED (not on Windows)"); return; }
-
       RandomAccessFile raf1 = null, raf2 = null;
 
       try
@@ -1387,14 +1372,12 @@ public final class FileDeletionTestRunner
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
       finally { closeQuietly(raf1); closeQuietly(raf2); }
-    });
+    }).windowsOnly();
 
     // Step 59: Batch NI on locked + unlocked → PARTIAL
 
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false) { System.out.println("Step 59 SKIPPED (not on Windows)"); return; }
-
       RandomAccessFile raf = null;
 
       try
@@ -1410,7 +1393,7 @@ public final class FileDeletionTestRunner
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
       finally { closeQuietly(raf); }
-    });
+    }).windowsOnly();
 
     // -----------------------------------------------------------------------
     // Phase 20: Batch type validation gap (step 60)
@@ -1580,12 +1563,6 @@ public final class FileDeletionTestRunner
 
       seq.thenRunAfterDelay(() ->
       {
-        if (IS_OS_WINDOWS == false)
-        {
-          System.out.println(label + " SKIPPED (not Windows)");
-          return;
-        }
-
         RandomAccessFile raf = null;
 
         try
@@ -1610,7 +1587,7 @@ public final class FileDeletionTestRunner
         {
           closeQuietly(raf);
         }
-      });
+      }).windowsOnly();
     }
 
     // -----------------------------------------------------------------------
@@ -1626,12 +1603,6 @@ public final class FileDeletionTestRunner
 
       seq.thenRunAfterDelay(() ->
       {
-        if (IS_OS_WINDOWS == false)
-        {
-          System.out.println(label + " SKIPPED (not Windows)");
-          return;
-        }
-
         RandomAccessFile raf1 = null, raf2 = null;
 
         try
@@ -1663,7 +1634,7 @@ public final class FileDeletionTestRunner
           closeQuietly(raf1);
           closeQuietly(raf2);
         }
-      });
+      }).windowsOnly();
     }
 
     // -----------------------------------------------------------------------
@@ -1680,12 +1651,6 @@ public final class FileDeletionTestRunner
 
       seq.thenRunAfterDelay(() ->
       {
-        if (IS_OS_WINDOWS == false)
-        {
-          System.out.println(label + " SKIPPED (not Windows)");
-          return;
-        }
-
         RandomAccessFile raf1 = null, raf2 = null;
 
         try (ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor())
@@ -1723,7 +1688,7 @@ public final class FileDeletionTestRunner
           closeQuietly(raf1);
           closeQuietly(raf2);
         }
-      });
+      }).windowsOnly();
     }
 
     // -----------------------------------------------------------------------
@@ -1743,12 +1708,6 @@ public final class FileDeletionTestRunner
 
       seq.thenRunAfterDelay(() ->
       {
-        if (IS_OS_WINDOWS == false)
-        {
-          System.out.println(label + " SKIPPED (not Windows)");
-          return;
-        }
-
         RandomAccessFile raf = null;
 
         try (ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor())
@@ -1781,7 +1740,7 @@ public final class FileDeletionTestRunner
         {
           closeQuietly(raf);
         }
-      });
+      }).windowsOnly();
     }
 
     seq.start();
@@ -1808,12 +1767,6 @@ public final class FileDeletionTestRunner
   {
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false)
-      {
-        System.out.println(stepLabel + " SKIPPED (not on Windows)");
-        return;
-      }
-
       RandomAccessFile raf = null;
 
       try (ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor())
@@ -1885,7 +1838,7 @@ public final class FileDeletionTestRunner
       {
         closeQuietly(raf);
       }
-    });
+    }).windowsOnly();
   }
 
 //---------------------------------------------------------------------------
@@ -1909,12 +1862,6 @@ public final class FileDeletionTestRunner
   {
     seq.thenRunAfterDelay(() ->
     {
-      if (IS_OS_WINDOWS == false)
-      {
-        System.out.println(stepLabel + " SKIPPED (not on Windows)");
-        return;
-      }
-
       List<RandomAccessFile> locks = new ArrayList<>();
 
       try (ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor())
@@ -2031,7 +1978,7 @@ public final class FileDeletionTestRunner
         for (RandomAccessFile raf : locks)
           closeQuietly(raf);
       }
-    });
+    }).windowsOnly();
   }
 
 //---------------------------------------------------------------------------
