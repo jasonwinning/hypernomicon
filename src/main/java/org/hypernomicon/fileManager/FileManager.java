@@ -98,7 +98,12 @@ public final class FileManager extends NonmodalWindow
   private List<AbstractEntityWithPath> dragPaths = null;
   private List<? extends AbstractEntityWithPath> markedRows = null;
   private FilePath srcPathToHilite = null;
+  private enum RefreshLevel { NONE, REFRESH, PRUNE_AND_REFRESH }
+
   private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false, programmaticSelectionChange = false;
+  private RefreshLevel pendingRefresh = RefreshLevel.NONE;
+  private long lastRefreshTime = 0;
+  private static final long REFRESH_THROTTLE_MS = 500;
   private HDT_Folder curFolder;
 
   public final FolderTreeWrapper folderTree;
@@ -1115,13 +1120,14 @@ public final class FileManager extends NonmodalWindow
     folderTree.prune();
 
     folderTreeWatcher.createNewWatcherAndStart();
+
+    suppressNeedRefresh = false;
+
     Platform.runLater(() ->
     {
       refresh();
       ui.update();
     });
-
-    suppressNeedRefresh = false;
   }
 
 //---------------------------------------------------------------------------
@@ -1264,13 +1270,16 @@ public final class FileManager extends NonmodalWindow
     {
       suppressNeedRefresh = true;
 
-      if (fileRow.rename(dlg.getNewName())) Platform.runLater(() ->
+      boolean renamed = fileRow.rename(dlg.getNewName());
+
+      suppressNeedRefresh = false;
+
+      if (renamed) Platform.runLater(() ->
       {
         refresh();
         ui.update();
       });
 
-      suppressNeedRefresh = false;
       return;
     }
 
@@ -1309,28 +1318,119 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Callable from any thread. Prunes deleted folders from the tree, then refreshes.
+   * When {@code ensureWatcherIsStopped} is true, the watcher is stopped before
+   * pruning and restarted after; this bypasses throttling so the full
+   * stop/prune/refresh/restart sequence is atomic. When false, the request goes
+   * through the throttle.
+   */
   public static void pruneAndRefresh(boolean ensureWatcherIsStopped)
   {
-    if (instance != null) instance.doPruneAndRefresh(ensureWatcherIsStopped);
+    if (instance == null) return;
+
+    if (ensureWatcherIsStopped)
+      instance.doPruneAndRefreshWithWatcherManagement();
+    else
+      instance.requestRefresh(RefreshLevel.PRUNE_AND_REFRESH);
   }
 
-  private void doPruneAndRefresh(boolean ensureWatcherIsStopped)
+  private void doPruneAndRefreshWithWatcherManagement()
   {
-    boolean restartWatcher = ensureWatcherIsStopped && folderTreeWatcher.stop();
+    boolean restartWatcher = folderTreeWatcher.stop();
 
-    folderTree.prune();
+    runInFXThread(() ->
+    {
+      folderTree.prune();
+      doRefresh();
 
-    refresh();
+      synchronized (this) { lastRefreshTime = System.currentTimeMillis(); }
 
-    if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
+      if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
+    });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Callable from any thread. Refreshes the FileManager file table and tree.
+   * Throttled: if called within {@link #REFRESH_THROTTLE_MS} of the last
+   * refresh, the request is deferred rather than executed immediately.
+   */
   public static void refresh()
   {
-    if (instance != null) instance.doRefresh();
+    if (instance != null) instance.requestRefresh(RefreshLevel.REFRESH);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Schedules or immediately executes a refresh at the given level.
+   * Thread-safe; can be called from any thread.
+   */
+  private void requestRefresh(RefreshLevel level)
+  {
+    // Ignore recursive calls from within doRefresh() (e.g., sort handlers)
+    if (Platform.isFxApplicationThread() && alreadyRefreshing)
+      return;
+
+    boolean executeNow;
+
+    synchronized (this)
+    {
+      if (pendingRefresh != RefreshLevel.NONE)
+      {
+        // A callback is already pending; just upgrade the level if needed
+
+        if (pendingRefresh.ordinal() < level.ordinal())
+          pendingRefresh = level;
+
+        return;
+      }
+
+      pendingRefresh = level;
+
+      long elapsed = System.currentTimeMillis() - lastRefreshTime;
+      executeNow = elapsed >= REFRESH_THROTTLE_MS;
+
+      if (executeNow == false)
+      {
+        long delay = REFRESH_THROTTLE_MS - elapsed;
+        runDelayedInFXThread(1, delay, this::executeRefresh);
+      }
+    }
+
+    if (executeNow)
+      runInFXThread(this::executeRefresh);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Runs on the FX thread. Reads and resets the pending refresh level,
+   * then performs the appropriate refresh.
+   */
+  private void executeRefresh()
+  {
+    RefreshLevel level;
+
+    synchronized (this)
+    {
+      level = pendingRefresh;
+      pendingRefresh = RefreshLevel.NONE;
+      lastRefreshTime = System.currentTimeMillis();
+    }
+
+    if (level == RefreshLevel.NONE)
+      return;
+
+    if (level == RefreshLevel.PRUNE_AND_REFRESH)
+      folderTree.prune();
+
+    doRefresh();
   }
 
   private void doRefresh()

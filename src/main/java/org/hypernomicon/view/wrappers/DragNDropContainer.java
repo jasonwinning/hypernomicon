@@ -21,6 +21,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.App;
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.tree.AbstractTreeRow;
 
@@ -139,8 +140,12 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       expandFuture.cancel(false);
 
     if (expandExecutor == null)
-      expandExecutor = Executors.newSingleThreadScheduledExecutor(r ->
-      { Thread t = new Thread(r, "ExpandTimer"); t.setDaemon(true); return t; });
+      expandExecutor = Executors.newSingleThreadScheduledExecutor(runnable ->
+      {
+        Thread thread = new HyperThread("TreeExpandTimer", runnable);
+        thread.setDaemon(true);
+        return thread;
+      });
 
     expandFuture = expandExecutor.schedule(() -> Platform.runLater(() ->
     {

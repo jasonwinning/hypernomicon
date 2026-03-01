@@ -484,8 +484,8 @@ public class FolderTreeWatcher
 
       switch (refreshNeeded)
       {
-        case PRUNE_AND_REFRESH : Platform.runLater(() -> FileManager.pruneAndRefresh(false)); break;
-        case REFRESH           : Platform.runLater(FileManager::refresh); break;
+        case PRUNE_AND_REFRESH : FileManager.pruneAndRefresh(false); break;
+        case REFRESH           : FileManager.refresh(); break;
         default                : break;
       }
     }
