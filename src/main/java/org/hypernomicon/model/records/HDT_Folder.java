@@ -131,12 +131,17 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     {
       srcFilePath.renameDirectory(destFilePath);
     }
-    catch (AccessDeniedException e)
+    catch (FileSystemException e)
     {
-      srcFilePath.anyOpenFilesInDir(); // shows popup identifying the locked path, if any
-
       folderTreeWatcher.createNewWatcherAndStart();
-      return false;
+
+      if ((e instanceof AccessDeniedException) || (e.getClass() == FileSystemException.class))
+      {
+        srcFilePath.anyOpenFilesInDir(); // shows popup identifying the locked path, if any
+        return false;
+      }
+
+      return falseWithErrorPopup("Unable to rename the folder: " + getThrowableMessage(e));
     }
     catch (IOException e)
     {

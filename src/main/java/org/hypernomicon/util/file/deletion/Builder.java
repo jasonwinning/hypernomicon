@@ -77,6 +77,14 @@ public class Builder extends DeletionBuilderBase<Builder>
   {
     DeletionTask task = tasks.getFirst();
 
+    // Scan for locked files only on the first failure. On subsequent retries the user has
+    // already been informed; re-scanning would repeat the probe-rename unnecessarily, which
+    // can trigger cloud-sync activity (e.g. OneDrive) and make the next attempt more likely
+    // to fail.
+
+    boolean firstFailure = true;
+    FilePath lockedFile = null;
+
     while (true)
     {
       // Phase 1: Auto-retry with indeterminate progress dialog
@@ -86,9 +94,13 @@ public class Builder extends DeletionBuilderBase<Builder>
       if (phaseOneResult != FAILED)
         return phaseOneResult;
 
-      // Phase 2: On Windows, scan for locked files to provide diagnostic info
+      // Phase 2: On Windows, scan for locked files to provide diagnostic info (first failure only)
 
-      FilePath lockedFile = scanForLockedFile();
+      if (firstFailure)
+      {
+        lockedFile = scanForLockedFile();
+        firstFailure = false;
+      }
 
       // Phase 3: Prompt user with specific or generic error message
 
@@ -96,8 +108,11 @@ public class Builder extends DeletionBuilderBase<Builder>
              message;
 
       if (lockedFile != null)
-        message = "Unable to delete \"" + task.getFilePath() + "\": the file is locked:\n\""
-          + lockedFile + "\"\n\nClose the application using this file, then try again.";
+      {
+        String lockedItemType = lockedFile.isDirectory() ? "folder" : "file";
+        message = "Unable to delete \"" + task.getFilePath() + "\". The " + lockedItemType + " is locked:\n\""
+          + lockedFile + "\"\n\nClose the application using this " + lockedItemType + ", then try again.";
+      }
       else if (errorMsg.isEmpty() == false)
         message = "Unable to delete \"" + task.getFilePath() + "\":\n" + errorMsg + "\n\nTry again?";
       else

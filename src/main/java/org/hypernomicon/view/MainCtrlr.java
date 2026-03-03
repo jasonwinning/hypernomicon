@@ -1338,7 +1338,7 @@ public final class MainCtrlr
       else if (num == 0)
       {
         discardLastQuery(backClick);
-        lblStatus.setText("No results: searched " + getTypeName(type) + " records for \"" + query + '"');
+        lblStatus.setText("No results: Searched " + getTypeName(type) + " records for \"" + query + '"');
       }
     });
   }
@@ -2417,7 +2417,7 @@ public final class MainCtrlr
 
     if (record.hasStoredState() == false)
     {
-      errorPopup("Unable to revert: the record may not have been previously saved to XML.");
+      errorPopup("Unable to revert: The record may not have been previously saved to XML.");
       return;
     }
 
@@ -3807,7 +3807,7 @@ public final class MainCtrlr
     {
       String text = HyperTableCell.getCellText(hcbGoTo.selectedHTC()).strip();
       if (strNotNullOrBlank(text))
-        lblStatus.setText("No results: searched " + getTypeName(selectorType()) + " records for \"" + text + '"');
+        lblStatus.setText("No results: Searched " + getTypeName(selectorType()) + " records for \"" + text + '"');
 
       return;
     }

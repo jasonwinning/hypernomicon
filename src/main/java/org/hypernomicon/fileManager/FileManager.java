@@ -614,7 +614,7 @@ public final class FileManager extends NonmodalWindow
 
     String verb = copying ? "copy" : "move";
 
-    String message = "Unable to " + verb + " \"" + srcFilePath.getNameOnly() + "\": access denied."
+    String message = "Unable to " + verb + " \"" + srcFilePath.getNameOnly() + "\": Access denied."
       + "\n\nClose the application using this file, then try again.";
 
     return new PopupDialog(message)
@@ -757,6 +757,9 @@ public final class FileManager extends NonmodalWindow
             HDT_Folder srcFolder = HyperPath.getFolderFromFilePath(srcRootPath, false),
                        destParent = HyperPath.getFolderFromFilePath(destRootPath.getParent(), true);
 
+            boolean firstFailure = true;
+            FilePath lockedFile = null;
+
             while (true)
             {
               try
@@ -766,14 +769,28 @@ public final class FileManager extends NonmodalWindow
 
                 break;
               }
-              catch (AccessDeniedException e)
+              catch (FileSystemException e)
               {
-                FilePath lockedFile = srcRootPath.findLockedFileInDir();
+                if (((e instanceof AccessDeniedException) == false) && (e.getClass() != FileSystemException.class))
+                  throw e;
 
-                String message = ("Unable to move \"" + srcRootPath.getNameOnly() + "\": ") + (lockedFile != null ?
-                  "The file is locked:\n\"" + lockedFile + "\"\n\nClose the application using this file, then try again."
-                :
-                  getThrowableMessage(e));
+                if (firstFailure)
+                {
+                  lockedFile = srcRootPath.findLockedFileInDir();
+                  firstFailure = false;
+                }
+
+                String message;
+
+                if (lockedFile != null)
+                {
+                  String lockedItemType = lockedFile.isDirectory() ? "folder" : "file";
+                  message = "Unable to move \"" + srcRootPath.getNameOnly() + "\". The " + lockedItemType + " is locked:\n\""
+                    + lockedFile + "\"\n\nClose the application using this " + lockedItemType + ", then try again.";
+                }
+                else
+                  message = "Unable to move \"" + srcRootPath.getNameOnly() + "\": Access denied."
+                    + "\n\nClose any application that has this folder open, then try again.";
 
                 DialogResult response = new PopupDialog(message)
                   .addDefaultButton("Retry", mrRetry, "Attempt the move again")
