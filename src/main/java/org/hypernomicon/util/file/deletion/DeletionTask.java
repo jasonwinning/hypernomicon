@@ -74,7 +74,11 @@ class DeletionTask
     {
       switch (effectiveType())
       {
-        case FILE_ONLY                 : Files.deleteIfExists   (filePath.toPath()       ); break;
+        case FILE_ONLY :
+
+          filePath.clearReadOnlyOnWindows();
+          Files.deleteIfExists(filePath.toPath());
+          break;
 
         case DIR_WITH_CONTENTS         : deleteDirectoryTreeWalk(filePath.toPath(), true ); break;
         case DIR_CONTENTS_ONLY         : deleteDirectoryTreeWalk(filePath.toPath(), false); break;
@@ -109,7 +113,12 @@ class DeletionTask
     {
       return switch (effectiveType())
       {
-        case FILE_ONLY                 -> { Files.deleteIfExists(filePath.toPath()); yield Files.exists(filePath.toPath()) == false; }
+        case FILE_ONLY                 ->
+        {
+          filePath.clearReadOnlyOnWindows();
+          Files.deleteIfExists(filePath.toPath());
+          yield Files.exists(filePath.toPath()) == false;
+        }
 
         case DIR_WITH_CONTENTS         -> deleteDirectorySilentOnce(filePath.toPath(), true);
         case DIR_CONTENTS_ONLY         -> deleteDirectorySilentOnce(filePath.toPath(), false);
@@ -173,6 +182,8 @@ class DeletionTask
       {
         if ((deleteRoot == false) && path.equals(root))
           continue;
+
+        new FilePath(path).clearReadOnlyOnWindows();
 
         try
         {

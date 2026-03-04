@@ -94,6 +94,9 @@ public class Builder extends DeletionBuilderBase<Builder>
       if (phaseOneResult != FAILED)
         return phaseOneResult;
 
+      if (ui == null)
+        return FAILED;
+
       // Phase 2: On Windows, scan for locked files to provide diagnostic info (first failure only)
 
       if (firstFailure)

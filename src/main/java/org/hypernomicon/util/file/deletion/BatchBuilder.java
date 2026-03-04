@@ -17,6 +17,7 @@
 
 package org.hypernomicon.util.file.deletion;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult.*;
 import static org.hypernomicon.util.file.deletion.FileDeletion.DeletionType.*;
 
@@ -106,6 +107,12 @@ public class BatchBuilder extends DeletionBuilderBase<BatchBuilder>
 
       if ((phaseOneResult == SUCCESS) || (phaseOneResult == ABORTED))
         return phaseOneResult;
+
+      if (ui == null)
+      {
+        tasks.forEach(task -> failedPaths.add(task.getFilePath()));
+        return (failedPaths.size() < totalCount) ? PARTIAL : FAILED;
+      }
 
       // Phase 2: Prompt user about all failures together
 

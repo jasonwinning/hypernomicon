@@ -17,8 +17,9 @@
 
 package org.hypernomicon.util.file;
 
-import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.fileManager.FileManager;
+import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.util.file.deletion.FileDeletion;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -27,6 +28,7 @@ import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult.*;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -34,9 +36,9 @@ import java.net.URI;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.Charset;
-
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.DosFileAttributeView;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -168,19 +170,24 @@ public class FilePath implements Comparable<FilePath>
     {
       if (destFilePath.exists() && confirmOverwrite)
       {
+        if (ui == null)
+          return false;
+
         if (confirmDialog("Destination file exists. Overwrite?", false) == false)
           return false;
 
-        if (destFilePath.toFile().delete() == false)
-          return falseWithErrorPopup("Unable to delete the file.");
+        if (FileDeletion.ofFile(destFilePath).interactive().execute() != SUCCESS)
+          return false;
       }
 
       if (move)
       {
-        if (isFile() && getParent().equals(db.unenteredPath()))
-          ui.notifyOfImport(this);
+        boolean fromUnentered = (ui != null) && (db != null) && (db.isOnline()) && isFile() && getParent().equals(db.unenteredPath());
 
         Files.move(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        if (fromUnentered)
+          ui.notifyOfImport(this);
       }
       else
         Files.copy(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -303,6 +310,36 @@ public class FilePath implements Comparable<FilePath>
     catch (IOException e)
     {
       throw new HyperDataException(e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * On Windows, clears the DOS read-only attribute on this path before deletion or replacement.
+   * OneDrive sets {@code FILE_ATTRIBUTE_READONLY} on synced files and directories as a sync-state
+   * signal, which causes {@code RemoveDirectoryW}, {@code DeleteFileW}, and {@code MoveFileExW}
+   * (with {@code MOVEFILE_REPLACE_EXISTING}) to fail with {@code ERROR_ACCESS_DENIED}. File Explorer
+   * clears or ignores this attribute; this method makes programmatic file operations behave
+   * consistently with Explorer.
+   * <p>
+   * On non-Windows systems this is a no-op. Errors are silently swallowed; if clearing fails,
+   * the subsequent operation will produce its own diagnostic error.
+   */
+  public void clearReadOnlyOnWindows()
+  {
+    if (IS_OS_WINDOWS == false) return;
+
+    try
+    {
+      DosFileAttributeView view = Files.getFileAttributeView(toPath(), DosFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
+      if ((view != null) && view.readAttributes().isReadOnly())
+        view.setReadOnly(false);
+    }
+    catch (IOException e)
+    {
+      // Best-effort: if clearing the attribute fails, the subsequent operation will produce its own error
     }
   }
 

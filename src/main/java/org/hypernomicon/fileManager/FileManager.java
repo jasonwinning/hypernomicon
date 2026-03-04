@@ -18,16 +18,15 @@
 package org.hypernomicon.fileManager;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.DesktopUtil.*;
-import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
-
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
@@ -84,32 +83,33 @@ public final class FileManager extends NonmodalWindow
                        btnMainWindow, btnPreviewWindow, btnNewFolder;
   @FXML private Label lblDescPlaceholder;
   @FXML private SplitPane spMain, spFiles, spRecords;
-  @FXML private TreeView<FileRow> treeView;
   @FXML private TableView<FileRow> fileTV;
   @FXML private TableView<HyperTableRow> recordTV;
+  @FXML private TreeView<FileRow> treeView;
   @FXML private WebView webView;
 
   private static final String dialogTitle = "File Manager";
+  private static final long REFRESH_THROTTLE_MS = 500;
 
   private static FileManager instance;
 
+  public final FolderTreeWrapper folderTree;
+
   private final MenuItemSchema<HDT_RecordWithPath, FileRow> pasteMenuItem;
+  private final FileTable fileTable;
+  private final HyperTable recordTable;
+  private final FolderHistory history;
 
   private List<AbstractEntityWithPath> dragPaths = null;
   private List<? extends AbstractEntityWithPath> markedRows = null;
   private FilePath srcPathToHilite = null;
-  private enum RefreshLevel { NONE, REFRESH, PRUNE_AND_REFRESH }
-
-  private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false, programmaticSelectionChange = false;
-  private RefreshLevel pendingRefresh = RefreshLevel.NONE;
-  private long lastRefreshTime = 0;
-  private static final long REFRESH_THROTTLE_MS = 500;
   private HDT_Folder curFolder;
 
-  public final FolderTreeWrapper folderTree;
-  private final FileTable fileTable;
-  private final HyperTable recordTable;
-  private final FolderHistory history;
+  private enum RefreshLevel { NONE, REFRESH, PRUNE_AND_REFRESH }
+  private RefreshLevel pendingRefresh = RefreshLevel.NONE;
+
+  private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false, programmaticSelectionChange = false;
+  private long lastRefreshTime = 0;
 
 //---------------------------------------------------------------------------
 
@@ -1390,6 +1390,7 @@ public final class FileManager extends NonmodalWindow
   private void requestRefresh(RefreshLevel level)
   {
     // Ignore recursive calls from within doRefresh() (e.g., sort handlers)
+
     if (Platform.isFxApplicationThread() && alreadyRefreshing)
       return;
 
