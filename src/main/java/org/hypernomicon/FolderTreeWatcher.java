@@ -19,29 +19,32 @@ package org.hypernomicon;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.util.DesktopUtil.*;
-import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.FolderTreeWatcher.WatcherEvent.WatcherEventKind.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.PathInfo.FileKind;
 import org.hypernomicon.fileManager.FileManager;
+import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.FilePathSet;
@@ -51,6 +54,7 @@ import org.hypernomicon.view.MainCtrlr.ShutDownMode;
 import com.google.common.base.Suppliers;
 
 import javafx.application.Platform;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Modality;
 
 //---------------------------------------------------------------------------
@@ -89,9 +93,16 @@ public class FolderTreeWatcher
   {
     private enum RefreshNeeded { NONE, REFRESH, PRUNE_AND_REFRESH }
 
-    private boolean done = false;
-    private boolean sentResponse = false;
     private HDB_MessageType requestType;
+    private boolean done = false, sentResponse = false;
+
+    private final Set<FilePath> recentlyExternallyDeletedDirs = ConcurrentHashMap.newKeySet(),
+                                pendingFileWarnings           = ConcurrentHashMap.newKeySet(),
+                                pendingFolderWarnings         = ConcurrentHashMap.newKeySet();
+
+    private volatile boolean fileWarningScheduled   = false,
+                             folderWarningScheduled = false,
+                             overflowDetected       = false;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -159,6 +170,25 @@ public class FolderTreeWatcher
 
           for (final WatchEvent<?> event : watchKey.pollEvents())
           {
+            if (event.kind() == OVERFLOW)
+            {
+              overflowDetected = true;
+
+              if (fileWarningScheduled == false)
+              {
+                fileWarningScheduled = true;
+                runOutsideFXThread(2500, () -> showDeletionWarnings(false));
+              }
+
+              if (folderWarningScheduled == false)
+              {
+                folderWarningScheduled = true;
+                runOutsideFXThread(2500, () -> showDeletionWarnings(true));
+              }
+
+              continue;
+            }
+
             @SuppressWarnings("unchecked")
             WatchEvent<Path> watchEvent = (WatchEvent<Path>) event;
 
@@ -255,20 +285,68 @@ public class FolderTreeWatcher
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private static String deletedMsg(FilePath filePath)
+    private void showDeletionWarnings(boolean isAboutFoldersNotFiles)
     {
-      return "A file that is in use by the database, \"" + filePath.getNameOnly() +
-             "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. " +
-             "Changes to database files should be made using the " + appTitle + " File Manager instead.";
-    }
+      // Wait until deletion events stop arriving (debounce), with a 60-second cap
 
-    //---------------------------------------------------------------------------
-    //---------------------------------------------------------------------------
+      long deadline = System.currentTimeMillis() + 60_000;
+      int previousSize;
 
-    private static String changedFolderMsg()
-    {
-      return "There has been a change to a folder that is in use by the database. " +
-             "This may or may not cause a data integrity problem. Changes to database folders should be made using the " + appTitle + " File Manager instead.";
+      Set<FilePath> pendingWarnings = isAboutFoldersNotFiles ? pendingFolderWarnings : pendingFileWarnings;
+      String        noun            = isAboutFoldersNotFiles ? "folder"              : "file";
+
+      do
+      {
+        previousSize = pendingWarnings.size();
+        sleepForMillis(1500);
+      }
+      while ((pendingWarnings.size() > previousSize) && (System.currentTimeMillis() < deadline));
+
+      if (isAboutFoldersNotFiles) folderWarningScheduled = false;
+      else                        fileWarningScheduled   = false;
+
+      List<FilePath> confirmed = new ArrayList<>(),
+                     snapshot  = new ArrayList<>(pendingWarnings);
+
+      snapshot.forEach(pendingWarnings::remove);
+
+      for (FilePath filePath : snapshot)
+        if (filePath.exists() == false)
+        {
+          // For files, suppress warnings when the parent directory was recently deleted externally.
+          // For folders, suppress children when an ancestor is already in the confirmed list.
+
+          if ((isAboutFoldersNotFiles ? confirmed : recentlyExternallyDeletedDirs).stream().noneMatch(ancestor -> ancestor.contains(filePath)))
+            confirmed.add(filePath);
+        }
+
+      boolean hadOverflow = overflowDetected;
+
+      if (isAboutFoldersNotFiles == false)
+        overflowDetected = false;
+
+      if ((confirmed.size() == 1) && (hadOverflow == false))
+      {
+        warningPopup("A " + noun + " that is in use by the database, \"" + db.getRootPath().relativize(confirmed.getFirst()) +
+                     "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. " +
+                     "Changes to database folders should be made using the " + appTitle + " File Manager instead.");
+      }
+      else if (confirmed.size() > 0)
+      {
+        String title = (hadOverflow ? confirmed.size() + " or More" : String.valueOf(confirmed.size())) + ' ' + titleCase(noun) + (confirmed.size() == 1 ? "" : "s") + " Deleted or Moved";
+
+        String headerText = "The following " + noun + (confirmed.size() == 1 ? " is" : "s are") + " in use by the database " +
+                            "but " + (confirmed.size() == 1 ? "has" : "have") + " been deleted or moved from outside the program. " +
+                            "This may or may not cause data integrity problems. " +
+                            "Changes to database " + noun + "s should be made using the " + appTitle + " File Manager instead.";
+
+        String msg = confirmed.stream().map(fp -> String.valueOf(db.getRootPath().relativize(fp)) + '\n').collect(Collectors.joining());
+
+        runInFXThread(() -> longMessagePopup(title, AlertType.WARNING, headerText, msg));
+      }
+      else if (hadOverflow)
+        warningPopup(titleCase(noun) + "s in the database folder may have been deleted or moved from outside the program. " +
+                     "Changes to database " + noun + "s should be made using the " + appTitle + " File Manager instead.");
     }
 
     //---------------------------------------------------------------------------
@@ -331,16 +409,28 @@ public class FolderTreeWatcher
               if (hyperPath.isInUse())
               {
                 if (watcherEvent.isDirectory())
-                  warningPopup(changedFolderMsg());
+                {
+                  FilePath deletedDir = oldPathInfo.getFilePath();
+                  recentlyExternallyDeletedDirs.add(deletedDir);
+                  runOutsideFXThread(10_000, () -> recentlyExternallyDeletedDirs.remove(deletedDir));
+
+                  pendingFolderWarnings.add(deletedDir);
+
+                  if (folderWarningScheduled == false)
+                  {
+                    folderWarningScheduled = true;
+                    runOutsideFXThread(2500, () -> showDeletionWarnings(true));
+                  }
+                }
                 else
                 {
-                  FilePath oldPath = oldPathInfo.getFilePath();
+                  pendingFileWarnings.add(oldPathInfo.getFilePath());
 
-                  runOutsideFXThread(2000, () ->
+                  if (fileWarningScheduled == false)
                   {
-                    if (oldPath.exists() == false)
-                      warningPopup(deletedMsg(oldPath));
-                  });
+                    fileWarningScheduled = true;
+                    runOutsideFXThread(2500, () -> showDeletionWarnings(false));
+                  }
                 }
               }
 //              else if (watcherEvent.isDirectory())
@@ -392,7 +482,9 @@ public class FolderTreeWatcher
             else if (HyperPath.isInUseByRecords(hyperPath))
             {
               if (watcherEvent.isDirectory())
-                warningPopup(changedFolderMsg());
+                warningPopup("A folder that is in use by the database, \"" + db.getRootPath().relativize(oldPathInfo.getFilePath()) +
+                             "\", has been renamed from outside the program. This may or may not cause a data integrity problem. " +
+                             "Changes to database folders should be made using the " + appTitle + " File Manager instead.");
               else
               {
                 runOutsideFXThread(2000, () ->
@@ -401,14 +493,15 @@ public class FolderTreeWatcher
 
                   runInFXThread(() ->
                   {
-                    if (confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
+                    if (confirmDialog("A file that is in use by the database, \"" + db.getRootPath().relativize(oldPathInfo.getFilePath()) +
+                                      "\", has been renamed from outside the program." + System.lineSeparator() +
                                       "This may or may not cause a data integrity problem." + System.lineSeparator() +
-                                      "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?", true) == false)
+                                      "Should the record be reassigned to \"" + db.getRootPath().relativize(newPath) + "\"?", true) == false)
                       return;
 
                     if (newPath.exists() == false)
                     {
-                      warningPopup("The file \"" + newPath.getNameOnly() + "\" no longer exists. Record was not changed.");
+                      warningPopup("The file \"" + db.getRootPath().relativize(newPath) + "\" no longer exists. Record was not changed.");
                       return;
                     }
 
