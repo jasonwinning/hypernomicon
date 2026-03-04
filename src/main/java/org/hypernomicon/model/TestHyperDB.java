@@ -59,6 +59,13 @@ import com.google.common.collect.SetMultimap;
  * After calling TestHyperDB.instance(), the database is opened and online.
  * This class is designed to be non-interactive, making it ideal for automated testing scenarios.
  * <p>
+ * <strong>Important:</strong> TestHyperDB provides no real filesystem root. The root path is set
+ * to the OS temp directory, but no actual database directories or files are created there. Tests
+ * that require real file I/O cannot rely on {@code TestHyperDB} to provide a real filesystem
+ * hierarchy. They must arrange their own filesystem state, typically using JUnit 5's
+ * {@code @TempDir}.
+ * </p>
+ * <p>
  * Usage Example:
  * <pre>
  * {@code

@@ -748,7 +748,7 @@ public final class FileManager extends NonmodalWindow
 
             if (coveredBySrcPath.contains(srcFilePath)) continue;
 
-            if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles(true) == false) && (srcFilePath.contains(db.getRootPath()) == false))
+            if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles() == false) && (srcFilePath.contains(db.getRootPath()) == false))
             {
               if (db.getRootPath().contains(srcFilePath))
                 internalEmptyFolders.add(HyperPath.getFolderFromFilePath(srcFilePath, false));

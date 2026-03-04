@@ -2153,7 +2153,7 @@ public final class FileDeletionTestRunner
 
       try
       {
-        assertTrue(path.dirContainsAnyFiles(true), label + " DCO dir should still have contents: " + path);
+        assertTrue(path.dirContainsAnyFiles(), label + " DCO dir should still have contents: " + path);
       }
       catch (IOException e) { throw new UncheckedIOException(e); }
     }
@@ -2223,7 +2223,7 @@ public final class FileDeletionTestRunner
   {
     try
     {
-      assertFalse(dir.dirContainsAnyFiles(true), label + " should be empty: " + dir);
+      assertFalse(dir.dirContainsAnyFiles(), label + " should be empty: " + dir);
     }
     catch (IOException e) { throw new UncheckedIOException(e); }
   }

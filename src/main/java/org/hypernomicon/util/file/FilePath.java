@@ -544,19 +544,8 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean dirContainsAnyFiles(boolean checkSubdirs) throws IOException
+  public boolean dirContainsAnyFiles() throws IOException
   {
-    if (checkSubdirs == false)
-    {
-      try (DirectoryStream<Path> stream = Files.newDirectoryStream(getDirOnly().toPath()))
-      {
-        if (findFirst(stream, entry -> new FilePath(entry).isDirectory()) != null)
-          return true;
-      }
-
-      return false;
-    }
-
     final MutableBoolean hasFiles = new MutableBoolean(false);
 
     Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<>()

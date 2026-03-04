@@ -37,6 +37,11 @@ public class EntityWithPath extends AbstractEntityWithPath
 
 //---------------------------------------------------------------------------
 
+  public EntityWithPath(FilePath filePath)
+  {
+    this(filePath.toFile());
+  }
+
   public EntityWithPath(File file)
   {
     filePath = new FilePath(file);

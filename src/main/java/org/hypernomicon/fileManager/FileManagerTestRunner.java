@@ -117,7 +117,7 @@ public final class FileManagerTestRunner
                  destDir = createTestDir("p1s1", "dest"),  // _test_fm/p1s1/dest/
                  file    = srcDir.resolve("file1.txt");    // _test_fm/p1s1/src/file1.txt
 
-        pasteMove(List.of(entity(file)), destDir);
+        pasteMove(entitiesOf(file), destDir);
 
         assertGone(file, "source file");
         assertExists(destDir.resolve("file1.txt"), "dest file");
@@ -135,7 +135,7 @@ public final class FileManagerTestRunner
                  destDir = createTestDir("p1s2", "dest"),    // _test_fm/p1s2/dest/
                  file    = srcDir.resolve("file2.txt");      // ../_test_fm_ext/p1s2/src/file2.txt
 
-        pasteMove(List.of(entity(file)), destDir);
+        pasteMove(entitiesOf(file), destDir);
 
         assertGone(file, "external source file");
         assertExists(destDir.resolve("file2.txt"), "dest file");
@@ -156,7 +156,7 @@ public final class FileManagerTestRunner
         // Ensure folder record exists before paste
         HyperPath.getFolderFromFilePath(srcDir, true);
 
-        pasteMove(List.of(entity(srcDir)), destDir);
+        pasteMove(entitiesOf(srcDir), destDir);
 
         assertGone(srcDir, "source dir");
         assertExists(destDir.resolve("flatdir"), "dest dir");
@@ -179,7 +179,7 @@ public final class FileManagerTestRunner
                  destDir   = createTestDir("p1s4", "dest"),    // _test_fm/p1s4/dest/
                  srcDir    = srcParent.resolve("extdir");      // ../_test_fm_ext/p1s4/src/extdir/
 
-        pasteMove(List.of(entity(srcDir)), destDir);
+        pasteMove(entitiesOf(srcDir), destDir);
 
         // External dirs: files moved individually, empty source dir deleted
         assertGone(srcDir, "external source dir");
@@ -208,7 +208,7 @@ public final class FileManagerTestRunner
         // Ensure folder records exist
         HyperPath.getFolderFromFilePath(lvl3, true);
 
-        pasteMove(List.of(entity(lvl1)), destDir);
+        pasteMove(entitiesOf(lvl1), destDir);
 
         assertGone(lvl1, "source lvl1");
         assertExists(destDir.resolve("lvl1"), "dest lvl1");
@@ -234,7 +234,7 @@ public final class FileManagerTestRunner
                  destDir   = createTestDir("p1s6", "dest"),    // _test_fm/p1s6/dest/
                  lvl1      = srcParent.resolve("lvl1");        // ../_test_fm_ext/p1s6/src/lvl1/
 
-        pasteMove(List.of(entity(lvl1)), destDir);
+        pasteMove(entitiesOf(lvl1), destDir);
 
         assertGone(lvl1, "external source lvl1");
         assertExists(destDir.resolve("lvl1", "f1.txt"), "dest f1");
@@ -260,7 +260,7 @@ public final class FileManagerTestRunner
 
         HyperPath.getFolderFromFilePath(d5, true);
 
-        pasteMove(List.of(entity(d1)), destDir);
+        pasteMove(entitiesOf(d1), destDir);
 
         assertGone(d1, "source d1");
         assertExists(destDir.resolve("d1", "f1.txt"), "dest f1");
@@ -283,7 +283,7 @@ public final class FileManagerTestRunner
                  destDir   = createTestDir("p1s8", "dest"),
                  d1        = srcParent.resolve("d1");
 
-        pasteMove(List.of(entity(d1)), destDir);
+        pasteMove(entitiesOf(d1), destDir);
 
         assertGone(d1, "external source d1");
         assertExists(destDir.resolve("d1", "f1.txt"), "dest f1");
@@ -309,7 +309,7 @@ public final class FileManagerTestRunner
                  f2      = srcDir.resolve("beta.txt"),
                  f3      = srcDir.resolve("gamma.txt");
 
-        pasteMove(List.of(entity(f1), entity(f2), entity(f3)), destDir);
+        pasteMove(entitiesOf(f1, f2, f3), destDir);
 
         assertGone(f1, "source alpha");
         assertGone(f2, "source beta");
@@ -333,7 +333,7 @@ public final class FileManagerTestRunner
                  f2      = srcDir.resolve("beta.txt"),
                  f3      = srcDir.resolve("gamma.txt");
 
-        pasteMove(List.of(entity(f1), entity(f2), entity(f3)), destDir);
+        pasteMove(entitiesOf(f1, f2, f3), destDir);
 
         assertGone(f1, "ext source alpha");
         assertGone(f2, "ext source beta");
@@ -358,7 +358,7 @@ public final class FileManagerTestRunner
         HyperPath.getFolderFromFilePath(dirA, true);
         HyperPath.getFolderFromFilePath(dirB, true);
 
-        pasteMove(List.of(entity(dirA), entity(dirB)), destDir);
+        pasteMove(entitiesOf(dirA, dirB), destDir);
 
         assertGone(dirA, "source dirA");
         assertGone(dirB, "source dirB");
@@ -378,7 +378,7 @@ public final class FileManagerTestRunner
                  dirA      = srcParent.resolve("dirA"),
                  dirB      = srcParent.resolve("dirB");
 
-        pasteMove(List.of(entity(dirA), entity(dirB)), destDir);
+        pasteMove(entitiesOf(dirA, dirB), destDir);
 
         assertGone(dirA, "ext source dirA");
         assertGone(dirB, "ext source dirB");
@@ -400,7 +400,7 @@ public final class FileManagerTestRunner
 
         HyperPath.getFolderFromFilePath(dir, true);
 
-        pasteMove(List.of(entity(dir), entity(file)), destDir);
+        pasteMove(entitiesOf(dir, file), destDir);
 
         assertGone(dir, "source dir");
         assertGone(file, "source file");
@@ -420,7 +420,7 @@ public final class FileManagerTestRunner
                  dir       = srcParent.resolve("mixdir"),
                  file      = srcParent.resolve("loose.txt");
 
-        pasteMove(List.of(entity(dir), entity(file)), destDir);
+        pasteMove(entitiesOf(dir, file), destDir);
 
         assertGone(dir, "ext source dir");
         assertGone(file, "ext source file");
@@ -451,7 +451,7 @@ public final class FileManagerTestRunner
         assertNotNull(folderB, "folderB should exist");
 
         // Select both A and B; B should be pruned (nested inside A)
-        pasteMove(List.of(entity(dirA), entity(dirB)), destDir);
+        pasteMove(entitiesOf(dirA, dirB), destDir);
 
         assertGone(dirA, "source A");
         assertExists(destDir.resolve("A", "B", "file.txt"), "dest file");
@@ -484,7 +484,7 @@ public final class FileManagerTestRunner
         HyperPath.getFolderFromFilePath(dirB, true);
         HyperPath.getFolderFromFilePath(dirC, true);
 
-        pasteMove(List.of(entity(dirA), entity(dirB), entity(dirC)), destDir);
+        pasteMove(entitiesOf(dirA, dirB, dirC), destDir);
 
         assertGone(dirA, "source A");
         assertGone(dirC, "source C");
@@ -507,7 +507,7 @@ public final class FileManagerTestRunner
         HyperPath.getFolderFromFilePath(dirA, true);
 
         // Select both the dir and the file inside it
-        pasteMove(List.of(entity(dirA), entity(insideFile)), destDir);
+        pasteMove(entitiesOf(dirA, insideFile), destDir);
 
         assertGone(dirA, "source A");
         // The file should be at the new location (moved via re-parent, not separately)
@@ -529,7 +529,7 @@ public final class FileManagerTestRunner
 
         HyperPath.getFolderFromFilePath(dirA, true);
 
-        pasteMove(List.of(entity(dirA), entity(siblingFile)), destDir);
+        pasteMove(entitiesOf(dirA, siblingFile), destDir);
 
         assertGone(dirA, "source A");
         assertGone(siblingFile, "source sibling");
@@ -559,7 +559,7 @@ public final class FileManagerTestRunner
         assertNotNull(workFile, "WorkFile record should be created");
         int workFileID = workFile.getID();
 
-        pasteMove(List.of(entity(dir)), destDir);
+        pasteMove(entitiesOf(dir), destDir);
 
         assertGone(dir, "source dir");
         assertExists(destDir.resolve("wfdir", "work.pdf"), "dest work.pdf");
@@ -589,7 +589,7 @@ public final class FileManagerTestRunner
         assertNotNull(miscFile, "MiscFile record should be created");
         int miscFileID = miscFile.getID();
 
-        pasteMove(List.of(entity(dir)), destDir);
+        pasteMove(entitiesOf(dir), destDir);
 
         assertGone(dir, "source dir");
         assertExists(destDir.resolve("mfdir", "misc.dat"), "dest misc.dat");
@@ -622,7 +622,7 @@ public final class FileManagerTestRunner
 
         assertEquals(pic, person.getPath().filePath(), "person path should resolve before move");
 
-        pasteMove(List.of(entity(dir)), destDir);
+        pasteMove(entitiesOf(dir), destDir);
 
         HDT_Person resolvedPerson = db.persons.getByID(personID);
         assertNotNull(resolvedPerson, "Person record should still exist");
@@ -651,7 +651,7 @@ public final class FileManagerTestRunner
 
         assertEquals(dirFolder, note.folder.get(), "note folder should be set before move");
 
-        pasteMove(List.of(entity(dir)), destDir);
+        pasteMove(entitiesOf(dir), destDir);
 
         HDT_Note resolvedNote = db.notes.getByID(noteID);
         assertNotNull(resolvedNote, "Note record should still exist");
@@ -693,7 +693,7 @@ public final class FileManagerTestRunner
             personID = person.getID(), noteID = note.getID(),
             folderID = dirFolder.getID();
 
-        pasteMove(List.of(entity(dir)), destDir);
+        pasteMove(entitiesOf(dir), destDir);
 
         // All records should resolve to new locations
         assertEquals(destDir.resolve("alldir", "work.pdf"), db.workFiles.getByID(wfID).filePath());
@@ -719,7 +719,7 @@ public final class FileManagerTestRunner
         assertNotNull(workFile, "WorkFile should be created");
         int wfID = workFile.getID();
 
-        pasteMove(List.of(entity(file)), destDir);
+        pasteMove(entitiesOf(file), destDir);
 
         assertGone(file, "source file");
         assertExists(destDir.resolve("solo_work.pdf"), "dest file");
@@ -744,7 +744,7 @@ public final class FileManagerTestRunner
         assertNotNull(miscFile, "MiscFile should be created");
         int mfID = miscFile.getID();
 
-        pasteMove(List.of(entity(file)), destDir);
+        pasteMove(entitiesOf(file), destDir);
 
         assertGone(file, "source file");
         assertExists(destDir.resolve("solo_misc.dat"), "dest file");
@@ -770,7 +770,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
 
         // moveCopy succeeds (file is not protected)
-        assertTrue(FileManager.instance().moveCopy(List.of(entity(file)), false, false), "moveCopy should succeed");
+        assertTrue(FileManager.instance().moveCopy(entitiesOf(file), false, false), "moveCopy should succeed");
 
         // Paste into the same directory the file is in
         HDT_Folder destFolder = HyperPath.getFolderFromFilePath(srcDir, true);
@@ -799,7 +799,7 @@ public final class FileManagerTestRunner
 
         PopupRobot.clear();
 
-        assertTrue(FileManager.instance().moveCopy(List.of(entity(dirA)), false, false), "moveCopy should succeed");
+        assertTrue(FileManager.instance().moveCopy(entitiesOf(dirA), false, false), "moveCopy should succeed");
 
         // Paste into A/sub/ (subfolder of source A/)
         HDT_Folder destFolder = HyperPath.getFolderFromFilePath(sub, true);
@@ -828,7 +828,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
 
         // moveCopy should fail because canCutRow rejects protected folder
-        boolean result = FileManager.instance().moveCopy(List.of(entity(papersPath)), false, false);
+        boolean result = FileManager.instance().moveCopy(entitiesOf(papersPath), false, false);
         assertFalse(result, "moveCopy should reject protected folder");
 
         assertTrue(PopupRobot.getLastMessage().contains("cannot be moved"),
@@ -846,7 +846,7 @@ public final class FileManagerTestRunner
 
         PopupRobot.clear();
 
-        boolean result = FileManager.instance().moveCopy(List.of(entity(hdbFile)), false, false);
+        boolean result = FileManager.instance().moveCopy(entitiesOf(hdbFile), false, false);
         assertFalse(result, "moveCopy should reject protected file database.hdb");
 
         assertTrue(PopupRobot.getLastMessage().contains("cannot be moved"),
@@ -870,7 +870,7 @@ public final class FileManagerTestRunner
 
         PopupRobot.clear();
 
-        assertTrue(FileManager.instance().moveCopy(List.of(entity(srcSub)), false, false), "moveCopy should succeed");
+        assertTrue(FileManager.instance().moveCopy(entitiesOf(srcSub), false, false), "moveCopy should succeed");
 
         HDT_Folder destFolder = HyperPath.getFolderFromFilePath(destDir, true);
         FileRow destRow = new FileRow(destFolder.getPath(), true);
@@ -899,7 +899,7 @@ public final class FileManagerTestRunner
 
         PopupRobot.clear();
 
-        assertTrue(FileManager.instance().moveCopy(List.of(entity(file)), false, false), "moveCopy should succeed");
+        assertTrue(FileManager.instance().moveCopy(entitiesOf(file), false, false), "moveCopy should succeed");
 
         HDT_Folder rootFolder = db.getRootFolder();
         FileRow destRow = new FileRow(rootFolder.getPath(), true);
@@ -929,7 +929,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
         PopupRobot.setDefaultResponse(mrYes);
 
-        pasteMove(List.of(entity(srcFile)), destDir);
+        pasteMove(entitiesOf(srcFile), destDir);
 
         assertGone(srcFile, "source file");
         assertFileContent(destDir.resolve("over.txt"), "over.txt", "overwritten content");
@@ -952,7 +952,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
         PopupRobot.setDefaultResponse(mrNo);
 
-        pasteMove(List.of(entity(srcFile)), destDir);
+        pasteMove(entitiesOf(srcFile), destDir);
 
         // Source should remain (was removed from srcToDest, paste completes but file not moved)
         assertExists(srcFile, "source file should remain");
@@ -977,7 +977,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
         PopupRobot.setDefaultResponse(mrYesToAll);
 
-        pasteMove(List.of(entity(srcF1), entity(srcF2)), destDir);
+        pasteMove(entitiesOf(srcF1, srcF2), destDir);
 
         assertGone(srcF1, "source f1");
         assertGone(srcF2, "source f2");
@@ -1003,7 +1003,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
         PopupRobot.setDefaultResponse(mrNoToAll);
 
-        pasteMove(List.of(entity(srcF1), entity(srcF2)), destDir);
+        pasteMove(entitiesOf(srcF1, srcF2), destDir);
 
         assertExists(srcF1, "source f1 should remain");
         assertExists(srcF2, "source f2 should remain");
@@ -1032,7 +1032,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
         PopupRobot.setDefaultResponse(mrYes);
 
-        pasteMove(List.of(entity(srcFile)), destDir);
+        pasteMove(entitiesOf(srcFile), destDir);
 
         assertGone(srcFile, "source file");
         assertFileContent(destDir.resolve("related.txt"), "related.txt", "overwritten content");
@@ -1058,7 +1058,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
         PopupRobot.setDefaultResponse(mrNo);
 
-        pasteMove(List.of(entity(srcFile)), destDir);
+        pasteMove(entitiesOf(srcFile), destDir);
 
         assertExists(srcFile, "source should remain");
         assertFileContent(destDir.resolve("related.txt"), "original_related", "dest unchanged");
@@ -1088,7 +1088,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
         PopupRobot.setDefaultResponse(mrYesToAll);
 
-        pasteMove(List.of(entity(srcF1), entity(srcF2)), destDir);
+        pasteMove(entitiesOf(srcF1, srcF2), destDir);
 
         assertGone(srcF1, "source r1");
         assertGone(srcF2, "source r2");
@@ -1120,7 +1120,7 @@ public final class FileManagerTestRunner
         PopupRobot.clear();
         PopupRobot.setDefaultResponse(mrNoToAll);
 
-        pasteMove(List.of(entity(srcF1), entity(srcF2)), destDir);
+        pasteMove(entitiesOf(srcF1, srcF2), destDir);
 
         assertExists(srcF1, "source r1 should remain");
         assertExists(srcF2, "source r2 should remain");
@@ -1151,7 +1151,7 @@ public final class FileManagerTestRunner
         // YesToAll for both: unrelated prompt triggers first, related prompt triggers separately
         PopupRobot.setDefaultResponse(mrYesToAll);
 
-        pasteMove(List.of(entity(srcUnrelated), entity(srcRelated)), destDir);
+        pasteMove(entitiesOf(srcUnrelated, srcRelated), destDir);
 
         assertGone(srcUnrelated, "source unrelated");
         assertGone(srcRelated, "source related");
@@ -1180,7 +1180,7 @@ public final class FileManagerTestRunner
                  destDir = createTestDir("p7s41", "dest"),
                  extSub  = srcDir.resolve("emptyme");
 
-        pasteMove(List.of(entity(extSub)), destDir);
+        pasteMove(entitiesOf(extSub), destDir);
 
         assertExists(destDir.resolve("emptyme", "f1.txt"), "dest f1");
         assertExists(destDir.resolve("emptyme", "f2.txt"), "dest f2");
@@ -1200,7 +1200,7 @@ public final class FileManagerTestRunner
                  destDir = createTestDir("p7s42", "dest"),
                  extLvl1 = srcDir.resolve("lvl1");
 
-        pasteMove(List.of(entity(extLvl1)), destDir);
+        pasteMove(entitiesOf(extLvl1), destDir);
 
         assertExists(destDir.resolve("lvl1", "f1.txt"), "dest f1");
         assertExists(destDir.resolve("lvl1", "lvl2", "f2.txt"), "dest f2");
@@ -1222,7 +1222,7 @@ public final class FileManagerTestRunner
                  toMove  = extSub.resolve("move_me.txt");
 
         // Only move one of the two files
-        pasteMove(List.of(entity(toMove)), destDir);
+        pasteMove(entitiesOf(toMove), destDir);
 
         assertGone(toMove, "moved file");
         assertExists(destDir.resolve("move_me.txt"), "dest file");
@@ -1277,7 +1277,7 @@ public final class FileManagerTestRunner
         FilePath srcDir  = createTestDir("p9s45", "src"),
                  destDir = createTestDir("p9s45", "dest");
 
-        pasteMove(List.of(entity(srcDir.resolve("watch.txt"))), destDir);
+        pasteMove(entitiesOf(srcDir.resolve("watch.txt")), destDir);
 
         // Watcher restart is in Platform.runLater, so it won't be running yet.
         // We check in the next step after a delay.
@@ -1495,7 +1495,7 @@ public final class FileManagerTestRunner
         lockProc = startLockProcess(lockedFile);
 
         PopupRobot.clear();
-        pasteMove(List.of(entity(tree)), destDir);
+        pasteMove(entitiesOf(tree), destDir);
 
         // Move should have failed: source tree still exists
         assertExists(tree, "source tree should still exist after failed move");
@@ -1823,9 +1823,9 @@ public final class FileManagerTestRunner
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static EntityWithPath entity(FilePath path)
+  private static List<EntityWithPath> entitiesOf(FilePath... filePaths)
   {
-    return new EntityWithPath(path.toFile());
+    return Arrays.stream(filePaths).map(EntityWithPath::new).toList();
   }
 
 //---------------------------------------------------------------------------
@@ -1902,10 +1902,7 @@ public final class FileManagerTestRunner
            classPath = System.getProperty("java.class.path"),
            className = FileLockHelper.class.getName();
 
-    ProcessBuilder pb = new ProcessBuilder
-    (
-      Path.of(javaHome, "bin", "java").toString(), "-cp", classPath, className, file.toString()
-    );
+    ProcessBuilder pb = new ProcessBuilder(Path.of(javaHome, "bin", "java").toString(), "-cp", classPath, className, file.toString());
 
     pb.redirectErrorStream(true);
     Process proc = pb.start();

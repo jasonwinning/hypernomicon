@@ -41,12 +41,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import org.hypernomicon.FolderTreeWatcher;
-import org.hypernomicon.fileManager.FileManagerTestRunner;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.dialogs.base.ModalDialog;
+import org.hypernomicon.fileManager.FileManagerTestRunner;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.deletion.FileDeletion;

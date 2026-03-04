@@ -265,9 +265,9 @@ class ProtectedFileTest
   {
     Set<HDT_Folder> expected = Set.of
     (
-      db.getXmlFolder      (), db.getPicturesFolder(), db.getBooksFolder  (),
-      db.getPapersFolder   (), db.getResultsFolder  (), db.getUnenteredFolder(),
-      db.getMiscFilesFolder(), db.getTopicalFolder  ()
+      db.getXmlFolder      (), db.getPicturesFolder(), db.getBooksFolder    (),
+      db.getPapersFolder   (), db.getResultsFolder (), db.getUnenteredFolder(),
+      db.getMiscFilesFolder(), db.getTopicalFolder ()
     );
 
     Set<HDT_Folder> actual = db.specialFolders().collect(Collectors.toSet());
