@@ -20,8 +20,7 @@ package org.hypernomicon.util.file;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
@@ -29,13 +28,10 @@ import org.junit.jupiter.api.io.TempDir;
 //---------------------------------------------------------------------------
 
 /**
- * Edge-case tests for {@link FilePath#contains(FilePath)}.
- * <p>
- * Tests are organized into two groups: those using real filesystem paths
- * (exercising the {@code toRealPath()} branch) and those using non-existent
- * paths (exercising the normalized-absolute-path fallback).
+ * Tests for {@link FilePath}: containment checks, copy/move/rename
+ * operations, and directory queries.
  */
-class FilePathContainsTest
+class FilePathTest
 {
 
 //---------------------------------------------------------------------------
@@ -51,7 +47,7 @@ class FilePathContainsTest
   @BeforeEach
   void setUp() throws IOException
   {
-    // Create a directory tree for tests that need real paths:
+    // Create a directory tree for contains tests:
     // tempDir/a/b/c/d   (nested dirs)
     // tempDir/bar/       (for shared-prefix test)
     // tempDir/barbaz/    (for shared-prefix test)
@@ -66,11 +62,19 @@ class FilePathContainsTest
   }
 
 //---------------------------------------------------------------------------
-//region Real filesystem paths (toRealPath branch)
 //---------------------------------------------------------------------------
 
+  // Tests for FilePath.contains(FilePath) are organized into two groups:
+  // those using real filesystem paths (exercising the toRealPath()) and
+  // those using non-existent paths (exercising the normalized-absolute-path
+  // fallback).
+
+  // -------------------------------------------------------------------------
+  // contains: real filesystem paths (toRealPath branch)
+  // -------------------------------------------------------------------------
+
   @Test
-  void directChild_contained()
+  void contains_directChild_contained()
   {
     assertTrue(base.resolve("a").contains(base.resolve("a", "b")));
   }
@@ -78,7 +82,7 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void deepDescendant_contained()
+  void contains_deepDescendant_contained()
   {
     assertTrue(base.resolve("a").contains(base.resolve("a", "b", "c", "d")));
   }
@@ -86,7 +90,7 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void selfContainment_returnsTrue()
+  void contains_selfContainment_returnsTrue()
   {
     FilePath path = base.resolve("a", "b");
 
@@ -96,7 +100,7 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void sibling_notContained()
+  void contains_sibling_notContained()
   {
     FilePath a = base.resolve("a"),
              bar = base.resolve("bar");
@@ -108,7 +112,7 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void sharedPrefix_notParentChild()
+  void contains_sharedPrefix_notParentChild()
   {
     FilePath bar    = base.resolve("bar"),
              barbaz = base.resolve("barbaz");
@@ -120,7 +124,7 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void reversedRelationship_notContained()
+  void contains_reversedRelationship_notContained()
   {
     FilePath parent = base.resolve("a"),
              child  = base.resolve("a", "b");
@@ -132,18 +136,20 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void rootContainsDeepDescendant()
+  void contains_rootContainsDeepDescendant()
   {
     assertTrue(base.contains(base.resolve("a", "b", "c")));
   }
 
 //---------------------------------------------------------------------------
-//endregion
-//region Dot and dot-dot normalization
 //---------------------------------------------------------------------------
 
+  // -------------------------------------------------------------------------
+  // contains: dot and dot-dot normalization
+  // -------------------------------------------------------------------------
+
   @Test
-  void dotComponent_normalized()
+  void contains_dotComponent_normalized()
   {
     // tempDir/a/./b should be treated as tempDir/a/b
 
@@ -155,7 +161,7 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void dotDotComponent_normalized()
+  void contains_dotDotComponent_normalized()
   {
     // tempDir/a/x/../b should normalize to tempDir/a/b
     FilePath withDotDot = base.resolve("a", "x", "..", "b");
@@ -164,12 +170,14 @@ class FilePathContainsTest
   }
 
 //---------------------------------------------------------------------------
-//endregion
-//region Non-existent paths (normalized-absolute fallback branch)
 //---------------------------------------------------------------------------
 
+  // -------------------------------------------------------------------------
+  // contains: non-existent paths (normalized-absolute fallback branch)
+  // -------------------------------------------------------------------------
+
   @Test
-  void nonExistent_parentChild_contained()
+  void contains_nonExistent_parentChild_contained()
   {
     FilePath fakeParent = base.resolve("fake_parent"),
              fakeChild  = base.resolve("fake_parent", "child");
@@ -180,7 +188,7 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void nonExistent_sharedPrefix_notContained()
+  void contains_nonExistent_sharedPrefix_notContained()
   {
     FilePath fakeBar    = new FilePath(tempDir.resolve("fake_bar")),
              fakeBarbaz = new FilePath(tempDir.resolve("fake_barbaz"));
@@ -191,7 +199,7 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void nonExistent_sibling_notContained()
+  void contains_nonExistent_sibling_notContained()
   {
     FilePath fakeA = new FilePath(tempDir.resolve("fake_a")),
              fakeB = new FilePath(tempDir.resolve("fake_b"));
@@ -203,7 +211,7 @@ class FilePathContainsTest
 //---------------------------------------------------------------------------
 
   @Test
-  void nonExistent_selfContainment_returnsTrue()
+  void contains_nonExistent_selfContainment_returnsTrue()
   {
     FilePath fake = new FilePath(tempDir.resolve("nonexistent_dir"));
 
@@ -211,7 +219,221 @@ class FilePathContainsTest
   }
 
 //---------------------------------------------------------------------------
-//endregion
+//---------------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------
+  // copyTo
+  // -------------------------------------------------------------------------
+
+  @Test
+  void copyTo_createsFileAtDest() throws IOException
+  {
+    FilePath src  = tempFilePath("src.txt"),
+             dest = tempFilePath("dest.txt");
+
+    Files.writeString(src.toPath(), "hello");
+
+    assertTrue(src.copyTo(dest, false));
+    assertTrue(dest.exists());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void copyTo_sourceStillExists() throws IOException
+  {
+    FilePath src  = tempFilePath("src.txt"),
+             dest = tempFilePath("dest.txt");
+
+    Files.writeString(src.toPath(), "hello");
+    src.copyTo(dest, false);
+
+    assertTrue(src.exists());
+    assertTrue(dest.exists());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void copyTo_preservesContents() throws IOException
+  {
+    FilePath src  = tempFilePath("src.txt"),
+             dest = tempFilePath("dest.txt");
+
+    Files.writeString(src.toPath(), "expected content");
+    src.copyTo(dest, false);
+
+    assertEquals("expected content", Files.readString(dest.toPath()));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void copyTo_overwritesExistingDest() throws IOException
+  {
+    FilePath src  = tempFilePath("src.txt"),
+             dest = tempFilePath("dest.txt");
+
+    Files.writeString(src.toPath(), "new content");
+    Files.writeString(dest.toPath(), "old content");
+    src.copyTo(dest, false);
+
+    assertEquals("new content", Files.readString(dest.toPath()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------
+  // moveTo
+  // -------------------------------------------------------------------------
+
+  @Test
+  void moveTo_createsFileAtDest() throws IOException
+  {
+    FilePath src  = tempFilePath("src.txt"),
+             dest = tempFilePath("dest.txt");
+
+    Files.writeString(src.toPath(), "hello");
+
+    assertTrue(src.moveTo(dest, false));
+    assertTrue(dest.exists());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void moveTo_removesSource() throws IOException
+  {
+    FilePath src  = tempFilePath("src.txt"),
+             dest = tempFilePath("dest.txt");
+
+    Files.writeString(src.toPath(), "hello");
+    src.moveTo(dest, false);
+
+    assertFalse(src.exists());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void moveTo_preservesContents() throws IOException
+  {
+    FilePath src  = tempFilePath("src.txt"),
+             dest = tempFilePath("dest.txt");
+
+    Files.writeString(src.toPath(), "moved content");
+    src.moveTo(dest, false);
+
+    assertEquals("moved content", Files.readString(dest.toPath()));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void moveTo_overwritesExistingDest() throws IOException
+  {
+    FilePath src  = tempFilePath("src.txt"),
+             dest = tempFilePath("dest.txt");
+
+    Files.writeString(src.toPath(), "new content");
+    Files.writeString(dest.toPath(), "old content");
+    src.moveTo(dest, false);
+
+    assertEquals("new content", Files.readString(dest.toPath()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------
+  // renameTo
+  // -------------------------------------------------------------------------
+
+  @Test
+  void renameTo_renamesFile() throws IOException
+  {
+    FilePath src = tempFilePath("original.txt");
+
+    Files.writeString(src.toPath(), "data");
+    src.renameTo("renamed.txt");
+
+    assertFalse(src.exists());
+    assertTrue(tempFilePath("renamed.txt").exists());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void renameTo_preservesContents() throws IOException
+  {
+    FilePath src = tempFilePath("original.txt");
+
+    Files.writeString(src.toPath(), "file content");
+    src.renameTo("renamed.txt");
+
+    assertEquals("file content", Files.readString(tempFilePath("renamed.txt").toPath()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------
+  // dirContainsAnyFiles
+  // -------------------------------------------------------------------------
+
+  @Test
+  void dirContainsAnyFiles_emptyDir_returnsFalse() throws IOException
+  {
+    Path emptyDir = Files.createDirectory(tempDir.resolve("emptyForTest"));
+
+    assertFalse(new FilePath(emptyDir).dirContainsAnyFiles());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void dirContainsAnyFiles_fileInRoot_returnsTrue() throws IOException
+  {
+    Path dir = Files.createDirectory(tempDir.resolve("dirWithFile"));
+    Files.writeString(dir.resolve("file.txt"), "data");
+
+    assertTrue(new FilePath(dir).dirContainsAnyFiles());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void dirContainsAnyFiles_fileOnlyInSubdir_returnsTrue() throws IOException
+  {
+    Path dir = Files.createDirectory(tempDir.resolve("dirWithNestedFile")),
+         sub = Files.createDirectory(dir.resolve("sub"));
+
+    Files.writeString(sub.resolve("nested.txt"), "data");
+
+    assertTrue(new FilePath(dir).dirContainsAnyFiles());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void dirContainsAnyFiles_emptySubdirOnly_returnsFalse() throws IOException
+  {
+    Path dir = Files.createDirectory(tempDir.resolve("dirWithEmptySub"));
+    Files.createDirectory(dir.resolve("emptySubdir"));
+
+    assertFalse(new FilePath(dir).dirContainsAnyFiles());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private FilePath tempFilePath(String name)
+  {
+    return new FilePath(tempDir.resolve(name));
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }
