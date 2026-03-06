@@ -346,42 +346,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Saves the content of the given StringBuilder to a file and returns the MD5 checksum of the content.
-   * <p>
-   * The content is written to the specified file using a buffer of size 65536 characters. The MD5 checksum
-   * is calculated while writing the content to the file.
-   *
-   * @param sb the StringBuilder containing the content to be saved
-   * @param filePath the path of the file where the content will be saved
-   * @param encoding The character set
-   * @return the MD5 checksum of the saved content as a hexadecimal string
-   * @throws IOException if an I/O error occurs while writing to the file
-   */
-  public static String saveStringBuilderToFile(StringBuilder sb, FilePath filePath, Charset encoding) throws IOException
-  {
-    int bufLen = 65536;
-    char[] charArray = new char[bufLen];
-
-    MessageDigest md = newMessageDigest();
-
-    try (OutputStream os = Files.newOutputStream(filePath.toPath());
-         DigestOutputStream dos = new DigestOutputStream(os, md);
-         OutputStreamWriter writer = new OutputStreamWriter(dos, encoding))
-    {
-      for (int offsetIntoSB = 0; offsetIntoSB < sb.length(); offsetIntoSB += bufLen)
-      {
-        bufLen = Math.min(bufLen, sb.length() - offsetIntoSB);
-        sb.getChars(offsetIntoSB, offsetIntoSB + bufLen, charArray, 0);
-        writer.write(charArray, 0, bufLen);
-      }
-    }
-
-    return digestHexStr(md);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   /**
    * Returns the hexadecimal string representation of the digest.
@@ -1045,6 +1009,10 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public record PrefixAndNumber(String prefix, int number) {}
+
+  private static final PrefixAndNumber NO_PREFIX_AND_NUMBER = new PrefixAndNumber("", -1);
+
   /**
    * Splits a string into the beginning of the string and a positive whole number that is at the end of the string.<br>
    * The part of the string before the number is output into the second parameter.<br>
@@ -1056,13 +1024,8 @@ public final class Util
    * "Hello2..2" -> "Hello2..", 2<br>
    * "Hello-2" -> "Hello-", 2<br>
    * @param str The input
-   * @param prefix If there was a number at the end, this will be set to the part of the string before the number, and will be blank otherwise.
-   * @return The number at the end if there was one; -1 otherwise
+   * @return The split result; prefix is blank and number is -1 if no trailing whole number was found
    */
-  public record PrefixAndNumber(String prefix, int number) {}
-
-  private static final PrefixAndNumber NO_PREFIX_AND_NUMBER = new PrefixAndNumber("", -1);
-
   public static PrefixAndNumber splitIntoPrefixAndNumber(String str)
   {
     int ndx;

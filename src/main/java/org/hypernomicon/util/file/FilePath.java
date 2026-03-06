@@ -39,6 +39,7 @@ import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
+import java.security.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -341,6 +342,86 @@ public class FilePath implements Comparable<FilePath>
     {
       // Best-effort: if clearing the attribute fails, the subsequent operation will produce its own error
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Replaces {@code destFilePath} with this (temporary) file using an atomic rename where
+   * supported, with a non-atomic replace-existing fallback. On Windows, first clears the DOS
+   * read-only attribute on {@code destFilePath} if set; OneDrive sets this bit on synced files
+   * as a sync-state signal, which otherwise causes the rename to fail with
+   * {@code ERROR_ACCESS_DENIED}.
+   * <p>
+   * The caller is responsible for deleting this file if this method throws.
+   *
+   * @param destFilePath the destination path to replace
+   * @throws IOException if the rename fails
+   */
+  public void replaceFileAtomically(FilePath destFilePath) throws IOException
+  {
+    destFilePath.clearReadOnlyOnWindows();
+
+    try
+    {
+      Files.move(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+    }
+    catch (AtomicMoveNotSupportedException e)
+    {
+      Files.move(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Saves the content of the given {@code CharSequence} to this file atomically and returns
+   * the MD5 checksum of the content.
+   * <p>
+   * The content is written to a sibling {@code .tmp} file first. After a successful write, the
+   * temp file is moved to this path using an atomic rename where supported, with a non-atomic
+   * replace-existing fallback. Writing to a temp file prevents cloud sync clients (e.g. OneDrive,
+   * Dropbox) from ever seeing a partial file. The MD5 checksum is calculated while writing.
+   *
+   * @param charSequence the {@code CharSequence} containing the content to be saved
+   * @param encoding the character set to use when writing
+   * @return the MD5 checksum of the saved content as a hexadecimal string
+   * @throws IOException if an I/O error occurs while writing to the file or performing the rename
+   */
+  public String saveCharSequenceAtomically(CharSequence charSequence, Charset encoding) throws IOException
+  {
+    int bufLen = 65536;
+    char[] charArray = new char[bufLen];
+
+    MessageDigest md = newMessageDigest();
+
+    FilePath tmpFilePath = getDirOnly().resolve(getNameOnly().toString() + ".tmp");
+
+    try
+    {
+      try (OutputStream os = Files.newOutputStream(tmpFilePath.toPath());
+           DigestOutputStream dos = new DigestOutputStream(os, md);
+           OutputStreamWriter writer = new OutputStreamWriter(dos, encoding))
+      {
+        for (int offsetIntoCS = 0; offsetIntoCS < charSequence.length(); offsetIntoCS += bufLen)
+        {
+          bufLen = Math.min(bufLen, charSequence.length() - offsetIntoCS);
+          charSequence.getChars(offsetIntoCS, offsetIntoCS + bufLen, charArray, 0);
+          writer.write(charArray, 0, bufLen);
+        }
+      }
+
+      tmpFilePath.replaceFileAtomically(this);
+    }
+    catch (IOException e)
+    {
+      FileDeletion.ofFile(tmpFilePath).nonInteractiveFailureOK().execute();
+      throw e;
+    }
+
+    return digestHexStr(md);
   }
 
 //---------------------------------------------------------------------------

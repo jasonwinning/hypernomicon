@@ -864,7 +864,7 @@ public abstract class AbstractHyperDB
         writeDatasetToXML(xmlList, this, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
 
         for (int ndx = 0; ndx < filenameList.size(); ndx++)
-          xmlChecksums.put(filenameList.get(ndx), saveStringBuilderToFile(xmlList.get(ndx), xmlPath(filenameList.get(ndx)), XML_FILES_CHARSET));
+          xmlChecksums.put(filenameList.get(ndx), xmlPath(filenameList.get(ndx)).saveCharSequenceAtomically(xmlList.get(ndx), XML_FILES_CHARSET));
       }
       catch (IOException | HDB_InternalError e)
       {
@@ -878,19 +878,29 @@ public abstract class AbstractHyperDB
 
     MessageDigest md = newMessageDigest();
 
-    try (OutputStream os = Files.newOutputStream(xmlPath(SETTINGS_FILE_NAME).toPath());
-         DigestOutputStream dos = new DigestOutputStream(os, md))
+    FilePath settingsFinalPath = xmlPath(SETTINGS_FILE_NAME),
+             settingsTmpPath   = xmlPath(SETTINGS_FILE_NAME + ".tmp");
+
+    try
     {
-      favorites.saveToPrefNode();
+      try (OutputStream os = Files.newOutputStream(settingsTmpPath.toPath());
+           DigestOutputStream dos = new DigestOutputStream(os, md))
+      {
+        favorites.saveToPrefNode();
 
-      prefs.put(PrefKey.SETTINGS_VERSION, getVersionNumberSavingAs(appVersionToMaxSettingsXMLVersion).toString());
+        prefs.put(PrefKey.SETTINGS_VERSION, getVersionNumberSavingAs(appVersionToMaxSettingsXMLVersion).toString());
 
-      prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
+        prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
-      prefs.exportSubtree(dos);  // Hardcoded to export in UTF-8
+        prefs.exportSubtree(dos);  // Hardcoded to export in UTF-8
+      }
+
+      settingsTmpPath.replaceFileAtomically(settingsFinalPath);
     }
     catch (IOException | BackingStoreException e)
     {
+      FileDeletion.ofFile(settingsTmpPath).nonInteractiveFailureOK().execute();
+
       errorPopup("An error occurred while attempting to save database options to " + SETTINGS_FILE_NAME +
                  ". Record data has been saved to XML files, however." + System.lineSeparator() + getThrowableMessage(e));
 

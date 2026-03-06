@@ -353,7 +353,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
     try
     {
-      saveStringBuilderToFile(json, db.xmlPath(BIB_FILE_NAME), XML_FILES_CHARSET);
+      db.xmlPath(BIB_FILE_NAME).saveCharSequenceAtomically(json, XML_FILES_CHARSET);
       savePrefs();
     }
     catch (IOException e)

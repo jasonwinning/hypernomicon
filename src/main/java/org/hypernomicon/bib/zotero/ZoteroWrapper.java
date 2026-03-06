@@ -433,7 +433,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
       :
         ZOTERO_TEMPLATE_FILE_NAME);
 
-      saveStringBuilderToFile(json, filePath, XML_FILES_CHARSET);
+      filePath.saveCharSequenceAtomically(json, XML_FILES_CHARSET);
     }
     catch (UnsupportedOperationException | IOException | ParseException | CancelledTaskException | HyperDataException e)
     {
