@@ -234,6 +234,7 @@ public abstract class AbstractHyperDB
   public long totalRecordCount()                                     { return accessors.values().stream().mapToLong(Collection::size).sum(); }
   public boolean bibLibraryIsLinked()                                { return bibLibrary != null; }
   public String bibLibraryUserFriendlyName()                         { return bibLibraryIsLinked() ? bibLibrary.getUserFriendlyName() : ""; }
+  public void setBibChecksum(String checksum)                        { xmlChecksums.put(BIB_FILE_NAME, checksum); }
   public Instant getCreationDate()                                   { return dbCreationDate; }
   public RecordType getSubjType(RelationType relType)                { return relationSets.get(relType).getSubjType(); }
   public RecordType getObjType(RelationType relType)                 { return relationSets.get(relType).getObjType(); }
@@ -892,6 +893,8 @@ public abstract class AbstractHyperDB
 
         prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
+        prefs.put(PrefKey.INTEGRITY_CHECKSUMS, buildIntegrityManifest());
+
         prefs.exportSubtree(dos);  // Hardcoded to export in UTF-8
       }
 
@@ -910,6 +913,95 @@ public abstract class AbstractHyperDB
     xmlChecksums.put(SETTINGS_FILE_NAME, digestHexStr(md));
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds the integrity manifest string from all current checksums except Settings.xml
+   * (which cannot validate itself). Format: {@code filename1:hex1;filename2:hex2;...}
+   * sorted alphabetically by filename.
+   */
+  private String buildIntegrityManifest()
+  {
+    return xmlChecksums.entrySet().stream()
+      .filter(entry -> (SETTINGS_FILE_NAME.equals(entry.getKey()) == false))
+      .sorted(Map.Entry.comparingByKey())
+      .map(entry -> entry.getKey() + ':' + entry.getValue())
+      .collect(joining(";"));
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Parses an integrity manifest string into a map of filename to expected checksum.
+   */
+  private static Map<String, String> parseIntegrityManifest(String manifest)
+  {
+    if (strNullOrBlank(manifest))
+      return Map.of();
+
+    Map<String, String> result = new HashMap<>();
+
+    for (String entry : manifest.split(";"))
+    {
+      int colonNdx = entry.indexOf(':');
+
+      if (colonNdx > 0)
+        result.put(entry.substring(0, colonNdx), entry.substring(colonNdx + 1));
+    }
+
+    return result;
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Compares the integrity manifest saved in Settings.xml against the checksums
+   * computed during load. Shows a warning if any files are out of sync.
+   */
+  private void validateIntegrityChecksums()
+  {
+    Map<String, String> manifest = parseIntegrityManifest(prefs.get(PrefKey.INTEGRITY_CHECKSUMS, ""));
+
+    if (manifest.isEmpty())
+    {
+      if (new VersionNumber(prefs.get(PrefKey.SETTINGS_VERSION, "")).compareTo(new VersionNumber(1, 6)) >= 0)
+        warningPopup("The integrity checksums manifest is missing from Settings.xml. Database file integrity cannot be verified.");
+
+      return;
+    }
+
+    List<String> mismatched = new ArrayList<>();
+
+    for (Entry<String, String> entry : manifest.entrySet())
+    {
+      String filename = entry.getKey(),
+             expected = entry.getValue(),
+             actual   = xmlChecksums.get(filename);
+
+      if ((actual != null) && (actual.equalsIgnoreCase(expected) == false))
+        mismatched.add(filename);
+    }
+
+    if (mismatched.isEmpty())
+      return;
+
+    boolean single = mismatched.size() == 1;
+
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(single ? "A database file appears" : "One or more database files appear")
+      .append(" to be out of sync. This can happen if the application ")
+      .append("was interrupted during a save.\n\nMismatched file")
+      .append(single ? "" : "s").append(":\n\n");
+
+    mismatched.forEach(name -> sb.append(name).append('\n'));
+
+    sb.append("\nIf ").append(single ? "this file was" : "these files were")
+      .append(" manually edited on purpose, you can disregard this warning.");
+
+    warningPopup(sb.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -977,9 +1069,7 @@ public abstract class AbstractHyperDB
     EnumMap<RecordType, VersionNumber> recordTypeToDataVersion = new EnumMap<>(RecordType.class);
     SetMultimap<Integer, Integer> workIDtoInvIDs = LinkedHashMultimap.create(); // For backwards compatibility with records XML version 1.4
 
-    final List<FilePath> xmlFileList = Stream.of(OTHER_FILE_NAME,  PERSON_FILE_NAME,   INSTITUTION_FILE_NAME, INVESTIGATION_FILE_NAME,
-                                                 DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
-                                                 TERM_FILE_NAME,   FILE_FILE_NAME,     NOTE_FILE_NAME,        HUB_FILE_NAME ).map(this::xmlPath).toList();
+    final List<FilePath> xmlFileList = recordXMLFileNames().map(this::xmlPath).toList();
 
     if (loadFromXMLFiles(xmlFileList, creatingNew, recordTypeToDataVersion, workIDtoInvIDs) == false)
     {
@@ -1023,6 +1113,8 @@ public abstract class AbstractHyperDB
       close(null);
       return false;
     }
+
+    validateIntegrityChecksums();
 
     // Backwards compatibility with records XML version 1.10
     if (ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtPositionVerdict, new VersionNumber(1))).lessThanOrEqualTo(new VersionNumber(1, 10)))
@@ -2580,6 +2672,13 @@ public abstract class AbstractHyperDB
     FILE_FILE_NAME = "Files.xml",
     NOTE_FILE_NAME = "Notes.xml",
     HUB_FILE_NAME = "Hubs.xml";
+
+  static Stream<String> recordXMLFileNames()
+  {
+    return Stream.of(OTHER_FILE_NAME,  PERSON_FILE_NAME,   INSTITUTION_FILE_NAME, INVESTIGATION_FILE_NAME,
+                     DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
+                     TERM_FILE_NAME,   FILE_FILE_NAME,     NOTE_FILE_NAME,        HUB_FILE_NAME);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

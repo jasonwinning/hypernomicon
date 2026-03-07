@@ -31,6 +31,7 @@ import java.io.*;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.security.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -715,10 +716,12 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
   private void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException
   {
     JsonObj jMainObj = null;
+    MessageDigest md = newMessageDigest();
 
-    try (InputStream in = Files.newInputStream(filePath.toPath()))
+    try (InputStream in = Files.newInputStream(filePath.toPath());
+         DigestInputStream dis = new DigestInputStream(in, md))
     {
-      jMainObj = parseJsonObj(new InputStreamReader(in, XML_FILES_CHARSET));
+      jMainObj = parseJsonObj(new InputStreamReader(dis, XML_FILES_CHARSET));
     }
     catch (FileNotFoundException | NoSuchFileException e)
     {
@@ -727,6 +730,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     if (jMainObj == null) return;
 
+    db.setBibChecksum(digestHexStr(md));
     lastSyncTime = getSyncInstantFromJsonStr(db.prefs.get(PrefKey.BIB_LAST_SYNC_TIME, ""));
 
     loadFromJSON(jMainObj);

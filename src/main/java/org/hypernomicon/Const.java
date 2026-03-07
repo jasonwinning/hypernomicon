@@ -38,7 +38,7 @@ public final class Const
   /**
    * Change this and the version in pom.xml to set the application version
    */
-  public static final VersionNumber appVersion = new VersionNumber(1, 33, 1);  // 1.33.1
+  public static final VersionNumber appVersion = new VersionNumber(1, 34);  // 1.34
 
   /**
    * This is the minimum version that the application version (or higher) is able to load
@@ -79,7 +79,8 @@ public final class Const
     Map.entry(new VersionNumber(1, 22, 1), new VersionNumber(1, 2)),
     Map.entry(new VersionNumber(1, 23, 1), new VersionNumber(1, 3)),
     Map.entry(new VersionNumber(1, 30, 3), new VersionNumber(1, 4)),
-    Map.entry(appVersion                 , new VersionNumber(1, 5))
+    Map.entry(new VersionNumber(1, 33, 1), new VersionNumber(1, 5)),
+    Map.entry(appVersion                 , new VersionNumber(1, 6))
   );
 
 //---------------------------------------------------------------------------
@@ -215,7 +216,9 @@ public final class Const
       XML_DIFF_EXECUTABLE_3 = "xmlDiffExecutable3",
       XML_DIFF_EXECUTABLE_4 = "xmlDiffExecutable4",
 
-      XML_DIFF_SELECTED_EXE_NUM = "xmlDiffSelectedExeNum";
+      XML_DIFF_SELECTED_EXE_NUM = "xmlDiffSelectedExeNum",
+
+      INTEGRITY_CHECKSUMS = "integrityChecksums";
 
     private PrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }

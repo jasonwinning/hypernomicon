@@ -33,6 +33,7 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.SplitString;
+import org.hypernomicon.util.StringUtil;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
@@ -411,7 +412,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
   private static void addAuthorsToList(List<FileNameAuthor> authors, String authorsStr, boolean isEditor, boolean isTrans)
   {
     new SplitString(authorsStr, ';').stream().map(String::strip)
-                                             .filter(str -> str.length() > 0)
+                                             .filter(StringUtil::strNotNullOrEmpty)
                                              .forEach(str -> authors.add(new FileNameAuthor(str, isEditor, isTrans)));
   }
 
