@@ -18,6 +18,7 @@
 package org.hypernomicon.testTools.xmlDiff;
 
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.AbstractHyperDB.*;
 import static org.hypernomicon.testTools.xmlDiff.XmlDiffApp.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -63,8 +64,6 @@ public final class XmlDiffCtrlr
   private final Stage stage;
 
   private static final Object LOCK = new Object();
-  private static final List<String> fileNames = List.of("Arguments.xml", "Debates.xml", "Files.xml", "Hubs.xml", "Institutions.xml", "Investigations.xml",
-                                                        "Notes.xml", "Other.xml", "People.xml", "Positions.xml", "Settings.xml", "Terms.xml", "Works.xml");
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -331,7 +330,7 @@ public final class XmlDiffCtrlr
 
   private static void processForFolder(String srcPathStr, String destPathStr) throws IOException
   {
-    for (String fileName : fileNames)
+    for (String fileName : streamToIterable(allXMLFileNames()))
     {
       List<String> originalLines = FileUtils.readLines(Path.of(srcPathStr, fileName).toFile(), StandardCharsets.UTF_8);
 

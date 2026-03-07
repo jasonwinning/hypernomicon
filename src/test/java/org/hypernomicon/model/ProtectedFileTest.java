@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model;
 
-import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.AbstractHyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,7 +33,7 @@ import org.hypernomicon.util.file.FilePath;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 //---------------------------------------------------------------------------
 
@@ -174,13 +174,7 @@ class ProtectedFileTest
 //---------------------------------------------------------------------------
 
   @ParameterizedTest
-  @ValueSource(strings =
-  {
-    "Settings.xml"      , "People.xml" , "Other.xml"    , "Institutions.xml",
-    "Investigations.xml", "Debates.xml", "Arguments.xml", "Positions.xml"   ,
-    "Works.xml"         , "Terms.xml"  , "Files.xml"    , "Notes.xml"       ,
-    "Hubs.xml"
-  })
+  @MethodSource("org.hypernomicon.model.AbstractHyperDB#allXMLFileNames")
   void xmlDataFiles_areProtected(String fileName)
   {
     FilePath xmlFile = db.xmlPath(fileName);
@@ -236,7 +230,7 @@ class ProtectedFileTest
   {
     // A file nested inside the XML directory (parent is a subdir of XML, not XML itself)
 
-    FilePath file = db.xmlPath().resolve("subdir", "Settings.xml");
+    FilePath file = db.xmlPath().resolve("subdir", SETTINGS_FILE_NAME);
 
     assertFalse(db.isProtectedFile(file, false),
       "File nested inside XML subdir should not be protected even if name matches");
@@ -249,7 +243,7 @@ class ProtectedFileTest
   {
     // Settings.xml placed directly in the root, not in XML dir
 
-    FilePath file = db.getRootPath().resolve("Settings.xml");
+    FilePath file = db.getRootPath().resolve(SETTINGS_FILE_NAME);
 
     assertFalse(db.isProtectedFile(file, false),
       "XML file name in root (not XML dir) should not be protected");

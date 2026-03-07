@@ -116,11 +116,11 @@ class NewDBTest
 
           String versionStr = prefs.get(PrefKey.SETTINGS_VERSION, "");
 
-          assertFalse(versionStr.isBlank(), "Settings version number not found in Settings.xml in new database template");
+          assertFalse(versionStr.isBlank(), "Settings version number not found in " + SETTINGS_FILE_NAME + " in new database template");
 
           VersionNumber settingsVersion = new VersionNumber(versionStr);
 
-          assertEquals(appVersionToMaxSettingsXMLVersion.get(appVersion), settingsVersion, "Settings version in Settings.xml in the new database template is not the most up to date settings version number.");
+          assertEquals(appVersionToMaxSettingsXMLVersion.get(appVersion), settingsVersion, "Settings version in " + SETTINGS_FILE_NAME + " in the new database template is not the most up to date settings version number.");
 
           manifestStr = prefs.get(PrefKey.INTEGRITY_CHECKSUMS, "");
         }
@@ -151,8 +151,8 @@ class NewDBTest
       fail("Error occurred while reading the template zip file: " + getThrowableMessage(e));
     }
 
-    assertNotNull(manifestStr, "Integrity checksums manifest not found in Settings.xml in new database template");
-    assertFalse(manifestStr.isBlank(), "Integrity checksums manifest is empty in Settings.xml in new database template");
+    assertNotNull(manifestStr, "Integrity checksums manifest not found in " + SETTINGS_FILE_NAME + " in new database template");
+    assertFalse(manifestStr.isBlank(), "Integrity checksums manifest is empty in " + SETTINGS_FILE_NAME + " in new database template");
 
     Map<String, String> manifest = parseManifest(manifestStr);
 

@@ -33,6 +33,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.*;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
@@ -912,9 +913,31 @@ public abstract class AbstractHyperDB
 
     xmlChecksums.put(SETTINGS_FILE_NAME, digestHexStr(md));
 
+    try
+    {
+      saveHdbFile(hdbFilePath);
+    }
+    catch (IOException e)
+    {
+      errorPopup("An error occurred while saving " + hdbFilePath.getNameOnly() + ": " + getThrowableMessage(e));
+    }
+
     return true;
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Writes the {@code .hdb} file with the relative path from the database root
+   * to Settings.xml, using the platform's native path separator.
+   */
+  public static void saveHdbFile(FilePath hdbFilePath) throws IOException
+  {
+    hdbFilePath.saveCharSequenceAtomically(new FilePath(DEFAULT_XML_PATH).resolve(SETTINGS_FILE_NAME).toString(), XML_FILES_CHARSET);
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
@@ -931,6 +954,7 @@ public abstract class AbstractHyperDB
       .collect(joining(";"));
   }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
@@ -955,6 +979,31 @@ public abstract class AbstractHyperDB
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Removes leftover {@code .tmp} files from the XML directory. These can be
+   * left behind if the process crashes during {@link FilePath#saveCharSequenceAtomically}.
+   */
+  private void cleanupOrphanedTempFiles()
+  {
+    Set<FilePath> tempFiles = new LinkedHashSet<>();
+
+    try (var stream = Files.newDirectoryStream(xmlPath().toPath(), "*.tmp"))
+    {
+      for (Path path : stream)
+        if (Files.isDirectory(path) == false)
+          tempFiles.add(new FilePath(path));
+    }
+    catch (IOException e) { return; }  // Best-effort cleanup
+
+    if (tempFiles.isEmpty()) return;
+
+    FileDeletion.ofFiles(tempFiles).nonInteractiveFailureOK().execute();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   /**
    * Compares the integrity manifest saved in Settings.xml against the checksums
@@ -967,7 +1016,7 @@ public abstract class AbstractHyperDB
     if (manifest.isEmpty())
     {
       if (new VersionNumber(prefs.get(PrefKey.SETTINGS_VERSION, "")).compareTo(new VersionNumber(1, 6)) >= 0)
-        warningPopup("The integrity checksums manifest is missing from Settings.xml. Database file integrity cannot be verified.");
+        warningPopup("The integrity checksums manifest is missing from " + SETTINGS_FILE_NAME + ". Database file integrity cannot be verified.");
 
       return;
     }
@@ -1068,6 +1117,8 @@ public abstract class AbstractHyperDB
     alreadyShowedUpgradeMsg = false;
     EnumMap<RecordType, VersionNumber> recordTypeToDataVersion = new EnumMap<>(RecordType.class);
     SetMultimap<Integer, Integer> workIDtoInvIDs = LinkedHashMultimap.create(); // For backwards compatibility with records XML version 1.4
+
+    cleanupOrphanedTempFiles();
 
     final List<FilePath> xmlFileList = recordXMLFileNames().map(this::xmlPath).toList();
 
@@ -1829,7 +1880,7 @@ public abstract class AbstractHyperDB
 
   private static final String recordsTagName = "records", versionAttr = "version";
 
-  public static VersionNumber getVersionNumberFromXML(XMLEventReader eventReader) throws XMLStreamException
+  static VersionNumber getVersionNumberFromXML(XMLEventReader eventReader) throws XMLStreamException
   {
     while (eventReader.hasNext())
     {
@@ -2673,11 +2724,18 @@ public abstract class AbstractHyperDB
     NOTE_FILE_NAME = "Notes.xml",
     HUB_FILE_NAME = "Hubs.xml";
 
+//---------------------------------------------------------------------------
+
   static Stream<String> recordXMLFileNames()
   {
     return Stream.of(OTHER_FILE_NAME,  PERSON_FILE_NAME,   INSTITUTION_FILE_NAME, INVESTIGATION_FILE_NAME,
                      DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
                      TERM_FILE_NAME,   FILE_FILE_NAME,     NOTE_FILE_NAME,        HUB_FILE_NAME);
+  }
+
+  public static Stream<String> allXMLFileNames()
+  {
+    return Stream.concat(recordXMLFileNames(), Stream.of(SETTINGS_FILE_NAME));
   }
 
 //---------------------------------------------------------------------------
