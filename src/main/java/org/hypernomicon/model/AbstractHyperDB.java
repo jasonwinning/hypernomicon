@@ -1007,18 +1007,20 @@ public abstract class AbstractHyperDB
 
   /**
    * Compares the integrity manifest saved in Settings.xml against the checksums
-   * computed during load. Shows a warning if any files are out of sync.
+   * computed during load. Prompts the user if any files are out of sync.
+   * @return true if loading should continue, false if the user chose to abort
    */
-  private void validateIntegrityChecksums()
+  private boolean validateIntegrityChecksums()
   {
     Map<String, String> manifest = parseIntegrityManifest(prefs.get(PrefKey.INTEGRITY_CHECKSUMS, ""));
 
     if (manifest.isEmpty())
     {
       if (new VersionNumber(prefs.get(PrefKey.SETTINGS_VERSION, "")).compareTo(new VersionNumber(1, 6)) >= 0)
-        warningPopup("The integrity checksums manifest is missing from " + SETTINGS_FILE_NAME + ". Database file integrity cannot be verified.");
+        return confirmDialog("The integrity checksums manifest is missing from " + SETTINGS_FILE_NAME
+          + ". Database file integrity cannot be verified.\n\nContinue loading?", "Continue", "Abort", false);
 
-      return;
+      return true;
     }
 
     List<String> mismatched = new ArrayList<>();
@@ -1034,7 +1036,7 @@ public abstract class AbstractHyperDB
     }
 
     if (mismatched.isEmpty())
-      return;
+      return true;
 
     boolean single = mismatched.size() == 1;
 
@@ -1048,9 +1050,9 @@ public abstract class AbstractHyperDB
     mismatched.forEach(name -> sb.append(name).append('\n'));
 
     sb.append("\nIf ").append(single ? "this file was" : "these files were")
-      .append(" manually edited on purpose, you can disregard this warning.");
+      .append(" manually edited on purpose, you can disregard this warning.\n\nContinue loading?");
 
-    warningPopup(sb.toString());
+    return confirmDialog(sb.toString(), "Continue", "Abort", false);
   }
 
 //---------------------------------------------------------------------------
@@ -1165,7 +1167,11 @@ public abstract class AbstractHyperDB
       return false;
     }
 
-    validateIntegrityChecksums();
+    if (validateIntegrityChecksums() == false)
+    {
+      close(null);
+      return false;
+    }
 
     // Backwards compatibility with records XML version 1.10
     if (ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtPositionVerdict, new VersionNumber(1))).lessThanOrEqualTo(new VersionNumber(1, 10)))

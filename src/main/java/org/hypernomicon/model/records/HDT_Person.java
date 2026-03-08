@@ -17,6 +17,7 @@
 
 package org.hypernomicon.model.records;
 
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
@@ -196,7 +197,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
         return null;
 
     if (keys.length() > 0) keys.append("; ");
-    keys.append(binding.getUserText());
+    keys.append(binding.toString());
 
     return null;
   }
@@ -376,7 +377,9 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
     last = getSearchKeyComponents(first, last, nameList, initialList, nickNames);
 
-    keySet.add('^' + last, false);
+    keySet.add((db.prefs.getBoolean(PrefKey.PERSON_SK_START_ANCHOR, true ) ? "^" : "")
+             + last
+             + (db.prefs.getBoolean(PrefKey.PERSON_SK_END_ANCHOR  , false) ? "$" : ""), false);
 
     if (nameList.size() > 0)
     {

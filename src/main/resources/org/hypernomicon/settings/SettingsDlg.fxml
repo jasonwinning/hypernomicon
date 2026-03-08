@@ -267,6 +267,10 @@
                       text="Don't expand key works when editing record description and there are no key works yet"/>
             <CheckBox fx:id="chkTermRequireSearchKey" mnemonicParsing="false" prefHeight="25.0"
                       text="Require Terms/Concepts to be reachable by search keys"/>
+            <CheckBox fx:id="chkPersonSKStartAnchor" mnemonicParsing="false" prefHeight="25.0"
+                      text="Add ^ (start-of-word anchor) to surname in auto-generated person search keys"/>
+            <CheckBox fx:id="chkPersonSKEndAnchor" mnemonicParsing="false" prefHeight="25.0"
+                      text="Add $ (end-of-word anchor) to surname in auto-generated person search keys"/>
           </VBox>
         </AnchorPane>
       </Tab>

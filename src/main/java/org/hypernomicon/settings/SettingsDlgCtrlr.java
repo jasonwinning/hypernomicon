@@ -85,7 +85,7 @@ public class SettingsDlgCtrlr extends ModalDialog
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnExtFilesHelp, btnReEstablishAccess;
   @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkDefaultChapterWorkType, chkLinuxWorkaround,
-                         chkCompDontExpandKeyWorks, chkDBDontExpandKeyWorks, chkTermRequireSearchKey;
+                         chkCompDontExpandKeyWorks, chkDBDontExpandKeyWorks, chkTermRequireSearchKey, chkPersonSKStartAnchor, chkPersonSKEndAnchor;
   @FXML private ComboBox<HyperTableCell> cbDefaultChapterWorkType;
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
@@ -283,6 +283,8 @@ public class SettingsDlgCtrlr extends ModalDialog
       initCheckBox(db.prefs, chkUseSentenceCase     , PrefKey.SENTENCE_CASE            , false);
       initCheckBox(db.prefs, chkDBDontExpandKeyWorks, PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false);
       initCheckBox(db.prefs, chkTermRequireSearchKey, PrefKey.TERM_REQUIRE_SEARCH_KEY  , true );
+      initCheckBox(db.prefs, chkPersonSKStartAnchor , PrefKey.PERSON_SK_START_ANCHOR   , true );
+      initCheckBox(db.prefs, chkPersonSKEndAnchor   , PrefKey.PERSON_SK_END_ANCHOR     , false);
       initDefaultChapterWorkType();
     }
 
