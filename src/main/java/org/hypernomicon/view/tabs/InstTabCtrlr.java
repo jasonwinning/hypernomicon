@@ -225,13 +225,15 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       row.setCellValue(3, subInst, subInst.getURL());
     });
 
+    // For faculties and departments, find people who are already associated with
+    // curInst but also appear under sibling institutions. This adds the sibling
+    // to their institution set so the persons table shows cross-listings.
+
     if (((curInst.instType.getID() == FACULTY_INST_TYPE_ID) || (curInst.instType.getID() == DEPARTMENT_INST_TYPE_ID)) && curInst.parentInst.isNotNull())
     {
-      curInst.parentInst.get().subInstitutions.forEach(sibInst ->
-      {
-        if (sibInst != curInst)
-          addSiblingInsts(sibInst, sibInst, peopleMap);
-      });
+      curInst.parentInst.get().subInstitutions.stream()
+        .filter (siblingInst -> siblingInst != curInst)
+        .forEach(siblingInst -> findCrossListings(siblingInst, siblingInst, peopleMap));
     }
 
     htPersons.buildRows(peopleMap.keySet(), (row, person) ->
@@ -264,24 +266,50 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addSiblingInsts(HDT_Institution sibInst, HDT_Institution cousinInst, Map<HDT_Person, Set<HDT_Institution>> peopleMap)
+  /**
+   * Recursively walks {@code descendantInst} and its sub-institutions,
+   * looking for persons who already appear in {@code peopleMap} (i.e.,
+   * persons associated with the current institution). For each such
+   * person, {@code siblingInst} is added to their institution set so
+   * the persons table reflects the cross-listing.
+   *
+   * @param siblingInst    the sibling institution to record as a cross-listing
+   * @param descendantInst the institution (or sub-institution) currently being visited
+   * @param peopleMap      map from person to their set of associated institutions;
+   *                       only persons already in this map are considered
+   */
+  private static void findCrossListings(HDT_Institution siblingInst, HDT_Institution descendantInst, Map<HDT_Person, Set<HDT_Institution>> peopleMap)
   {
-    cousinInst.subInstitutions.forEach(subInst -> addSiblingInsts(sibInst, subInst, peopleMap));
+    descendantInst.subInstitutions.forEach(subInst -> findCrossListings(siblingInst, subInst, peopleMap));
 
-    cousinInst.persons.stream().filter(peopleMap::containsKey).forEach(person -> peopleMap.get(person).add(sibInst));
+    descendantInst.persons.stream().filter(peopleMap::containsKey).forEach(person -> peopleMap.get(person).add(siblingInst));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addPersonsFromInst(HDT_Institution nearestChildInst, HDT_Institution inst, Map<HDT_Person, Set<HDT_Institution>> peopleMap)
+  /**
+   * Recursively walks {@code descendantInst} and its sub-institutions,
+   * adding each person to {@code peopleMap} keyed to their nearest
+   * sub-institution under {@code curInst}. On the initial call both
+   * parameters are {@code curInst}; as recursion descends, the first
+   * direct child reached becomes the {@code nearestSubInst} for all
+   * deeper levels, so persons in deeply nested institutions are
+   * attributed to the closest sub-institution visible in the table.
+   *
+   * @param nearestSubInst  the nearest sub-institution of {@code curInst}
+   *                        on the path to {@code descendantInst}, or
+   *                        {@code curInst} itself at the top level
+   * @param descendantInst  the institution currently being visited
+   * @param peopleMap       accumulator mapping each person to the set of
+   *                        institutions they should be listed under
+   */
+  private void addPersonsFromInst(HDT_Institution nearestSubInst, HDT_Institution descendantInst, Map<HDT_Person, Set<HDT_Institution>> peopleMap)
   {
-    inst.subInstitutions.forEach(nearestChildInst == curInst ?
-      subInst -> addPersonsFromInst(subInst, subInst, peopleMap)
-    :
-      subInst -> addPersonsFromInst(nearestChildInst, subInst, peopleMap));
+    descendantInst.subInstitutions.forEach(subInst ->
+      addPersonsFromInst(nearestSubInst == curInst ? subInst : nearestSubInst, subInst, peopleMap));
 
-    inst.persons.forEach(person -> peopleMap.computeIfAbsent(person, _ -> new HashSet<>()).add(nearestChildInst));
+    descendantInst.persons.forEach(person -> peopleMap.computeIfAbsent(person, _ -> new HashSet<>()).add(nearestSubInst));
   }
 
 //---------------------------------------------------------------------------
@@ -368,6 +396,31 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     curInst.instType.setID(hcbType.selectedID());
     curInst.parentInst.setID(hcbParentInst.selectedID());
 
+    // First pass: identify and remove blank sub-institutions from the table, then delete them.
+    // This prevents stale rows from persisting in htSubInst after deletion.
+
+    List<HDT_Institution> toDelete = new ArrayList<>();
+
+    htSubInst.removeRowsIf(row ->
+    {
+      int subInstID = row.getID(0);
+
+      if (subInstID < 1) return false;
+
+      HDT_Institution subInst = db.institutions.getByID(subInstID);
+
+      if (HDT_Record.isEmpty(subInst, true)) return true;
+
+      return row.getText(0) .isEmpty() &&
+             row.getText(3) .isEmpty() &&
+             subInst.persons.isEmpty() &&
+             toDelete.add(subInst);       // always returns true; collects the record as a side effect
+    });
+
+    toDelete.forEach(db::deleteRecord);
+
+    // Second pass: update/create the remaining sub-institutions
+
     htSubInst.dataRows().forEach(row ->
     {
       int subInstID = row.getID(0);
@@ -380,11 +433,6 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         subInst.parentInst.set(curInst);
         subInst.instType.setID(row.getID(1));
         subInst.setURL(row.getText(3));
-
-        if (subInst.name()  .isEmpty() &&
-            subInst.getURL().isEmpty() &&
-            subInst.persons .isEmpty())
-          db.deleteRecord(subInst);
       }
     });
 

@@ -19,9 +19,9 @@ package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -48,6 +48,8 @@ import org.hypernomicon.util.prefs.XmlSupport;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import javafx.scene.control.Alert.AlertType;
 
@@ -185,12 +187,14 @@ class NewDBTest
       return xml.replace("</records>", "<!-- modified -->\n</records>").getBytes(XML_FILES_CHARSET);
     });
 
+    PopupRobot.setDefaultResponse(mrYes);  // Continue loading
+
     db.closeAndOpen();
 
-    assertEquals(1, PopupRobot.getInvocationCount(), "Expected exactly one warning popup for " + targetFileName);
-    assertEquals(AlertType.WARNING, PopupRobot.getLastType(), "Expected a warning popup for " + targetFileName);
-    assertTrue(PopupRobot.getLastMessage().contains(targetFileName), "Warning should mention " + targetFileName);
-    assertTrue(PopupRobot.getLastMessage().contains("A database file appears"), "Warning should use singular form for single mismatch");
+    assertEquals(1, PopupRobot.getInvocationCount(), "Expected exactly one confirmation popup for " + targetFileName);
+    assertEquals(AlertType.CONFIRMATION, PopupRobot.getLastType(), "Expected a confirmation popup for " + targetFileName);
+    assertTrue(PopupRobot.getLastMessage().contains(targetFileName), "Message should mention " + targetFileName);
+    assertTrue(PopupRobot.getLastMessage().contains("A database file appears"), "Message should use singular form for single mismatch");
   }
 
 //---------------------------------------------------------------------------
@@ -208,13 +212,15 @@ class NewDBTest
     db.setRecordsLoadFilter("People.xml", filter);
     db.setRecordsLoadFilter("Works.xml", filter);
 
+    PopupRobot.setDefaultResponse(mrYes);  // Continue loading
+
     db.closeAndOpen();
 
-    assertEquals(1, PopupRobot.getInvocationCount(), "Expected exactly one warning popup for multiple mismatches");
-    assertEquals(AlertType.WARNING, PopupRobot.getLastType());
-    assertTrue(PopupRobot.getLastMessage().contains("People.xml"), "Warning should mention People.xml");
-    assertTrue(PopupRobot.getLastMessage().contains("Works.xml"), "Warning should mention Works.xml");
-    assertTrue(PopupRobot.getLastMessage().contains("One or more database files appear"), "Warning should use plural form for multiple mismatches");
+    assertEquals(1, PopupRobot.getInvocationCount(), "Expected exactly one confirmation popup for multiple mismatches");
+    assertEquals(AlertType.CONFIRMATION, PopupRobot.getLastType());
+    assertTrue(PopupRobot.getLastMessage().contains("People.xml"), "Message should mention People.xml");
+    assertTrue(PopupRobot.getLastMessage().contains("Works.xml"), "Message should mention Works.xml");
+    assertTrue(PopupRobot.getLastMessage().contains("One or more database files appear"), "Message should use plural form for multiple mismatches");
   }
 
 //---------------------------------------------------------------------------
@@ -229,11 +235,13 @@ class NewDBTest
       return xml.replaceAll("\\s*<entry key=\"integrityChecksums\"[^/]*/>\n?", "\n").getBytes(XML_FILES_CHARSET);
     });
 
+    PopupRobot.setDefaultResponse(mrYes);  // Continue loading
+
     db.closeAndOpen();
 
-    assertEquals(1, PopupRobot.getInvocationCount(), "Expected exactly one warning popup for missing manifest");
-    assertEquals(AlertType.WARNING, PopupRobot.getLastType(), "Expected a warning popup for missing manifest");
-    assertTrue(PopupRobot.getLastMessage().contains("integrity checksums manifest is missing"), "Warning should mention missing manifest");
+    assertEquals(1, PopupRobot.getInvocationCount(), "Expected exactly one confirmation popup for missing manifest");
+    assertEquals(AlertType.CONFIRMATION, PopupRobot.getLastType(), "Expected a confirmation popup for missing manifest");
+    assertTrue(PopupRobot.getLastMessage().contains("integrity checksums manifest is missing"), "Message should mention missing manifest");
   }
 
 //---------------------------------------------------------------------------
