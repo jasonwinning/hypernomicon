@@ -173,7 +173,7 @@ public final class App extends Application
     {
       if (prefs == null) throw new HDB_UnrecoverableInternalError(37546);
 
-      FilePath newLogFilePath = new FilePath(prefs.get(PrefKey.LOG_PATH, null));
+      FilePath newLogFilePath = FilePath.of(prefs.get(PrefKey.LOG_PATH, null));
 
       if (FilePath.isEmpty(newLogFilePath) == false)
         setLogPath(newLogFilePath);
@@ -225,7 +225,7 @@ public final class App extends Application
 
     try
     {
-      FilePath dbPath = (db == null) || db.isOffline() ? new FilePath("") : db.getRootPath();
+      FilePath dbPath = (db == null) || db.isOffline() ? FilePath.of("") : db.getRootPath();
 
       // Clear log if this is the first instance
       if (InterProcClient.updateRunningInstancesFile(dbPath).size() == 1)
@@ -318,8 +318,8 @@ public final class App extends Application
       String srcPath = prefs.get(PrefKey.SOURCE_PATH, "");
       if (srcPath.isBlank() == false)
       {
-        FilePath hdbPath = new FilePath(srcPath).resolve(srcName);
-        if (hdbPath.exists() && (InterProcClient.folderInUseByAnotherInstance(new FilePath(srcPath)) == false))
+        FilePath hdbPath = FilePath.of(srcPath).resolve(srcName);
+        if (hdbPath.exists() && (InterProcClient.folderInUseByAnotherInstance(FilePath.of(srcPath)) == false))
           hdbExists = true;
       }
     }
@@ -328,7 +328,7 @@ public final class App extends Application
 
     if (args.size() > 0)
     {
-      FilePath filePath = new FilePath(args.getFirst());
+      FilePath filePath = FilePath.of(args.getFirst());
 
       if ("hdb".equalsIgnoreCase(filePath.getExtensionOnly()))
       {

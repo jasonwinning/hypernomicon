@@ -453,7 +453,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     btnPaste.setOnAction(event ->
     {
-      FilePath filePath = new FilePath(getClipboardText(true));
+      FilePath filePath = FilePath.of(getClipboardText(true));
       if (filePath.exists())
         useChosenFile(filePath, null);
     });

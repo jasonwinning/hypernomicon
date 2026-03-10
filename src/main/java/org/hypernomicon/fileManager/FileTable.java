@@ -198,7 +198,7 @@ class FileTable extends DragNDropContainer<FileRow>
     {
       for (Path entry: stream)
       {
-        FilePath filePath = new FilePath(entry);
+        FilePath filePath = FilePath.of(entry);
 
         Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
         boolean isDir = filePath.isDirectory();

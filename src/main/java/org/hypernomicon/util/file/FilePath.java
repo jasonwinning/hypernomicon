@@ -60,9 +60,33 @@ public class FilePath implements Comparable<FilePath>
 
 //---------------------------------------------------------------------------
 
-  public FilePath(File file)      { innerVal = new InnerFilePath(file); }
-  public FilePath(Path path)      { innerVal = new InnerFilePath(path); }
-  public FilePath(String pathStr) { innerVal = new InnerFilePath(pathStr); }
+  FilePath(File file)      { innerVal = new InnerFilePath(file); }
+  FilePath(Path path)      { innerVal = new InnerFilePath(path); }
+  FilePath(String pathStr) { innerVal = new InnerFilePath(pathStr); }
+
+//---------------------------------------------------------------------------
+
+  public static FilePath of(Path path)
+  {
+    if (path == null) return null;
+
+    return new FilePath(path);
+  }
+
+  /** @see #of(Path) */
+  public static FilePath of(File file)
+  {
+    return (file == null) ? null : of(file.toPath());
+  }
+
+  /** @see #of(Path) */
+  public static FilePath of(String str)
+  {
+    if (str == null) return null;
+    if (str.isBlank()) return new FilePath(str);
+
+    return of(Paths.get(str));
+  }
 
 //---------------------------------------------------------------------------
 
@@ -292,7 +316,7 @@ public class FilePath implements Comparable<FilePath>
       {
         @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
         {
-          set.add(new FilePath(file));
+          set.add(FilePath.of(file));
           return FileVisitResult.CONTINUE;
         }
 
@@ -303,7 +327,7 @@ public class FilePath implements Comparable<FilePath>
 
         @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
         {
-          set.add(new FilePath(dir));
+          set.add(FilePath.of(dir));
           return FileVisitResult.CONTINUE;
         }
       });
@@ -544,13 +568,13 @@ public class FilePath implements Comparable<FilePath>
       {
         @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
         {
-          paths.add(new FilePath(file));
+          paths.add(FilePath.of(file));
           return FileVisitResult.CONTINUE;
         }
 
         @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
         {
-          paths.add(new FilePath(dir));
+          paths.add(FilePath.of(dir));
           return FileVisitResult.CONTINUE;
         }
 
@@ -670,7 +694,7 @@ public class FilePath implements Comparable<FilePath>
     {
       @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
       {
-        if (new FilePath(file).isDirectory() == false)
+        if (FilePath.of(file).isDirectory() == false)
           hasFiles.setTrue();
 
         return FileVisitResult.CONTINUE;

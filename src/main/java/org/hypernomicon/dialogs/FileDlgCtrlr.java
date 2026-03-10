@@ -342,7 +342,7 @@ public class FileDlgCtrlr extends ModalDialog
 
   @FXML private void btnExploreClick()
   {
-    launchFile(new FilePath(tfNewPath.getText()));
+    launchFile(FilePath.of(tfNewPath.getText()));
   }
 
 //---------------------------------------------------------------------------
@@ -352,7 +352,7 @@ public class FileDlgCtrlr extends ModalDialog
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    FilePath chosenFilePath = new FilePath(tfNewPath.getText());
+    FilePath chosenFilePath = FilePath.of(tfNewPath.getText());
 
     dirChooser.setTitle("Select new location");
 
@@ -401,8 +401,8 @@ public class FileDlgCtrlr extends ModalDialog
 
     // check to see if destination file name currently points to a file in the database
 
-    FilePath fileName = chkDontChangeFilename.isSelected() ? srcFilePath.getNameOnly() : new FilePath(tfFileName.getText()),
-             destFilePath = rbNeither.isSelected() ? srcFilePath.getDirOnly().resolve(fileName) : new FilePath(tfNewPath.getText()).resolve(fileName);
+    FilePath fileName = chkDontChangeFilename.isSelected() ? srcFilePath.getNameOnly() : FilePath.of(tfFileName.getText()),
+             destFilePath = rbNeither.isSelected() ? srcFilePath.getDirOnly().resolve(fileName) : FilePath.of(tfNewPath.getText()).resolve(fileName);
 
     HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(destFilePath);
 

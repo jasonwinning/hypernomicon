@@ -41,7 +41,7 @@ public class AppInstance
   {
     this.id = id;
     this.portNum = portNum;
-    this.dbPath = FilePath.isEmpty(dbPath) ? new FilePath("") : dbPath;
+    this.dbPath = FilePath.isEmpty(dbPath) ? FilePath.of("") : dbPath;
   }
 
   String getID()       { return id; }
@@ -66,7 +66,7 @@ public class AppInstance
 
     String id = splitStr.next();
     int portNum = parseInt(splitStr.next(), -1);
-    FilePath dbPath = new FilePath(splitStr.next());
+    FilePath dbPath = FilePath.of(splitStr.next());
 
     return strNullOrBlank(id) || (portNum < 1) ? null : new AppInstance(id, portNum, dbPath);
   }

@@ -529,7 +529,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     EventHandler<ActionEvent> handler = event ->
     {
       if (strNotNullOrEmpty(tfURL.getText()) && (tfURL.getText().charAt(0) != '('))
-        launchFile(new FilePath(tfURL.getText()));
+        launchFile(FilePath.of(tfURL.getText()));
     };
 
     btnFolder.setOnAction(handler);
@@ -538,7 +538,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     addFolderMenuItem("Show in file manager", event ->
     {
       if (strNotNullOrEmpty(tfURL.getText()) && (tfURL.getText().charAt(0) != '('))
-        FileManager.show(new FilePath(tfURL.getText()));
+        FileManager.show(FilePath.of(tfURL.getText()));
     });
 
     setToolTip(lblSearchKey, "Regenerate search key");
@@ -1153,7 +1153,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     List<File> files = showOpenMultipleDialog(fileChooser);
     if (collEmpty(files)) return;
 
-    FilePathSet filePaths = files.stream().map(FilePath::new).collect(Collectors.toCollection(FilePathSet::new));
+    FilePathSet filePaths = files.stream().map(FilePath::of).collect(Collectors.toCollection(FilePathSet::new));
 
     for (FilePath filePath : filePaths)
     {
@@ -1920,7 +1920,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (collEmpty(files))
       return false;
 
-    FilePath filePath = new FilePath(files.getFirst());
+    FilePath filePath = FilePath.of(files.getFirst());
     if (db.getRootPath().contains(filePath))
       return false;
 

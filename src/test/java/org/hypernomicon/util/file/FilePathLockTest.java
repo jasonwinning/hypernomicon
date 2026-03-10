@@ -77,7 +77,7 @@ class FilePathLockTest
   @Test
   void canObtainLock_nonExistentPath_returnsTrue() throws IOException
   {
-    FilePath nonExistent = new FilePath(tempDir.resolve("does_not_exist.txt"));
+    FilePath nonExistent = FilePath.of(tempDir.resolve("does_not_exist.txt"));
 
     assertTrue(nonExistent.canObtainLock());
   }
@@ -91,7 +91,7 @@ class FilePathLockTest
 
     Path file = Files.createFile(tempDir.resolve("unlocked.txt"));
 
-    assertTrue(new FilePath(file).canObtainLock());
+    assertTrue(FilePath.of(file).canObtainLock());
   }
 
 //---------------------------------------------------------------------------
@@ -107,7 +107,7 @@ class FilePathLockTest
     try
     {
       assertTrue(javaFile.setReadOnly(), "Failed to set file read-only");
-      assertTrue(new FilePath(file).canObtainLock());
+      assertTrue(FilePath.of(file).canObtainLock());
     }
     finally
     {
@@ -124,7 +124,7 @@ class FilePathLockTest
 
     Path dir = Files.createDirectory(tempDir.resolve("unlocked_dir"));
 
-    assertTrue(new FilePath(dir).canObtainLock());
+    assertTrue(FilePath.of(dir).canObtainLock());
   }
 
 //---------------------------------------------------------------------------
@@ -135,7 +135,7 @@ class FilePathLockTest
     assumeTrue(IS_OS_WINDOWS, "Lock checking only applies on Windows");
 
     Path dir = Files.createDirectory(tempDir.resolve("probe_test_dir"));
-    FilePath filePath = new FilePath(dir);
+    FilePath filePath = FilePath.of(dir);
 
     assertTrue(filePath.canObtainLock());
 
@@ -158,7 +158,7 @@ class FilePathLockTest
 
     Path file = Files.writeString(tempDir.resolve("posix_file.txt"), "data");
 
-    assertTrue(new FilePath(file).canObtainLock());
+    assertTrue(FilePath.of(file).canObtainLock());
   }
 
 //---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ class FilePathLockTest
   {
     assumeFalse(IS_OS_WINDOWS, "Test only runs on POSIX systems");
 
-    assertNull(new FilePath(tempDir).findLockedFileInDir());
+    assertNull(FilePath.of(tempDir).findLockedFileInDir());
   }
 
 //---------------------------------------------------------------------------
@@ -183,7 +183,7 @@ class FilePathLockTest
 
     Path dir = Files.createDirectory(tempDir.resolve("empty_dir"));
 
-    assertNull(new FilePath(dir).findLockedFileInDir());
+    assertNull(FilePath.of(dir).findLockedFileInDir());
   }
 
 //---------------------------------------------------------------------------
@@ -197,7 +197,7 @@ class FilePathLockTest
     Files.writeString(dir.resolve("a.txt"), "data");
     Files.writeString(dir.resolve("b.txt"), "data");
 
-    assertNull(new FilePath(dir).findLockedFileInDir());
+    assertNull(FilePath.of(dir).findLockedFileInDir());
   }
 
 //---------------------------------------------------------------------------
@@ -212,7 +212,7 @@ class FilePathLockTest
     Files.writeString(sub.resolve("deep.txt"), "data");
     Files.writeString(dir.resolve("top.txt"), "data");
 
-    assertNull(new FilePath(dir).findLockedFileInDir());
+    assertNull(FilePath.of(dir).findLockedFileInDir());
   }
 
 //---------------------------------------------------------------------------
@@ -225,7 +225,7 @@ class FilePathLockTest
   {
     assumeFalse(IS_OS_WINDOWS, "Test only runs on POSIX systems");
 
-    assertFalse(new FilePath(tempDir).anyOpenFilesInDir());
+    assertFalse(FilePath.of(tempDir).anyOpenFilesInDir());
   }
 
 //---------------------------------------------------------------------------
@@ -237,7 +237,7 @@ class FilePathLockTest
 
     Path dir = Files.createDirectory(tempDir.resolve("empty_dir"));
 
-    assertFalse(new FilePath(dir).anyOpenFilesInDir());
+    assertFalse(FilePath.of(dir).anyOpenFilesInDir());
     assertNull(PopupRobot.getLastMessage(), "No popup expected for unlocked directory");
   }
 
@@ -252,7 +252,7 @@ class FilePathLockTest
     Files.writeString(dir.resolve("a.txt"), "data");
     Files.writeString(dir.resolve("b.txt"), "data");
 
-    assertFalse(new FilePath(dir).anyOpenFilesInDir());
+    assertFalse(FilePath.of(dir).anyOpenFilesInDir());
     assertNull(PopupRobot.getLastMessage(), "No popup expected for unlocked files");
   }
 
@@ -268,7 +268,7 @@ class FilePathLockTest
     Files.writeString(sub.resolve("deep.txt"), "data");
     Files.writeString(dir.resolve("top.txt"), "data");
 
-    assertFalse(new FilePath(dir).anyOpenFilesInDir());
+    assertFalse(FilePath.of(dir).anyOpenFilesInDir());
     assertNull(PopupRobot.getLastMessage(), "No popup expected for unlocked nested tree");
   }
 

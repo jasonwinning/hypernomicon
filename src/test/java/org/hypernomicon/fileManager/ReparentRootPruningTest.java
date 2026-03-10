@@ -181,7 +181,7 @@ class ReparentRootPruningTest
    */
   private FilePath p(String relativePath)
   {
-    return new FilePath(tempDir.resolve(relativePath));
+    return FilePath.of(tempDir.resolve(relativePath));
   }
 
 //---------------------------------------------------------------------------

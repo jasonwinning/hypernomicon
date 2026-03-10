@@ -96,7 +96,7 @@ public final class FileDeletionTestRunner
       return;
     }
 
-    FilePath logFile = new FilePath(app.prefs.get(PrefKey.LOG_PATH, ""));
+    FilePath logFile = FilePath.of(app.prefs.get(PrefKey.LOG_PATH, ""));
 
     if (FilePath.isEmpty(logFile) || (logFile.exists() == false))
     {

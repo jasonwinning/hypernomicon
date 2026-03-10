@@ -49,7 +49,7 @@ public final class InterProcClient
   static final String UPDATE_CMD = "update";
 
   private static int portNum = -1;
-  private static FilePath dbPath = new FilePath("");
+  private static FilePath dbPath = FilePath.of("");
   private static InterProcDaemon daemon = null;
 
 //---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ public final class InterProcClient
   {
     Map<String, AppInstance> idToInstance = new HashMap<>();
 
-    FilePath filePath = tempDir().resolve(new FilePath(tempFileName));
+    FilePath filePath = tempDir().resolve(FilePath.of(tempFileName));
     if (filePath.exists() == false) return idToInstance;
 
     List<String> lines = null;
@@ -96,7 +96,7 @@ public final class InterProcClient
 
   private static void writeToFile(Map<String, AppInstance> idToInstance)
   {
-    FilePath filePath = tempDir().resolve(new FilePath(tempFileName));
+    FilePath filePath = tempDir().resolve(FilePath.of(tempFileName));
 
     startDaemonIfNotStartedYet();
 
@@ -161,7 +161,7 @@ public final class InterProcClient
 
   public static Map<String, AppInstance> updateRunningInstancesFile(FilePath newDbPath)
   {
-    dbPath = FilePath.isEmpty(newDbPath) ? new FilePath("") : newDbPath;
+    dbPath = FilePath.isEmpty(newDbPath) ? FilePath.of("") : newDbPath;
     return updateRunningInstancesFile();
   }
 

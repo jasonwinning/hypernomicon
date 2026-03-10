@@ -266,9 +266,9 @@ public final class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath   showDirDialog         (DirectoryChooser chooser) { return nullSwitch(showDialog(chooser, chooser::showDialog            ), null, FilePath::new); }
-  public FilePath   showOpenDialog        (FileChooser      chooser) { return nullSwitch(showDialog(chooser, chooser::showOpenDialog        ), null, FilePath::new); }
-  public FilePath   showSaveDialog        (FileChooser      chooser) { return nullSwitch(showDialog(chooser, chooser::showSaveDialog        ), null, FilePath::new); }
+  public FilePath   showDirDialog         (DirectoryChooser chooser) { return nullSwitch(showDialog(chooser, chooser::showDialog            ), null, FilePath::of); }
+  public FilePath   showOpenDialog        (FileChooser      chooser) { return nullSwitch(showDialog(chooser, chooser::showOpenDialog        ), null, FilePath::of); }
+  public FilePath   showSaveDialog        (FileChooser      chooser) { return nullSwitch(showDialog(chooser, chooser::showSaveDialog        ), null, FilePath::of); }
   public List<File> showOpenMultipleDialog(FileChooser      chooser) { return            showDialog(chooser, chooser::showOpenMultipleDialog);                       }
 
 //---------------------------------------------------------------------------

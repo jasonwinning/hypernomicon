@@ -195,12 +195,12 @@ public class FolderTreeWatcher
             HDT_Folder folder = watchKeyToDir.get(watchKey);
 
             if (folder == null)
-              watchKeyToDir.put(watchKey, folder = HyperPath.getFolderFromFilePath(new FilePath((Path)watchKey.watchable()), false));
+              watchKeyToDir.put(watchKey, folder = HyperPath.getFolderFromFilePath(FilePath.of((Path)watchKey.watchable()), false));
 
             if ((folder != null) && (folder.getID() > 0))
             {
-              FilePath parentPath = folder.isConnectedToRoot() ? folder.filePath() : new FilePath((Path) watchKey.watchable()),
-                       filePath = parentPath.resolve(new FilePath(watchEvent.context()));  // This is what actually changed
+              FilePath parentPath = folder.isConnectedToRoot() ? folder.filePath() : FilePath.of((Path) watchKey.watchable()),
+                       filePath = parentPath.resolve(FilePath.of(watchEvent.context()));  // This is what actually changed
 
               // Inter-computer message and lock files are never associated with database records;
               // skip them to avoid unnecessary FileManager refreshes.
@@ -598,9 +598,9 @@ public class FolderTreeWatcher
           Objects.requireNonNull(path);
           Objects.requireNonNull(attrs);
 
-          if (new FilePath(path).exists() == false) return FileVisitResult.SKIP_SUBTREE;
+          if (FilePath.of(path).exists() == false) return FileVisitResult.SKIP_SUBTREE;
 
-          HDT_Folder folder = HyperPath.getFolderFromFilePath(new FilePath(path), true);
+          HDT_Folder folder = HyperPath.getFolderFromFilePath(FilePath.of(path), true);
 
           if (folder == null)
             throw new IOException(new HDB_InternalError(92733));
@@ -627,7 +627,7 @@ public class FolderTreeWatcher
         {
           Objects.requireNonNull(path);
 
-          if (new FilePath(path).exists() == false) return FileVisitResult.CONTINUE; // If folder doesn't exist just keep going
+          if (FilePath.of(path).exists() == false) return FileVisitResult.CONTINUE; // If folder doesn't exist just keep going
 
           throw exc;
         }

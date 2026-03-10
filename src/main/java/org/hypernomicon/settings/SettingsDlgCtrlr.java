@@ -290,7 +290,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     stage.setOnHiding(event ->
     {
-      setLogPath(new FilePath(tfLogPath.getText()));
+      setLogPath(FilePath.of(tfLogPath.getText()));
 
       settingsCtrlrs.forEach(ctrlr -> ctrlr.save(noDB));
     });
@@ -494,7 +494,7 @@ public class SettingsDlgCtrlr extends ModalDialog
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    FilePath startPath = new FilePath(tfExtFiles.getText());
+    FilePath startPath = FilePath.of(tfExtFiles.getText());
 
     if (FilePath.isEmpty(startPath))
     {
@@ -506,7 +506,7 @@ public class SettingsDlgCtrlr extends ModalDialog
           startPath = parentPath;
       }
       else
-        startPath = new FilePath(userWorkingDir());
+        startPath = FilePath.of(userWorkingDir());
     }
 
     dirChooser.setInitialDirectory(startPath.toFile());
@@ -520,10 +520,10 @@ public class SettingsDlgCtrlr extends ModalDialog
 
   @FXML private void btnLogPathBrowseClick()
   {
-    FilePath startPath = new FilePath(tfLogPath.getText()).getDirOnly();
+    FilePath startPath = FilePath.of(tfLogPath.getText()).getDirOnly();
 
     if (FilePath.isEmpty(startPath))
-      startPath = new FilePath(userWorkingDir());
+      startPath = FilePath.of(userWorkingDir());
 
     FileChooser fileChooser = new FileChooser();
 
@@ -542,10 +542,10 @@ public class SettingsDlgCtrlr extends ModalDialog
 
   @FXML private void btnOfficeBrowseClick()
   {
-    FilePath startPath = new FilePath(tfOffice.getText());
+    FilePath startPath = FilePath.of(tfOffice.getText());
 
     if (FilePath.isEmpty(startPath))
-      startPath = new FilePath(userWorkingDir());
+      startPath = FilePath.of(userWorkingDir());
 
     if (IS_OS_MAC)
     {
@@ -821,7 +821,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
   @FXML private void mnuLogLaunchClick()
   {
-    FilePath logFilePath = new FilePath(tfLogPath.getText());
+    FilePath logFilePath = FilePath.of(tfLogPath.getText());
     if (FilePath.isEmpty(logFilePath)) return;
 
     launchFile(logFilePath);
@@ -832,7 +832,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
   @FXML private void mnuLogShowInSysExplorerClick()
   {
-    FilePath logFilePath = new FilePath(tfLogPath.getText());
+    FilePath logFilePath = FilePath.of(tfLogPath.getText());
     if (FilePath.isEmpty(logFilePath)) return;
 
     highlightFileInExplorer(logFilePath);
@@ -843,7 +843,7 @@ public class SettingsDlgCtrlr extends ModalDialog
 
   @FXML private void mnuLogCopyToClipboardClick()
   {
-    FilePath logFilePath = new FilePath(tfLogPath.getText());
+    FilePath logFilePath = FilePath.of(tfLogPath.getText());
     if (FilePath.isEmpty(logFilePath)) return;
 
     List<String> s;

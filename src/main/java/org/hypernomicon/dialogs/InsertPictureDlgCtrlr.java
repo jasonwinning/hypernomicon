@@ -165,7 +165,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
   private void rbLocalFileSelected()
   {
-    displayFilePath(new FilePath(tfLocalFile.getText()));
+    displayFilePath(FilePath.of(tfLocalFile.getText()));
   }
 
 //---------------------------------------------------------------------------
@@ -312,7 +312,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
       ImageIO.write(bufferedImage, format, fos);
     }
 
-    return new FilePath(tempFile);
+    return FilePath.of(tempFile);
   }
 
 //---------------------------------------------------------------------------
@@ -375,7 +375,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
   {
     try
     {
-      FilePath tempFile = new FilePath(java.io.File.createTempFile("temp", bufferFileName));
+      FilePath tempFile = FilePath.of(java.io.File.createTempFile("temp", bufferFileName));
       tempFile.deleteOnExit();
       webImageBuffer.saveToFile(tempFile);
 
@@ -401,7 +401,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
     fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image files", "*.jpg;*.gif;*.png;*.jpeg"),
                                              new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
 
-    FilePath chosenFilePath = new FilePath(tfLocalFile.getText());
+    FilePath chosenFilePath = FilePath.of(tfLocalFile.getText());
 
     fileChooser.setInitialDirectory(FilePath.isEmpty(chosenFilePath) == false ? chosenFilePath.getDirOnly().toFile() : db.unenteredPath().toFile());
 
@@ -445,7 +445,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
       if (tfLocalFile.getText().isBlank())
         return falseWithWarningPopup("You must select a file.", tfLocalFile);
 
-      srcFilePath = new FilePath(tfLocalFile.getText());
+      srcFilePath = FilePath.of(tfLocalFile.getText());
     }
     else if (rbWebAddress.isSelected())
     {
@@ -457,7 +457,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
       try
       {
-        srcFilePath = new FilePath(java.io.File.createTempFile("temp", bufferFileName));
+        srcFilePath = FilePath.of(java.io.File.createTempFile("temp", bufferFileName));
         srcFilePath.deleteOnExit();
         webImageBuffer.saveToFile(srcFilePath);
       }

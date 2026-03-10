@@ -131,9 +131,9 @@ public final class TestHyperDB extends AbstractHyperDB
   @Override protected void updateFilenameRules() { }
   @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { }
   @Override protected void saveSourcePathToSystemSettings(String newPathStr) { }
-  @Override public FilePath getRequestMessageFilePath(boolean useAppPrefs) { return new FilePath(""); }
-  @Override public FilePath getResponseMessageFilePath(boolean useAppPrefs) { return new FilePath(""); }
-  @Override public FilePath getLockFilePath(boolean useAppPrefs) { return new FilePath(""); }
+  @Override public FilePath getRequestMessageFilePath(boolean useAppPrefs) { return FilePath.of(""); }
+  @Override public FilePath getResponseMessageFilePath(boolean useAppPrefs) { return FilePath.of(""); }
+  @Override public FilePath getLockFilePath(boolean useAppPrefs) { return FilePath.of(""); }
   @Override public String getLockOwner() { return null; }
   @Override public String getOtherLockOwner() { return null; }
   @Override protected void checkWhetherFoldersExist() { }
@@ -219,7 +219,7 @@ public final class TestHyperDB extends AbstractHyperDB
       {
         if (entry.isDirectory() == false)
         {
-          FilePath filePath = rootFilePath.resolve(new FilePath(entry.getName()));
+          FilePath filePath = rootFilePath.resolve(FilePath.of(entry.getName()));
 
           if (xmlFilePathSet.contains(filePath))
           {

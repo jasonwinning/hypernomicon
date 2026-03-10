@@ -59,7 +59,7 @@ class FilePathSetTest
   @Test
   void add_newPath_returnsTrue()
   {
-    FilePath path = new FilePath("/dir/file.txt");
+    FilePath path = FilePath.of("/dir/file.txt");
 
     boolean result = set.add(path);
 
@@ -69,7 +69,7 @@ class FilePathSetTest
   @Test
   void add_duplicatePath_returnsFalse()
   {
-    FilePath path = new FilePath("/dir/file.txt");
+    FilePath path = FilePath.of("/dir/file.txt");
     set.add(path);
 
     boolean result = set.add(path);
@@ -86,14 +86,14 @@ class FilePathSetTest
   @Test
   void add_emptyPath_throwsException()
   {
-    assertThrows(IllegalArgumentException.class, () -> set.add(new FilePath("")));
+    assertThrows(IllegalArgumentException.class, () -> set.add(FilePath.of("")));
   }
 
   @Test
   void add_sameFilenameDifferentDirectories_addsMultiple()
   {
-    FilePath path1 = new FilePath("/dir1/file.txt"),
-             path2 = new FilePath("/dir2/file.txt");
+    FilePath path1 = FilePath.of("/dir1/file.txt"),
+             path2 = FilePath.of("/dir2/file.txt");
 
     assertTrue(set.add(path1));
     assertTrue(set.add(path2));
@@ -103,8 +103,8 @@ class FilePathSetTest
   @Test
   void add_differentFilenames_addsMultiple()
   {
-    FilePath path1 = new FilePath("/dir/file1.txt"),
-             path2 = new FilePath("/dir/file2.txt");
+    FilePath path1 = FilePath.of("/dir/file1.txt"),
+             path2 = FilePath.of("/dir/file2.txt");
 
     assertTrue(set.add(path1));
     assertTrue(set.add(path2));
@@ -119,7 +119,7 @@ class FilePathSetTest
   @Test
   void remove_existingPath_returnsTrue()
   {
-    FilePath path = new FilePath("C:/dir/file.txt");
+    FilePath path = FilePath.of("C:/dir/file.txt");
     set.add(path);
 
     boolean result = set.remove(path);
@@ -130,7 +130,7 @@ class FilePathSetTest
   @Test
   void remove_nonExistentPath_returnsFalse()
   {
-    FilePath path = new FilePath("C:/dir/file.txt");
+    FilePath path = FilePath.of("C:/dir/file.txt");
 
     boolean result = set.remove(path);
 
@@ -154,7 +154,7 @@ class FilePathSetTest
   @Test
   void remove_existingPath_decreasesSize()
   {
-    FilePath path = new FilePath("C:/dir/file.txt");
+    FilePath path = FilePath.of("C:/dir/file.txt");
     set.add(path);
 
     set.remove(path);
@@ -165,8 +165,8 @@ class FilePathSetTest
   @Test
   void remove_oneOfMultipleSameFilename_removesOnlyOne()
   {
-    FilePath path1 = new FilePath("C:/dir1/file.txt"),
-             path2 = new FilePath("C:/dir2/file.txt");
+    FilePath path1 = FilePath.of("C:/dir1/file.txt"),
+             path2 = FilePath.of("C:/dir2/file.txt");
     set.add(path1);
     set.add(path2);
 
@@ -185,7 +185,7 @@ class FilePathSetTest
   @Test
   void contains_existingPath_returnsTrue()
   {
-    FilePath path = new FilePath("/dir/file.txt");
+    FilePath path = FilePath.of("/dir/file.txt");
     set.add(path);
 
     assertTrue(set.contains(path));
@@ -194,7 +194,7 @@ class FilePathSetTest
   @Test
   void contains_nonExistentPath_returnsFalse()
   {
-    FilePath path = new FilePath("/dir/file.txt");
+    FilePath path = FilePath.of("/dir/file.txt");
 
     assertFalse(set.contains(path));
   }
@@ -209,7 +209,7 @@ class FilePathSetTest
   @Test
   void contains_stringPath_works()
   {
-    set.add(new FilePath("/dir/file.txt"));
+    set.add(FilePath.of("/dir/file.txt"));
 
     assertTrue(set.contains("/dir/file.txt"));
     assertFalse(set.contains("/dir/other.txt"));
@@ -219,7 +219,7 @@ class FilePathSetTest
   @Test
   void contains_javaPath_works()
   {
-    set.add(new FilePath("/dir/file.txt"));
+    set.add(FilePath.of("/dir/file.txt"));
 
     assertTrue(set.contains(Path.of("/dir/file.txt")));
     assertFalse(set.contains(Path.of("/dir/other.txt")));
@@ -229,7 +229,7 @@ class FilePathSetTest
   @Test
   void contains_javaFile_works()
   {
-    set.add(new FilePath("/dir/file.txt"));
+    set.add(FilePath.of("/dir/file.txt"));
 
     assertTrue(set.contains(new File("/dir/file.txt")));
     assertFalse(set.contains(new File("/dir/other.txt")));
@@ -239,7 +239,7 @@ class FilePathSetTest
   @Test
   void contains_wrongType_returnsFalse()
   {
-    set.add(new FilePath("/dir/file.txt"));
+    set.add(FilePath.of("/dir/file.txt"));
 
     assertFalse(set.contains(123));
     assertFalse(set.contains(new Object()));
@@ -259,9 +259,9 @@ class FilePathSetTest
   @Test
   void size_afterAdds_returnsCorrectCount()
   {
-    set.add(new FilePath("/dir/file1.txt"));
-    set.add(new FilePath("/dir/file2.txt"));
-    set.add(new FilePath("/other/file1.txt"));
+    set.add(FilePath.of("/dir/file1.txt"));
+    set.add(FilePath.of("/dir/file2.txt"));
+    set.add(FilePath.of("/other/file1.txt"));
 
     assertEquals(3, set.size());
   }
@@ -275,7 +275,7 @@ class FilePathSetTest
   @Test
   void isEmpty_nonEmptySet_returnsFalse()
   {
-    set.add(new FilePath("/dir/file.txt"));
+    set.add(FilePath.of("/dir/file.txt"));
 
     assertFalse(set.isEmpty());
   }
@@ -283,8 +283,8 @@ class FilePathSetTest
   @Test
   void isEmpty_afterRemoveAll_returnsTrue()
   {
-    set.add(new FilePath("/dir/file.txt"));
-    set.remove(new FilePath("/dir/file.txt"));
+    set.add(FilePath.of("/dir/file.txt"));
+    set.remove(FilePath.of("/dir/file.txt"));
 
     assertTrue(set.isEmpty());
   }
@@ -305,8 +305,8 @@ class FilePathSetTest
   @Test
   void clear_nonEmptySet_becomesEmpty()
   {
-    set.add(new FilePath("/dir/file1.txt"));
-    set.add(new FilePath("/dir/file2.txt"));
+    set.add(FilePath.of("/dir/file1.txt"));
+    set.add(FilePath.of("/dir/file2.txt"));
 
     set.clear();
 
@@ -332,8 +332,8 @@ class FilePathSetTest
   {
     List<FilePath> paths = List.of
     (
-      new FilePath("C:/dir/file1.txt"),
-      new FilePath("C:/dir/file2.txt")
+      FilePath.of("C:/dir/file1.txt"),
+      FilePath.of("C:/dir/file2.txt")
     );
 
     boolean result = set.addAll(paths);
@@ -345,7 +345,7 @@ class FilePathSetTest
   @Test
   void addAll_allDuplicates_returnsFalse()
   {
-    FilePath path = new FilePath("C:/dir/file.txt");
+    FilePath path = FilePath.of("C:/dir/file.txt");
     set.add(path);
 
     boolean result = set.addAll(List.of(path));
@@ -356,8 +356,8 @@ class FilePathSetTest
   @Test
   void addAll_someDuplicates_returnsTrue()
   {
-    FilePath path1 = new FilePath("C:/dir/file1.txt"),
-             path2 = new FilePath("C:/dir/file2.txt");
+    FilePath path1 = FilePath.of("C:/dir/file1.txt"),
+             path2 = FilePath.of("C:/dir/file2.txt");
     set.add(path1);
 
     boolean result = set.addAll(List.of(path1, path2));
@@ -374,7 +374,7 @@ class FilePathSetTest
   @Test
   void removeAll_emptyCollection_returnsFalse()
   {
-    set.add(new FilePath("/dir/file.txt"));
+    set.add(FilePath.of("/dir/file.txt"));
 
     boolean result = set.removeAll(Collections.emptyList());
 
@@ -384,8 +384,8 @@ class FilePathSetTest
   @Test
   void removeAll_existingPaths_returnsTrue()
   {
-    FilePath path1 = new FilePath("/dir/file1.txt"),
-             path2 = new FilePath("/dir/file2.txt");
+    FilePath path1 = FilePath.of("/dir/file1.txt"),
+             path2 = FilePath.of("/dir/file2.txt");
     set.add(path1);
     set.add(path2);
 
@@ -398,9 +398,9 @@ class FilePathSetTest
   @Test
   void removeAll_nonExistentPaths_returnsFalse()
   {
-    set.add(new FilePath("/dir/file1.txt"));
+    set.add(FilePath.of("/dir/file1.txt"));
 
-    boolean result = set.removeAll(List.of(new FilePath("/dir/other.txt")));
+    boolean result = set.removeAll(List.of(FilePath.of("/dir/other.txt")));
 
     assertFalse(result);
   }
@@ -413,9 +413,9 @@ class FilePathSetTest
   @Test
   void retainAll_overlapping_keepsOnlyCommon()
   {
-    FilePath path1 = new FilePath("C:/dir/file1.txt"),
-             path2 = new FilePath("C:/dir/file2.txt"),
-             path3 = new FilePath("C:/dir/file3.txt");
+    FilePath path1 = FilePath.of("C:/dir/file1.txt"),
+             path2 = FilePath.of("C:/dir/file2.txt"),
+             path3 = FilePath.of("C:/dir/file3.txt");
     set.add(path1);
     set.add(path2);
     set.add(path3);
@@ -432,9 +432,9 @@ class FilePathSetTest
   @Test
   void retainAll_noOverlap_clearsSet()
   {
-    set.add(new FilePath("C:/dir/file1.txt"));
+    set.add(FilePath.of("C:/dir/file1.txt"));
 
-    boolean result = set.retainAll(List.of(new FilePath("C:/dir/other.txt")));
+    boolean result = set.retainAll(List.of(FilePath.of("C:/dir/other.txt")));
 
     assertTrue(result);
     assertTrue(set.isEmpty());
@@ -448,9 +448,9 @@ class FilePathSetTest
   @Test
   void removeIf_matchingPaths_removesAndReturnsTrue()
   {
-    FilePath path1 = new FilePath("C:/dir/file1.txt"),
-             path2 = new FilePath("C:/dir/file2.txt"),
-             path3 = new FilePath("C:/dir/other.txt");
+    FilePath path1 = FilePath.of("C:/dir/file1.txt"),
+             path2 = FilePath.of("C:/dir/file2.txt"),
+             path3 = FilePath.of("C:/dir/other.txt");
     set.add(path1);
     set.add(path2);
     set.add(path3);
@@ -465,7 +465,7 @@ class FilePathSetTest
   @Test
   void removeIf_noMatches_returnsFalse()
   {
-    set.add(new FilePath("C:/dir/file.txt"));
+    set.add(FilePath.of("C:/dir/file.txt"));
 
     boolean result = set.removeIf(p -> p.getNameOnly().toString().startsWith("other"));
 
@@ -477,9 +477,9 @@ class FilePathSetTest
   void removeIf_allSameFilename_cleansBucket()
   {
     // All paths have same filename; removing all should clean up the bucket
-    FilePath path1 = new FilePath("C:/dir1/file.txt"),
-             path2 = new FilePath("C:/dir2/file.txt"),
-             path3 = new FilePath("C:/dir3/file.txt");
+    FilePath path1 = FilePath.of("C:/dir1/file.txt"),
+             path2 = FilePath.of("C:/dir2/file.txt"),
+             path3 = FilePath.of("C:/dir3/file.txt");
     set.add(path1);
     set.add(path2);
     set.add(path3);
@@ -489,7 +489,7 @@ class FilePathSetTest
     assertTrue(set.isEmpty());
 
     // Adding new path with same filename should work (bucket was cleaned)
-    FilePath newPath = new FilePath("C:/dir4/file.txt");
+    FilePath newPath = FilePath.of("C:/dir4/file.txt");
     assertTrue(set.add(newPath));
     assertTrue(set.contains(newPath));
   }
@@ -502,8 +502,8 @@ class FilePathSetTest
   @Test
   void containsAll_allPresent_returnsTrue()
   {
-    FilePath path1 = new FilePath("C:/dir/file1.txt"),
-             path2 = new FilePath("C:/dir/file2.txt");
+    FilePath path1 = FilePath.of("C:/dir/file1.txt"),
+             path2 = FilePath.of("C:/dir/file2.txt");
     set.add(path1);
     set.add(path2);
 
@@ -513,8 +513,8 @@ class FilePathSetTest
   @Test
   void containsAll_someMissing_returnsFalse()
   {
-    FilePath path1 = new FilePath("C:/dir/file1.txt"),
-             path2 = new FilePath("C:/dir/file2.txt");
+    FilePath path1 = FilePath.of("C:/dir/file1.txt"),
+             path2 = FilePath.of("C:/dir/file2.txt");
     set.add(path1);
 
     assertFalse(set.containsAll(List.of(path1, path2)));
@@ -542,8 +542,8 @@ class FilePathSetTest
   @Test
   void toArray_nonEmptySet_containsAllElements()
   {
-    FilePath path1 = new FilePath("C:/dir/file1.txt"),
-             path2 = new FilePath("C:/dir/file2.txt");
+    FilePath path1 = FilePath.of("C:/dir/file1.txt"),
+             path2 = FilePath.of("C:/dir/file2.txt");
     set.add(path1);
     set.add(path2);
 
@@ -566,8 +566,8 @@ class FilePathSetTest
   @Test
   void toArrayTyped_arrayTooSmall_createsNewArray()
   {
-    set.add(new FilePath("C:/dir/file1.txt"));
-    set.add(new FilePath("C:/dir/file2.txt"));
+    set.add(FilePath.of("C:/dir/file1.txt"));
+    set.add(FilePath.of("C:/dir/file2.txt"));
 
     FilePath[] array = set.toArray(new FilePath[0]);
 
@@ -577,10 +577,10 @@ class FilePathSetTest
   @Test
   void toArrayTyped_arrayTooLarge_setsNullTerminator()
   {
-    set.add(new FilePath("C:/dir/file.txt"));
+    set.add(FilePath.of("C:/dir/file.txt"));
 
     FilePath[] array = new FilePath[5];
-    Arrays.fill(array, new FilePath("C:/dummy.txt"));
+    Arrays.fill(array, FilePath.of("C:/dummy.txt"));
 
     FilePath[] result = set.toArray(array);
 
@@ -605,9 +605,9 @@ class FilePathSetTest
   @Test
   void iterator_nonEmptySet_iteratesAllElements()
   {
-    FilePath path1 = new FilePath("/dir1/file.txt"),
-             path2 = new FilePath("/dir2/file.txt"),
-             path3 = new FilePath("/dir/other.txt");
+    FilePath path1 = FilePath.of("/dir1/file.txt"),
+             path2 = FilePath.of("/dir2/file.txt"),
+             path3 = FilePath.of("/dir/other.txt");
     set.add(path1);
     set.add(path2);
     set.add(path3);
@@ -625,7 +625,7 @@ class FilePathSetTest
   @Test
   void iterator_remove_throwsUnsupportedOperationException()
   {
-    FilePath path = new FilePath("/dir/file.txt");
+    FilePath path = FilePath.of("/dir/file.txt");
     set.add(path);
 
     Iterator<FilePath> iter = set.iterator();
@@ -645,8 +645,8 @@ class FilePathSetTest
   {
     List<FilePath> paths = List.of
     (
-      new FilePath("/dir/file1.txt"),
-      new FilePath("/dir/file2.txt")
+      FilePath.of("/dir/file1.txt"),
+      FilePath.of("/dir/file2.txt")
     );
 
     FilePathSet newSet = new FilePathSet(paths);
@@ -672,8 +672,8 @@ class FilePathSetTest
   void remove_lastItemInBucket_cleansBucket()
   {
     // Add files with same name in different directories
-    FilePath path1 = new FilePath("C:/dir1/file.txt"),
-             path2 = new FilePath("C:/dir2/file.txt");
+    FilePath path1 = FilePath.of("C:/dir1/file.txt"),
+             path2 = FilePath.of("C:/dir2/file.txt");
     set.add(path1);
     set.add(path2);
 
@@ -684,7 +684,7 @@ class FilePathSetTest
     assertTrue(set.isEmpty());
 
     // Add new file with same name; should work correctly
-    FilePath path3 = new FilePath("C:/dir3/file.txt");
+    FilePath path3 = FilePath.of("C:/dir3/file.txt");
     assertTrue(set.add(path3));
     assertTrue(set.contains(path3));
   }
@@ -695,7 +695,7 @@ class FilePathSetTest
     List<FilePath> paths = new ArrayList<>();
     for (int ndx = 0; ndx < 100; ndx++)
     {
-      FilePath path = new FilePath("/dir" + ndx + "/file.txt");
+      FilePath path = FilePath.of("/dir" + ndx + "/file.txt");
       paths.add(path);
       set.add(path);
     }
@@ -736,7 +736,7 @@ class FilePathSetTest
           {
             for (int pathNdx = 0; pathNdx < pathsPerThread; pathNdx++)
             {
-              FilePath path = new FilePath("/thread" + finalThreadNdx + "/file" + pathNdx + ".txt");
+              FilePath path = FilePath.of("/thread" + finalThreadNdx + "/file" + pathNdx + ".txt");
               set.add(path);
             }
           }
@@ -778,7 +778,7 @@ class FilePathSetTest
           {
             for (int opNdx = 0; opNdx < opsPerThread; opNdx++)
             {
-              FilePath path = new FilePath("C:/dir/file" + (opNdx % 50) + ".txt");
+              FilePath path = FilePath.of("C:/dir/file" + (opNdx % 50) + ".txt");
               if ((opNdx % 2) == 0)
                 set.add(path);
               else
@@ -822,7 +822,7 @@ class FilePathSetTest
 
       // Pre-populate some data
       for (int pathNdx = 0; pathNdx < 50; pathNdx++)
-        set.add(new FilePath("/dir/file" + pathNdx + ".txt"));
+        set.add(FilePath.of("/dir/file" + pathNdx + ".txt"));
 
       for (int threadNdx = 0; threadNdx < numThreads; threadNdx++)
       {
@@ -833,7 +833,7 @@ class FilePathSetTest
             Random random = new Random();
             for (int opNdx = 0; opNdx < opsPerThread; opNdx++)
             {
-              FilePath path = new FilePath("/dir/file" + random.nextInt(100) + ".txt");
+              FilePath path = FilePath.of("/dir/file" + random.nextInt(100) + ".txt");
               switch (opNdx % 4)
               {
                 case 0 -> set.add(path);
@@ -891,8 +891,8 @@ class FilePathSetTest
 
         // Two threads add different paths with same filename
         // Two threads remove them
-        FilePath path1 = new FilePath("/dir1/file.txt"),
-                 path2 = new FilePath("/dir2/file.txt");
+        FilePath path1 = FilePath.of("/dir1/file.txt"),
+                 path2 = FilePath.of("/dir2/file.txt");
 
         executor.submit(() -> awaitAndRun(startLatch, doneLatch, () -> set.add(path1)));
         executor.submit(() -> awaitAndRun(startLatch, doneLatch, () -> set.add(path2)));
@@ -961,7 +961,7 @@ class FilePathSetTest
           {
             for (int opNdx = 0; opNdx < opsPerThread; opNdx++)
             {
-              set.add(new FilePath("C:/writer" + finalThreadNdx + "/file" + opNdx + ".txt"));
+              set.add(FilePath.of("C:/writer" + finalThreadNdx + "/file" + opNdx + ".txt"));
             }
           }
           catch (Exception e)
@@ -984,7 +984,7 @@ class FilePathSetTest
           try
           {
             for (int opNdx = 0; opNdx < opsPerThread; opNdx++)
-              set.contains(new FilePath("C:/writer0/file" + (opNdx % 100) + ".txt"));
+              set.contains(FilePath.of("C:/writer0/file" + (opNdx % 100) + ".txt"));
           }
           catch (Exception e)
           {
@@ -1046,13 +1046,13 @@ class FilePathSetTest
     int numPaths = 10000;
 
     for (int ndx = 0; ndx < numPaths; ndx++)
-      set.add(new FilePath("/dir" + ndx + "/samename.txt"));
+      set.add(FilePath.of("/dir" + ndx + "/samename.txt"));
 
     assertEquals(numPaths, set.size());
 
     // Remove half
     for (int ndx = 0; ndx < (numPaths / 2); ndx++)
-      set.remove(new FilePath("/dir" + ndx + "/samename.txt"));
+      set.remove(FilePath.of("/dir" + ndx + "/samename.txt"));
 
     assertEquals(numPaths / 2, set.size());
   }
@@ -1065,13 +1065,13 @@ class FilePathSetTest
     int numPaths = 10000;
 
     for (int ndx = 0; ndx < numPaths; ndx++)
-      set.add(new FilePath("C:/dir/file" + ndx + ".txt"));
+      set.add(FilePath.of("C:/dir/file" + ndx + ".txt"));
 
     assertEquals(numPaths, set.size());
 
     // Check all present
     for (int ndx = 0; ndx < numPaths; ndx++)
-      assertTrue(set.contains(new FilePath("C:/dir/file" + ndx + ".txt")));
+      assertTrue(set.contains(FilePath.of("C:/dir/file" + ndx + ".txt")));
   }
 
   @Test
@@ -1083,10 +1083,10 @@ class FilePathSetTest
     for (int cycle = 0; cycle < 100; cycle++)
     {
       for (int ndx = 0; ndx < 100; ndx++)
-        set.add(new FilePath("/dir" + ndx + "/file.txt"));
+        set.add(FilePath.of("/dir" + ndx + "/file.txt"));
 
       for (int ndx = 0; ndx < 100; ndx++)
-        set.remove(new FilePath("/dir" + ndx + "/file.txt"));
+        set.remove(FilePath.of("/dir" + ndx + "/file.txt"));
 
       assertTrue(set.isEmpty(), "Set should be empty after cycle " + cycle);
     }

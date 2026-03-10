@@ -934,7 +934,7 @@ public abstract class AbstractHyperDB
    */
   public static void saveHdbFile(FilePath hdbFilePath) throws IOException
   {
-    hdbFilePath.saveCharSequenceAtomically(new FilePath(DEFAULT_XML_PATH).resolve(SETTINGS_FILE_NAME).toString(), XML_FILES_CHARSET);
+    hdbFilePath.saveCharSequenceAtomically(FilePath.of(DEFAULT_XML_PATH).resolve(SETTINGS_FILE_NAME).toString(), XML_FILES_CHARSET);
   }
 
 //---------------------------------------------------------------------------
@@ -993,7 +993,7 @@ public abstract class AbstractHyperDB
     {
       for (Path path : stream)
         if (Files.isDirectory(path) == false)
-          tempFiles.add(new FilePath(path));
+          tempFiles.add(FilePath.of(path));
     }
     catch (IOException e) { return; }  // Best-effort cleanup
 
@@ -2495,7 +2495,7 @@ public abstract class AbstractHyperDB
     mentionsIndex.clear();
 
     state = DBState.CLOSED;
-    updateRunningInstancesFile(new FilePath(""));
+    updateRunningInstancesFile(FilePath.of(""));
     clearAllDataSets(datasetsToKeep);
 
     try

@@ -72,7 +72,7 @@ class HDT_FolderPathComputationTest
     HDT_Folder root  = db.getRootFolder(),
                child = db.createNewBlankRecord(hdtFolder);
 
-    child.getPath().assign(root, new FilePath("testchild"));
+    child.getPath().assign(root, FilePath.of("testchild"));
 
     FilePath childPath = child.filePath();
 
@@ -90,15 +90,15 @@ class HDT_FolderPathComputationTest
                child  = db.createNewBlankRecord(hdtFolder),
                dest   = db.createNewBlankRecord(hdtFolder);
 
-    parent.getPath().assign(root,   new FilePath("parent"));
-    child .getPath().assign(parent, new FilePath("child"));
-    dest  .getPath().assign(root,   new FilePath("dest"));
+    parent.getPath().assign(root,   FilePath.of("parent"));
+    child .getPath().assign(parent, FilePath.of("child"));
+    dest  .getPath().assign(root,   FilePath.of("dest"));
 
     assertEquals(db.getRootPath().resolve("parent", "child"), child.filePath());
 
     // Re-parent parent under dest; child record is never touched
 
-    parent.getPath().assign(dest, new FilePath("parent"));
+    parent.getPath().assign(dest, FilePath.of("parent"));
 
     assertEquals(db.getRootPath().resolve("dest", "parent", "child"), child.filePath());
   }
@@ -114,14 +114,14 @@ class HDT_FolderPathComputationTest
                lvl3 = db.createNewBlankRecord(hdtFolder),
                dest = db.createNewBlankRecord(hdtFolder);
 
-    lvl1.getPath().assign(root, new FilePath("lvl1"));
-    lvl2.getPath().assign(lvl1, new FilePath("lvl2"));
-    lvl3.getPath().assign(lvl2, new FilePath("lvl3"));
-    dest.getPath().assign(root, new FilePath("dest"));
+    lvl1.getPath().assign(root, FilePath.of("lvl1"));
+    lvl2.getPath().assign(lvl1, FilePath.of("lvl2"));
+    lvl3.getPath().assign(lvl2, FilePath.of("lvl3"));
+    dest.getPath().assign(root, FilePath.of("dest"));
 
     // Move lvl1 under dest; lvl3 is three hops away and is never touched
 
-    lvl1.getPath().assign(dest, new FilePath("lvl1"));
+    lvl1.getPath().assign(dest, FilePath.of("lvl1"));
 
     assertEquals(db.getRootPath().resolve("dest", "lvl1", "lvl2", "lvl3"), lvl3.filePath());
   }

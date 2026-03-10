@@ -74,7 +74,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
       if (hyperPath == null) return;
       if (hyperPath.isEmpty() && val.fileName.isEmpty()) return;
 
-      hyperPath.assignNameInternal(new FilePath(val.fileName));
+      hyperPath.assignNameInternal(FilePath.of(val.fileName));
 
       return;
     }

@@ -137,7 +137,7 @@ class SearchResultFileList
       while (destFilePath.exists())
       {
         destStr = baseStr + '_' + String.valueOf(num++).substring(1) + ext;
-        destFilePath = new FilePath(destStr);
+        destFilePath = FilePath.of(destStr);
       }
 
       return destFilePath;

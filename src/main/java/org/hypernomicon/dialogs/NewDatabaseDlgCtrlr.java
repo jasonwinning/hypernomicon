@@ -92,10 +92,10 @@ public class NewDatabaseDlgCtrlr extends ModalDialog
     if (name.equalsIgnoreCase(DEFAULT_XML_PATH))
       return falseWithErrorPopup("The name XML is resevered for the XML folder.");
 
-    if ((FilePath.isFilenameValid(name) == false) || (name.equals(new FilePath(name).getNameOnly().toString()) == false))
+    if ((FilePath.isFilenameValid(name) == false) || (name.equals(FilePath.of(name).getNameOnly().toString()) == false))
       return falseWithErrorPopup("Folder name is invalid: " + name);
 
-    set.add(new FilePath(name));
+    set.add(FilePath.of(name));
     return true;
   }
 
@@ -118,7 +118,7 @@ public class NewDatabaseDlgCtrlr extends ModalDialog
     if (set.size() < 7)
       return falseWithErrorPopup("Enter a unique name for each folder.");
 
-    FilePath filePath = new FilePath(newPath);
+    FilePath filePath = FilePath.of(newPath);
 
     try
     {

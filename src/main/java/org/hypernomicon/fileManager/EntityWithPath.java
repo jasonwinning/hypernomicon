@@ -44,7 +44,7 @@ public class EntityWithPath extends AbstractEntityWithPath
 
   public EntityWithPath(File file)
   {
-    filePath = new FilePath(file);
+    filePath = FilePath.of(file);
   }
 
 //---------------------------------------------------------------------------

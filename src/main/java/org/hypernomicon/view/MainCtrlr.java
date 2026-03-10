@@ -1850,7 +1850,7 @@ public final class MainCtrlr
 
         while ((entry = zis.getNextEntry()) != null)
         {
-          FilePath filePath = rootPath.resolve(new FilePath(entry.getName()));
+          FilePath filePath = rootPath.resolve(FilePath.of(entry.getName()));
 
           if (entry.isDirectory())
           {
@@ -2103,7 +2103,7 @@ public final class MainCtrlr
     {
       stream.forEach(entry ->
       {
-        FilePath entryFilePath = new FilePath(entry);
+        FilePath entryFilePath = FilePath.of(entry);
         if (entryFilePath.isDirectory() == false) return;
 
         FilePath relFilePath = topicalPath.relativize(entryFilePath);
@@ -2579,7 +2579,7 @@ public final class MainCtrlr
       String srcPath = app.prefs.get(PrefKey.SOURCE_PATH, "");
       if (srcPath.isBlank() == false)
       {
-        hdbPath = new FilePath(srcPath).resolve(srcName);
+        hdbPath = FilePath.of(srcPath).resolve(srcName);
         if (hdbPath.exists())
           hdbExists = true;
       }
@@ -2617,7 +2617,7 @@ public final class MainCtrlr
 
     boolean success;
 
-    FilePath newRootFilePath = new FilePath(app.prefs.get(PrefKey.SOURCE_PATH, userWorkingDir()));
+    FilePath newRootFilePath = FilePath.of(app.prefs.get(PrefKey.SOURCE_PATH, userWorkingDir()));
     String hdbFileName = app.prefs.get(PrefKey.SOURCE_FILENAME, HDB_DEFAULT_FILENAME);
 
     try
@@ -2710,7 +2710,7 @@ public final class MainCtrlr
     for (String mru : mruList)
     {
       MenuItem item = new MenuItem(mru);
-      item.setOnAction(event -> openDB(new FilePath(mru)));
+      item.setOnAction(event -> openDB(FilePath.of(mru)));
       mnuOpenRecent.getItems().add(item);
     }
 
@@ -3506,7 +3506,7 @@ public final class MainCtrlr
   {
     if (db.isOffline() || collEmpty(args) || (windows.getOutermostModality() != Modality.NONE)) return;
 
-    FilePath filePath = new FilePath(args.getFirst());
+    FilePath filePath = FilePath.of(args.getFirst());
 
     String mediaTypeStr = getMediaType(filePath).toString();
 

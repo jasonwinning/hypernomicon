@@ -58,7 +58,7 @@ class FilePathTest
     Files.createDirectories(tempDir.resolve("barbaz"));
     Files.createDirectories(tempDir.resolve("a").resolve("x"));
 
-    base = new FilePath(tempDir);
+    base = FilePath.of(tempDir);
   }
 
 //---------------------------------------------------------------------------
@@ -190,8 +190,8 @@ class FilePathTest
   @Test
   void contains_nonExistent_sharedPrefix_notContained()
   {
-    FilePath fakeBar    = new FilePath(tempDir.resolve("fake_bar")),
-             fakeBarbaz = new FilePath(tempDir.resolve("fake_barbaz"));
+    FilePath fakeBar    = FilePath.of(tempDir.resolve("fake_bar")),
+             fakeBarbaz = FilePath.of(tempDir.resolve("fake_barbaz"));
 
     assertFalse(fakeBar.contains(fakeBarbaz));
   }
@@ -201,8 +201,8 @@ class FilePathTest
   @Test
   void contains_nonExistent_sibling_notContained()
   {
-    FilePath fakeA = new FilePath(tempDir.resolve("fake_a")),
-             fakeB = new FilePath(tempDir.resolve("fake_b"));
+    FilePath fakeA = FilePath.of(tempDir.resolve("fake_a")),
+             fakeB = FilePath.of(tempDir.resolve("fake_b"));
 
     assertFalse(fakeA.contains(fakeB));
     assertFalse(fakeB.contains(fakeA));
@@ -213,7 +213,7 @@ class FilePathTest
   @Test
   void contains_nonExistent_selfContainment_returnsTrue()
   {
-    FilePath fake = new FilePath(tempDir.resolve("nonexistent_dir"));
+    FilePath fake = FilePath.of(tempDir.resolve("nonexistent_dir"));
 
     assertTrue(fake.contains(fake));
   }
@@ -387,7 +387,7 @@ class FilePathTest
   {
     Path emptyDir = Files.createDirectory(tempDir.resolve("emptyForTest"));
 
-    assertFalse(new FilePath(emptyDir).dirContainsAnyFiles());
+    assertFalse(FilePath.of(emptyDir).dirContainsAnyFiles());
   }
 
 //---------------------------------------------------------------------------
@@ -398,7 +398,7 @@ class FilePathTest
     Path dir = Files.createDirectory(tempDir.resolve("dirWithFile"));
     Files.writeString(dir.resolve("file.txt"), "data");
 
-    assertTrue(new FilePath(dir).dirContainsAnyFiles());
+    assertTrue(FilePath.of(dir).dirContainsAnyFiles());
   }
 
 //---------------------------------------------------------------------------
@@ -411,7 +411,7 @@ class FilePathTest
 
     Files.writeString(sub.resolve("nested.txt"), "data");
 
-    assertTrue(new FilePath(dir).dirContainsAnyFiles());
+    assertTrue(FilePath.of(dir).dirContainsAnyFiles());
   }
 
 //---------------------------------------------------------------------------
@@ -422,7 +422,7 @@ class FilePathTest
     Path dir = Files.createDirectory(tempDir.resolve("dirWithEmptySub"));
     Files.createDirectory(dir.resolve("emptySubdir"));
 
-    assertFalse(new FilePath(dir).dirContainsAnyFiles());
+    assertFalse(FilePath.of(dir).dirContainsAnyFiles());
   }
 
 //---------------------------------------------------------------------------
@@ -430,7 +430,7 @@ class FilePathTest
 
   private FilePath tempFilePath(String name)
   {
-    return new FilePath(tempDir.resolve(name));
+    return FilePath.of(tempDir.resolve(name));
   }
 
 //---------------------------------------------------------------------------

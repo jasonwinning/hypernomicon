@@ -174,7 +174,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    FilePath folderPath = new FilePath(tfParent.getText());
+    FilePath folderPath = FilePath.of(tfParent.getText());
 
     if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
     {
@@ -182,7 +182,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
         folderPath = db.getRootPath().getParent();
 
       if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
-        folderPath = new FilePath(userWorkingDir());
+        folderPath = FilePath.of(userWorkingDir());
     }
 
     dirChooser.setInitialDirectory(folderPath.toFile());
@@ -222,7 +222,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   @FXML private void btnLinkGenLaunchClick()
   {
-    FilePath filePath = new FilePath(tfLinkGenParent.getText());
+    FilePath filePath = FilePath.of(tfLinkGenParent.getText());
 
     if (FilePath.isEmpty(filePath)) return;
 
@@ -399,7 +399,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return null;
     }
 
-    FilePath parentFilePath = new FilePath(parentStr);
+    FilePath parentFilePath = FilePath.of(parentStr);
 
     if (FilePath.isEmpty(parentFilePath))
     {
@@ -863,7 +863,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     if ((files == null) || (files.length == 0))
       return null;
 
-    return new FilePath(files[0]);
+    return FilePath.of(files[0]);
   }
 
 //---------------------------------------------------------------------------
@@ -889,7 +889,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    FilePath folderPath = new FilePath(tfLinkGenParent.getText());
+    FilePath folderPath = FilePath.of(tfLinkGenParent.getText());
 
     if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
     {
@@ -897,7 +897,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
         folderPath = db.getRootPath().getParent();
 
       if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
-        folderPath = new FilePath(userWorkingDir());
+        folderPath = FilePath.of(userWorkingDir());
     }
 
     dirChooser.setInitialDirectory(folderPath.toFile());

@@ -183,7 +183,7 @@ class DeletionTask
         if ((deleteRoot == false) && path.equals(root))
           continue;
 
-        new FilePath(path).clearReadOnlyOnWindows();
+        FilePath.of(path).clearReadOnlyOnWindows();
 
         try
         {

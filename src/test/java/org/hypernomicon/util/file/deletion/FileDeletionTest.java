@@ -50,7 +50,7 @@ class FileDeletionTest
 //---------------------------------------------------------------------------
 
   /** Non-existent path used for builder validation tests (no filesystem operations occur) */
-  private static final FilePath NONEXISTENT = new FilePath("_nonexistent_test_path_");
+  private static final FilePath NONEXISTENT = FilePath.of("_nonexistent_test_path_");
 
   /** Known file and directory from app preferences; null if not configured or missing */
   private static final FilePath HDB_FILE, HDB_DIR;
@@ -67,12 +67,12 @@ class FileDeletionTest
 
       if ((srcPath.isBlank() == false) && (srcName.isBlank() == false))
       {
-        FilePath candidate = new FilePath(srcPath).resolve(srcName);
+        FilePath candidate = FilePath.of(srcPath).resolve(srcName);
 
         if (candidate.exists())
         {
           file = candidate;
-          dir = new FilePath(srcPath);
+          dir = FilePath.of(srcPath);
         }
       }
     }
@@ -749,8 +749,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistent_returnsSuccessWithEmptyFailedPaths()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     BatchBuilder batch = FileDeletion.ofFiles(List.of(ghost1, ghost2)).nonInteractive();
 
@@ -763,8 +763,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistent_failureOK_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofFiles(List.of(ghost1, ghost2)).nonInteractiveFailureOK().execute());
@@ -775,8 +775,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistent_logErrors_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofFiles(List.of(ghost1, ghost2)).nonInteractiveLogErrors().execute());
@@ -946,8 +946,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistentDirsWithContents_nonInteractive_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofDirsWithContents(List.of(ghost1, ghost2)).nonInteractive().execute());
@@ -958,8 +958,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistentDirsWithContents_failureOK_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofDirsWithContents(List.of(ghost1, ghost2)).nonInteractiveFailureOK().execute());
@@ -970,8 +970,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistentDirsWithContents_logErrors_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofDirsWithContents(List.of(ghost1, ghost2)).nonInteractiveLogErrors().execute());
@@ -982,8 +982,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistentDirsContentsOnly_nonInteractive_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofDirsContentsOnly(List.of(ghost1, ghost2)).nonInteractive().execute());
@@ -994,8 +994,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistentDirsContentsOnly_failureOK_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofDirsContentsOnly(List.of(ghost1, ghost2)).nonInteractiveFailureOK().execute());
@@ -1006,8 +1006,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistentDirsContentsOnly_logErrors_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofDirsContentsOnly(List.of(ghost1, ghost2)).nonInteractiveLogErrors().execute());
@@ -1018,8 +1018,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistentFilesOrDirsWithContents_nonInteractive_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofFilesOrDirsWithContents(List.of(ghost1, ghost2)).nonInteractive().execute());
@@ -1030,8 +1030,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistentFilesOrDirsWithContents_failureOK_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofFilesOrDirsWithContents(List.of(ghost1, ghost2)).nonInteractiveFailureOK().execute());
@@ -1042,8 +1042,8 @@ class FileDeletionTest
   @Test
   void batchBuilder_allNonexistentFilesOrDirsWithContents_logErrors_returnsSuccess()
   {
-    FilePath ghost1 = new FilePath("_nonexistent_1_"),
-             ghost2 = new FilePath("_nonexistent_2_");
+    FilePath ghost1 = FilePath.of("_nonexistent_1_"),
+             ghost2 = FilePath.of("_nonexistent_2_");
 
     assertEquals(FileDeletion.DeletionResult.SUCCESS,
         FileDeletion.ofFilesOrDirsWithContents(List.of(ghost1, ghost2)).nonInteractiveLogErrors().execute());
@@ -1115,7 +1115,7 @@ class FileDeletionTest
     Files.writeString(child.resolve("file.txt"), "data");
     Files.writeString(parent.resolve("other.txt"), "data");
 
-    return new FilePath[] { new FilePath(parent), new FilePath(child) };
+    return new FilePath[] { FilePath.of(parent), FilePath.of(child) };
   }
 
 //---------------------------------------------------------------------------

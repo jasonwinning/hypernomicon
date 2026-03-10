@@ -419,7 +419,7 @@ public class HyperPath
 
     Set<HyperPath> set = getHyperPathSetForFilePath(srcFilePath);
 
-    FilePath destFilePath = newFolder.filePath().resolve(changeFilename ? new FilePath(newName) : srcFilePath.getNameOnly());
+    FilePath destFilePath = newFolder.filePath().resolve(changeFilename ? FilePath.of(newName) : srcFilePath.getNameOnly());
 
     if (srcFilePath.equals(destFilePath)) return true;
 

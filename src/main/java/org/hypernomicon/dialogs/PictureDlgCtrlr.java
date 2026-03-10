@@ -194,7 +194,7 @@ public class PictureDlgCtrlr extends ModalDialog
       if (rbCurrent.isSelected())
         filePath = personHyperTab.getCurPicture();
       else if (rbFile.isSelected())
-        filePath = new FilePath(tfFile.getText());
+        filePath = FilePath.of(tfFile.getText());
 
       if (FilePath.isEmpty(filePath)) return;
 
@@ -546,7 +546,7 @@ public class PictureDlgCtrlr extends ModalDialog
       if (rbFile.isSelected())
       {
         if (tfFile.getText().isEmpty()) return;
-        src = new FilePath(tfFile.getText());
+        src = FilePath.of(tfFile.getText());
         dest = getDestFilePath(tfName.getText());
         sameFile = src.equals(dest);
       }
@@ -624,7 +624,7 @@ public class PictureDlgCtrlr extends ModalDialog
   {
     if (rbClipboard.isSelected() == false) return;
 
-    FilePath fileName = new FilePath(tfName.getText());
+    FilePath fileName = FilePath.of(tfName.getText());
 
     if (FilePath.isEmpty(fileName)) return;
 
@@ -717,7 +717,7 @@ public class PictureDlgCtrlr extends ModalDialog
   {
     try
     {
-      FilePath tempFile = new FilePath(java.io.File.createTempFile("temp", webBufferFileName));
+      FilePath tempFile = FilePath.of(java.io.File.createTempFile("temp", webBufferFileName));
       tempFile.deleteOnExit();
       webImageBuffer.saveToFile(tempFile);
       picture = new Image(tempFile.toURI().toString());
@@ -743,7 +743,7 @@ public class PictureDlgCtrlr extends ModalDialog
 
   private void rbFileSelected()
   {
-    FilePath path = new FilePath(tfFile.getText());
+    FilePath path = FilePath.of(tfFile.getText());
 
     removeCrop();
 
@@ -862,19 +862,19 @@ public class PictureDlgCtrlr extends ModalDialog
 
   private FilePath getDestFilePath(String fileName)
   {
-    fileName = new FilePath(fileName).getNameOnly().toString();
+    fileName = FilePath.of(fileName).getNameOnly().toString();
 
     if (rbCurrent.isSelected())
     {
       if (chkMove.isSelected() == false)
-        return personHyperTab.getCurPicture().getDirOnly().resolve(new FilePath(fileName));
+        return personHyperTab.getCurPicture().getDirOnly().resolve(FilePath.of(fileName));
     }
 
     else if (rbFile.isSelected())
     {
-      FilePath filePath = new FilePath(tfFile.getText());
+      FilePath filePath = FilePath.of(tfFile.getText());
       if (db.getRootPath().contains(filePath) && (chkMove.isSelected() == false))
-        return filePath.getDirOnly().resolve(new FilePath(fileName));
+        return filePath.getDirOnly().resolve(FilePath.of(fileName));
     }
 
     return db.picturesPath(fileName);
@@ -948,7 +948,7 @@ public class PictureDlgCtrlr extends ModalDialog
     }
     else // (rbFile.isSelected())
     {
-      newFileSrc = new FilePath(tfFile.getText());
+      newFileSrc = FilePath.of(tfFile.getText());
 
       if (FilePath.isEmpty(newFileSrc) || newFileSrc.getNameOnly().toString().isBlank())
         return falseWithErrorPopup("Please specify a file from the local file system.", tfFile);

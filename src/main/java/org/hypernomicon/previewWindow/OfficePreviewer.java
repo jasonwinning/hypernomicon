@@ -226,14 +226,14 @@ final class OfficePreviewer
           if (lastInfo.convertToHtml)
             try
             {
-              lastInfo.jsWrapper.loadFile(new FilePath(tempPath), false);
+              lastInfo.jsWrapper.loadFile(FilePath.of(tempPath), false);
             }
             catch (IOException e)
             {
               lastInfo.jsWrapper.setUnable(lastInfo.filePath);
             }
           else
-            lastInfo.jsWrapper.loadPdf(new FilePath(tempPath), lastInfo.pageNum);
+            lastInfo.jsWrapper.loadPdf(FilePath.of(tempPath), lastInfo.pageNum);
 
           if (nextInfo == lastInfo)
             nextInfo = null;

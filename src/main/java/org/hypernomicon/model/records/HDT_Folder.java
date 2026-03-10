@@ -151,7 +151,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     db.unmapFilePath(srcFilePath);
     setNameInternal(newName, true);
-    path.assign(parentFolder(), new FilePath(newName));
+    path.assign(parentFolder(), FilePath.of(newName));
 
     folderTreeWatcher.createNewWatcherAndStart();
 
@@ -204,7 +204,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     Files.move(srcFilePath.toPath(), destFilePath.toPath());
 
     db.unmapFilePath(srcFilePath);
-    path.assign(newParent, new FilePath(name()));
+    path.assign(newParent, FilePath.of(name()));
 
     return true;
   }

@@ -67,7 +67,7 @@ public class ImportBibEntryDlgCtrlr extends ModalDialog
   public boolean getDeleteFile()        { return chkDeleteFile.isSelected(); }
   public boolean getFailedToLoad()      { return failedToLoad; }
   public List<String> getLines()        { return convertMultiLineStrToStrList(taContents.getText(), false); }
-  public FilePath getFilePath()         { return tfFile.getText().length() > 0 ? new FilePath(tfFile.getText()) : null; }
+  public FilePath getFilePath()         { return tfFile.getText().length() > 0 ? FilePath.of(tfFile.getText()) : null; }
 
 //---------------------------------------------------------------------------
 

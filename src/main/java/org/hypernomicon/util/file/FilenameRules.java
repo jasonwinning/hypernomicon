@@ -304,7 +304,7 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
 
   private static void cleanupLeftoverProbeDirectory(Path path)
   {
-    FilePath probeDir = new FilePath(path);
+    FilePath probeDir = FilePath.of(path);
 
     HyperThread cleanupThread = new HyperThread("ProbeCleanup", () -> FileDeletion.ofDirWithContents(probeDir).nonInteractiveFailureOK().execute());
 
@@ -324,7 +324,7 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
       for (Path path : stream)
       {
         if (Files.isDirectory(path))
-          probeDirs.add(new FilePath(path));
+          probeDirs.add(FilePath.of(path));
       }
     }
     catch (IOException e)
@@ -593,10 +593,10 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
     finally
     {
       if (createdBase)
-        FileDeletion.ofFile(new FilePath(basePath)).nonInteractiveFailureOK().execute();
+        FileDeletion.ofFile(FilePath.of(basePath)).nonInteractiveFailureOK().execute();
 
       if (createdVariant)
-        FileDeletion.ofFile(new FilePath(variantPath)).nonInteractiveFailureOK().execute();
+        FileDeletion.ofFile(FilePath.of(variantPath)).nonInteractiveFailureOK().execute();
     }
   }
 

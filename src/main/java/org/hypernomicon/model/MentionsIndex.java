@@ -424,7 +424,7 @@ class MentionsIndex
       return;
     }
 
-    FilePath filePath = new FilePath(parentPathStr);
+    FilePath filePath = FilePath.of(parentPathStr);
 
     if (filePath.exists() == false)
     {

@@ -105,7 +105,7 @@ public class WelcomeDlgCtrlr extends ModalDialog
       hl.setOnAction(event ->
       {
         openClicked = true;
-        openPath = new FilePath(mru);
+        openPath = FilePath.of(mru);
         btnOkClick();
       });
     }

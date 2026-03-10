@@ -424,7 +424,7 @@ public final class DesktopUtil
           warningPopup(result.errorMessage());
       }
 
-      case LAUNCH_FILE -> launchFile(new FilePath(result.urlString()));
+      case LAUNCH_FILE -> launchFile(FilePath.of(result.urlString()));
 
       case BROWSE_WEB -> browseDesktop(result.urlString(), result.uri());
     }
@@ -510,7 +510,7 @@ public final class DesktopUtil
 
   public static FilePath homeDir()
   {
-    return new FilePath(System.getProperty("user.home"));
+    return FilePath.of(System.getProperty("user.home"));
   }
 
 //---------------------------------------------------------------------------
@@ -518,7 +518,7 @@ public final class DesktopUtil
 
   public static FilePath tempDir()
   {
-    return new FilePath(System.getProperty("java.io.tmpdir"));
+    return FilePath.of(System.getProperty("java.io.tmpdir"));
   }
 
 //---------------------------------------------------------------------------
@@ -640,7 +640,7 @@ public final class DesktopUtil
 
     if (IS_OS_WINDOWS == false) try
     {
-      for (String line : new FilePath("/etc/hostname").readToStrList())
+      for (String line : FilePath.of("/etc/hostname").readToStrList())
       {
         hostName = formatName(line);
         if (strNotNullOrBlank(hostName)) return hostName;
@@ -714,7 +714,7 @@ public final class DesktopUtil
 
   private static String readValueFromFile(String filePathStr, String key) throws IOException
   {
-    FilePath filePath = new FilePath(filePathStr);
+    FilePath filePath = FilePath.of(filePathStr);
     if (filePath.exists() == false)
       return null;
 

@@ -118,15 +118,15 @@ public final class XmlDiffCtrlr
 
 //---------------------------------------------------------------------------
 
-  private static void btnLaunchClick(TextField tf) { launchFile(new FilePath(tf.getText())); }
+  private static void btnLaunchClick(TextField tf) { launchFile(FilePath.of(tf.getText())); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private static void moveFiles(TextField tfSrc, TextField tfDest)
   {
-    FilePath srcFolderPath  = new FilePath(tfSrc .getText()),
-             destFolderPath = new FilePath(tfDest.getText());
+    FilePath srcFolderPath  = FilePath.of(tfSrc .getText()),
+             destFolderPath = FilePath.of(tfDest.getText());
 
     if (FileDeletion.ofDirContentsOnly(destFolderPath).interactive().execute() == DeletionResult.ABORTED)
       return;
@@ -212,10 +212,10 @@ public final class XmlDiffCtrlr
   {
     TextField tf = getExeField(num);
 
-    FilePath startPath = new FilePath(tf.getText()).getDirOnly();
+    FilePath startPath = FilePath.of(tf.getText()).getDirOnly();
 
     if (FilePath.isEmpty(startPath))
-      startPath = new FilePath(userWorkingDir());
+      startPath = FilePath.of(userWorkingDir());
 
     FileChooser fileChooser = new FileChooser();
 
