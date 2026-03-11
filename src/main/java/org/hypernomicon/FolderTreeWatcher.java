@@ -61,6 +61,10 @@ import javafx.stage.Modality;
 
 public class FolderTreeWatcher
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static volatile boolean consoleLogging;
 
   private volatile Consumer<FilePath> evictionHook;
@@ -164,6 +168,7 @@ public class FolderTreeWatcher
         }
 
         List<WatcherEvent> eventList = null;
+        Set<FilePath> overflowedDirs = null;
 
         if (watchKey != null)
           eventList = new ArrayList<>();
@@ -188,6 +193,17 @@ public class FolderTreeWatcher
               {
                 folderWarningScheduled = true;
                 runOutsideFXThread(2500, () -> showDeletionWarnings(true));
+              }
+
+              // Collect overflowed directory for post-batch re-scan
+
+              HDT_Folder folder = watchKeyToDir.get(watchKey);
+              FilePath dir = folder != null ? folder.filePath() : FilePath.of((Path) watchKey.watchable());
+
+              if (dir != null)
+              {
+                if (overflowedDirs == null) overflowedDirs = new LinkedHashSet<>();
+                overflowedDirs.add(dir);
               }
 
               continue;
@@ -266,6 +282,9 @@ public class FolderTreeWatcher
             errorPopup("Unable to process watcher event list: " + getThrowableMessage(e));
           }
         }
+
+        if (overflowedDirs != null)
+          reconcileAfterOverflow(overflowedDirs);
       }
     }
 
@@ -351,6 +370,36 @@ public class FolderTreeWatcher
       else if (hadOverflow)
         warningPopup(titleCase(noun) + "s in the database folder may have been deleted or moved from outside the program. " +
                      "Changes to database " + noun + "s should be made using the " + appTitle + " File Manager instead.");
+    }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+    private void reconcileAfterOverflow(Set<FilePath> overflowedDirs)
+    {
+      if (consoleLogging)
+        System.out.println("Overflow re-scan: " + overflowedDirs.size() + " director" +
+                           (overflowedDirs.size() == 1 ? "y" : "ies"));
+
+      for (FilePath dir : overflowedDirs)
+        if (dir.exists())
+        {
+          try
+          {
+            registerTree(dir);
+          }
+          catch (IOException e)
+          {
+            logThrowable(e);
+          }
+        }
+
+      // Remove stale watch keys for directories that no longer exist
+      // Note: it is not guaranteed that isValid() will be false once the directory no longer exists
+
+      watchKeyToDir.entrySet().removeIf(e -> e.getKey().isValid() == false);
+
+      FileManager.pruneAndRefresh(false);
     }
 
     //---------------------------------------------------------------------------
@@ -602,6 +651,25 @@ public class FolderTreeWatcher
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
+    /**
+     * Walks the directory subtree rooted at {@code rootFilePath} and ensures every
+     * directory has a corresponding {@link org.hypernomicon.model.records.HDT_Folder HDT_Folder}
+     * record and a registered {@link WatchKey}. This is the mechanism that keeps the
+     * in-memory database model synchronized with the physical filesystem: every folder
+     * under the database root must have a record (a fundamental invariant), and every
+     * folder must be watched so that external changes (renames, deletions, new files)
+     * are detected and surfaced to the user via the File Manager.
+     * <p>
+     * Called at watcher startup to establish the initial watch tree, on
+     * {@code wekCreate} when a new directory appears, on {@code wekRename} to
+     * re-register a renamed directory's subtree, and during
+     * {@link WatcherThread#reconcileAfterOverflow reconcileAfterOverflow} to recover
+     * from lost {@code OVERFLOW} events. The method is idempotent: directories that
+     * already have records and watch keys are left unchanged.
+     *
+     * @param rootFilePath the root of the subtree to register
+     * @throws IOException if the tree walk encounters an unrecoverable I/O error
+     */
     private void registerTree(FilePath rootFilePath) throws IOException
     {
       Files.walkFileTree(rootFilePath.toPath(), new FileVisitor<>()
