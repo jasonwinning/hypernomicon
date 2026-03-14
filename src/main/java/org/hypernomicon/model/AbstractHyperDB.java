@@ -626,9 +626,10 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean creatingDataset = false;
+  private static boolean creatingDataset = false, startingDBSession = false;
 
-  public static boolean isCreatingDataset() { return creatingDataset; }
+  public static boolean isCreatingDataset  () { return creatingDataset; }
+  public static boolean isStartingDBSession() { return startingDBSession; }
 
   private <HDT_T extends HDT_Record> DatasetAccessor<HDT_T> getAccessor(Class<HDT_T> klass)
   {

@@ -229,25 +229,23 @@ class FilenameRulesTest
 //---------------------------------------------------------------------------
 
   @Test
-  void filenameMap_probed_agreesWithFilesystem() throws IOException
+  void normalize_probed_agreesWithFilesystem() throws IOException
   {
-    FilenameMap<String> map = new FilenameMap<>(FilenameRules.detect(tempDir));
+    FilenameRules rules = FilenameRules.detect(tempDir);
 
-    Path file = tempDir.resolve("MapTest.txt");
+    Path file = tempDir.resolve("NormTest.txt");
     Files.createFile(file);
 
     try
     {
-      map.put("MapTest.txt", "value");
-
-      Path upperVariant = tempDir.resolve("MAPTEST.TXT");
+      Path upperVariant = tempDir.resolve("NORMTEST.TXT");
       boolean filesystemSaysEquivalent = Files.exists(upperVariant) && Files.isSameFile(file, upperVariant),
 
-              mapSaysEquivalent = map.containsKey("MAPTEST.TXT");
+              normSaysEquivalent = rules.normalize("NormTest.txt").equals(rules.normalize("NORMTEST.TXT"));
 
-      assertEquals(filesystemSaysEquivalent, mapSaysEquivalent,
+      assertEquals(filesystemSaysEquivalent, normSaysEquivalent,
           "Filesystem says equivalent=" + filesystemSaysEquivalent +
-          " but FilenameMap.containsKey returned " + mapSaysEquivalent);
+          " but normalize returned " + normSaysEquivalent);
     }
     finally
     {
@@ -700,66 +698,53 @@ class FilenameRulesTest
 
 //---------------------------------------------------------------------------
 //endregion
-//region FilenameMap with Rules Tests
+//region Normalize with Rules Tests
 //---------------------------------------------------------------------------
 
   @Test
-  void filenameMap_withCaseInsensitiveRules_matchesCaseVariants()
+  void normalize_withCaseInsensitiveRules_matchesCaseVariants()
   {
     FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
-    FilenameMap<String> map = new FilenameMap<>(rules);
 
-    map.put("File.txt", "value");
+    String normalized = rules.normalize("File.txt");
 
-    assertEquals("value", map.get("FILE.TXT"));
-    assertEquals("value", map.get("file.txt"));
-    assertTrue(map.containsKey("FILE.TXT"));
+    assertEquals(normalized, rules.normalize("FILE.TXT"));
+    assertEquals(normalized, rules.normalize("file.txt"));
   }
 
 //---------------------------------------------------------------------------
 
   @Test
-  void filenameMap_withCaseSensitiveRules_distinguishesCaseVariants()
+  void normalize_withCaseSensitiveRules_distinguishesCaseVariants()
   {
     FilenameRules rules = new FilenameRules(false, false, false, false, CaseFoldingMode.SIMPLE);
-    FilenameMap<String> map = new FilenameMap<>(rules);
 
-    map.put("File.txt", "value1");
-    map.put("FILE.TXT", "value2");
-
-    assertEquals(2, map.size());
-    assertEquals("value1", map.get("File.txt"));
-    assertEquals("value2", map.get("FILE.TXT"));
+    assertNotEquals(rules.normalize("File.txt"), rules.normalize("FILE.TXT"));
   }
 
 //---------------------------------------------------------------------------
 
   @Test
-  void filenameMap_withNormalizationRules_matchesNormalizationVariants()
+  void normalize_withNormalizationRules_matchesNormalizationVariants()
   {
     FilenameRules rules = new FilenameRules(true, true, false, false, CaseFoldingMode.SIMPLE);
-    FilenameMap<String> map = new FilenameMap<>(rules);
 
-    // Put with NFC form
-    map.put("caf\u00E9.txt", "coffee");
-
-    // Get with NFD form
-    assertEquals("coffee", map.get("cafe\u0301.txt"));
+    // NFC form and NFD form should normalize to the same string
+    assertEquals(rules.normalize("caf\u00E9.txt"), rules.normalize("cafe\u0301.txt"));
   }
 
 //---------------------------------------------------------------------------
 
   @Test
-  void filenameMap_withTrimmingRules_matchesTrailingVariants()
+  void normalize_withTrimmingRules_matchesTrailingVariants()
   {
     FilenameRules rules = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
-    FilenameMap<String> map = new FilenameMap<>(rules);
 
-    map.put("file", "value");
+    String normalized = rules.normalize("file");
 
-    assertEquals("value", map.get("file."));
-    assertEquals("value", map.get("file.."));
-    assertEquals("value", map.get("file "));
+    assertEquals(normalized, rules.normalize("file."));
+    assertEquals(normalized, rules.normalize("file.."));
+    assertEquals(normalized, rules.normalize("file "));
   }
 
 //---------------------------------------------------------------------------

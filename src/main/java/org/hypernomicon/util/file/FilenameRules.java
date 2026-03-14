@@ -22,6 +22,7 @@ import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
@@ -54,7 +55,7 @@ import com.ibm.icu.text.Normalizer2;
  * <ul>
  *   <li>Call {@link #initialize(Preferences prefs)} at application startup to load saved rules or probe temp directory</li>
  *   <li>Call {@link #updateForPath(FilePath)} when loading a database to detect rules for that volume</li>
- *   <li>Use {@link #current()} to get the current filename rules for FilenameMap</li>
+ *   <li>Use {@link #current()} to get the current filename rules for the active database volume</li>
  * </ul>
  *
  * @param caseInsensitive true if the filesystem treats {@code File.txt} and {@code FILE.TXT} as the same file
@@ -232,7 +233,7 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
    * @return the detected rules
    * @throws IOException if the directory is not writable or probing fails
    */
-  static FilenameRules detect(FilePath directory) throws IOException
+  private static FilenameRules detect(FilePath directory) throws IOException
   {
     Objects.requireNonNull(directory, "directory");
 
@@ -422,6 +423,49 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
       s = NFC.normalize(s);
 
     return s;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Normalizes a full absolute path by applying these rules to each name component via
+   * {@link #normalize(String)}; the root component is kept as-is.
+   *
+   * @param absFilePath an absolute filesystem path
+   * @return a normalized string representation of the path
+   */
+  public String normalizeFilePath(FilePath absFilePath)
+  {
+    return normalizePath(absFilePath.toPath());
+  }
+
+  /**
+   * Normalizes a full absolute path by applying these rules to each name component via
+   * {@link #normalize(String)}; the root component is kept as-is.
+   *
+   * @param absPath an absolute filesystem path
+   * @return a normalized string representation of the path
+   */
+  public String normalizePath(Path absPath)
+  {
+    Path normalized = absPath.toAbsolutePath().normalize(),
+         pathRoot   = normalized.getRoot();
+
+    StringBuilder sb = new StringBuilder();
+
+    if (pathRoot != null)
+      sb.append(pathRoot);
+
+    for (int ndx = 0; ndx < normalized.getNameCount(); ndx++)
+    {
+      if (ndx > 0)
+        sb.append(File.separatorChar);
+
+      sb.append(normalize(normalized.getName(ndx).toString()));
+    }
+
+    return sb.toString();
   }
 
 //---------------------------------------------------------------------------

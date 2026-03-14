@@ -57,6 +57,7 @@ class FilePathLockTest
   @BeforeEach
   void setUp()
   {
+    FilePathRegistry.instance().populateForTesting(FilePath.of(tempDir));
     PopupRobot.setActive(true);
     PopupRobot.clear();
   }
@@ -66,6 +67,7 @@ class FilePathLockTest
   @AfterEach
   void tearDown()
   {
+    FilePathRegistry.instance().clear();
     PopupRobot.setActive(false);
     PopupRobot.clear();
   }

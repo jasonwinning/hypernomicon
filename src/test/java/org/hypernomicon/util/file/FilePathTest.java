@@ -47,6 +47,8 @@ class FilePathTest
   @BeforeEach
   void setUp() throws IOException
   {
+    FilePathRegistry.instance().populateForTesting(FilePath.of(tempDir));
+
     // Create a directory tree for contains tests:
     // tempDir/a/b/c/d   (nested dirs)
     // tempDir/bar/       (for shared-prefix test)
@@ -59,6 +61,12 @@ class FilePathTest
     Files.createDirectories(tempDir.resolve("a").resolve("x"));
 
     base = FilePath.of(tempDir);
+  }
+
+  @AfterEach
+  void tearDown()
+  {
+    FilePathRegistry.instance().clear();
   }
 
 //---------------------------------------------------------------------------

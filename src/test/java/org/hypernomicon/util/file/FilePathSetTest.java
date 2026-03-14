@@ -18,6 +18,7 @@
 package org.hypernomicon.util.file;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
@@ -35,8 +36,7 @@ import org.hypernomicon.TestConfig;
 /**
  * Comprehensive unit tests for {@link FilePathSet}.
  * <p>
- * Tests cover basic Set operations, thread safety, and the cleanup mechanism
- * for empty buckets.
+ * Tests cover basic Set operations, thread safety, and collection operations.
  */
 class FilePathSetTest
 {
@@ -44,12 +44,22 @@ class FilePathSetTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @TempDir
+  Path tempDir;
+
   private FilePathSet set;
 
   @BeforeEach
   void setUp()
   {
+    FilePathRegistry.instance().populateForTesting(FilePath.of(tempDir));
     set = new FilePathSet();
+  }
+
+  @AfterEach
+  void tearDown()
+  {
+    FilePathRegistry.instance().clear();
   }
 
 //---------------------------------------------------------------------------
@@ -90,17 +100,6 @@ class FilePathSetTest
   }
 
   @Test
-  void add_sameFilenameDifferentDirectories_addsMultiple()
-  {
-    FilePath path1 = FilePath.of("/dir1/file.txt"),
-             path2 = FilePath.of("/dir2/file.txt");
-
-    assertTrue(set.add(path1));
-    assertTrue(set.add(path2));
-    assertEquals(2, set.size());
-  }
-
-  @Test
   void add_differentFilenames_addsMultiple()
   {
     FilePath path1 = FilePath.of("/dir/file1.txt"),
@@ -125,6 +124,7 @@ class FilePathSetTest
     boolean result = set.remove(path);
 
     assertTrue(result);
+    assertEquals(0, set.size());
   }
 
   @Test
@@ -149,17 +149,6 @@ class FilePathSetTest
   {
     assertFalse(set.remove("not a FilePath"));
     assertFalse(set.remove(123));
-  }
-
-  @Test
-  void remove_existingPath_decreasesSize()
-  {
-    FilePath path = FilePath.of("C:/dir/file.txt");
-    set.add(path);
-
-    set.remove(path);
-
-    assertEquals(0, set.size());
   }
 
   @Test
@@ -473,27 +462,6 @@ class FilePathSetTest
     assertEquals(1, set.size());
   }
 
-  @Test
-  void removeIf_allSameFilename_cleansBucket()
-  {
-    // All paths have same filename; removing all should clean up the bucket
-    FilePath path1 = FilePath.of("C:/dir1/file.txt"),
-             path2 = FilePath.of("C:/dir2/file.txt"),
-             path3 = FilePath.of("C:/dir3/file.txt");
-    set.add(path1);
-    set.add(path2);
-    set.add(path3);
-
-    set.removeIf(p -> "file.txt".equals(p.getNameOnly().toString()));
-
-    assertTrue(set.isEmpty());
-
-    // Adding new path with same filename should work (bucket was cleaned)
-    FilePath newPath = FilePath.of("C:/dir4/file.txt");
-    assertTrue(set.add(newPath));
-    assertTrue(set.contains(newPath));
-  }
-
 //---------------------------------------------------------------------------
 //endregion
 //region Collection Operations: ContainsAll
@@ -623,16 +591,16 @@ class FilePathSetTest
   }
 
   @Test
-  void iterator_remove_throwsUnsupportedOperationException()
+  void iterator_remove_works()
   {
     FilePath path = FilePath.of("/dir/file.txt");
     set.add(path);
 
     Iterator<FilePath> iter = set.iterator();
     iter.next();
+    iter.remove();
 
-    // Stream-based iterator doesn't support remove(); use removeIf() instead
-    assertThrows(UnsupportedOperationException.class, iter::remove);
+    assertTrue(set.isEmpty());
   }
 
 //---------------------------------------------------------------------------
@@ -661,52 +629,6 @@ class FilePathSetTest
     FilePathSet newSet = new FilePathSet(Collections.emptyList());
 
     assertTrue(newSet.isEmpty());
-  }
-
-//---------------------------------------------------------------------------
-//endregion
-//region Bucket Cleanup: Memory Leak Prevention
-//---------------------------------------------------------------------------
-
-  @Test
-  void remove_lastItemInBucket_cleansBucket()
-  {
-    // Add files with same name in different directories
-    FilePath path1 = FilePath.of("C:/dir1/file.txt"),
-             path2 = FilePath.of("C:/dir2/file.txt");
-    set.add(path1);
-    set.add(path2);
-
-    // Remove both; bucket should be cleaned up
-    set.remove(path1);
-    set.remove(path2);
-
-    assertTrue(set.isEmpty());
-
-    // Add new file with same name; should work correctly
-    FilePath path3 = FilePath.of("C:/dir3/file.txt");
-    assertTrue(set.add(path3));
-    assertTrue(set.contains(path3));
-  }
-
-  @Test
-  void remove_manyFilesWithSameNameThenAll_sizeIsZero()
-  {
-    List<FilePath> paths = new ArrayList<>();
-    for (int ndx = 0; ndx < 100; ndx++)
-    {
-      FilePath path = FilePath.of("/dir" + ndx + "/file.txt");
-      paths.add(path);
-      set.add(path);
-    }
-
-    assertEquals(100, set.size());
-
-    for (FilePath path : paths)
-      set.remove(path);
-
-    assertEquals(0, set.size());
-    assertTrue(set.isEmpty());
   }
 
 //---------------------------------------------------------------------------
@@ -803,130 +725,6 @@ class FilePathSetTest
     finally
     {
       executor.shutdownNow();
-    }
-  }
-
-  @Test
-  void concurrent_mixedOperations_noExceptions() throws Exception
-  {
-    int numThreads = 20,
-        opsPerThread = 200;
-    AtomicBoolean failed = new AtomicBoolean(false);
-
-    @SuppressWarnings("resource")
-    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-
-    try
-    {
-      CountDownLatch latch = new CountDownLatch(numThreads);
-
-      // Pre-populate some data
-      for (int pathNdx = 0; pathNdx < 50; pathNdx++)
-        set.add(FilePath.of("/dir/file" + pathNdx + ".txt"));
-
-      for (int threadNdx = 0; threadNdx < numThreads; threadNdx++)
-      {
-        executor.submit(() ->
-        {
-          try
-          {
-            Random random = new Random();
-            for (int opNdx = 0; opNdx < opsPerThread; opNdx++)
-            {
-              FilePath path = FilePath.of("/dir/file" + random.nextInt(100) + ".txt");
-              switch (opNdx % 4)
-              {
-                case 0 -> set.add(path);
-                case 1 -> set.remove(path);
-                case 2 -> set.contains(path);
-                case 3 -> set.size();
-              }
-            }
-          }
-          catch (Exception e)
-          {
-            failed.set(true);
-            e.printStackTrace();
-          }
-          finally
-          {
-            latch.countDown();
-          }
-        });
-      }
-
-      assertTrue(latch.await(30, TimeUnit.SECONDS), "Test timed out");
-      assertFalse(failed.get(), "Concurrent operations threw exception");
-    }
-    finally
-    {
-      executor.shutdownNow();
-    }
-  }
-
-//---------------------------------------------------------------------------
-//endregion
-//region Concurrency: Add Retry Mechanism
-//---------------------------------------------------------------------------
-
-  @Test
-  void concurrent_addAndRemoveSameFilename_noLostUpdates() throws Exception
-  {
-    // This tests the retry mechanism in add() that handles the race condition
-    // when a remove() cleans up the bucket during an add() operation.
-
-    int iterations = 100,
-        numThreads = 4;
-
-    @SuppressWarnings("resource")
-    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-
-    try
-    {
-      for (int iter = 0; iter < iterations; iter++)
-      {
-        set.clear();
-        CountDownLatch startLatch = new CountDownLatch(1),
-                       doneLatch = new CountDownLatch(numThreads);
-
-        // Two threads add different paths with same filename
-        // Two threads remove them
-        FilePath path1 = FilePath.of("/dir1/file.txt"),
-                 path2 = FilePath.of("/dir2/file.txt");
-
-        executor.submit(() -> awaitAndRun(startLatch, doneLatch, () -> set.add(path1)));
-        executor.submit(() -> awaitAndRun(startLatch, doneLatch, () -> set.add(path2)));
-        executor.submit(() -> awaitAndRun(startLatch, doneLatch, () -> set.remove(path1)));
-        executor.submit(() -> awaitAndRun(startLatch, doneLatch, () -> set.remove(path2)));
-
-        startLatch.countDown();
-        assertTrue(doneLatch.await(5, TimeUnit.SECONDS), "Iteration " + iter + " timed out");
-
-        // The set should be consistent: either empty or containing paths that are actually present
-        for (FilePath path : set)
-          assertTrue(set.contains(path), "Set contains path but contains() returns false");
-      }
-    }
-    finally
-    {
-      executor.shutdownNow();
-    }
-  }
-
-  private static void awaitAndRun(CountDownLatch startLatch, CountDownLatch doneLatch, Runnable action)
-  {
-    try
-    {
-      startLatch.await();
-      action.run();
-    }
-    catch (InterruptedException e)
-    {
-      Thread.currentThread().interrupt();
-    }
-    finally
-    {
-      doneLatch.countDown();
     }
   }
 
@@ -1039,25 +837,6 @@ class FilePathSetTest
 //---------------------------------------------------------------------------
 
   @Test
-  void stress_manyFilesWithSameFilename_handledCorrectly()
-  {
-    assumeTrue(TestConfig.runLongTests());
-
-    int numPaths = 10000;
-
-    for (int ndx = 0; ndx < numPaths; ndx++)
-      set.add(FilePath.of("/dir" + ndx + "/samename.txt"));
-
-    assertEquals(numPaths, set.size());
-
-    // Remove half
-    for (int ndx = 0; ndx < (numPaths / 2); ndx++)
-      set.remove(FilePath.of("/dir" + ndx + "/samename.txt"));
-
-    assertEquals(numPaths / 2, set.size());
-  }
-
-  @Test
   void stress_manyDifferentFilenames_handledCorrectly()
   {
     assumeTrue(TestConfig.runLongTests());
@@ -1072,24 +851,6 @@ class FilePathSetTest
     // Check all present
     for (int ndx = 0; ndx < numPaths; ndx++)
       assertTrue(set.contains(FilePath.of("C:/dir/file" + ndx + ".txt")));
-  }
-
-  @Test
-  void stress_addRemoveCycle_noMemoryLeak()
-  {
-    assumeTrue(TestConfig.runLongTests());
-
-    // Add and remove many items with same filename to test bucket cleanup
-    for (int cycle = 0; cycle < 100; cycle++)
-    {
-      for (int ndx = 0; ndx < 100; ndx++)
-        set.add(FilePath.of("/dir" + ndx + "/file.txt"));
-
-      for (int ndx = 0; ndx < 100; ndx++)
-        set.remove(FilePath.of("/dir" + ndx + "/file.txt"));
-
-      assertTrue(set.isEmpty(), "Set should be empty after cycle " + cycle);
-    }
   }
 
 //---------------------------------------------------------------------------

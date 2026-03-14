@@ -41,8 +41,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.security.*;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.*;
@@ -64,11 +63,23 @@ public class FilePath implements Comparable<FilePath>
   FilePath(Path path)      { innerVal = new InnerFilePath(path); }
   FilePath(String pathStr) { innerVal = new InnerFilePath(pathStr); }
 
+  FilePath(Path path, Path realPath) { innerVal = new InnerFilePath(path, realPath); }
+
 //---------------------------------------------------------------------------
 
+  /**
+   * Return the canonical {@link FilePath} for the given path. When the {@link FilePathRegistry}
+   * is active and the path is absolute, the registry is consulted to ensure a single instance
+   * per real filesystem path. Otherwise a fresh instance is returned.
+   */
   public static FilePath of(Path path)
   {
     if (path == null) return null;
+
+    FilePathRegistry registry = FilePathRegistry.instance();
+
+    if (registry.isActive() && path.isAbsolute())
+      return registry.getOrCreate(path);
 
     return new FilePath(path);
   }
@@ -89,6 +100,7 @@ public class FilePath implements Comparable<FilePath>
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public File toFile()                  { return innerVal.getFile(); }
   public Path toPath()                  { return innerVal.getPath(); }
@@ -97,7 +109,7 @@ public class FilePath implements Comparable<FilePath>
   public long size() throws IOException { return Files.size(toPath()); }
   public boolean isFile()               { return toFile().isFile();  }
   public boolean isDirectory()          { return toFile().isDirectory(); }
-  public FilePath getParent()           { return nullSwitch(nullSwitch(toPath(), null, Path::getParent), null, FilePath::new); }
+  public FilePath getParent()           { return nullSwitch(nullSwitch(toPath(), null, Path::getParent), null, FilePath::of); }
   public Instant lastModified()         { return Instant.ofEpochMilli(toFile().lastModified()); }
 
   /**
@@ -144,17 +156,17 @@ public class FilePath implements Comparable<FilePath>
   /**
    * If this file is a directory, will return the entire path. If it is not a directory, will return the parent directory.
    */
-  public FilePath getDirOnly() { return isDirectory() ? this : new FilePath(FilenameUtils.getFullPathNoEndSeparator(toString())); }
+  public FilePath getDirOnly() { return isDirectory() ? this : FilePath.of(FilenameUtils.getFullPathNoEndSeparator(toString())); }
 
   /**
    * this = base, parameter = relative, output = resolved
    */
-  public FilePath resolve(FilePath relativeFilePath) { return new FilePath(toPath().resolve(relativeFilePath.toPath())); }
+  public FilePath resolve(FilePath relativeFilePath) { return FilePath.of(toPath().resolve(relativeFilePath.toPath())); }
 
   /**
    * this = base, parameter = relative, output = resolved
    */
-  public FilePath resolve(String relativeStr) { return new FilePath(toPath().resolve(Paths.get(relativeStr.strip()))); }
+  public FilePath resolve(String relativeStr) { return FilePath.of(toPath().resolve(Paths.get(relativeStr.strip()))); }
 
   /**
    * this = base, parameters = relative parts, output = resolved
@@ -166,7 +178,7 @@ public class FilePath implements Comparable<FilePath>
     for (String part : relativeStrs)
       path = path.resolve(Paths.get(part.strip()));
 
-    return new FilePath(path);
+    return FilePath.of(path);
   }
 
 //---------------------------------------------------------------------------
@@ -210,6 +222,8 @@ public class FilePath implements Comparable<FilePath>
         boolean fromUnentered = (ui != null) && (db != null) && (db.isOnline()) && isFile() && getParent().equals(db.unenteredPath());
 
         Files.move(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        FilePathRegistry.instance().evict(this);
 
         if (fromUnentered)
           ui.notifyOfImport(this);
@@ -303,6 +317,7 @@ public class FilePath implements Comparable<FilePath>
   {
     FileManager.setNeedRefresh();
     Files.move(getDirOnly().toPath(), destFilePath.toPath());
+    FilePathRegistry.instance().evict(this);
   }
 
 //---------------------------------------------------------------------------
@@ -712,6 +727,37 @@ public class FilePath implements Comparable<FilePath>
     });
 
     return hasFiles.booleanValue();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final Set<String> TEMP_EXACT_NAMES = Set.of(".ds_store", ".dropbox", ".dropbox.cache", "thumbs.db", "desktop.ini");
+
+  /**
+   * Check whether a filename matches a known temporary/system file pattern. Used to exclude
+   * such files from the registry and from FolderTreeWatcher event processing.
+   *
+   * @param filename the leaf filename to check (not a full path)
+   * @return {@code true} if the filename matches a known temporary file pattern
+   */
+  public static boolean isTemporaryFile(String filename)
+  {
+    if (strNullOrEmpty(filename)) return false;
+
+    String lower = filename.toLowerCase(Locale.ROOT);
+
+    if (TEMP_EXACT_NAMES.contains(lower))
+      return true;
+
+    // Prefix patterns: Office lock files (~$), Dropbox/LibreOffice temp (.~), macOS resource forks (._ )
+
+    if (lower.startsWith("~$") || lower.startsWith(".~") || lower.startsWith("._"))
+      return true;
+
+    // Suffix patterns
+
+    return lower.endsWith(".tmp") || lower.endsWith(".temp");
   }
 
 //---------------------------------------------------------------------------

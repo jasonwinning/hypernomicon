@@ -42,6 +42,13 @@ class InnerFilePath
   InnerFilePath(Path path)      { this.path = path; }
   InnerFilePath(File file)      { this.file = file; }
 
+  InnerFilePath(Path path, Path realPath)
+  {
+    this.path = path;
+    this.realPath = realPath;
+    this.realPathResolved = true;
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -106,7 +113,8 @@ class InnerFilePath
 
   Path getRealPath()
   {
-    if (realPathResolved) return realPath;
+    if (realPathResolved)
+      return realPath;
 
     try
     {
