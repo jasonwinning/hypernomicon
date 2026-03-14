@@ -21,6 +21,7 @@ import static org.hypernomicon.util.file.deletion.FileDeletion.DeletionType.*;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.hypernomicon.util.file.FilePath;
 
@@ -229,6 +230,18 @@ public final class FileDeletion
 //---------------------------------------------------------------------------
 
   private FileDeletion() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Register a hook invoked after each successful deletion. Pass {@code null} to clear.
+   * Called by {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry} during
+   * database session start and end to evict deleted paths from the path cache.
+   */
+  public static void setPostDeletionHook(Consumer<FilePath> hook)
+  {
+    DeletionBuilderBase.postDeletionHook = hook;
+  }
 
 // -------------------------------------------------------------------------
 // Single-item factory methods

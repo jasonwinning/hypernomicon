@@ -1744,6 +1744,103 @@ public final class FileDeletionTestRunner
       }).windowsOnly();
     }
 
+    // -----------------------------------------------------------------------
+    // Phase 26: Post-deletion hook does not fire on failure (steps 181-183, Windows-only)
+    //
+    // Verifies that the post-deletion hook is not called for paths that
+    // failed to delete (locked file). Step 181 tests a single locked file
+    // (FAILED result, hook never called). Step 182 tests a batch where one
+    // file is locked and one is not (PARTIAL result, hook fires only for the
+    // unlocked file). Step 183 tests a batch where all files are locked
+    // (FAILED result, hook never called).
+    // -----------------------------------------------------------------------
+
+    // Step 181: Builder NI on locked file; hook should not fire
+
+    seq.thenRunAfterDelay(() ->
+    {
+      RandomAccessFile raf = null;
+      List<FilePath> received = new ArrayList<>();
+
+      FileDeletion.setPostDeletionHook(received::add);
+
+      try
+      {
+        FilePath locked = createTestFile(testRoot, "step181_hook_locked.txt");
+        raf = lockFile(locked);
+
+        assertEquals(FAILED, FileDeletion.ofFile(locked).nonInteractive().execute(), "Step 181 result");
+        assertExists(locked, "Step 181 locked file");
+        assertTrue(received.isEmpty(), "Step 181 hook should not fire on FAILED deletion");
+      }
+      catch (IOException e) { throw new UncheckedIOException(e); }
+      finally
+      {
+        closeQuietly(raf);
+        FileDeletion.setPostDeletionHook(null);
+      }
+    }).windowsOnly();
+
+    // Step 182: Batch NI on locked + unlocked; hook fires only for unlocked
+
+    seq.thenRunAfterDelay(() ->
+    {
+      RandomAccessFile raf = null;
+      List<FilePath> received = new ArrayList<>();
+
+      FileDeletion.setPostDeletionHook(received::add);
+
+      try
+      {
+        FilePath locked   = createTestFile(testRoot, "step182_hook_locked.txt"),
+                 unlocked = createTestFile(testRoot, "step182_hook_unlocked.txt");
+        raf = lockFile(locked);
+
+        var batch = FileDeletion.ofFiles(List.of(locked, unlocked)).nonInteractive();
+        assertEquals(PARTIAL, batch.execute(), "Step 182 result");
+
+        assertEquals(1, received.size(), "Step 182 hook should fire once (for unlocked file)");
+        assertEquals(unlocked, received.getFirst(), "Step 182 hook should receive unlocked path");
+        assertFalse(received.contains(locked), "Step 182 hook should not receive locked path");
+      }
+      catch (IOException e) { throw new UncheckedIOException(e); }
+      finally
+      {
+        closeQuietly(raf);
+        FileDeletion.setPostDeletionHook(null);
+      }
+    }).windowsOnly();
+
+    // Step 183: Batch NI on two locked files; hook should not fire
+
+    seq.thenRunAfterDelay(() ->
+    {
+      RandomAccessFile raf1 = null, raf2 = null;
+      List<FilePath> received = new ArrayList<>();
+
+      FileDeletion.setPostDeletionHook(received::add);
+
+      try
+      {
+        FilePath locked1 = createTestFile(testRoot, "step183_hook_locked1.txt"),
+                 locked2 = createTestFile(testRoot, "step183_hook_locked2.txt");
+        raf1 = lockFile(locked1);
+        raf2 = lockFile(locked2);
+
+        var batch = FileDeletion.ofFiles(List.of(locked1, locked2)).nonInteractive();
+        assertEquals(FAILED, batch.execute(), "Step 183 result");
+
+        assertTrue(received.isEmpty(), "Step 183 hook should not fire when all deletions fail");
+      }
+      catch (IOException e) { throw new UncheckedIOException(e); }
+      finally
+      {
+        closeQuietly(raf1);
+        closeQuietly(raf2);
+        FileDeletion.setPostDeletionHook(null);
+      }
+    }).windowsOnly();
+
     seq.start();
   }
 

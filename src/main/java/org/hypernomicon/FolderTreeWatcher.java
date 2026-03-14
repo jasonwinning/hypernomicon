@@ -36,6 +36,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -62,6 +63,10 @@ import javafx.stage.Modality;
 public class FolderTreeWatcher
 {
   public static volatile boolean consoleLogging;
+
+  private volatile Consumer<FilePath> evictionHook;
+
+  public void setEvictionHook(Consumer<FilePath> evictionHook) { this.evictionHook = evictionHook; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -444,6 +449,12 @@ public class FolderTreeWatcher
 //              }
             }
 
+            // Evict the deleted path from the registry so stale entries don't linger
+
+            Consumer<FilePath> hook = evictionHook;
+            if (hook != null)
+              hook.accept(oldPathInfo.getFilePath());
+
             // There is no need to stop the watcher because nothing else should need to be deleted.
             // Also, if it is restarted, state information about the inter-computer request and
             // response is lost.
@@ -465,6 +476,12 @@ public class FolderTreeWatcher
 
           case wekRename:
           {
+            // Evict old path from registry; new path will be interned via FilePath.of() as needed
+
+            Consumer<FilePath> hook = evictionHook;
+            if (hook != null)
+              hook.accept(oldPathInfo.getFilePath());
+
             HyperPath hyperPath = oldPathInfo.getHyperPath();
             boolean untrackedFile = ((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
                                     (HyperPath.isInUseByRecords(hyperPath) == false);

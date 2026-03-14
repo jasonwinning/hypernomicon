@@ -25,6 +25,7 @@ import static org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult.*;
 import static org.hypernomicon.util.file.deletion.FileDeletion.RetryMode.*;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.*;
 
@@ -58,6 +59,14 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
   private boolean retryModeSet = false,
                   executed     = false,
                   logErrors    = false;
+
+  /**
+   * Optional hook invoked after each successful deletion. Registered by
+   * {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry} during database
+   * session start and cleared on session end. Callers outside this package use
+   * {@link FileDeletion#setPostDeletionHook(Consumer)} to register/clear it.
+   */
+  static volatile Consumer<FilePath> postDeletionHook;
 
 //---------------------------------------------------------------------------
 
@@ -156,6 +165,8 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
     if (totalCount == 0)
       return SUCCESS;
 
+    List<FilePath> originalPaths = tasks.stream().map(DeletionTask::getFilePath).toList();
+
     boolean underDbRoot = anyUnderDbRoot(tasks),
             startWatcher = underDbRoot && (folderTreeWatcher.isOnWatcherThread() == false) && folderTreeWatcher.stop();
 
@@ -165,6 +176,15 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
 
       if (((result == SUCCESS) || (result == PARTIAL)) && underDbRoot)
         FileManager.setNeedRefresh();
+
+      if ((result == SUCCESS) || (result == PARTIAL))
+      {
+        Consumer<FilePath> hook = postDeletionHook;
+        if (hook != null)
+          originalPaths.stream()
+            .filter(p -> failedPaths.contains(p) == false)
+            .forEach(hook);
+      }
 
       return result;
     }

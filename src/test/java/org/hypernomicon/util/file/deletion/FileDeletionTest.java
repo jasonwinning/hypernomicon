@@ -1180,6 +1180,102 @@ class FileDeletionTest
 
 //---------------------------------------------------------------------------
 //endregion
+//region Post-Deletion Hook
+//---------------------------------------------------------------------------
+
+  @Test
+  void postDeletionHook_firesOnSuccess(@TempDir Path tempDir) throws IOException
+  {
+    Path file = Files.createFile(tempDir.resolve("hooktest.txt"));
+    FilePath filePath = FilePath.of(file);
+
+    List<FilePath> received = new ArrayList<>();
+
+    FileDeletion.setPostDeletionHook(received::add);
+
+    try
+    {
+      assertEquals(FileDeletion.DeletionResult.SUCCESS,
+          FileDeletion.ofFile(filePath).nonInteractive().execute());
+
+      assertEquals(1, received.size(), "Hook should fire once");
+      assertEquals(filePath, received.getFirst(), "Hook should receive the deleted path");
+    }
+    finally
+    {
+      FileDeletion.setPostDeletionHook(null);
+    }
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void postDeletionHook_firesForEachBatchItem(@TempDir Path tempDir) throws IOException
+  {
+    FilePath f1 = FilePath.of(Files.createFile(tempDir.resolve("b1.txt"))),
+             f2 = FilePath.of(Files.createFile(tempDir.resolve("b2.txt"))),
+             f3 = FilePath.of(Files.createFile(tempDir.resolve("b3.txt")));
+
+    List<FilePath> received = new ArrayList<>();
+
+    FileDeletion.setPostDeletionHook(received::add);
+
+    try
+    {
+      assertEquals(FileDeletion.DeletionResult.SUCCESS,
+          FileDeletion.ofFiles(List.of(f1, f2, f3)).nonInteractive().execute());
+
+      assertEquals(3, received.size(), "Hook should fire for each batch item");
+      assertTrue(received.containsAll(List.of(f1, f2, f3)), "All paths should be reported");
+    }
+    finally
+    {
+      FileDeletion.setPostDeletionHook(null);
+    }
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void postDeletionHook_firesForDirectory(@TempDir Path tempDir) throws IOException
+  {
+    Path dir = Files.createDirectory(tempDir.resolve("hookdir"));
+    Files.createFile(dir.resolve("child.txt"));
+
+    FilePath dirPath = FilePath.of(dir);
+    List<FilePath> received = new ArrayList<>();
+
+    FileDeletion.setPostDeletionHook(received::add);
+
+    try
+    {
+      assertEquals(FileDeletion.DeletionResult.SUCCESS,
+          FileDeletion.ofDirWithContents(dirPath).nonInteractive().execute());
+
+      assertEquals(1, received.size(), "Hook should fire once for directory deletion");
+      assertEquals(dirPath, received.getFirst(), "Hook should receive the directory path");
+    }
+    finally
+    {
+      FileDeletion.setPostDeletionHook(null);
+    }
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void postDeletionHook_nullHook_doesNotThrow(@TempDir Path tempDir) throws IOException
+  {
+    Path file = Files.createFile(tempDir.resolve("nullhook.txt"));
+    FilePath filePath = FilePath.of(file);
+
+    FileDeletion.setPostDeletionHook(null);
+
+    assertDoesNotThrow(() -> FileDeletion.ofFile(filePath).nonInteractive().execute());
+  }
+
+//---------------------------------------------------------------------------
+//endregion
 //---------------------------------------------------------------------------
 
 }
