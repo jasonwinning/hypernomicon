@@ -84,43 +84,40 @@ class PathInfo
     {
       parentFolder = getParentFolderOfPath(filePath);
 
-      Set<HyperPath> set = db.filenameMap.get(filePath.getNameOnly().toString());
+      Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
 
-      if (set != null) for (HyperPath setHyperPath : set)
+      for (HyperPath setHyperPath : set)
       {
-        if (parentFolder == setHyperPath.parentFolder())
+        switch (setHyperPath.getRecordType())
         {
-          switch (setHyperPath.getRecordType())
-          {
-            case hdtPerson :
+          case hdtPerson :
 
-              hyperPath = setHyperPath;
-              fileKind = fkPicture;
-              return;
+            hyperPath = setHyperPath;
+            fileKind = fkPicture;
+            return;
 
-            case hdtFolder :
+          case hdtFolder :
 
-              hyperPath = setHyperPath;
-              fileKind = fkFolderRecord;
-              return;
+            hyperPath = setHyperPath;
+            fileKind = fkFolderRecord;
+            return;
 
-            case hdtWorkFile : case hdtMiscFile :
+          case hdtWorkFile : case hdtMiscFile :
 
-              hyperPath = setHyperPath;
-              fileKind = fkFileRecord;
-              return;
+            hyperPath = setHyperPath;
+            fileKind = fkFileRecord;
+            return;
 
-            case hdtNone :
+          case hdtNone :
 
-              break;
+            break;
 
-            default :
+          default :
 
-              hyperPath = null;
-              fileKind = fkUnknown;
-              internalErrorPopup(68754);
-              return;
-          }
+            hyperPath = null;
+            fileKind = fkUnknown;
+            internalErrorPopup(68754);
+            return;
         }
       }
     }

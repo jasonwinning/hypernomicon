@@ -36,7 +36,8 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
  * Unit tests for {@link FilePathRegistry}.
  * <p>
  * These tests exercise the registry's path identity (canonical interning), eviction,
- * temporary file filtering, and lifecycle methods.
+ * temporary file filtering, and lifecycle methods. HyperPath association tests are in
+ * {@link org.hypernomicon.model.HyperPathRegistryTest}, which uses {@code TestHyperDB}.
  * <p>
  * Many tests use {@code new FilePath(path)} rather than {@code FilePath.of(path)} to create
  * lookup arguments for {@code contains()}, {@code evict()}, and {@code onSubtreeMoved()}.

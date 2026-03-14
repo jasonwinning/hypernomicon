@@ -47,8 +47,7 @@ import org.hypernomicon.PathInfo.FileKind;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.util.file.FilePath;
-import org.hypernomicon.util.file.FilePathSet;
+import org.hypernomicon.util.file.*;
 import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.view.MainCtrlr.ShutDownMode;
 
@@ -211,7 +210,7 @@ public class FolderTreeWatcher
               // skip them to avoid unnecessary FileManager refreshes.
               // These files are handled directly by handleInterComputerMessage().
 
-              if (db.isInterComputerFile(filePath))
+              if (db.isInterComputerFile(filePath) || FilePath.isTemporaryFile(filePath.getNameOnly().toString()))
                 continue;
 
               PathInfo newPathInfo = new PathInfo(filePath);
@@ -336,7 +335,7 @@ public class FolderTreeWatcher
                      "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. " +
                      "Changes to database folders should be made using the " + appTitle + " File Manager instead.");
       }
-      else if (confirmed.size() > 0)
+      else if (confirmed.isEmpty() == false)
       {
         String title = (hadOverflow ? confirmed.size() + " or More" : String.valueOf(confirmed.size())) + ' ' + titleCase(noun) + (confirmed.size() == 1 ? "" : "s") + " Deleted or Moved";
 

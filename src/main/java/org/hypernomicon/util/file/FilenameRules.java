@@ -99,13 +99,13 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
 //---------------------------------------------------------------------------
 
   /** Heuristic rules for Windows/NTFS: case-insensitive, trims trailing dots/spaces. */
-  static final FilenameRules WINDOWS_HEURISTIC = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
+  private static final FilenameRules WINDOWS_HEURISTIC = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
 
   /** Heuristic rules for macOS/APFS: case-insensitive, Unicode composition insensitive, full case folding. */
-  static final FilenameRules MAC_HEURISTIC = new FilenameRules(true, true, false, false, CaseFoldingMode.FULL);
+  private static final FilenameRules MAC_HEURISTIC = new FilenameRules(true, true, false, false, CaseFoldingMode.FULL);
 
   /** Heuristic rules for Linux/ext4: case-sensitive, no special handling. */
-  static final FilenameRules LINUX_HEURISTIC = new FilenameRules(false, false, false, false, CaseFoldingMode.SIMPLE);
+  private static final FilenameRules LINUX_HEURISTIC = new FilenameRules(false, false, false, false, CaseFoldingMode.SIMPLE);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -39,7 +39,6 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.prefs.*;
@@ -154,7 +153,7 @@ public abstract class AbstractHyperDB
    */
   protected abstract void checkWhetherFoldersExist();
   protected abstract void loadMainTextTemplates();
-
+  protected abstract void populateFilePathRegistry();
   protected abstract void loadSettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException;
   protected abstract boolean loadFromXMLFiles(List<FilePath> xmlFileList, boolean creatingNew, EnumMap<RecordType, VersionNumber> recordTypeToDataVersion, SetMultimap<Integer, Integer> workIDtoInvIDs);
   protected abstract boolean bringAllRecordsOnline();
@@ -202,8 +201,6 @@ public abstract class AbstractHyperDB
   private final List<HDT_Record> initialNavList = new ArrayList<>();
   private final EnumMap<RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(RecordType.class);
 
-  public final FilenameMap<Set<HyperPath>> filenameMap = new FilenameMap<>();
-
   public Preferences prefs = null;
   private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bibLibrary = null;
 
@@ -211,6 +208,7 @@ public abstract class AbstractHyperDB
 
   protected DialogResult deleteFileAnswer;
 
+  protected RegistryAccessor registryAccessor;
   protected FilePath rootFilePath;
   private FilePath hdbFilePath;
 
@@ -1158,6 +1156,8 @@ public abstract class AbstractHyperDB
 
       resolvePointers();
 
+      initializeAndPopulateFilePathRegistry();
+
       initBibLibraryLinkFromDBSettings();
     }
     catch (HyperDataException e)
@@ -1879,7 +1879,8 @@ public abstract class AbstractHyperDB
 
   private void addRootFolder()
   {
-    filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), _ -> ConcurrentHashMap.newKeySet()).add(getRootFolder().getPath());
+    if ((registryAccessor != null) && registryAccessor.isActive())
+      registryAccessor.addHyperPath(rootFilePath, getRootFolder().getPath());
   }
 
 //---------------------------------------------------------------------------
@@ -2509,8 +2510,15 @@ public abstract class AbstractHyperDB
       throw new HDB_UnrecoverableInternalError(e);
     }
 
+    if (registryAccessor != null)
+    {
+      registryAccessor.clear();
+      registryAccessor = null;
+    }
+
+    HyperPath.setRegistryAccessor(null);
+
     initialNavList   .clear();
-    filenameMap      .clear();
     mainTextTemplates.clear();
     keyWorkIndex     .clear();
     displayedAtIndex .clear();
@@ -2623,10 +2631,36 @@ public abstract class AbstractHyperDB
 
     resolvePointers();
 
+    initializeAndPopulateFilePathRegistry();
+
     state = DBState.LOADED_BUT_OFFLINE;
     updateRunningInstancesFile(rootFilePath);
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Populate the {@link FilePathRegistry} with all filesystem paths under the database root,
+   * acquire the {@link RegistryAccessor}, and distribute it to authorized components.
+   */
+  private void initializeAndPopulateFilePathRegistry()
+  {
+    startingDBSession = true;
+
+    try
+    {
+      registryAccessor = FilePathRegistry.getAccessor();
+      populateFilePathRegistry();
+
+      HyperPath.setRegistryAccessor(registryAccessor);
+    }
+    finally
+    {
+      startingDBSession = false;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -2855,7 +2889,7 @@ public abstract class AbstractHyperDB
       }
 
       HDT_Folder folder = record.parentFolder();
-      if ((folder != null) && (folder.notes.size() > 0))
+      if ((folder != null) && (folder.notes.isEmpty() == false))
       {
         for (HDT_Note note : folder.notes)
         {
@@ -2988,24 +3022,6 @@ public abstract class AbstractHyperDB
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),
                       set -> set.stream().filter(recordWMT -> recordWMT.getType() == mentionerType));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void unmapFilePath(FilePath filePath)
-  {
-    if (FilePath.isEmpty(filePath)) return;
-
-    String name = filePath.getNameOnly().toString();
-    Set<HyperPath> paths = filenameMap.get(name);
-
-    if (paths == null) return;
-
-    paths.removeIf(path -> filePath.equals(path.filePath()));
-
-    if (paths.isEmpty())
-      filenameMap.remove(name);
   }
 
 //---------------------------------------------------------------------------

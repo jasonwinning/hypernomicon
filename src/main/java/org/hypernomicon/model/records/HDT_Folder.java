@@ -149,7 +149,6 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
       return falseWithErrorPopup("Unable to rename the folder: " + getThrowableMessage(e));
     }
 
-    db.unmapFilePath(srcFilePath);
     setNameInternal(newName, true);
     path.assign(parentFolder(), FilePath.of(newName));
 
@@ -203,7 +202,6 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     Files.move(srcFilePath.toPath(), destFilePath.toPath());
 
-    db.unmapFilePath(srcFilePath);
     path.assign(newParent, FilePath.of(name()));
 
     return true;
@@ -241,7 +239,6 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
       return false;
     }
 
-    db.unmapFilePath(filePath);
     deleteFolderRecordTree(this);
 
     if (restartWatcher)
@@ -255,15 +252,11 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public static void deleteFolderRecordTree(HDT_Folder folder)
   {
-    FilePath filePath = folder.filePath();
-
     if (folder.childFolders.isEmpty() == false)
       List.copyOf(folder.childFolders).forEach(HDT_Folder::deleteFolderRecordTree);
 
     if (folder.getID() > 0)
       db.deleteRecord(folder);
-
-    db.unmapFilePath(filePath);
   }
 
 //---------------------------------------------------------------------------

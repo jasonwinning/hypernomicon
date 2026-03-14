@@ -32,7 +32,7 @@ import org.junit.jupiter.api.*;
  * Tests for the dynamic {@code filePath()} cascade on {@link HDT_Folder}.
  * <p>
  * {@code filePath()} walks the parent-chain of folder records on every call
- * rather than caching a resolved path. Reparenting a single folder record
+ * rather than caching a resolved path. Re-parenting a single folder record
  * therefore immediately updates the computed path of every descendant without
  * any explicit change to those records. These tests encode that architectural
  * invariant.

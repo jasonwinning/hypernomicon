@@ -141,6 +141,7 @@ public final class TestHyperDB extends AbstractHyperDB
   @Override public String getMainTextTemplate(RecordType recordType) { return null; }
   @Override protected void loadMainTextTemplates() { }
   @Override protected FolderTreeWatcher getFolderTreeWatcher() { return null; }
+  @Override protected void populateFilePathRegistry() { registryAccessor.populateForTesting(rootFilePath); }
 
   @Override MentionsIndex createMentionsIndex(List<Runnable> completeHandlers) { return new MentionsIndex(completeHandlers, false); }
 

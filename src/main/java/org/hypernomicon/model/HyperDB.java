@@ -88,7 +88,6 @@ public final class HyperDB extends AbstractHyperDB
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public static void create(FolderTreeWatcher folderTreeWatcher)
   {
@@ -97,6 +96,7 @@ public final class HyperDB extends AbstractHyperDB
 
 //---------------------------------------------------------------------------
 
+  @Override protected void populateFilePathRegistry()          { registryAccessor.populate(rootFilePath); }
   @Override protected FolderTreeWatcher getFolderTreeWatcher() { return folderTreeWatcher; }
 
   @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { InterProcClient.updateRunningInstancesFile(newRootFilePath); }
@@ -332,7 +332,6 @@ public final class HyperDB extends AbstractHyperDB
       if (confirmDialog("No more records will be assigned to the file: \"" + filePath + "\". Should the file be permanently deleted?", false))
       {
         FileDeletion.ofFile(filePath).interactive().execute();
-        unmapFilePath(filePath);
       }
 
       return;

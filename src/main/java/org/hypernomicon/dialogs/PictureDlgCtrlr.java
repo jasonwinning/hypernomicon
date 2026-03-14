@@ -506,7 +506,6 @@ public class PictureDlgCtrlr extends ModalDialog
     if (FileDeletion.ofFile(personHyperTab.getCurPicture()).interactive().execute() == DeletionResult.ABORTED)
       return;
 
-    db.unmapFilePath(personHyperTab.getCurPicture());
     removeCrop();
     personHyperTab.assignPicture(null, false);
     tfCurrent.setText("");
@@ -1062,7 +1061,6 @@ public class PictureDlgCtrlr extends ModalDialog
               return falseWithErrorPopup("An error occurred while moving the file: " + getThrowableMessage(e));
             }
 
-            db.unmapFilePath(newFileSrc);
           }
           else
           {

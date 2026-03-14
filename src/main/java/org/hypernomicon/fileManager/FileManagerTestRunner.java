@@ -1300,6 +1300,10 @@ public final class FileManagerTestRunner
         HDT_Folder folder = HyperPath.getFolderFromFilePath(dir, true);
         assertNotNull(folder, "folder record");
 
+        // Create a descendant folder record for the subdirectory
+        HDT_Folder subFolder = HyperPath.getFolderFromFilePath(dir.resolve("sub"), true);
+        assertNotNull(subFolder, "sub folder record");
+
         boolean result = folder.renameTo("newname");
         assertTrue(result, "renameTo should succeed");
 
@@ -1308,6 +1312,12 @@ public final class FileManagerTestRunner
         assertEquals(newPath, folder.filePath(), "filePath should reflect new name");
         assertExists(newPath.resolve("file.txt"), "file should exist at new path");
         assertGone(dir, "old path should not exist");
+
+        // Descendant HyperPath should be re-keyed under the new parent path
+        assertFalse(HyperPath.getHyperPathSetForFilePath(subFolder.filePath()).isEmpty(),
+          "descendant folder should be findable via registry after rename");
+        assertTrue(HyperPath.getHyperPathSetForFilePath(subFolder.filePath()).contains(subFolder.getPath()),
+          "descendant folder's HyperPath should be registered under new path");
       }
       catch (Exception e) { throw new AssertionError(e); }
     });
@@ -3508,6 +3518,79 @@ public final class FileManagerTestRunner
       catch (Exception e) { throw new AssertionError(e); }
     });
 
+    // =====================================================================
+    //  Phase 26: Registry Lookup for Untracked Files (2 steps)
+    // =====================================================================
+
+    // Step 112: Untracked file (on disk, no record) returns empty HyperPath set
+    seq.thenRunAfterDelay(() ->
+    {
+      try
+      {
+        FilePath dir      = createTestDir("p26s112", "dir"),
+                 tracked  = dir.resolve("tracked.txt"),
+                 loose    = dir.resolve("loose.txt");
+
+        HyperPath.getFolderFromFilePath(dir, true);
+
+        // Create a record for tracked.txt
+        HDT_RecordWithPath workFile = HyperPath.createRecordAssignedToPath(hdtWorkFile, tracked);
+        assertNotNull(workFile, "WorkFile record should be created");
+
+        // loose.txt is on disk but has no record
+        assertTrue(loose.exists(), "loose.txt should exist on disk");
+        assertTrue(HyperPath.getHyperPathSetForFilePath(loose).isEmpty(),
+          "untracked file should have empty HyperPath set");
+        assertNull(HyperPath.getRecordFromFilePath(loose),
+          "untracked file should return null record");
+
+        // tracked.txt should have a record
+        assertFalse(HyperPath.getHyperPathSetForFilePath(tracked).isEmpty(),
+          "tracked file should have non-empty HyperPath set");
+        assertEquals(workFile, HyperPath.getRecordFromFilePath(tracked),
+          "tracked file should return its WorkFile record");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+    });
+
+    // Step 113: Untracked file after move still returns empty HyperPath set
+    seq.thenRunAfterDelay(() ->
+    {
+      try
+      {
+        FilePath srcDir  = createTestDir("p26s113", "src"),
+                 destDir = createTestDir("p26s113", "dest"),
+                 dir     = srcDir.resolve("mixed"),
+                 tracked = dir.resolve("tracked.txt");
+
+        HyperPath.getFolderFromFilePath(dir, true);
+
+        HDT_RecordWithPath workFile = HyperPath.createRecordAssignedToPath(hdtWorkFile, tracked);
+        int wfID = workFile.getID();
+
+        pasteMove(entitiesOf(dir), destDir);
+
+        FilePath destTracked = destDir.resolve("mixed", "tracked.txt"),
+                 destLoose   = destDir.resolve("mixed", "loose.txt");
+
+        assertExists(destTracked, "dest tracked.txt");
+        assertExists(destLoose, "dest loose.txt");
+
+        // Tracked file should resolve at new location
+        assertEquals(destTracked, db.workFiles.getByID(wfID).filePath(),
+          "WorkFile should resolve to new location");
+        assertFalse(HyperPath.getHyperPathSetForFilePath(destTracked).isEmpty(),
+          "moved tracked file should have non-empty HyperPath set");
+
+        // Moved loose file should still have no record
+        assertTrue(HyperPath.getHyperPathSetForFilePath(destLoose).isEmpty(),
+          "moved untracked file should still have empty HyperPath set");
+        assertNull(HyperPath.getRecordFromFilePath(destLoose),
+          "moved untracked file should still return null record");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+    });
+
     // Start the sequence
     seq.start();
   }
@@ -3794,6 +3877,7 @@ public final class FileManagerTestRunner
 
     // Step 46: folder rename
     setupFile(testRoot, "p9s46", "src", "oldname", "file.txt");
+    setupDir (testRoot, "p9s46", "src", "oldname", "sub");
 
     // Phase 10: Lock Checking (Steps 47-53)
     // Steps 47-50: pre-create files for lock tests
@@ -4063,6 +4147,15 @@ public final class FileManagerTestRunner
     setupFile(testRoot, "p25s111", "src", "tree", "mid.pdf");
     setupFile(testRoot, "p25s111", "src", "tree", "inner", "deep.jpg");
     setupDir (testRoot, "p25s111", "dest");
+
+    // Phase 26: Registry Lookup for Untracked Files (Steps 112-113)
+
+    setupFile(testRoot, "p26s112", "dir", "tracked.txt");
+    setupFile(testRoot, "p26s112", "dir", "loose.txt");
+
+    setupFile(testRoot, "p26s113", "src", "mixed", "tracked.txt");
+    setupFile(testRoot, "p26s113", "src", "mixed", "loose.txt");
+    setupDir (testRoot, "p26s113", "dest");
   }
 
 //---------------------------------------------------------------------------

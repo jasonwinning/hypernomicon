@@ -28,14 +28,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
+import org.hypernomicon.model.AbstractHyperDB;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.RegistryAccessor;
 
 //---------------------------------------------------------------------------
 
@@ -63,13 +63,10 @@ import org.hypernomicon.util.file.FilePath;
  * means re-parenting a single folder record automatically fixes the resolved paths of all
  * descendants without updating any other records.
  *
- * <h2>Filename Map</h2>
- * Every non-empty HyperPath registers itself in
- * {@link org.hypernomicon.model.AbstractHyperDB#filenameMap db.filenameMap}, a map from leaf
- * filename strings to sets of HyperPath instances. This enables efficient reverse lookup from a
- * filesystem path to the record(s) that reference it (see {@link #getHyperPathSetForFilePath}).
- * Since multiple files in different directories can share the same filename, the map values are
- * sets.
+ * <h2>Path Registry</h2>
+ * Every non-empty HyperPath registers itself in the {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry}, which maps full
+ * filesystem paths to sets of HyperPath instances. This enables efficient O(1) reverse lookup
+ * from a filesystem path to the record(s) that reference it (see {@link #getHyperPathSetForFilePath}).
  *
  * <h2>"In Use" Semantics</h2>
  * A file or folder is considered "in use" when its HyperPath has associated database records
@@ -89,10 +86,34 @@ public class HyperPath
 //---------------------------------------------------------------------------
 
   public static final HyperPath EmptyPath = new HyperPath(null);
+
+  private static volatile RegistryAccessor registryAccessor;
+
   private final HyperObjPointer<? extends HDT_RecordWithPath, HDT_Folder> folderPtr;
   private final HDT_RecordWithPath record;
   private HDT_Folder folder = null;
   private FilePath fileName = null;
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Set (or clear) the {@link RegistryAccessor} used by all HyperPath instances.
+   * Called by {@link AbstractHyperDB} during database session start and close.
+   * When setting a non-null accessor, all existing HyperPath instances are automatically
+   * registered with the registry.
+   *
+   * @param accessor the accessor to set, or {@code null} to clear it on database close
+   */
+  public static void setRegistryAccessor(RegistryAccessor accessor)
+  {
+    if ((accessor != null) && (isStartingDBSession() == false) && (isUnitTestThread() == false))
+      throw new IllegalStateException("RegistryAccessor can only be set during DB initialization or in a unit test.");
+
+    registryAccessor = accessor;
+
+    if (accessor != null)
+      registerAllHyperPaths();
+  }
 
 //---------------------------------------------------------------------------
 
@@ -192,7 +213,7 @@ public class HyperPath
 
   /**
    * Dissociate this path from its parent folder and filename, resetting the folder pointer to
-   * {@code -1} and removing the filename from {@code filenameMap}.
+   * {@code -1} and removing the association from the {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry}.
    * <p>
    * If {@code deleteFile} is true and no other {@link HyperPath} still references the same
    * physical file, the database is notified that the file is no longer in use (which may
@@ -235,18 +256,14 @@ public class HyperPath
   /**
    * Return the set of {@link HyperPath} instances whose resolved file path equals the given path.
    * <p>
-   * Lookup is a two-step process: first, the leaf filename is used to find candidate entries in
-   * {@code filenameMap} (a fast O(1) lookup); then each candidate's dynamically resolved
-   * {@link #filePath()} is compared against the given path to filter out same-name files in
-   * different directories.
+   * Delegates to the {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry} for a direct O(1) full-path lookup.
    *
    * @param filePath The filesystem path to look up
    * @return A set of matching {@code HyperPath} instances, or an empty set if none match
    */
   public static Set<HyperPath> getHyperPathSetForFilePath(FilePath filePath)
   {
-    return nullSwitch(db.filenameMap.get(filePath.getNameOnly().toString()), new HashSet<>(),
-                      paths -> paths.stream().filter(path -> filePath.equals(path.filePath())).collect(Collectors.toSet()));
+    return registryAccessor != null ? registryAccessor.getHyperPaths(filePath) : new HashSet<>();
   }
 
 //---------------------------------------------------------------------------
@@ -270,19 +287,18 @@ public class HyperPath
    * Look up (and optionally create) the {@link HDT_Folder} record for a filesystem directory path.
    * <p>
    * The path must be inside the database root folder; if it is not, {@code null} is returned.
-   * If a folder record already exists for the path (found via {@code filenameMap}), it is
+   * If a folder record already exists for the path (found via the {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry}), it is
    * returned immediately. Otherwise, if the directory exists on disk and {@code doCreateRecord}
    * is {@code true}, the method recursively ensures that all ancestor folders up to the database
    * root have records, then creates a new {@code HDT_Folder} record for this path. The new
    * record's creation/modified/view dates are taken from the directory's filesystem attributes.
    * <p>
    * When {@code doCreateRecord} is {@code false}, the method only returns a record if one already
-   * exists in {@code filenameMap} for the exact path. No records are created and no side effects
-   * occur.
+   * exists in the registry for the exact path. No records are created and no side effects occur.
    * <p>
    * This method is {@code synchronized} because it is called from both the FX thread (UI
    * operations, FileManager paste) and the FolderTreeWatcher thread ({@code registerTree}).
-   * The check-then-create sequence (lookup in {@code filenameMap}, then
+   * The check-then-create sequence (lookup in the registry, then
    * {@code createNewRecordFromState}) must be atomic to prevent duplicate records or stale
    * state when both threads attempt to create a folder record for the same path.
    *
@@ -425,8 +441,6 @@ public class HyperPath
 
     if (srcFilePath.moveTo(destFilePath, confirm) == false) return false;
 
-    db.unmapFilePath(srcFilePath);
-
     set.forEach(hyperPath -> hyperPath.assign(db.folders.getByID(folderID), destFilePath.getNameOnly()));
 
     return true;
@@ -442,12 +456,24 @@ public class HyperPath
     if ((FilePath.isEmpty(fileName) == false) && (FilePath.isEmpty(nameOnly) == false))
       if ((parentFolder() == parentFolder) && fileName.getNameOnly().equals(nameOnly.getNameOnly())) return;
 
-    FilePath filePath = filePath();
+    FilePath oldFilePath = filePath();
 
     assignInternal(parentFolder, nameOnly);
     if (record != null) record.modifyNow();
 
-    notifyIfNoLongerInUse(filePath);
+    // When a folder record's path changes, re-key descendant HyperPath associations
+    // in the registry. assignNameInternal handles THIS record's own association;
+    // onSubtreeMoved handles all descendants whose paths changed as a consequence.
+
+    if ((registryAccessor != null) && (record instanceof HDT_Folder) &&
+        (FilePath.isEmpty(oldFilePath) == false))
+    {
+      FilePath newFilePath = filePath();
+      if ((FilePath.isEmpty(newFilePath) == false) && (oldFilePath.equals(newFilePath) == false))
+        registryAccessor.onSubtreeMoved(oldFilePath);
+    }
+
+    notifyIfNoLongerInUse(oldFilePath);
   }
 
 //---------------------------------------------------------------------------
@@ -473,18 +499,22 @@ public class HyperPath
 
   void assignNameInternal(FilePath newFileName)
   {
-    if (FilePath.isEmpty(fileName) == false)
-      nullSwitch(db.filenameMap.get(fileName.toString()), set -> set.remove(this));
+    // During load (registryAccessor null): just set fileName, no registry interaction.
+    // After load (registryAccessor set): update registry associations and remove duplicates.
 
-    if (FilePath.isEmpty(newFileName) == false)
+    if (registryAccessor != null)
     {
-      newFileName = newFileName.getNameOnly();
-      Set<HyperPath> set = db.filenameMap.computeIfAbsent(newFileName.toString(), _ -> ConcurrentHashMap.newKeySet());
+      // Unregister old path
 
-      set.add(this);
+      if (FilePath.isEmpty(fileName) == false)
+      {
+        FilePath oldPath = filePath();
+        if (FilePath.isEmpty(oldPath) == false)
+          registryAccessor.removeHyperPath(oldPath, this);
+      }
     }
 
-    fileName = newFileName;
+    fileName = FilePath.isEmpty(newFileName) ? null : newFileName.getNameOnly();
 
     if (record != null)
       record.updateSortKey();
@@ -492,17 +522,27 @@ public class HyperPath
     if (FilePath.isEmpty(fileName))
       return;
 
-    // now remove duplicates; for this to work, folder records have to be brought online first
-
-    HDT_Folder parent = parentFolder();
-
-    db.filenameMap.get(fileName.getNameOnly().toString()).removeIf(path ->
+    if (registryAccessor != null)
     {
-      if ((path == this) || path.isEmpty()) return false;
+      // Register new path
 
-      HDT_Folder otherParent = path.parentFolder();
-      return (otherParent != null) && (parent == otherParent);
-    });
+      FilePath newPath = filePath();
+      if (FilePath.isEmpty(newPath) == false)
+        registryAccessor.addHyperPath(newPath, this);
+
+      // Remove duplicates; for this to work, folder records have to be brought online first
+
+      HDT_Folder parent = parentFolder();
+
+      registryAccessor.getHyperPaths(newPath).forEach(path ->
+      {
+        if ((path == this) || path.isEmpty()) return;
+
+        HDT_Folder otherParent = path.parentFolder();
+        if ((otherParent != null) && (parent == otherParent))
+          registryAccessor.removeHyperPath(newPath, path);
+      });
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -560,7 +600,7 @@ public class HyperPath
         {
           if (hyperPath.getRecordType() != recordType) return;
 
-          if (val.length() > 0) val.append("; ");
+          if (val.isEmpty() == false) val.append("; ");
           val.append(getTypeName(recordType)).append(": ").append(hyperPath.getRecord().defaultChoiceText());
         });
 
@@ -576,7 +616,7 @@ public class HyperPath
 
     set.forEach(relative ->
     {
-      if (val.length() > 0) val.append("; ");
+      if (val.isEmpty() == false) val.append("; ");
       val.append(getTypeName(relative.getType())).append(": ").append(relative.defaultChoiceText());
     });
 
@@ -643,6 +683,78 @@ public class HyperPath
         return false;
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Register all HyperPath instances from all record types in the {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry}.
+   * <p>
+   * Called once during database load, after {@code bringAllRecordsOnline()} completes and the
+   * registry has been populated with filesystem paths via {@link org.hypernomicon.util.file.FilePathRegistry#populate(FilePath) FilePathRegistry.populate(FilePath)}.
+   * At this point all records have their filenames assigned and all parent folder chains are
+   * fully resolved, so {@link #filePath()} returns correct full paths.
+   * <p>
+   * Also performs duplicate detection: if two HyperPath instances in the same parent folder
+   * resolve to the same full path, the duplicate is removed from the registry.
+   */
+  private static void registerAllHyperPaths()
+  {
+    // Register all record types that own a HyperPath directly
+
+    for (HDT_Folder folder : db.folders)
+    {
+      HyperPath hyperPath = folder.getPath();
+      if (hyperPath.isNotEmpty())
+        registerAndDeduplicate(hyperPath);
+    }
+
+    for (HDT_WorkFile workFile : db.workFiles)
+    {
+      HyperPath hyperPath = workFile.getPath();
+      if (hyperPath.isNotEmpty())
+        registerAndDeduplicate(hyperPath);
+    }
+
+    for (HDT_MiscFile miscFile : db.miscFiles)
+    {
+      HyperPath hyperPath = miscFile.getPath();
+      if (hyperPath.isNotEmpty())
+        registerAndDeduplicate(hyperPath);
+    }
+
+    for (HDT_Person person : db.persons)
+    {
+      HyperPath hyperPath = person.getPath();
+      if ((hyperPath != null) && hyperPath.isNotEmpty())
+        registerAndDeduplicate(hyperPath);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+
+  private static void registerAndDeduplicate(HyperPath hyperPath)
+  {
+    FilePath fullPath = hyperPath.filePath();
+    if (FilePath.isEmpty(fullPath)) return;
+
+    registryAccessor.addHyperPath(fullPath, hyperPath);
+
+    // Remove duplicates: other HyperPaths in the same parent folder with the same full path
+
+    HDT_Folder parent = hyperPath.parentFolder();
+
+    registryAccessor.getHyperPaths(fullPath).forEach(other ->
+    {
+      if ((other == hyperPath) || other.isEmpty()) return;
+
+      HDT_Folder otherParent = other.parentFolder();
+      if ((otherParent != null) && (parent == otherParent))
+        registryAccessor.removeHyperPath(fullPath, other);
+    });
   }
 
 //---------------------------------------------------------------------------

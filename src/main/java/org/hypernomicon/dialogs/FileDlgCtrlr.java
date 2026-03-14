@@ -420,7 +420,6 @@ public class FileDlgCtrlr extends ModalDialog
         else if (srcFilePath.equals(destFilePath) == false)
         {
           success = srcFilePath.moveTo(destFilePath, true);
-          if (success) db.unmapFilePath(srcFilePath);
         }
       }
       catch (IOException e)
@@ -436,8 +435,6 @@ public class FileDlgCtrlr extends ModalDialog
 
         if (success == false)
           errorPopup("Unable to rename the file.");
-        else
-          db.unmapFilePath(srcFilePath);
       }
       catch (IOException e)
       {

@@ -1202,7 +1202,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           if (moveOrCopy == mrMove)
           {
             srcFilePath.moveTo(destFilePath, true);
-            db.unmapFilePath(srcFilePath);
           }
           else
             srcFilePath.copyTo(destFilePath, true);

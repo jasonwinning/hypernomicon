@@ -1396,8 +1396,6 @@ public class WorkDlgCtrlr extends ModalDialog
         if (origFilePath.equals(newFilePath) == false)
         {
           success = origFilePath.moveTo(newFilePath, true);
-          if (success)
-            db.unmapFilePath(origFilePath);
         }
 
         if (success)
@@ -1415,7 +1413,6 @@ public class WorkDlgCtrlr extends ModalDialog
         {
           if (origFilePath.moveTo(newFilePath, true) == false) return false;
 
-          db.unmapFilePath(origFilePath);
           newWorkFile.getPath().assign(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true), newFilePath.getNameOnly());
         }
       }
@@ -1424,8 +1421,14 @@ public class WorkDlgCtrlr extends ModalDialog
         if (oldWorkFile != null)
           return falseWithErrorPopup("Unable to move the file. Reason: Cannot change assignment from one file to another that is already assigned to a different file record.");
 
-        success = newWorkFile.getPath().moveToFolder(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true).getID(), true, true, newFilePath.getNameOnly().toString());
-        if (success) curWork.addWorkFile(newWorkFile.getID());
+        HDT_Folder destFolder = HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true);
+        if (destFolder == null)
+          success = false;
+        else
+        {
+          success = newWorkFile.getPath().moveToFolder(destFolder.getID(), true, true, newFilePath.getNameOnly().toString());
+          if (success) curWork.addWorkFile(newWorkFile.getID());
+        }
       }
     }
     catch (IOException | HDB_InternalError e)

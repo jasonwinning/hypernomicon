@@ -124,10 +124,13 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
     if (hyperPath.isEmpty())
       return;
 
-    String str = hyperPath.getFileName().getNameOnly().toString();
+    FilePath filename = hyperPath.getFileName();
+    if (filename == null) return;
 
-    if (strNotNullOrEmpty(str))
-      list.add(engChar ? convertToEnglishChars(str) : str);
+    String filenameStr = filename.getNameOnly().toString();
+
+    if (strNotNullOrEmpty(filenameStr))
+      list.add(engChar ? convertToEnglishChars(filenameStr) : filenameStr);
   }
 
 //---------------------------------------------------------------------------

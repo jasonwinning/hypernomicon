@@ -894,7 +894,11 @@ public final class FileManager extends NonmodalWindow
             if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles() == false) && (srcFilePath.contains(db.getRootPath()) == false))
             {
               if (db.getRootPath().contains(srcFilePath))
-                internalEmptyFolders.add(HyperPath.getFolderFromFilePath(srcFilePath, false));
+              {
+                HDT_Folder emptyFolder = HyperPath.getFolderFromFilePath(srcFilePath, false);
+                if (emptyFolder != null)
+                  internalEmptyFolders.add(emptyFolder);
+              }
               else
                 externalEmptyDirs.add(srcFilePath);
             }
@@ -1122,13 +1126,10 @@ public final class FileManager extends NonmodalWindow
 
               for (HyperPath setPath : set)
               {
-                db.unmapFilePath(setPath.filePath());
                 if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
                   db.deleteRecord(setPath.getRecord());
               }
             }
-            else
-              db.unmapFilePath(filePath);
           }
         }
       }
@@ -1161,11 +1162,7 @@ public final class FileManager extends NonmodalWindow
       if (item.isDirectory())
         return ((HDT_Folder) fileRecord).delete();
 
-      if (FileDeletion.ofFile(filePath).interactive().execute() == DeletionResult.ABORTED)
-        return false;
-
-      db.unmapFilePath(filePath);
-      return true;
+      return (FileDeletion.ofFile(filePath).interactive().execute() != DeletionResult.ABORTED);
     }
 
     if (FileDeletion.ofFile(filePath).interactive().execute() == DeletionResult.ABORTED)
@@ -1174,11 +1171,8 @@ public final class FileManager extends NonmodalWindow
     Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
 
     for (HyperPath setPath : set)
-    {
-      db.unmapFilePath(setPath.filePath());
       if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
         db.deleteRecord(setPath.getRecord());
-    }
 
     return true;
   }
@@ -1310,7 +1304,6 @@ public final class FileManager extends NonmodalWindow
       {
         FilePath filePath = fileRow.getFilePath();
         filePath.renameTo(dlg.getNewName());
-        db.unmapFilePath(filePath);
       }
       else
         success = HyperPath.renameFile(fileRecord.filePath(), dlg.getNewName());

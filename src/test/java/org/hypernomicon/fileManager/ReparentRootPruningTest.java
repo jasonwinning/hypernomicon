@@ -20,12 +20,12 @@ package org.hypernomicon.fileManager;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Path;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilePathRegistryTestHelper;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 
 //---------------------------------------------------------------------------
@@ -43,6 +43,22 @@ class ReparentRootPruningTest
 
   @TempDir
   Path tempDir;
+
+//---------------------------------------------------------------------------
+
+  @BeforeEach
+  void setUp()
+  {
+    FilePathRegistryTestHelper.activateForTesting(tempDir);
+  }
+
+//---------------------------------------------------------------------------
+
+  @AfterEach
+  void tearDown()
+  {
+    FilePathRegistryTestHelper.deactivate();
+  }
 
 //---------------------------------------------------------------------------
 
@@ -194,8 +210,7 @@ class ReparentRootPruningTest
   {
     Set<FilePath> set = new LinkedHashSet<>();
 
-    for (FilePath path : paths)
-      set.add(path);
+    Collections.addAll(set, paths);
 
     return set;
   }
