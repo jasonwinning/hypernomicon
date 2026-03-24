@@ -20,6 +20,7 @@ package org.hypernomicon;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -258,6 +259,8 @@ public final class App extends Application
   @Override public void init() throws Exception
   {
     super.init();
+
+    suppressLibreOfficePrinterLookup();
 
     // On Mac OS Chromium engine must be initialized outside of FX application thread
     if (Environment.isMac()) PDFJSWrapper.init();

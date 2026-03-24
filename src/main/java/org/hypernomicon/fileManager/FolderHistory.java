@@ -96,10 +96,12 @@ final class FolderHistory
 
     // Ensure cursorNdx is valid after all deletions
 
-    if (cursorNdx < 0)
-      cursorNdx = 0; // Default to the first folder if no valid preceding folder exists
+    if (history.isEmpty())
+      cursorNdx = -1;
+    else if (cursorNdx < 0)
+      cursorNdx = 0;
     else if (cursorNdx >= history.size())
-      cursorNdx = history.size() - 1; // Default to the last folder if out of bounds
+      cursorNdx = history.size() - 1;
 
     // Update navigation buttons
 

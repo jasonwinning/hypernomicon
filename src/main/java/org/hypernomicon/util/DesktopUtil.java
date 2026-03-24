@@ -19,7 +19,9 @@ package org.hypernomicon.util;
 
 import java.awt.Desktop;
 import java.io.IOException;
+import java.lang.foreign.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.*;
@@ -825,6 +827,52 @@ public final class DesktopUtil
     }
 
     return result == mrIgnore;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * On Windows, set SAL_DISABLE_DEFAULTPRINTER=1 in the process environment so that
+   * LibreOffice (launched by JodConverter for document preview) does not attempt a
+   * printer lookup on startup. Without this, if the user's default printer is offline,
+   * Windows shows a blocking "Waiting for printer connection..." popup.
+   * <p>
+   * Uses the Panama Foreign Function API to call kernel32 SetEnvironmentVariableW,
+   * which modifies the Win32 process environment block. Child processes (including
+   * LibreOffice) inherit this automatically.
+   * <p>
+   * See LibreOffice <a href="https://bugs.documentfoundation.org/show_bug.cgi?id=42673">bug 42673</a>.
+   */
+  public static void suppressLibreOfficePrinterLookup()
+  {
+    if (IS_OS_WINDOWS == false) return;
+
+    try (Arena arena = Arena.ofConfined())
+    {
+      SymbolLookup kernel32 = SymbolLookup.libraryLookup("kernel32", arena);
+
+      var setEnvVar = Linker.nativeLinker().downcallHandle
+      (
+        kernel32.find("SetEnvironmentVariableW").orElseThrow(),
+        FunctionDescriptor.of
+        (
+          ValueLayout.JAVA_INT,
+          ValueLayout.ADDRESS,
+          ValueLayout.ADDRESS
+        )
+      );
+
+      int result = (int) setEnvVar.invoke(arena.allocateFrom("SAL_DISABLE_DEFAULTPRINTER", StandardCharsets.UTF_16LE),
+                                          arena.allocateFrom("1", StandardCharsets.UTF_16LE));
+
+      if (result == 0)
+        System.err.println("SetEnvironmentVariableW(SAL_DISABLE_DEFAULTPRINTER) returned 0");
+    }
+    catch (Throwable e)
+    {
+      logThrowable(e);
+    }
   }
 
 //---------------------------------------------------------------------------
