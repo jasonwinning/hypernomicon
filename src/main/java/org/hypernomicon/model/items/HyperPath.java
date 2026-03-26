@@ -226,12 +226,12 @@ public class HyperPath
   {
     FilePath filePath = filePath();
 
+    assignNameInternal(null);  // Must precede folder pointer clear; assignNameInternal needs filePath() to resolve the full path for registry removal
+
     if (folderPtr != null)
       folderPtr.setID(-1);
     else
       folder = null;
-
-    assignNameInternal(null);
 
     if (deleteFile)
       notifyIfNoLongerInUse(filePath);

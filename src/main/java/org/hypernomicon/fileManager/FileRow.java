@@ -160,7 +160,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     FilePath filePath = hyperPath.filePath();
 
     if (FilePath.isEmpty(filePath))
-      return new ObjectCellValue<>("", null);
+      return new ObjectCellValue<>("", Instant.MIN);
 
     Instant i = filePath.lastModified();
 

@@ -24,7 +24,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Set;
 
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.HDT_Folder;
+import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.util.file.*;
 
 import org.junit.jupiter.api.*;
@@ -363,6 +364,146 @@ class HyperPathRegistryTest
 
     assertTrue(registry().getHyperPaths(childPath).isEmpty(),
       "After clearing filename, old path should have no associations");
+  }
+
+//---------------------------------------------------------------------------
+//endregion
+//region Record deletion unregisters HyperPath
+//---------------------------------------------------------------------------
+
+  @Test
+  void removeWorkFile_removedFromRegistry()
+  {
+    HDT_Folder root = db.getRootFolder();
+
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+    HDT_WorkFile workFile = db.createNewBlankRecord(hdtWorkFile);
+
+    workFile.getPath().assign(root, FilePath.of("testfile.pdf"));
+    FilePath workFilePath = workFile.filePath();
+
+    assertFalse(registry().getHyperPaths(workFilePath).isEmpty(),
+      "Work file path should be registered after assignment");
+
+    work.addWorkFile(workFile.getID());
+
+    // Removing the work file from its only work triggers auto-deletion
+    // (RelationSet.setObject: when subject count drops to 0, deleteRecord is called)
+
+    db.getObjectList(RelationType.rtWorkFileOfWork, work, true).remove(workFile);
+
+    assertTrue(workFile.isExpired(), "Work file should be expired after removal from its only work");
+
+    assertTrue(registry().getHyperPaths(workFilePath).isEmpty(),
+      "Expired work file path should no longer be in the registry");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void deleteMiscFile_removedFromRegistry()
+  {
+    HDT_Folder root = db.getRootFolder();
+
+    HDT_MiscFile miscFile = db.createNewBlankRecord(hdtMiscFile);
+    miscFile.getPath().assign(root, FilePath.of("misc_delete_test.txt"));
+    FilePath miscFilePath = miscFile.filePath();
+
+    assertFalse(registry().getHyperPaths(miscFilePath).isEmpty(),
+      "Misc file path should be registered after assignment");
+
+    db.deleteRecord(miscFile);
+
+    assertTrue(miscFile.isExpired());
+    assertTrue(registry().getHyperPaths(miscFilePath).isEmpty(),
+      "Deleted misc file path should no longer be in the registry");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void deletePerson_picturePathRemovedFromRegistry()
+  {
+    HDT_Folder root = db.getRootFolder();
+
+    HDT_Person person = db.createNewBlankRecord(hdtPerson);
+    person.getPath().assign(root, FilePath.of("portrait.jpg"));
+    FilePath picturePath = person.filePath();
+
+    assertFalse(registry().getHyperPaths(picturePath).isEmpty(),
+      "Person picture path should be registered after assignment");
+
+    db.deleteRecord(person);
+
+    assertTrue(person.isExpired());
+    assertTrue(registry().getHyperPaths(picturePath).isEmpty(),
+      "Deleted person's picture path should no longer be in the registry");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void sharedWorkFile_oneWorkRemoved_pathStaysUntilLastWorkRemoved()
+  {
+    HDT_Folder root = db.getRootFolder();
+
+    HDT_WorkFile workFile = db.createNewBlankRecord(hdtWorkFile);
+    HDT_Work work1 = db.createNewBlankRecord(hdtWork),
+             work2 = db.createNewBlankRecord(hdtWork);
+
+    workFile.getPath().assign(root, FilePath.of("shared.pdf"));
+    FilePath workFilePath = workFile.filePath();
+
+    work1.addWorkFile(workFile.getID());
+    work2.addWorkFile(workFile.getID());
+
+    // Remove from first work; subject count is still 1, so work file should NOT be deleted
+
+    db.getObjectList(RelationType.rtWorkFileOfWork, work1, true).remove(workFile);
+
+    assertFalse(workFile.isExpired(),
+      "Work file should not be expired when still referenced by another work");
+    assertFalse(registry().getHyperPaths(workFilePath).isEmpty(),
+      "Work file path should still be registered when referenced by another work");
+
+    // Remove from second work; subject count drops to 0, triggering auto-deletion
+
+    db.getObjectList(RelationType.rtWorkFileOfWork, work2, true).remove(workFile);
+
+    assertTrue(workFile.isExpired(),
+      "Work file should be expired after removal from its last work");
+    assertTrue(registry().getHyperPaths(workFilePath).isEmpty(),
+      "Work file path should be removed from registry after last work reference removed");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void cascadingDeletion_workFileRemovedFromRegistryWhenWorkDeleted()
+  {
+    HDT_Folder root = db.getRootFolder();
+
+    HDT_WorkFile workFile = db.createNewBlankRecord(hdtWorkFile);
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+
+    workFile.getPath().assign(root, FilePath.of("cascading.pdf"));
+    FilePath workFilePath = workFile.filePath();
+
+    work.addWorkFile(workFile.getID());
+
+    assertFalse(registry().getHyperPaths(workFilePath).isEmpty(),
+      "Work file path should be registered");
+
+    // Deleting the work triggers resolvePointers, which clears the work file's
+    // relation to the (now expired) work, dropping the subject count to 0.
+    // This triggers db.deleteRecord(workFile).
+
+    db.deleteRecord(work);
+
+    assertTrue(workFile.isExpired(),
+      "Work file should be cascade-expired when its only work is deleted");
+    assertTrue(registry().getHyperPaths(workFilePath).isEmpty(),
+      "Cascade-deleted work file path should no longer be in the registry");
   }
 
 //---------------------------------------------------------------------------

@@ -19,6 +19,8 @@ package org.hypernomicon.view.cellValues;
 
 import java.util.Objects;
 
+import static org.hypernomicon.util.StringUtil.*;
+
 //---------------------------------------------------------------------------
 
 /**
@@ -51,8 +53,8 @@ public class ObjectCellValue<Comp_T extends Comparable<Comp_T>> implements Compa
 
   public ObjectCellValue(String text, Comparable<Comp_T> value)
   {
-    this.text  = Objects.requireNonNull(text);
-    this.value = Objects.requireNonNull(value);
+    this.text  = safeStr(text);
+    this.value = value;
   }
 
 //---------------------------------------------------------------------------
@@ -66,6 +68,12 @@ public class ObjectCellValue<Comp_T extends Comparable<Comp_T>> implements Compa
   @SuppressWarnings("unchecked")
   @Override public int compareTo(ObjectCellValue<Comp_T> other)
   {
+    if (value == null)
+      return other.value == null ? 0 : -1;
+
+    if (other.value == null)
+      return 1;
+
     int result = value.compareTo((Comp_T) other.value);
     return result != 0 ? result : text.compareTo(other.text);
   }
@@ -89,7 +97,7 @@ public class ObjectCellValue<Comp_T extends Comparable<Comp_T>> implements Compa
     if (getClass() != obj.getClass()) return false;
 
     ObjectCellValue<Comp_T> other = (ObjectCellValue<Comp_T>)obj;
-    return text.equals(other.text) && value.equals(other.value);
+    return text.equals(other.text) && Objects.equals(value, other.value);
   }
 
 //---------------------------------------------------------------------------
