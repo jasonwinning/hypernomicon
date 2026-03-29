@@ -1762,7 +1762,7 @@ public final class FileDeletionTestRunner
       RandomAccessFile raf = null;
       List<FilePath> received = new ArrayList<>();
 
-      FileDeletion.setPostDeletionHook(received::add);
+      FileDeletion.addPostDeletionHook(received::add);
 
       try
       {
@@ -1777,7 +1777,7 @@ public final class FileDeletionTestRunner
       finally
       {
         closeQuietly(raf);
-        FileDeletion.setPostDeletionHook(null);
+        FileDeletion.clearPostDeletionHooks();
       }
     }).windowsOnly();
 
@@ -1788,7 +1788,7 @@ public final class FileDeletionTestRunner
       RandomAccessFile raf = null;
       List<FilePath> received = new ArrayList<>();
 
-      FileDeletion.setPostDeletionHook(received::add);
+      FileDeletion.addPostDeletionHook(received::add);
 
       try
       {
@@ -1807,7 +1807,7 @@ public final class FileDeletionTestRunner
       finally
       {
         closeQuietly(raf);
-        FileDeletion.setPostDeletionHook(null);
+        FileDeletion.clearPostDeletionHooks();
       }
     }).windowsOnly();
 
@@ -1818,7 +1818,7 @@ public final class FileDeletionTestRunner
       RandomAccessFile raf1 = null, raf2 = null;
       List<FilePath> received = new ArrayList<>();
 
-      FileDeletion.setPostDeletionHook(received::add);
+      FileDeletion.addPostDeletionHook(received::add);
 
       try
       {
@@ -1837,7 +1837,7 @@ public final class FileDeletionTestRunner
       {
         closeQuietly(raf1);
         closeQuietly(raf2);
-        FileDeletion.setPostDeletionHook(null);
+        FileDeletion.clearPostDeletionHooks();
       }
     }).windowsOnly();
 

@@ -233,14 +233,16 @@ public final class FileDeletion
 
 //---------------------------------------------------------------------------
 
-  /**
-   * Register a hook invoked after each successful deletion. Pass {@code null} to clear.
-   * Called by {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry} during
-   * database session start and end to evict deleted paths from the path cache.
-   */
-  public static void setPostDeletionHook(Consumer<FilePath> hook)
+  /** Register a hook invoked after each successful deletion. Multiple hooks can coexist. */
+  public static void addPostDeletionHook(Consumer<FilePath> hook)
   {
-    DeletionBuilderBase.postDeletionHook = hook;
+    DeletionBuilderBase.postDeletionHooks.add(hook);
+  }
+
+  /** Remove all post-deletion hooks. Called during database close. */
+  public static void clearPostDeletionHooks()
+  {
+    DeletionBuilderBase.postDeletionHooks.clear();
   }
 
 // -------------------------------------------------------------------------

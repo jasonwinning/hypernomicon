@@ -125,16 +125,12 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (destFilePath.exists())
       return falseWithErrorPopup("Unable to rename the folder: A file or folder already has that name.");
 
-    folderTreeWatcher.stop();
-
     try
     {
       srcFilePath.renameDirectory(destFilePath);
     }
     catch (FileSystemException e)
     {
-      folderTreeWatcher.createNewWatcherAndStart();
-
       if ((e instanceof AccessDeniedException) || (e.getClass() == FileSystemException.class))
       {
         srcFilePath.anyOpenFilesInDir(); // shows popup identifying the locked path, if any
@@ -145,14 +141,11 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     }
     catch (IOException e)
     {
-      folderTreeWatcher.createNewWatcherAndStart();
       return falseWithErrorPopup("Unable to rename the folder: " + getThrowableMessage(e));
     }
 
     setNameInternal(newName, true);
     path.assign(parentFolder(), FilePath.of(newName));
-
-    folderTreeWatcher.createNewWatcherAndStart();
 
     return true;
   }
@@ -200,7 +193,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (destFilePath.exists())
       return falseWithErrorPopup("Unable to move the folder: A file or folder already exists at \"" + destFilePath + "\".");
 
-    Files.move(srcFilePath.toPath(), destFilePath.toPath());
+    FilePath.filesMove(srcFilePath, destFilePath);
 
     path.assign(newParent, FilePath.of(name()));
 

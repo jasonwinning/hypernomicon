@@ -413,7 +413,7 @@ public final class FilePathRegistry implements RegistryAccessor
 
     startCleanupThread();
 
-    FileDeletion.setPostDeletionHook(INSTANCE::evictSubtree);
+    FileDeletion.addPostDeletionHook(INSTANCE::evictSubtree);
     nullSwitch(folderTreeWatcher, ftw -> ftw.setEvictionHook(INSTANCE::evictSubtree));
   }
 
@@ -452,7 +452,7 @@ public final class FilePathRegistry implements RegistryAccessor
       cleanupExecutor = null;
     }
 
-    FileDeletion.setPostDeletionHook(null);
+    FileDeletion.clearPostDeletionHooks();
     nullSwitch(folderTreeWatcher, ftw -> ftw.setEvictionHook(null));
 
     pathCache .clear();

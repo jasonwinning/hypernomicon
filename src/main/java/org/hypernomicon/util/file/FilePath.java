@@ -196,48 +196,100 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean moveOrCopy(FilePath destFilePath, boolean confirmOverwrite, boolean move) throws IOException
+  /**
+   * Central function for moving files and directories. All database-relevant {@code Files.move}
+   * calls should go through this method. Handles watcher stop/restart (if paths are under the
+   * DB root) and registry eviction (for files only; directory moves rely on the caller's
+   * {@code path.assign()} -> {@code onSubtreeMoved()} for registry re-keying).
+   */
+  public static void filesMove(FilePath src, FilePath dest) throws IOException
   {
-    if (equals(destFilePath))
-      throw new IOException("Source file is the same as the destination file.");
-
-    boolean startWatcher = folderTreeWatcher.stop();
+    boolean srcUnderRoot  = src .isUnderDbRoot(),
+            destUnderRoot = dest.isUnderDbRoot(),
+            startWatcher = (srcUnderRoot || destUnderRoot) && folderTreeWatcher.stop();
 
     try
     {
-      if (destFilePath.exists() && confirmOverwrite)
-      {
-        if (ui == null)
-          return false;
+      boolean srcIsDir = src.isDirectory();
 
-        if (confirmDialog("Destination file exists. Overwrite?", false) == false)
-          return false;
+      Files.move(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-        if (FileDeletion.ofFile(destFilePath).interactive().execute() != SUCCESS)
-          return false;
-      }
-
-      if (move)
-      {
-        boolean fromUnentered = (ui != null) && (db != null) && (db.isOnline()) && isFile() && getParent().equals(db.unenteredPath());
-
-        Files.move(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-        FilePathRegistry.instance().evict(this);
-
-        if (fromUnentered)
-          ui.notifyOfImport(this);
-      }
-      else
-        Files.copy(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      if (srcIsDir == false)
+        FilePathRegistry.instance().evict(src);
     }
     finally
     {
       if (startWatcher)
         folderTreeWatcher.createNewWatcherAndStart();
-
-      FileManager.setNeedRefresh();
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Central function for copying files. All database-relevant {@code Files.copy} calls should
+   * go through this method. Handles watcher stop/restart (if paths are under the DB root).
+   */
+  public static void filesCopy(FilePath src, FilePath dest) throws IOException
+  {
+    boolean srcUnderRoot  = src .isUnderDbRoot(),
+            destUnderRoot = dest.isUnderDbRoot(),
+            startWatcher = (srcUnderRoot || destUnderRoot) && folderTreeWatcher.stop();
+
+    try
+    {
+      Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+    finally
+    {
+      if (startWatcher)
+        folderTreeWatcher.createNewWatcherAndStart();
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean isUnderDbRoot()
+  {
+    FilePath rootPath = ((db == null) || db.isOffline()) ? null : db.getRootPath();
+    return (isEmpty(rootPath) == false) && rootPath.contains(this);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean moveOrCopy(FilePath destFilePath, boolean confirmOverwrite, boolean move) throws IOException
+  {
+    if (equals(destFilePath))
+      throw new IOException("Source file is the same as the destination file.");
+
+    if (destFilePath.exists() && confirmOverwrite)
+    {
+      if (ui == null)
+        return false;
+
+      if (confirmDialog("Destination file exists. Overwrite?", false) == false)
+        return false;
+
+      if (FileDeletion.ofFile(destFilePath).interactive().execute() != SUCCESS)
+        return false;
+    }
+
+    if (move)
+    {
+      boolean fromUnentered = (ui != null) && (db != null) && db.isOnline() && isFile() && getParent().equals(db.unenteredPath());
+
+      filesMove(this, destFilePath);
+
+      if (fromUnentered)
+        ui.notifyOfImport(this);
+    }
+    else
+      filesCopy(this, destFilePath);
+
+    FileManager.setNeedRefresh();
 
     return true;
   }
@@ -316,8 +368,7 @@ public class FilePath implements Comparable<FilePath>
   public void renameDirectory(FilePath destFilePath) throws IOException
   {
     FileManager.setNeedRefresh();
-    Files.move(getDirOnly().toPath(), destFilePath.toPath());
-    FilePathRegistry.instance().evict(this);
+    filesMove(getDirOnly(), destFilePath);
   }
 
 //---------------------------------------------------------------------------

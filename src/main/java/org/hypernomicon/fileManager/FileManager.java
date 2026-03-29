@@ -893,7 +893,7 @@ public final class FileManager extends NonmodalWindow
 
             if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles() == false) && (srcFilePath.contains(db.getRootPath()) == false))
             {
-              if (db.getRootPath().contains(srcFilePath))
+              if (srcFilePath.isUnderDbRoot())
               {
                 HDT_Folder emptyFolder = HyperPath.getFolderFromFilePath(srcFilePath, false);
                 if (emptyFolder != null)

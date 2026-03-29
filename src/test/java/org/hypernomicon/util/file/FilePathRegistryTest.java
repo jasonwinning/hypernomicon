@@ -875,7 +875,7 @@ class FilePathRegistryTest
     assertTrue(registry.contains(new FilePath(file)));
 
     // Wire the hook the same way FilePathRegistry.populate() does in production
-    FileDeletion.setPostDeletionHook(registry::evictSubtree);
+    FileDeletion.addPostDeletionHook(registry::evictSubtree);
 
     try
     {
@@ -886,7 +886,7 @@ class FilePathRegistryTest
     }
     finally
     {
-      FileDeletion.setPostDeletionHook(null);
+      FileDeletion.clearPostDeletionHooks();
     }
   }
 
@@ -902,7 +902,7 @@ class FilePathRegistryTest
     assertTrue(registry.contains(new FilePath(dir)));
     assertTrue(registry.contains(new FilePath(child)));
 
-    FileDeletion.setPostDeletionHook(registry::evictSubtree);
+    FileDeletion.addPostDeletionHook(registry::evictSubtree);
 
     try
     {
@@ -915,7 +915,7 @@ class FilePathRegistryTest
     }
     finally
     {
-      FileDeletion.setPostDeletionHook(null);
+      FileDeletion.clearPostDeletionHooks();
     }
   }
 
@@ -933,7 +933,7 @@ class FilePathRegistryTest
     assertTrue(registry.contains(new FilePath(f2)));
     assertTrue(registry.contains(new FilePath(f3)));
 
-    FileDeletion.setPostDeletionHook(registry::evictSubtree);
+    FileDeletion.addPostDeletionHook(registry::evictSubtree);
 
     try
     {
@@ -946,7 +946,7 @@ class FilePathRegistryTest
     }
     finally
     {
-      FileDeletion.setPostDeletionHook(null);
+      FileDeletion.clearPostDeletionHooks();
     }
   }
 
@@ -962,7 +962,7 @@ class FilePathRegistryTest
     assertTrue(registry.contains(new FilePath(target)));
     assertTrue(registry.contains(new FilePath(keeper)));
 
-    FileDeletion.setPostDeletionHook(registry::evictSubtree);
+    FileDeletion.addPostDeletionHook(registry::evictSubtree);
 
     try
     {
@@ -973,7 +973,7 @@ class FilePathRegistryTest
     }
     finally
     {
-      FileDeletion.setPostDeletionHook(null);
+      FileDeletion.clearPostDeletionHooks();
     }
   }
 

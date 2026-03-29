@@ -754,7 +754,7 @@ public class PictureDlgCtrlr extends ModalDialog
       return;
     }
 
-    if (db.getRootPath().contains(path) == false)
+    if (path.isUnderDbRoot() == false)
     {
       chkMove.setDisable(true);
       chkMove.setSelected(true);

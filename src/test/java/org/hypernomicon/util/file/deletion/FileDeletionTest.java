@@ -1191,7 +1191,7 @@ class FileDeletionTest
 
     List<FilePath> received = new ArrayList<>();
 
-    FileDeletion.setPostDeletionHook(received::add);
+    FileDeletion.addPostDeletionHook(received::add);
 
     try
     {
@@ -1203,7 +1203,7 @@ class FileDeletionTest
     }
     finally
     {
-      FileDeletion.setPostDeletionHook(null);
+      FileDeletion.clearPostDeletionHooks();
     }
   }
 
@@ -1218,7 +1218,7 @@ class FileDeletionTest
 
     List<FilePath> received = new ArrayList<>();
 
-    FileDeletion.setPostDeletionHook(received::add);
+    FileDeletion.addPostDeletionHook(received::add);
 
     try
     {
@@ -1230,7 +1230,7 @@ class FileDeletionTest
     }
     finally
     {
-      FileDeletion.setPostDeletionHook(null);
+      FileDeletion.clearPostDeletionHooks();
     }
   }
 
@@ -1245,7 +1245,7 @@ class FileDeletionTest
     FilePath dirPath = FilePath.of(dir);
     List<FilePath> received = new ArrayList<>();
 
-    FileDeletion.setPostDeletionHook(received::add);
+    FileDeletion.addPostDeletionHook(received::add);
 
     try
     {
@@ -1257,7 +1257,7 @@ class FileDeletionTest
     }
     finally
     {
-      FileDeletion.setPostDeletionHook(null);
+      FileDeletion.clearPostDeletionHooks();
     }
   }
 
@@ -1269,7 +1269,7 @@ class FileDeletionTest
     Path file = Files.createFile(tempDir.resolve("nullhook.txt"));
     FilePath filePath = FilePath.of(file);
 
-    FileDeletion.setPostDeletionHook(null);
+    FileDeletion.clearPostDeletionHooks();
 
     assertDoesNotThrow(() -> FileDeletion.ofFile(filePath).nonInteractive().execute());
   }

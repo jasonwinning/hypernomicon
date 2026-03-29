@@ -133,7 +133,7 @@ public class HyperPath
     if (FilePath.isEmpty(filePath))
       return;
 
-    if (db.getRootPath().contains(filePath) == false)
+    if (filePath.isUnderDbRoot() == false)
     {
       internalErrorPopup(90177);
       return;

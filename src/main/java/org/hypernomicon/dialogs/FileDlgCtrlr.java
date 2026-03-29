@@ -361,7 +361,7 @@ public class FileDlgCtrlr extends ModalDialog
     chosenFilePath = showDirDialog(dirChooser);
     if (FilePath.isEmpty(chosenFilePath)) return;
 
-    if (db.getRootPath().contains(chosenFilePath) == false)
+    if (chosenFilePath.isUnderDbRoot() == false)
     {
       errorPopup("The file cannot be copied or moved outside the database folder structure.");
       return;

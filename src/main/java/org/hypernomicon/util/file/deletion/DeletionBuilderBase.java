@@ -18,7 +18,6 @@
 package org.hypernomicon.util.file.deletion;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult.*;
@@ -61,12 +60,12 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
                   logErrors    = false;
 
   /**
-   * Optional hook invoked after each successful deletion. Registered by
-   * {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry} during database
-   * session start and cleared on session end. Callers outside this package use
-   * {@link FileDeletion#setPostDeletionHook(Consumer)} to register/clear it.
+   * Hooks invoked after each successful deletion. Registered by
+   * {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry} (for registry eviction)
+   * during database session start. Cleared on session end via
+   * {@link FileDeletion#clearPostDeletionHooks()}.
    */
-  static volatile Consumer<FilePath> postDeletionHook;
+  static final List<Consumer<FilePath>> postDeletionHooks = new ArrayList<>();
 
 //---------------------------------------------------------------------------
 
@@ -179,11 +178,12 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
 
       if ((result == SUCCESS) || (result == PARTIAL))
       {
-        Consumer<FilePath> hook = postDeletionHook;
-        if (hook != null)
+        List<Consumer<FilePath>> hooks = List.copyOf(postDeletionHooks);
+
+        if (hooks.isEmpty() == false)
           originalPaths.stream()
             .filter(p -> failedPaths.contains(p) == false)
-            .forEach(hook);
+            .forEach(p -> hooks.forEach(hook -> hook.accept(p)));
       }
 
       return result;
@@ -368,23 +368,9 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Determine whether a path is under the database root folder. Used to decide whether
-   * the FolderTreeWatcher should be managed and whether {@code FileManager.setNeedRefresh()}
-   * should be called after successful deletion.
-   */
-  private static boolean isUnderDbRoot(FilePath filePath)
-  {
-    FilePath rootPath = ((db == null) || db.isOffline()) ? null : db.getRootPath();
-    return (FilePath.isEmpty(rootPath) == false) && rootPath.contains(filePath);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private static boolean anyUnderDbRoot(Collection<DeletionTask> tasks)
   {
-    return tasks.stream().anyMatch(task -> isUnderDbRoot(task.getFilePath()));
+    return tasks.stream().anyMatch(task -> task.getFilePath().isUnderDbRoot());
   }
 
 //---------------------------------------------------------------------------
