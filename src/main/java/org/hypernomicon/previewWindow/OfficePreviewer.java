@@ -21,7 +21,6 @@ import static org.hypernomicon.App.app;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
-import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,6 +98,7 @@ final class OfficePreviewer
         nextInfo.previewWrapper.setNeedsRefresh(nextInfo.filePath);
 
       nextInfo = new OfficePreviewInfo(previewWrapper, jsWrapper, filePath, pageNum, convertToHtml, officePath);
+      LOCK.notifyAll();
     }
   }
 
@@ -152,13 +152,19 @@ final class OfficePreviewer
     @Override public void run()
     {
       Map<PDFJSWrapper, FilePath> wrapperToTempDir = new HashMap<>();
-      File tempPath;
-      File previewFilePath;
+      File tempPath,
+           previewFilePath;
 
       while (shutDown == false)
       {
-        while ((nextInfo == null) && (shutDown == false))
-          sleepForMillis(100);
+        synchronized(LOCK)
+        {
+          while ((nextInfo == null) && (shutDown == false))
+          {
+            try { LOCK.wait(); }
+            catch (InterruptedException e) { Thread.currentThread().interrupt(); return; }
+          }
+        }
 
         if (shutDown)
           break;
@@ -330,6 +336,8 @@ final class OfficePreviewer
     private static void cleanup()
     {
       shutDown = true;
+
+      synchronized (LOCK) { LOCK.notifyAll(); }
 
       OfficeUtils.stopQuietly(officeManager);
 

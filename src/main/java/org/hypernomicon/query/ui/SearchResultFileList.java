@@ -248,7 +248,7 @@ class SearchResultFileList
 
         HDT_Work work = (HDT_Work)record;
 
-        if ((includeEdited == false) && work.getAuthors().stream().allMatch(author -> author.getIsEditor() || author.getIsTrans()))
+        if ((includeEdited == false) && (work.getAuthors().isEmpty() == false) && work.getAuthors().stream().allMatch(author -> author.getIsEditor() || author.getIsTrans()))
           return;
 
         if (work.workFiles.isEmpty())

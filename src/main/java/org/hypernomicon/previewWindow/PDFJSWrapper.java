@@ -22,6 +22,8 @@ import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import com.teamdev.jxbrowser.chromium.*;
@@ -548,16 +550,16 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Disposes a browser and waits for disposal to complete. Uses the correct
+   *  threading (off FX thread on Windows, on FX thread elsewhere). */
   private static void dispose(Browser browser, boolean wait)
   {
     if ((browser == null) || browser.isDisposed()) return;
 
-    if (wait)
-    {
-      disposing = true;
+    CountDownLatch latch = wait ? new CountDownLatch(1) : null;
 
-      browser.addDisposeListener(event -> disposing = false);
-    }
+    if (wait)
+      browser.addDisposeListener(event -> latch.countDown());
 
     Runnable runnable = () ->
     {
@@ -567,7 +569,7 @@ public class PDFJSWrapper
       }
       catch (IPCException e)
       {
-        disposing = false;
+        if (latch != null) latch.countDown();
         errorPopup("An error occurred while disposing preview pane: " + getThrowableMessage(e));
       }
     };
@@ -578,7 +580,10 @@ public class PDFJSWrapper
       runInFXThread(runnable);
 
     if (wait)
-      while (disposing) sleepForMillis(30);
+    {
+      try { latch.await(10, TimeUnit.SECONDS); }
+      catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -900,7 +905,6 @@ public class PDFJSWrapper
     dispose(browser, false);
   }
 
-  private static boolean disposing = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
