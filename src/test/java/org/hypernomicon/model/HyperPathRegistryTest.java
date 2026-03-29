@@ -250,7 +250,7 @@ class HyperPathRegistryTest
   @Test
   void getHyperPaths_unregisteredPath_returnsEmptySet()
   {
-    FilePath fakePath = db.getRootPath().resolve("does_not_exist");
+    FilePath fakePath = db.getRootPath("does_not_exist");
 
     assertTrue(registry().getHyperPaths(fakePath).isEmpty());
   }

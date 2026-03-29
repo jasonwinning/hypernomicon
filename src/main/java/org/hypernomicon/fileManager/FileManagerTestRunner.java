@@ -843,7 +843,7 @@ public final class FileManagerTestRunner
     {
       try
       {
-        FilePath hdbFile = db.getRootPath().resolve("database.hdb");
+        FilePath hdbFile = db.getRootPath("database.hdb");
 
         PopupRobot.clear();
 

@@ -77,7 +77,7 @@ class HDT_FolderPathComputationTest
     FilePath childPath = child.filePath();
 
     assertNotNull(childPath);
-    assertEquals(db.getRootPath().resolve("testchild"), childPath);
+    assertEquals(db.getRootPath("testchild"), childPath);
   }
 
 //---------------------------------------------------------------------------

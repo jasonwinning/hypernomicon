@@ -85,7 +85,7 @@ class ProtectedFileTest
   @Test
   void databaseHdbFile_isProtected()
   {
-    FilePath hdb = db.getRootPath().resolve("database.hdb");
+    FilePath hdb = db.getRootPath("database.hdb");
 
     assertTrue(db.isProtectedFile(hdb, false));
     assertTrue(db.isProtectedFile(hdb, true));
@@ -191,7 +191,7 @@ class ProtectedFileTest
   @Test
   void arbitraryFileInRoot_notProtected()
   {
-    FilePath file = db.getRootPath().resolve("random_notes.txt");
+    FilePath file = db.getRootPath("random_notes.txt");
 
     assertFalse(db.isProtectedFile(file, false));
     assertFalse(db.isProtectedFile(file, true));
@@ -243,7 +243,7 @@ class ProtectedFileTest
   {
     // Settings.xml placed directly in the root, not in XML dir
 
-    FilePath file = db.getRootPath().resolve(SETTINGS_FILE_NAME);
+    FilePath file = db.getRootPath(SETTINGS_FILE_NAME);
 
     assertFalse(db.isProtectedFile(file, false),
       "XML file name in root (not XML dir) should not be protected");

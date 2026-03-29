@@ -771,7 +771,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
       return;
     }
 
-    FileManagerTestRunner.setupTestFiles(db.getRootPath().resolve("_test_fm"));
+    FileManagerTestRunner.setupTestFiles(db.getRootPath("_test_fm"));
 
     btnSetupFMTest.setDisable(true);
     btnRunFMTest.setDisable(false);
@@ -796,7 +796,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     btnRunFMTest.setDisable(true);
 
-    FileManagerTestRunner.runTests(db.getRootPath().resolve("_test_fm"), () -> btnSetupFMTest.setDisable(false));
+    FileManagerTestRunner.runTests(db.getRootPath("_test_fm"), () -> btnSetupFMTest.setDisable(false));
   }
 
 //---------------------------------------------------------------------------
