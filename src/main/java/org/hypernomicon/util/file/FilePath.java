@@ -143,6 +143,81 @@ public class FilePath implements Comparable<FilePath>
 
   public static boolean isEmpty(FilePath filePath) { return (filePath == null) || strNullOrBlank(filePath.toString()); }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Return a {@link FilePath} for the canonical real path, resolving any symlinks/aliases.
+   * Returns this instance unchanged if the real path cannot be resolved (e.g. file does not exist).
+   */
+  public FilePath toRealFilePath()
+  {
+    Path real = innerVal.getRealPath();
+
+    if (real != null)
+      return FilePath.of(real);
+
+    System.out.println("FilePath.toRealFilePath: could not resolve real path for " + this);
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Compares two filename strings using filesystem-aware rules: case normalization
+   * via {@link FilenameRules}, and natural numeric ordering for trailing numbers
+   * (so "Chapter 2.pdf" sorts before "Chapter 10.pdf").
+   */
+  public static int compareFileNames(String name1, String name2)
+  {
+    if (strNullOrBlank(name1)) return strNullOrBlank(name2) ? 0 : -1;
+    if (strNullOrBlank(name2)) return 1;
+
+    FilenameRules rules = FilenameRules.current();
+
+    if (Character.isDigit(name1.charAt(name1.length() - 1)) &&
+        Character.isDigit(name2.charAt(name2.length() - 1)))
+    {
+      PrefixAndNumber pn1 = splitIntoPrefixAndNumber(name1),
+                      pn2 = splitIntoPrefixAndNumber(name2);
+
+      if ((pn1.number() >= 0) && (pn2.number() >= 0) && rules.normalize(pn1.prefix()).equals(rules.normalize(pn2.prefix())))
+        return pn1.number() - pn2.number();
+    }
+
+    return rules.normalize(name1).compareTo(rules.normalize(name2));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Compares two relative path strings using filesystem-aware normalization on
+   * each path component.
+   */
+  public static int comparePaths(String path1, String path2)
+  {
+    if (strNullOrBlank(path1)) return strNullOrBlank(path2) ? 0 : -1;
+    if (strNullOrBlank(path2)) return 1;
+
+    String[] parts1 = path1.split("[/\\\\]"),
+             parts2 = path2.split("[/\\\\]");
+
+    int len = Math.min(parts1.length, parts2.length);
+
+    for (int ndx = 0; ndx < len; ndx++)
+    {
+      int cmp = compareFileNames(parts1[ndx], parts2[ndx]);
+      if (cmp != 0) return cmp;
+    }
+
+    return parts1.length - parts2.length;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public int hashCode()               { return innerVal.hashCode(); }
   @Override public String toString()            { return innerVal.getPathStr(); }
   @Override public int compareTo(FilePath o)    { return toPath().compareTo(o.toPath()); }

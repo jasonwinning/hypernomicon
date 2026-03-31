@@ -256,22 +256,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     if (  isDirectory() && (o.isDirectory() == false)) return -1;
     if (o.isDirectory() && (  isDirectory() == false)) return 1;
 
-    String fileNameStr1 =  fileName.toString(),
-           fileNameStr2 = oFileName.toString();
-
-    FilenameRules rules = FilenameRules.current();
-
-    if (Character.isDigit(fileNameStr1.charAt(fileNameStr1.length() - 1)) &&
-        Character.isDigit(fileNameStr2.charAt(fileNameStr2.length() - 1)))
-    {
-      PrefixAndNumber pn1 = splitIntoPrefixAndNumber(fileNameStr1),
-                      pn2 = splitIntoPrefixAndNumber(fileNameStr2);
-
-      if ((pn1.number() >= 0) && (pn2.number() >= 0) && rules.normalize(pn1.prefix()).equals(rules.normalize(pn2.prefix())))
-        return pn1.number() - pn2.number();
-    }
-
-    return rules.normalize(fileNameStr1).compareTo(rules.normalize(fileNameStr2));
+    return FilePath.compareFileNames(fileName.toString(), oFileName.toString());
   }
 
 //---------------------------------------------------------------------------

@@ -1095,7 +1095,7 @@ public abstract class AbstractHyperDB
 
     state = DBState.LOADING;
 
-    rootFilePath = newRootFilePath;
+    rootFilePath = newRootFilePath.toRealFilePath();
     hdbFilePath = rootFilePath.resolve(hdbFileName);
 
     try
@@ -2605,7 +2605,7 @@ public abstract class AbstractHyperDB
     dbCreationDate = Instant.now();
     prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
-    rootFilePath = newPath;
+    rootFilePath = newPath.toRealFilePath();
     saveSourcePathToSystemSettings(newPath.toString());
     hdbFilePath = rootFilePath.resolve(hdbFileName);
 
