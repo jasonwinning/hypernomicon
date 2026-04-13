@@ -146,7 +146,9 @@ public final class App extends Application
 
     FolderTreeWatcher.consoleLogging = debugging;
 
-    BrowserPreferences.setChromiumSwitches("--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses");
+    BrowserPreferences.setChromiumSwitches(Environment.isLinux()
+      ? new String[] { "--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses", "--disable-gpu" }
+      : new String[] { "--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses" });
 
     Preferences appPrefs = null;
 
