@@ -94,7 +94,7 @@ public final class ZoteroDate
 
     try
     {
-      readResourceTextFile("resources/dateFormats.json", sb, false);
+      readResourceTextFile("resources/dateFormats.json", sb);
       jObj = parseJsonObj(sb.toString());
     }
     catch (Exception e)

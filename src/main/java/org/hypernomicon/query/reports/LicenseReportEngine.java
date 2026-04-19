@@ -81,10 +81,10 @@ public class LicenseReportEngine extends ReportEngine
 
         try
         {
-          readResourceTextFile("/LICENSE.html", license, true);
+          readResourceTextFile("/LICENSE.html", license);
           processHtml(license);
 
-          readResourceTextFile("/NOTICE.html", notice, true);
+          readResourceTextFile("/NOTICE.html", notice);
           processHtml(notice);
         }
         catch (IOException e)

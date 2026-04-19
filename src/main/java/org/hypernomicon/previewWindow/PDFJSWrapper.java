@@ -621,7 +621,7 @@ public class PDFJSWrapper
   {
     StringBuilder viewerHTMLSB = new StringBuilder();
 
-    readResourceTextFile("resources/pdfjs/web/viewer.html", viewerHTMLSB, false);
+    readResourceTextFile("resources/pdfjs/web/viewer.html", viewerHTMLSB);
 
     int ndx = viewerHTMLSB.indexOf(basePlaceholder);
 

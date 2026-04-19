@@ -886,7 +886,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
     StringBuilder sb = new StringBuilder();
 
-    readResourceTextFile("resources/" + ZOTERO_TEMPLATE_FILE_NAME, sb, false);
+    readResourceTextFile("resources/" + ZOTERO_TEMPLATE_FILE_NAME, sb);
     JsonArray jArr = parseJson(sb.toString());
 
     if (jArr == null)

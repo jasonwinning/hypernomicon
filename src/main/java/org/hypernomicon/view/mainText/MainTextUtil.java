@@ -118,11 +118,11 @@ public final class MainTextUtil
   {
     StringBuilder sb = new StringBuilder();
 
-    readResourceTextFile("resources/mainText.js", sb, true);
+    readResourceTextFile("resources/mainText.js", sb);
 
     scriptContent = "<script>" + sb + "</script>";
 
-    readResourceTextFile("resources/mainTextEdit.js", sb, true);
+    readResourceTextFile("resources/mainTextEdit.js", sb);
 
     editingScriptContent = "<script>" + sb + "</script>";
 

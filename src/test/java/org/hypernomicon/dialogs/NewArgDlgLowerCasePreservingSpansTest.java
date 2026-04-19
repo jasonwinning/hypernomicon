@@ -143,9 +143,9 @@ class NewArgDlgLowerCasePreservingSpansTest
   void touchingSpans()
   {
     // Artificial case: two spans with no gap ("Kant" at 0-3, "ian" at 4-6
-    // would overlap; instead use "Kant" and "Kantian" logic where the scanner
+    // would overlap. Instead use "Kant" and "Kantian" logic where the scanner
     // returns a single extended span, so adjacent non-overlapping spans never
-    // touch in production — but test the edge case anyway.
+    // touch in production; but test the edge case anyway.
     // Here: spans(0,2) and (2,3) cover indices 0-4 of "ABCDEfg" entirely.
     assertEquals("ABCDEfg",
       lowerCasePreservingSpans("ABCDEfg", spans(0, 2, 2, 3)));

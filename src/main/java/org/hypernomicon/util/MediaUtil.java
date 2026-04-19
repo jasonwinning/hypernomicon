@@ -440,7 +440,7 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void readResourceTextFile(String relPath, StringBuilder strBuilder, boolean keepEOLchars) throws IOException
+  public static void readResourceTextFile(String relPath, StringBuilder strBuilder) throws IOException
   {
     assignSB(strBuilder, "");
 
@@ -450,7 +450,7 @@ public final class MediaUtil
 
       while ((line = reader.readLine()) != null)
       {
-        if (keepEOLchars && (strBuilder.length() > 0))
+        if (strBuilder.length() > 0)
           strBuilder.append('\n');
 
         strBuilder.append(line);

@@ -56,7 +56,7 @@ public class HelpDlgCtrlr extends ModalDialog
 
     try
     {
-      readResourceTextFile("resources/Shortcuts.html", html, true);
+      readResourceTextFile("resources/Shortcuts.html", html);
       webView.getEngine().loadContent(html.toString());
     }
     catch (IOException e)
