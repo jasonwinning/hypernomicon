@@ -38,6 +38,7 @@ import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Verdict.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.HDT_Verdict.HDT_PositionVerdict;
+import org.hypernomicon.model.searchKeys.KeywordLinkScanner;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.settings.ArgumentNamingSettings;
 import org.hypernomicon.view.cellValues.HyperTableCell;
@@ -127,12 +128,19 @@ public class NewArgDlgCtrlr extends ModalDialog
 
         if (person != null)
         {
+          programmaticWorkChange = true;
           hcbPerson.selectIDofRecord(person);
-          Platform.runLater(() -> hcbWork.selectIDofRecord(work));
+
+          Platform.runLater(() ->
+          {
+            hcbWork.selectIDofRecord(work);
+            programmaticWorkChange = false;
+            reviseSuggestions(cbArgOrStance.getValue());
+          });
+
+          return;
         }
       }
-
-      programmaticWorkChange = false;
 
       reviseSuggestions(cbArgOrStance.getValue());
     });
@@ -306,7 +314,14 @@ public class NewArgDlgCtrlr extends ModalDialog
       targetName = "the " + targetName.substring(4);
 
     if (chkLowerCaseTargetName.isSelected())
-      targetName = targetName.toLowerCase();
+    {
+      List<int[]> personSpans = KeywordLinkScanner.scan(targetName).stream()
+        .filter(link -> link.recordStream().anyMatch(r -> r.getType() == hdtPerson))
+        .map(link -> new int[] { link.getOffset(), link.getLength() })
+        .toList();
+
+      targetName = lowerCasePreservingSpans(targetName, personSpans);
+    }
 
     if (target.getType() == hdtPosition)
     {
@@ -368,6 +383,52 @@ public class NewArgDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Return {@code text} with every character lowercased, except for the
+   * character ranges given by {@code spansToPreserve}, which retain their
+   * original case.
+   *
+   * <p>Each element of {@code spansToPreserve} is an {@code int[]} of
+   * {@code [offset, length]}. Spans must be:
+   * <ul>
+   *   <li>in ascending order by offset,</li>
+   *   <li>non-overlapping,</li>
+   *   <li>fully contained within {@code text} (offset &gt;= 0, offset + length &lt;= text.length()).</li>
+   * </ul>
+   *
+   * <p>A zero-length span is allowed and preserves nothing (a no-op at that offset).
+   * An empty {@code spansToPreserve} list simply returns {@code text.toLowerCase()}.
+   *
+   * <p>Package-private and static for unit testing. Kept here rather than in a
+   * generic utility class because the span-preservation semantics are tied to
+   * the argument-naming use case (proper-noun preservation via the KeywordLinkScanner).
+   */
+  static String lowerCasePreservingSpans(String text, List<int[]> spansToPreserve)
+  {
+    if (spansToPreserve.isEmpty())
+      return text.toLowerCase();
+
+    StringBuilder sb = new StringBuilder(text.length());
+    int ndx = 0;
+
+    for (int[] span : spansToPreserve)
+    {
+      int offset = span[0],
+          length = span[1];
+
+      sb.append(text.substring(ndx, offset).toLowerCase());
+      sb.append(text, offset, offset + length);
+
+      ndx = offset + length;
+    }
+
+    sb.append(text.substring(ndx).toLowerCase());
+    return sb.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private String getAuthorNamesForSuggestions()
   {
     HDT_Person person = hcbPerson.selectedRecord();
@@ -398,6 +459,31 @@ public class NewArgDlgCtrlr extends ModalDialog
     if (Ternary.isNullOrUnset(isArgument))
       return falseWithErrorPopup("You must select either Argument or Stance.", cbArgOrStance);
 
+    // Identify which argument-name text field is selected. The radio buttons
+    // share a ToggleGroup so normally exactly one is selected, but guard
+    // against "none selected" too.
+
+    TextField selectedNameTf = rbArgName1.isSelected() ? tfArgName1
+                             : rbArgName2.isSelected() ? tfArgName2
+                             : rbArgName3.isSelected() ? tfArgName3
+                             : rbArgName4.isSelected() ? tfArgName4
+                             : rbArgName5.isSelected() ? tfArgName5
+                             : rbArgName6.isSelected() ? tfArgName6
+                             : rbArgName7.isSelected() ? tfArgName7
+                             : rbArgName8.isSelected() ? tfArgName8
+                                                       : null;
+
+    if (selectedNameTf == null)
+      return falseWithErrorPopup("You must select one of the suggested argument names.", tfArgName1);
+
+    if (selectedNameTf.getText().isBlank())
+      return falseWithErrorPopup("The selected argument name cannot be empty.", selectedNameTf);
+
+    if (rbNew.isSelected() && tfTitle.getText().isBlank())
+      return falseWithErrorPopup("Enter a title for the new work.", tfTitle);
+
+    // All validation passed; create records and populate them.
+
     argument = db.createNewBlankRecord(hdtArgument);
 
     argument.setIsArgument(isArgument);
@@ -412,14 +498,7 @@ public class NewArgDlgCtrlr extends ModalDialog
       targetArg.positions.forEach(position -> argument.addPosition(position, null));
     }
 
-    if      (rbArgName1.isSelected()) argument.setName(tfArgName1.getText());
-    else if (rbArgName2.isSelected()) argument.setName(tfArgName2.getText());
-    else if (rbArgName3.isSelected()) argument.setName(tfArgName3.getText());
-    else if (rbArgName4.isSelected()) argument.setName(tfArgName4.getText());
-    else if (rbArgName5.isSelected()) argument.setName(tfArgName5.getText());
-    else if (rbArgName6.isSelected()) argument.setName(tfArgName6.getText());
-    else if (rbArgName7.isSelected()) argument.setName(tfArgName7.getText());
-    else                              argument.setName(tfArgName8.getText());
+    argument.setName(selectedNameTf.getText());
 
     HDT_Work work;
 
