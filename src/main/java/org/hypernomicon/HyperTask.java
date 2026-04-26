@@ -195,7 +195,8 @@ public abstract class HyperTask
 
   private volatile HyperThread thread;
   private volatile boolean interruptOnCancel = false;
-  private boolean skippable = false, initialized = false, showDialogImmediately = false;
+  private boolean skippable = false, initialized = false, showDialogImmediately = false,
+                  waitOnCancel = true, daemonThread = false;
   private long dialogDelayMillis = -1;  // -1 means use default
 
   /**
@@ -225,6 +226,8 @@ public abstract class HyperTask
   public boolean getSkippable()               { return skippable; }
   public boolean getShowDialogImmediately()   { return showDialogImmediately; }
   public long    getDialogDelayMillis()       { return dialogDelayMillis; }
+  public boolean getWaitOnCancel()            { return waitOnCancel; }
+  public boolean getDaemonThread()            { return daemonThread; }
   public boolean threadIsAlive()              { return HyperThread.isRunning(thread); }
   public boolean isRunning()                  { return innerTask.isRunning(); }
   public boolean isCancelled()                { return innerTask.isCancelled(); }
@@ -387,6 +390,52 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * If true (the default), {@link ProgressDlgCtrlr#performTask} will join the
+   * task's thread after the dialog closes via cancel/skip, blocking the caller
+   * until the thread actually dies. If false, the task is signaled to cancel
+   * but the caller does not wait. Useful when the task wraps work that may
+   * not respond promptly to {@link Thread#interrupt()} and the caller would
+   * rather abandon a stale task than block on it.
+   * <p>
+   * When set to false, callers should typically also set
+   * {@link #setDaemonThread(boolean) daemonThread} to true so a still-running
+   * orphan task does not block JVM exit.
+   * @param waitOnCancel Whether the dialog driver should wait for the thread
+   * @return This HyperTask
+   */
+  public HyperTask setWaitOnCancel(boolean waitOnCancel)
+  {
+    if (initialized) throw new IllegalStateException("Already initialized");
+
+    this.waitOnCancel = waitOnCancel;
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * If true, the task's thread will be created as a daemon thread, so it does
+   * not block JVM exit. Default false.
+   * <p>
+   * Pairs naturally with {@link #setWaitOnCancel(boolean) waitOnCancel}=false:
+   * a cancelled-but-still-running orphan task on a daemon thread will simply
+   * be killed by JVM exit if it is still alive at shutdown.
+   * @param daemonThread Whether the task's thread should be a daemon thread
+   * @return This HyperTask
+   */
+  public HyperTask setDaemonThread(boolean daemonThread)
+  {
+    if (initialized) throw new IllegalStateException("Already initialized");
+
+    this.daemonThread = daemonThread;
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private synchronized void waitUntilThreadDies()
   {
     if ((thread == null) || (thread.isAlive() == false)) return;
@@ -426,24 +475,6 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void startWithNewThreadAsDaemon()
-  {
-    initialized = true;
-
-    if (getState() != State.READY)
-      throw new IllegalStateException("Can only start a task in the READY state. Was in state " + getState());
-
-    if (thread != null)
-      throw new IllegalStateException("Task already has thread.");
-
-    HyperThread newThread = new HyperThread(this);
-    newThread.setDaemon(true);
-    newThread.start();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void startWithNewThread()
   {
     initialized = true;
@@ -454,7 +485,10 @@ public abstract class HyperTask
     if (thread != null)
       throw new IllegalStateException("Task already has thread.");
 
-    new HyperThread(this).start();
+    HyperThread newThread = new HyperThread(this);
+    if (daemonThread)
+      newThread.setDaemon(true);
+    newThread.start();
   }
 
 //---------------------------------------------------------------------------
@@ -502,11 +536,19 @@ public abstract class HyperTask
       hndlr.accept(State.FAILED);
     });
 
+    // For cancellation, honor waitOnCancel: if the caller has opted out of
+    // waiting for the thread to die (because the underlying work doesn't
+    // respond promptly to Thread.interrupt()), don't block the FX thread here
+    // either. The orphan thread will run to natural completion in the
+    // background; subsequent done handlers run while it's still alive, which
+    // is fine because the task is already in CANCELLED state and its result
+    // is being discarded.
+
     innerTask.setOnCancelled(e ->
     {
       if (cancelHndlr != null)
         cancelHndlr.handle(e);
-      else
+      else if (waitOnCancel)
         waitUntilThreadDies();
 
       hndlr.accept(State.CANCELLED);

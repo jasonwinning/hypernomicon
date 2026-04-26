@@ -215,11 +215,20 @@ public final class ProgressDlgCtrlr extends ModalDialog
     boolean ok = new ProgressDlgCtrlr(task).showModal();
 
     // If we started the task and it's still running (user cancelled or
-    // skipped the dialog), cancel and wait so the caller can safely
-    // clean up data structures.
+    // skipped the dialog), cancel so the caller can safely clean up data
+    // structures. By default we also wait for the thread to die; tasks that
+    // opt out via setWaitOnCancel(false), typically because the underlying
+    // work doesn't respond promptly to Thread.interrupt(), get a fire-and-
+    // forget cancel and the orphan continues running until it naturally
+    // completes.
 
     if (startedByUs && task.isRunning())
-      task.cancelAndWait();
+    {
+      if (task.getWaitOnCancel())
+        task.cancelAndWait();
+      else
+        task.cancel();
+    }
 
     return ok ? State.SUCCEEDED : task.getState();
   }
