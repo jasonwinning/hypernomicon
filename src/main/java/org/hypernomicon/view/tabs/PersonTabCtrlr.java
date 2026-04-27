@@ -681,7 +681,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       HyperTableRow row = htArguments.newDataRow();
       row.setIconCellValue(0, argument);
 
-      nullSwitch(argument.getDebate(), debate ->
+      nullSwitch(argument.getDebateAndPosition().debate(), debate ->
       {
         addOtherToTopicTable(debate, row);
         otherToAdd.remove(debate);

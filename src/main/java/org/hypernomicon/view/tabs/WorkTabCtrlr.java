@@ -27,6 +27,7 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.authors.*;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.records.HDT_Argument.DebateAndPosition;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
@@ -70,8 +71,7 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.FileSystemException;
 import java.time.Month;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -764,28 +764,21 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   // Populate arguments/stances
   // --------------------------
 
-    htArguments.buildRows(curWork.arguments, (row, arg) ->
+    // One row per (argument, target) pair. An argument with multiple
+    // positions and/or target-args contributes a row for each. Arguments
+    // with no targets at all still get a row so the user can see they
+    // are part of the work and navigate to them.
+
+    for (HDT_Argument arg : curWork.arguments)
     {
-      if (arg.positions.size() > 0)
-      {
-        HDT_Position target = arg.positions.getFirst();
-        row.setIconCellValue(0, target);
-        row.setCellValue(1, target);
+      PageRangeHTC pageRange = new PageRangeHTC(arg, arg.pagesInWork(curWork));
 
-        nullSwitch(arg.getPosVerdict(target), verdict -> row.setCellValue(2, verdict));
-      }
-      else if (arg.targetArgs.size() > 0)
-      {
-        HDT_Argument target = arg.targetArgs.getFirst();
-        row.setIconCellValue(0, target);
-        row.setCellValue(1, target);
+      arg.positions .forEach(target -> addArgumentRow(arg, target, pageRange));
+      arg.targetArgs.forEach(target -> addArgumentRow(arg, target, pageRange));
 
-        nullSwitch(arg.getArgVerdict(target), verdict -> row.setCellValue(2, verdict));
-      }
-
-      row.setCellValue(3, arg);
-      row.setCellValue(4, new PageRangeHTC(arg, arg.pagesInWork(curWork)));
-    });
+      if (arg.positions.isEmpty() && arg.targetArgs.isEmpty())
+        addArgumentRow(arg, null, pageRange);
+    }
 
   // Populate work files
   // -------------------
@@ -914,6 +907,42 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Adds one row to {@code htArguments} for an (argument, target) pair.
+   * Pass {@code target == null} for arguments with no targets at all; the
+   * target/verdict cells are left blank in that case but the argument name
+   * and page range still appear so the user can see and navigate to the
+   * argument.
+   * <p>
+   * Dispatches the verdict lookup based on target type: {@link HDT_Position}
+   * targets use {@code arg.getPosVerdict}; {@link HDT_Argument} targets use
+   * {@code arg.getArgVerdict}.
+   */
+  private void addArgumentRow(HDT_Argument arg, HDT_RecordWithMainText target, PageRangeHTC pageRange)
+  {
+    HyperTableRow row = htArguments.newDataRow();
+
+    if (target != null)
+    {
+      row.setIconCellValue(0, target);
+      row.setCellValue    (1, target);
+
+      nullSwitch(switch (target)
+      {
+        case HDT_Position targetPos -> arg.getPosVerdict(targetPos);
+        case HDT_Argument targetArg -> arg.getArgVerdict(targetArg);
+        default                     -> null;
+
+      }, verdict -> row.setCellValue(2, verdict));
+    }
+
+    row.setCellValue(3, arg);
+    row.setCellValue(4, pageRange);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void populateDisplayersAndKeyMentioners()
   {
     Set<HDT_RecordWithMainText> set = new LinkedHashSet<>(), invSet = new LinkedHashSet<>();
@@ -1023,16 +1052,37 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void initArgContextMenu()
   {
+    // The row's argument (col 3) is always an HDT_Argument; the row's target
+    // (col 1) is either an HDT_Position, an HDT_Argument, or null. Each row
+    // represents a single (argument, target) pair, so the target-related
+    // navigation items must read col 1 directly rather than picking the
+    // argument's first target.
+
     htArguments.addContextMenuItem("Argument/Stance Record...", HDT_Argument.class,
       arg -> ui.goToRecord(arg, true));
 
-    htArguments.addContextMenuItem("Position Record...", HDT_Argument.class,
-      arg -> arg.positions.size() > 0,
-      arg -> ui.goToRecord(arg.positions.getFirst(), true));
+    htArguments.addContextMenuItem("Target Argument/Stance Record...",
+      row -> row.getRecord(1) instanceof HDT_Argument,
+      row -> ui.goToRecord((HDT_Argument) row.getRecord(1), true));
 
-    htArguments.addContextMenuItem("Problem/Debate Record...", HDT_Argument.class,
-      arg -> (arg.positions.isEmpty() == false) && (arg.positions.getFirst().getLargerDebate() != null),
-      arg -> ui.goToRecord(arg.positions.getFirst().getLargerDebate(), true));
+    // One resolver shared by both items so the Position and Debate menu entries
+    // navigate to a related (debate, position) pair, never to records pulled
+    // from independent searches.
+
+    Function<HyperTableRow, DebateAndPosition> debateAndPositionTarget = row -> switch (row.getRecord(1))
+    {
+      case HDT_Position pos -> new DebateAndPosition(pos.getLargerDebate(), pos);
+      case HDT_Argument arg -> arg.getDebateAndPosition();
+      case null, default    -> new DebateAndPosition(null, null);
+    };
+
+    htArguments.addContextMenuItem("Position Record...",
+      row -> debateAndPositionTarget.apply(row).position() != null,
+      row -> ui.goToRecord(debateAndPositionTarget.apply(row).position(), true));
+
+    htArguments.addContextMenuItem("Problem/Debate Record...",
+      row -> debateAndPositionTarget.apply(row).debate() != null,
+      row -> ui.goToRecord(debateAndPositionTarget.apply(row).debate(), true));
   }
 
 //---------------------------------------------------------------------------
