@@ -45,13 +45,13 @@ import com.google.common.collect.HashBasedTable;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.event.EventTarget;
-import javafx.geometry.Orientation;
-import javafx.geometry.Rectangle2D;
+import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import javafx.stage.*;
 
 //---------------------------------------------------------------------------
@@ -794,10 +794,29 @@ public final class UIUtil
 
     if (IS_OS_LINUX)
     {
-      DialogPane dlgPane = dlg.getDialogPane();
+      // Historic bug on some Linux distros (Fedora at least) where Alert
+      // dialogs would render at zero or near-zero size. The conditions were
+      // never fully pinned down. The original workaround, in place since
+      // before the initial public commit (2018), was to force every Linux
+      // Alert to 800x400 unconditionally; that compensated for the bug but
+      // also made well-sized dialogs render with a lot of empty space.
+      //
+      // This narrower workaround lets layout and the window manager settle,
+      // then forces 800x400 only when the resulting size is pathologically
+      // small. The 100 ms delay covers both JavaFX's layout pass and Linux
+      // WM size negotiation.
 
-      setHeights(dlgPane, 400);
-      setWidths (dlgPane, 800);
+      dlg.setOnShown(e -> runDelayedInFXThread(1, 100, () ->
+      {
+        DialogPane dlgPane = dlg.getDialogPane();
+        if ((dlgPane.getWidth() < 100) || (dlgPane.getHeight() < 50))
+        {
+          setHeights(dlgPane, 400);
+          setWidths (dlgPane, 800);
+          Stage stage = (Stage) dlgPane.getScene().getWindow();
+          stage.sizeToScene();
+        }
+      }));
     }
 
     if (windowStack != null)
@@ -1038,7 +1057,30 @@ public final class UIUtil
       Alert alert = new Alert(theType);
       alert.setHeaderText(titleCase(theType.toString()));
       alert.setTitle(appTitle);
-      alert.setContentText(theMsg);
+
+      // Use a Text node (with wrappingWidth) instead of Alert.setContentText.
+      // The default content is a Label, whose wrapText only breaks at word
+      // boundaries (whitespace) and so can't break unbreakable tokens like
+      // Windows paths (C:\Users\...\file.xml). At higher DPI scalings, such
+      // tokens drive the dialog wider than the screen and the message gets
+      // clipped at the screen edge.
+      //
+      // Text.wrappingWidth wraps at the bounded width and falls back to
+      // character-level breaking when no word boundary fits, AND its
+      // prefWidth is the post-wrap width, so short messages still produce
+      // a narrow dialog while long messages cap at the wrap width.
+      // (Text inside a TextFlow ignores wrappingWidth, hence the StackPane.)
+
+      Text textNode = new Text(theMsg);
+      textNode.setWrappingWidth(scalePropertyValueForDPI(500));
+
+      StackPane content = new StackPane(textNode);
+      content.getStyleClass().add("content");
+      content.setAlignment(Pos.TOP_LEFT);
+
+      alert.getDialogPane().setContent(content);
+      scaleNodeForDPI(alert.getDialogPane());
+      setFontSize(alert.getDialogPane());
 
       showAndWait(alert);
 
