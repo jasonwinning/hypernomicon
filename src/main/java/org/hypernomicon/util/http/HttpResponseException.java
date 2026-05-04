@@ -35,7 +35,7 @@ public class HttpResponseException extends IOException
   @Serial private static final long serialVersionUID = 1L;
 
   private final int statusCode;
-  private final String url, serverMessage;
+  private final String url;
 
 //---------------------------------------------------------------------------
 
@@ -58,7 +58,6 @@ public class HttpResponseException extends IOException
     super(buildMessage(statusCode, url, serverMessage));
     this.statusCode = statusCode;
     this.url = url;
-    this.serverMessage = serverMessage;
   }
 
 //---------------------------------------------------------------------------
@@ -84,7 +83,6 @@ public class HttpResponseException extends IOException
 
   public int getStatusCode()       { return statusCode; }
   public String getUrl()           { return url; }
-  public String getServerMessage() { return serverMessage; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -73,349 +73,347 @@
     </center>
     <left>
       <VBox maxWidth="208.0" minWidth="208.0" prefWidth="208.0" BorderPane.alignment="CENTER">
-        <children>
-          <TitledPane animated="false" collapsible="false" focusTraversable="false" text="Preview Source"
-                      VBox.vgrow="NEVER">
-            <GridPane hgap="4.0" vgap="4.0">
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints prefHeight="25.0" vgrow="SOMETIMES"/>
-                <RowConstraints prefHeight="25.0" vgrow="SOMETIMES"/>
-                <RowConstraints prefHeight="25.0" vgrow="SOMETIMES"/>
-              </rowConstraints>
-              <padding>
-                <Insets bottom="3.0" left="3.0" right="3.0" top="3.0"/>
-              </padding>
+        <TitledPane animated="false" collapsible="false" focusTraversable="false" text="Preview Source"
+                    VBox.vgrow="NEVER">
+          <GridPane hgap="4.0" vgap="4.0">
+            <columnConstraints>
+              <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+              <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+            </columnConstraints>
+            <rowConstraints>
+              <RowConstraints prefHeight="25.0" vgrow="SOMETIMES"/>
+              <RowConstraints prefHeight="25.0" vgrow="SOMETIMES"/>
+              <RowConstraints prefHeight="25.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <padding>
+              <Insets bottom="3.0" left="3.0" right="3.0" top="3.0"/>
+            </padding>
+            <AnchorPane>
+              <ToggleButton fx:id="btnPerson" layoutX="2.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
+                            mnemonicParsing="false" prefHeight="25.0" selected="true" text="Person Tab"
+                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                            AnchorPane.topAnchor="0.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/people.png"/>
+                  </ImageView>
+                </graphic>
+                <toggleGroup>
+                  <ToggleGroup fx:id="grpTab"/>
+                </toggleGroup>
+              </ToggleButton>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+              <children>
+                <ToggleButton fx:id="btnWorks" layoutX="37.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
+                              mnemonicParsing="false" prefHeight="25.0" text="Works Tab" toggleGroup="$grpTab"
+                              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                              AnchorPane.topAnchor="0.0">
+                  <graphic>
+                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                      <Image url="@../resources/images/paper.png"/>
+                    </ImageView>
+                  </graphic>
+                </ToggleButton>
+              </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+              <ToggleButton fx:id="btnQueries" layoutX="2.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
+                            mnemonicParsing="false" prefHeight="25.0" text="Queries Tab" toggleGroup="$grpTab"
+                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                            AnchorPane.topAnchor="0.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/glasses-db.png"/>
+                  </ImageView>
+                </graphic>
+              </ToggleButton>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+              <children>
+                <ToggleButton fx:id="btnManager" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                              prefHeight="25.0" text="File Mgr" toggleGroup="$grpTab" AnchorPane.bottomAnchor="0.0"
+                              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <graphic>
+                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                      <Image url="@../resources/images/folders_explorer.png"/>
+                    </ImageView>
+                  </graphic>
+                </ToggleButton>
+              </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+              <ToggleButton fx:id="btnTree" layoutX="2.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
+                            mnemonicParsing="false" prefHeight="25.0" text="Tree Tab" toggleGroup="$grpTab"
+                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                            AnchorPane.topAnchor="0.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/treeview-small.png"/>
+                  </ImageView>
+                </graphic>
+              </ToggleButton>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+              <children>
+                <ToggleButton fx:id="btnOther" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                              prefHeight="25.0" text="Other" toggleGroup="$grpTab" AnchorPane.bottomAnchor="0.0"
+                              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+              </children>
+            </AnchorPane>
+          </GridPane>
+        </TitledPane>
+        <TitledPane animated="false" collapsible="false" focusTraversable="false" graphicTextGap="0.0"
+                    text="Switch To Window">
+          <GridPane hgap="4.0" vgap="4.0">
+            <columnConstraints>
+              <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+              <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+            </columnConstraints>
+            <rowConstraints>
+              <RowConstraints prefHeight="25.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <children>
               <AnchorPane>
-                <ToggleButton fx:id="btnPerson" layoutX="2.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
-                              mnemonicParsing="false" prefHeight="25.0" selected="true" text="Person Tab"
-                              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                              AnchorPane.topAnchor="0.0">
+                <Button fx:id="btnGoToMain" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                        prefHeight="25.0" text="Main" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                   <graphic>
                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/people.png"/>
+                      <Image url="@../resources/images/switch_window.png"/>
                     </ImageView>
                   </graphic>
-                  <toggleGroup>
-                    <ToggleGroup fx:id="grpTab"/>
-                  </toggleGroup>
-                </ToggleButton>
+                </Button>
               </AnchorPane>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+              <AnchorPane GridPane.columnIndex="1">
                 <children>
-                  <ToggleButton fx:id="btnWorks" layoutX="37.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
-                                mnemonicParsing="false" prefHeight="25.0" text="Works Tab" toggleGroup="$grpTab"
-                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                                AnchorPane.topAnchor="0.0">
-                    <graphic>
-                      <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                        <Image url="@../resources/images/paper.png"/>
-                      </ImageView>
-                    </graphic>
-                  </ToggleButton>
-                </children>
-              </AnchorPane>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-                <ToggleButton fx:id="btnQueries" layoutX="2.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
-                              mnemonicParsing="false" prefHeight="25.0" text="Queries Tab" toggleGroup="$grpTab"
-                              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                              AnchorPane.topAnchor="0.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/glasses-db.png"/>
-                    </ImageView>
-                  </graphic>
-                </ToggleButton>
-              </AnchorPane>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                <children>
-                  <ToggleButton fx:id="btnManager" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
-                                prefHeight="25.0" text="File Mgr" toggleGroup="$grpTab" AnchorPane.bottomAnchor="0.0"
-                                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <Button fx:id="btnGoToManager" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                          prefHeight="25.0" text="File Mgr" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <graphic>
                       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                         <Image url="@../resources/images/folders_explorer.png"/>
                       </ImageView>
                     </graphic>
-                  </ToggleButton>
-                </children>
-              </AnchorPane>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                <ToggleButton fx:id="btnTree" layoutX="2.0" layoutY="2.0" maxHeight="25.0" minHeight="25.0"
-                              mnemonicParsing="false" prefHeight="25.0" text="Tree Tab" toggleGroup="$grpTab"
-                              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                              AnchorPane.topAnchor="0.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/treeview-small.png"/>
-                    </ImageView>
-                  </graphic>
-                </ToggleButton>
-              </AnchorPane>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                <children>
-                  <ToggleButton fx:id="btnOther" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
-                                prefHeight="25.0" text="Other" toggleGroup="$grpTab" AnchorPane.bottomAnchor="0.0"
-                                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-                </children>
-              </AnchorPane>
-            </GridPane>
-          </TitledPane>
-          <TitledPane animated="false" collapsible="false" focusTraversable="false" graphicTextGap="0.0"
-                      text="Switch To Window">
-            <GridPane hgap="4.0" vgap="4.0">
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints prefHeight="25.0" vgrow="SOMETIMES"/>
-              </rowConstraints>
-              <children>
-                <AnchorPane>
-                  <Button fx:id="btnGoToMain" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
-                          prefHeight="25.0" text="Main" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <graphic>
-                      <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                        <Image url="@../resources/images/switch_window.png"/>
-                      </ImageView>
-                    </graphic>
                   </Button>
-                </AnchorPane>
-                <AnchorPane GridPane.columnIndex="1">
-                  <children>
-                    <Button fx:id="btnGoToManager" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
-                            prefHeight="25.0" text="File Mgr" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                      <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                          <Image url="@../resources/images/folders_explorer.png"/>
-                        </ImageView>
-                      </graphic>
-                    </Button>
-                  </children>
-                </AnchorPane>
-              </children>
-              <padding>
-                <Insets bottom="3.0" left="3.0" right="3.0" top="3.0"/>
-              </padding>
-            </GridPane>
-            <VBox.margin>
-              <Insets top="9.0"/>
-            </VBox.margin>
-          </TitledPane>
-          <HBox alignment="CENTER_LEFT" maxHeight="85.0" minHeight="36.0" spacing="10.0">
-            <children>
-              <Pane fx:id="paneType" maxHeight="16.0" maxWidth="16.0" minHeight="16.0" minWidth="16.0" prefHeight="16.0"
-                    prefWidth="16.0">
-                <cursor>
-                  <Cursor fx:constant="HAND"/>
-                </cursor>
-              </Pane>
-              <Label fx:id="lblRecord" alignment="TOP_LEFT" style="-fx-font-weight: bold;" text="Here is the title"
-                     underline="true" wrapText="true" HBox.hgrow="ALWAYS">
-                <cursor>
-                  <Cursor fx:constant="HAND"/>
-                </cursor>
-              </Label>
+                </children>
+              </AnchorPane>
             </children>
             <padding>
-              <Insets left="4.0"/>
+              <Insets bottom="3.0" left="3.0" right="3.0" top="3.0"/>
             </padding>
-            <VBox.margin>
-              <Insets bottom="6.0" top="6.0"/>
-            </VBox.margin>
-          </HBox>
-          <HBox alignment="BASELINE_LEFT" spacing="4.0">
-            <children>
-              <Label text="File:"/>
-              <TextField fx:id="tfPath" editable="false" prefHeight="22.0" text="stuff" HBox.hgrow="ALWAYS"/>
-            </children>
-            <VBox.margin>
-              <Insets/>
-            </VBox.margin>
-            <padding>
-              <Insets bottom="6.0" left="6.0" right="3.0" top="6.0"/>
-            </padding>
-          </HBox>
-          <AnchorPane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
-            <Slider fx:id="sldPreview" layoutX="-42.0" layoutY="26.0" orientation="VERTICAL" prefHeight="39.0"
-                    prefWidth="38.0" style="-fx-rotate: 180;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                    AnchorPane.topAnchor="0.0"/>
-            <GridPane layoutX="19.0" layoutY="14.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="40.0"
-                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-              </rowConstraints>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                <HBox alignment="BASELINE_LEFT" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="0.0"
-                      AnchorPane.topAnchor="4.0">
-                  <children>
-                    <TextField fx:id="tfPreviewPage" maxHeight="24.0" minHeight="24.0" minWidth="52.0" prefHeight="24.0"
-                               prefWidth="52.0" text="12000"/>
-                    <Label fx:id="lblPreviewPages" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308"
-                           minWidth="72.0" prefWidth="72.0" text="15000 / 15000" HBox.hgrow="ALWAYS">
-                      <padding>
-                        <Insets left="9.0"/>
-                      </padding>
-                    </Label>
-                  </children>
-                </HBox>
-              </AnchorPane>
-              <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="700.0"
-                          prefWidth="712.0" GridPane.rowIndex="1">
-                <Button fx:id="btnPreviewPrev" layoutX="14.0" layoutY="10.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/control-stop-180.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-                <Button fx:id="btnPreviewNext" layoutX="38.0" layoutY="4.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="4.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/control-stop.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-                <Button fx:id="btnHilitePrev" layoutX="72.0" layoutY="4.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="4.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/highlighter-left.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-                <Button fx:id="btnHiliteNext" layoutX="106.0" layoutY="4.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="106.0" AnchorPane.topAnchor="4.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/highlighter-right.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-              </AnchorPane>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                <Label layoutX="5.0" layoutY="8.0" text="Page:" AnchorPane.leftAnchor="5.0"/>
-                <Button fx:id="btnPreviewBack" layoutX="38.0" layoutY="3.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="3.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/arrow-180.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-                <Button fx:id="btnPreviewForward" layoutX="72.0" layoutY="3.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="3.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/arrow.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-              </AnchorPane>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-                <Label layoutX="1.0" layoutY="7.0" text="File:" AnchorPane.leftAnchor="5.0"/>
-                <Button fx:id="btnFileBack" layoutX="43.0" layoutY="2.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="3.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/arrow-180.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-                <Button fx:id="btnFileForward" layoutX="68.0" layoutY="2.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="3.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/arrow.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-              </AnchorPane>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-                <Button fx:id="btnRefresh" layoutX="96.0" layoutY="6.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/refresh.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-                <Button fx:id="btnLaunch" layoutX="140.0" layoutY="4.0" maxHeight="24.0" maxWidth="32.0"
-                        minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
-                        AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="4.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/rocket-fly.png"/>
-                    </ImageView>
-                  </graphic>
-                  <tooltip>
-                    <Tooltip text="Open this file in external viewer"/>
-                  </tooltip>
-                </Button>
-                <ToggleButton fx:id="btnLock" layoutX="174.0" layoutY="3.0" maxHeight="24.0" maxWidth="32.0"
-                              minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0"
-                              prefWidth="32.0" AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="4.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/lock_open.png"/>
-                    </ImageView>
-                  </graphic>
-                </ToggleButton>
-              </AnchorPane>
-              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
-                <Button fx:id="btnContents" layoutX="-46.0" layoutY="7.0" minWidth="113.0" mnemonicParsing="false"
-                        text="888 other records..." AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0"/>
-              </AnchorPane>
-              <AnchorPane GridPane.rowIndex="6">
-                <HBox alignment="BASELINE_LEFT" spacing="4.0" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
-                  <children>
-                    <Button fx:id="btnStartPage" maxWidth="105.0" minWidth="105.0" mnemonicParsing="false"
-                            prefHeight="22.0" prefWidth="105.0" text="Start p. 88888"/>
-                    <Button fx:id="btnSetStart" minWidth="38.0" mnemonicParsing="false" prefHeight="22.0"
-                            prefWidth="38.0" text="Set"/>
-                  </children>
-                </HBox>
-              </AnchorPane>
-              <AnchorPane GridPane.rowIndex="7">
-                <HBox spacing="4.0" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
-                  <children>
-                    <Button fx:id="btnEndPage" maxWidth="105.0" minWidth="105.0" mnemonicParsing="false"
-                            prefHeight="22.0" prefWidth="105.0" text="End p. 88888"/>
-                    <Button fx:id="btnSetEnd" minWidth="38.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="38.0"
-                            text="Set"/>
-                  </children>
-                </HBox>
-              </AnchorPane>
-            </GridPane>
-          </AnchorPane>
-        </children>
+          </GridPane>
+          <VBox.margin>
+            <Insets top="9.0"/>
+          </VBox.margin>
+        </TitledPane>
+        <HBox alignment="CENTER_LEFT" maxHeight="85.0" minHeight="36.0" spacing="10.0">
+          <children>
+            <Pane fx:id="paneType" maxHeight="16.0" maxWidth="16.0" minHeight="16.0" minWidth="16.0" prefHeight="16.0"
+                  prefWidth="16.0">
+              <cursor>
+                <Cursor fx:constant="HAND"/>
+              </cursor>
+            </Pane>
+            <Label fx:id="lblRecord" alignment="TOP_LEFT" style="-fx-font-weight: bold;" text="Here is the title"
+                   underline="true" wrapText="true" HBox.hgrow="ALWAYS">
+              <cursor>
+                <Cursor fx:constant="HAND"/>
+              </cursor>
+            </Label>
+          </children>
+          <padding>
+            <Insets left="4.0"/>
+          </padding>
+          <VBox.margin>
+            <Insets bottom="6.0" top="6.0"/>
+          </VBox.margin>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="4.0">
+          <children>
+            <Label text="File:"/>
+            <TextField fx:id="tfPath" editable="false" prefHeight="22.0" text="stuff" HBox.hgrow="ALWAYS"/>
+          </children>
+          <VBox.margin>
+            <Insets/>
+          </VBox.margin>
+          <padding>
+            <Insets bottom="6.0" left="6.0" right="3.0" top="6.0"/>
+          </padding>
+        </HBox>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+          <Slider fx:id="sldPreview" layoutX="-42.0" layoutY="26.0" orientation="VERTICAL" prefHeight="39.0"
+                  prefWidth="38.0" style="-fx-rotate: 180;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                  AnchorPane.topAnchor="0.0"/>
+          <GridPane layoutX="19.0" layoutY="14.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="40.0"
+                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <columnConstraints>
+              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+            </columnConstraints>
+            <rowConstraints>
+              <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+              <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+              <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+              <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+              <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+              <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+              <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+              <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+              <HBox alignment="BASELINE_LEFT" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="4.0">
+                <children>
+                  <TextField fx:id="tfPreviewPage" maxHeight="24.0" minHeight="24.0" minWidth="52.0" prefHeight="24.0"
+                             prefWidth="52.0" text="12000"/>
+                  <Label fx:id="lblPreviewPages" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308"
+                         minWidth="72.0" prefWidth="72.0" text="15000 / 15000" HBox.hgrow="ALWAYS">
+                    <padding>
+                      <Insets left="9.0"/>
+                    </padding>
+                  </Label>
+                </children>
+              </HBox>
+            </AnchorPane>
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="700.0"
+                        prefWidth="712.0" GridPane.rowIndex="1">
+              <Button fx:id="btnPreviewPrev" layoutX="14.0" layoutY="10.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/control-stop-180.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+              <Button fx:id="btnPreviewNext" layoutX="38.0" layoutY="4.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="4.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/control-stop.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+              <Button fx:id="btnHilitePrev" layoutX="72.0" layoutY="4.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="4.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/highlighter-left.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+              <Button fx:id="btnHiliteNext" layoutX="106.0" layoutY="4.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="106.0" AnchorPane.topAnchor="4.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/highlighter-right.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+              <Label layoutX="5.0" layoutY="8.0" text="Page:" AnchorPane.leftAnchor="5.0"/>
+              <Button fx:id="btnPreviewBack" layoutX="38.0" layoutY="3.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="3.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/arrow-180.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+              <Button fx:id="btnPreviewForward" layoutX="72.0" layoutY="3.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="3.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/arrow.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+              <Label layoutX="1.0" layoutY="7.0" text="File:" AnchorPane.leftAnchor="5.0"/>
+              <Button fx:id="btnFileBack" layoutX="43.0" layoutY="2.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="3.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/arrow-180.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+              <Button fx:id="btnFileForward" layoutX="68.0" layoutY="2.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="3.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/arrow.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+              <Button fx:id="btnRefresh" layoutX="96.0" layoutY="6.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/refresh.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+              <Button fx:id="btnLaunch" layoutX="140.0" layoutY="4.0" maxHeight="24.0" maxWidth="32.0"
+                      minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0"
+                      AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="4.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/rocket-fly.png"/>
+                  </ImageView>
+                </graphic>
+                <tooltip>
+                  <Tooltip text="Open this file in external viewer"/>
+                </tooltip>
+              </Button>
+              <ToggleButton fx:id="btnLock" layoutX="174.0" layoutY="3.0" maxHeight="24.0" maxWidth="32.0"
+                            minHeight="24.0" minWidth="32.0" mnemonicParsing="false" prefHeight="24.0"
+                            prefWidth="32.0" AnchorPane.leftAnchor="72.0" AnchorPane.topAnchor="4.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/lock_open.png"/>
+                  </ImageView>
+                </graphic>
+              </ToggleButton>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
+              <Button fx:id="btnContents" layoutX="-46.0" layoutY="7.0" minWidth="113.0" mnemonicParsing="false"
+                      text="888 other records..." AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0"/>
+            </AnchorPane>
+            <AnchorPane GridPane.rowIndex="6">
+              <HBox alignment="BASELINE_LEFT" spacing="4.0" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
+                <children>
+                  <Button fx:id="btnStartPage" maxWidth="105.0" minWidth="105.0" mnemonicParsing="false"
+                          prefHeight="22.0" prefWidth="105.0" text="Start p. 88888"/>
+                  <Button fx:id="btnSetStart" minWidth="38.0" mnemonicParsing="false" prefHeight="22.0"
+                          prefWidth="38.0" text="Set"/>
+                </children>
+              </HBox>
+            </AnchorPane>
+            <AnchorPane GridPane.rowIndex="7">
+              <HBox spacing="4.0" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0">
+                <children>
+                  <Button fx:id="btnEndPage" maxWidth="105.0" minWidth="105.0" mnemonicParsing="false"
+                          prefHeight="22.0" prefWidth="105.0" text="End p. 88888"/>
+                  <Button fx:id="btnSetEnd" minWidth="38.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="38.0"
+                          text="Set"/>
+                </children>
+              </HBox>
+            </AnchorPane>
+          </GridPane>
+        </AnchorPane>
       </VBox>
     </left>
   </BorderPane>

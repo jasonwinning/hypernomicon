@@ -162,7 +162,7 @@ final class OfficePreviewer
           while ((nextInfo == null) && (shutDown == false))
           {
             try { LOCK.wait(); }
-            catch (InterruptedException e) { Thread.currentThread().interrupt(); return; }
+            catch (InterruptedException e) { currentThread().interrupt(); return; }
           }
         }
 

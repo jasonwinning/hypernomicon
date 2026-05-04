@@ -92,7 +92,7 @@ public final class UIUtil
   {
     MutableBoolean adjusting = new MutableBoolean(false);
 
-    ctrl.addEventFilter(MenuButton.ON_SHOWN, event ->    //////////////
+    ctrl.addEventFilter(MenuButton.ON_SHOWN, event ->    // ////////////
     {                                                    //
       if (adjusting.isTrue()) return;                    //
                                                          // This is a workaround for the
@@ -102,7 +102,7 @@ public final class UIUtil
       ctrl.show();                                       //
                                                          //
       adjusting.setFalse();                              //
-    });                                                  //////////////
+    });                                                  // ////////////
 
     return adjusting;
   }
@@ -114,7 +114,7 @@ public final class UIUtil
   {
     MutableBoolean adjusting = new MutableBoolean(false);
 
-    ctrl.addEventFilter(ComboBoxBase.ON_SHOWN, event ->  //////////////
+    ctrl.addEventFilter(ComboBoxBase.ON_SHOWN, event ->  // ////////////
     {                                                    //
       if (adjusting.isTrue()) return;                    //
                                                          // This is a workaround for the
@@ -124,7 +124,7 @@ public final class UIUtil
       ctrl.show();                                       //
                                                          //
       adjusting.setFalse();                              //
-    });                                                  //////////////
+    });                                                  // ////////////
 
     return adjusting;
   }
@@ -349,8 +349,8 @@ public final class UIUtil
       maxY = Math.max(maxY, bounds.getMaxY());
     }
 
-    stage.setX     (Math.max(minX             , Math.min(stage.getX(), maxX - 50.0)));
-    stage.setY     (Math.max(minY             , Math.min(stage.getY(), maxY - 50.0)));
+    stage.setX     (Math.clamp(stage.getX(), minX, maxX - 50.0));
+    stage.setY     (Math.clamp(stage.getY(), minY, maxY - 50.0));
     stage.setWidth (Math.min(stage.getWidth (), (maxX - minX) - 100.0));
     stage.setHeight(Math.min(stage.getHeight(), (maxY - minY) - 100.0));
   }
@@ -1179,7 +1179,7 @@ public final class UIUtil
     else if (rowEndY   > viewportEndY  ) newScrollPosition = ((rowEndY   - (viewportHeight / 2)) - (rowHeight / 2)) / scrollableHeight;
     else                                 return;  // The row is already within the viewport
 
-    verticalScrollBar.setValue(Math.max(0, Math.min(newScrollPosition, 1)));  // Ensure within bounds
+    verticalScrollBar.setValue(Math.clamp(newScrollPosition, 0, 1));  // Ensure within bounds
   }
 
 //---------------------------------------------------------------------------

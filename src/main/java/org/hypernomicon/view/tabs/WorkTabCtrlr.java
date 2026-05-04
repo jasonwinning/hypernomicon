@@ -1063,7 +1063,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htArguments.addContextMenuItem("Target Argument/Stance Record...",
       row -> row.getRecord(1) instanceof HDT_Argument,
-      row -> ui.goToRecord((HDT_Argument) row.getRecord(1), true));
+      row -> ui.goToRecord(row.getRecord(1), true));
 
     // One resolver shared by both items so the Position and Debate menu entries
     // navigate to a related (debate, position) pair, never to records pulled

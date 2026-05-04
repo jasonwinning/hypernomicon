@@ -1235,11 +1235,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     // Now delete the unused investigations
     // ------------------------------------
 
-    List.copyOf(curPerson.investigations).forEach(inv ->
-    {
-      if (invViewByRecord(inv) == null)
-        db.deleteRecord(inv);
-    });
+    List.copyOf(curPerson.investigations).stream().filter(inv -> invViewByRecord(inv) == null)
+                                                  .forEach(db::deleteRecord);
 
     // Now reorder the investigations to match tabs
     // --------------------------------------------

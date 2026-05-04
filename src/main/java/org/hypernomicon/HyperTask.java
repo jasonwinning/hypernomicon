@@ -229,7 +229,6 @@ public abstract class HyperTask
   public boolean getShowDialogImmediately()   { return showDialogImmediately; }
   public long    getDialogDelayMillis()       { return dialogDelayMillis; }
   public boolean getWaitOnCancel()            { return waitOnCancel; }
-  public boolean getDaemonThread()            { return daemonThread; }
   public boolean threadIsAlive()              { return HyperThread.isRunning(thread); }
   public boolean isRunning()                  { return innerTask.isRunning(); }
   public boolean isCancelled()                { return innerTask.isCancelled(); }

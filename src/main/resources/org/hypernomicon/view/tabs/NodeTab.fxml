@@ -71,27 +71,28 @@
           </AnchorPane>
           <AnchorPane GridPane.columnIndex="2">
             <TextField fx:id="tfSearchKey" layoutX="81.0" layoutY="1.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="223.0" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="5.0" />
-          </AnchorPane>          
+          </AnchorPane>
         </GridPane>
-            <AnchorPane GridPane.rowIndex="1">
-               <GridPane.margin>
-                  <Insets top="4.0" />
-               </GridPane.margin>
-               <children>
-              <Label fx:id="lblParentCaption" text="Parent Records:" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="0.0" />
-              <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
-                <top>
-                  <Button fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" BorderPane.alignment="CENTER">
-                    <graphic>
-                      <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
-                        <Image url="@../../resources/images/treeview.png" />
-                        </ImageView>
-                      </graphic>
-                  </Button>
-                </top>
-              </BorderPane>
-               </children>
-            </AnchorPane>
+        <AnchorPane GridPane.rowIndex="1">
+          <GridPane.margin>
+            <Insets top="4.0"/>
+          </GridPane.margin>
+          <Label fx:id="lblParentCaption" text="Parent Records:" AnchorPane.rightAnchor="4.0"
+                 AnchorPane.topAnchor="0.0"/>
+          <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                      AnchorPane.topAnchor="30.0">
+            <top>
+              <Button fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0"
+                      mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" BorderPane.alignment="CENTER">
+                <graphic>
+                  <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../../resources/images/treeview.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
+            </top>
+          </BorderPane>
+        </AnchorPane>
         <TableView fx:id="tvParents" editable="true" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
           <columns>
             <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" sortable="false" />

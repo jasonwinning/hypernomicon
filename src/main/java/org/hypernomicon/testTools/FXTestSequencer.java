@@ -373,11 +373,11 @@ public final class FXTestSequencer
            ms = elapsed % 1000;
 
       String timeStr = totalSec < 60 ?
-        totalSec + "." + String.format("%03d", ms) + "s"
+        totalSec + "." + String.format("%03d", ms) + 's'
       :
-        (totalSec / 60) + "m " + (totalSec % 60) + "." + String.format("%03d", ms) + "s";
+        (totalSec / 60) + "m " + (totalSec % 60) + '.' + String.format("%03d", ms) + 's';
 
-      System.out.println("Test sequence completed successfully in " + timeStr + ".");
+      System.out.println("Test sequence completed successfully in " + timeStr + '.');
       runFinalizer();
       return;
     }

@@ -75,13 +75,10 @@ public final class InterProcClient
     try { lines = filePath.readToStrList(); }
     catch (IOException e) { logThrowable(e); }
 
-    if (collEmpty(lines) == false) lines.forEach(line ->
-    {
-      AppInstance instance = AppInstance.fromString(line);
-
-      if (instance != null)
-        idToInstance.put(instance.getID(), instance);
-    });
+    if (collEmpty(lines) == false)
+      lines.stream().map(AppInstance::fromString)
+                    .filter(Objects::nonNull)
+                    .forEach(instance -> idToInstance.put(instance.getID(), instance));
 
     if (firstRun && idToInstance.isEmpty())
       PDFJSWrapper.clearContextFolder();

@@ -721,19 +721,13 @@ public abstract class AbstractHyperDB
   {
     Set<HDT_Position> posOrphans = getOrphans(rtParentPosOfPos, HDT_Position.class);
 
-    getOrphans(rtParentDebateOfPos, HDT_Position.class).forEach(position ->
-    {
-      if (posOrphans.contains(position))
-        position.largerDebates.add(debates.getByID(1));
-    });
+    getOrphans(rtParentDebateOfPos, HDT_Position.class).stream().filter(posOrphans::contains)
+                                                       .forEach(position -> position.largerDebates.add(debates.getByID(1)));
 
     Set<HDT_Debate> debateOrphans = getOrphans(rtParentDebateOfDebate, HDT_Debate.class);
 
-    getOrphans(rtParentPosOfDebate, HDT_Debate.class).forEach(debate ->
-    {
-      if (debateOrphans.contains(debate))
-        debate.largerDebates.add(debates.getByID(1));
-    });
+    getOrphans(rtParentPosOfDebate, HDT_Debate.class).stream().filter(debateOrphans::contains)
+                                                     .forEach(debate -> debate.largerDebates.add(debates.getByID(1)));
 
     getOrphans(rtParentNoteOfNote        , HDT_Note       .class).forEach(note     -> note    .parentNotes     .add(notes       .getByID(1)));
     getOrphans(rtParentLabelOfLabel      , HDT_WorkLabel  .class).forEach(label    -> label   .parentLabels    .add(workLabels  .getByID(1)));

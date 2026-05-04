@@ -69,11 +69,8 @@ public enum QueryType
   {
     recordTypeToQueryType = new EnumMap<>(RecordType.class);
 
-    EnumSet.allOf(QueryType.class).forEach(type ->
-    {
-      if (type != qtReport)
-        recordTypeToQueryType.put(type.recordType, type);
-    });
+    EnumSet.allOf(QueryType.class).stream().filter(type -> type != qtReport)
+                                  .forEach(type -> recordTypeToQueryType.put(type.recordType, type));
   }
 
 //---------------------------------------------------------------------------

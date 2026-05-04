@@ -197,7 +197,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
         return null;
 
     if (keys.length() > 0) keys.append("; ");
-    keys.append(binding.toString());
+    keys.append(binding);
 
     return null;
   }
@@ -207,7 +207,7 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 
   /**
    * Finds an existing person record that matches the given name. First attempts to find a person
-   * whose search key would conflict with the name (via {@link #generateSearchKeyCheckIfUsed}); if
+   * whose search key would conflict with the name (via {@link #generateSearchKeyCheckingIfUsed}); if
    * no key conflict is found, falls back to a sort-key comparison across all person records,
    * ignoring parenthetical portions such as nicknames.
    *
