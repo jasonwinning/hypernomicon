@@ -159,6 +159,56 @@
                 AnchorPane.topAnchor="37.0"/>
       </AnchorPane>
     </Tab>
+    <Tab closable="false" text="PDF Extraction">
+      <AnchorPane>
+        <Label text="File 1" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="7.0"/>
+        <TextField fx:id="tfPdfPath" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
+                   AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="4.0"/>
+        <Button mnemonicParsing="false" onAction="#btnPdfBrowseClick" prefHeight="25.0" text="..."
+                AnchorPane.rightAnchor="104.0" AnchorPane.topAnchor="4.0"/>
+        <Button fx:id="btnPdfExtract" mnemonicParsing="false" onAction="#btnPdfExtractClick" prefHeight="25.0"
+                prefWidth="55.0" text="Extract" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="4.0"/>
+        <Button mnemonicParsing="false" onAction="#btnPdfShowClick" prefHeight="25.0"
+                prefWidth="40.0" text="Show" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="4.0"/>
+
+        <Label text="File 2" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="35.0"/>
+        <TextField fx:id="tfPdfPath2" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
+                   AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="32.0"/>
+        <Button mnemonicParsing="false" onAction="#btnPdfBrowse2Click" prefHeight="25.0" text="..."
+                AnchorPane.rightAnchor="104.0" AnchorPane.topAnchor="32.0"/>
+        <Button fx:id="btnPdfExtract2" mnemonicParsing="false" onAction="#btnPdfExtract2Click" prefHeight="25.0"
+                prefWidth="55.0" text="Extract" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="32.0"/>
+        <Button mnemonicParsing="false" onAction="#btnPdfShow2Click" prefHeight="25.0"
+                prefWidth="40.0" text="Show" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="32.0"/>
+
+        <Label text="File 3" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="63.0"/>
+        <TextField fx:id="tfPdfPath3" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
+                   AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="60.0"/>
+        <Button mnemonicParsing="false" onAction="#btnPdfBrowse3Click" prefHeight="25.0" text="..."
+                AnchorPane.rightAnchor="104.0" AnchorPane.topAnchor="60.0"/>
+        <Button fx:id="btnPdfExtract3" mnemonicParsing="false" onAction="#btnPdfExtract3Click" prefHeight="25.0"
+                prefWidth="55.0" text="Extract" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="60.0"/>
+        <Button mnemonicParsing="false" onAction="#btnPdfShow3Click" prefHeight="25.0"
+                prefWidth="40.0" text="Show" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="60.0"/>
+
+        <Label text="Page" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="96.0"/>
+        <TextField fx:id="tfPdfPage" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="60.0"
+                   text="1" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="93.0"/>
+        <RadioButton fx:id="rbPdfJS" mnemonicParsing="false" selected="true" text="pdf.js"
+                     AnchorPane.leftAnchor="128.0" AnchorPane.topAnchor="96.0">
+          <toggleGroup>
+            <ToggleGroup fx:id="tgPdfExtractor"/>
+          </toggleGroup>
+        </RadioButton>
+        <RadioButton mnemonicParsing="false" text="PDFBox" toggleGroup="$tgPdfExtractor"
+                     AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="96.0"/>
+        <CheckBox fx:id="chkPdfDebug" text="Debug items" AnchorPane.leftAnchor="290.0" AnchorPane.topAnchor="96.0"/>
+        <Label fx:id="lblPdfTime" AnchorPane.leftAnchor="400.0" AnchorPane.topAnchor="96.0"/>
+        <TextArea fx:id="taPdfResult" editable="false" wrapText="true"
+                  AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0"
+                  AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="120.0"/>
+      </AnchorPane>
+    </Tab>
   </TabPane>
   <BorderPane prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0"
               AnchorPane.rightAnchor="0.0">

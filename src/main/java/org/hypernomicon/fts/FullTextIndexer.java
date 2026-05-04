@@ -24,6 +24,7 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
@@ -32,6 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import com.sun.management.OperatingSystemMXBean;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.LowerCaseFilter;
@@ -47,9 +50,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.tika.Tika;
 
 import javafx.application.Platform;
@@ -143,7 +143,13 @@ public class FullTextIndexer
 
   private static final int MAX_TEXT_LENGTH              = -1,  // No limit
                            MAX_RESULTS_PER_FILE         = 20,
-                           SIZE_STABILITY_RETRIES       = 5;
+                           SIZE_STABILITY_RETRIES       = 5,
+
+                           // Recycle each pdf.js extractor's Chromium process after this many extractions: its RSS
+                           // creeps up across files (native allocator / V8 retention that pdf.destroy() does not
+                           // return to the OS).
+
+                           EXTRACTOR_RECYCLE_INTERVAL   = 250;
 
   private static final long COMMIT_INTERVAL_MS          = 30_000,
                             CONSISTENCY_INTERVAL_MS     = 300_000,
@@ -197,7 +203,7 @@ public class FullTextIndexer
   private final ConcurrentHashMap<String, FileIndexEntry> metadataMap = new ConcurrentHashMap<>();
 
   /** In-session skip set for files that failed extraction. Populated from
-   *  {@link #metadataMap} NO_TEXT entries on startup by {@link #loadMetadata()};
+   *  {@link #metadataMap} NO_TEXT and ABANDONED entries on startup by {@link #loadMetadata()};
    *  FAILED entries are deliberately excluded so they get a retry during the
    *  initial build. Also populated during the current session when extraction
    *  fails. Cleared for a file on CREATE or MODIFY events. */
@@ -215,6 +221,23 @@ public class FullTextIndexer
   private volatile int threadCount;
   private long lastCommitTime, lastConsistencyTime;
 
+  /** Pool of off-screen pdf.js extractor instances; each holds a Chromium
+   *  process. Lazily created by {@link #initPdfJSExtractorPool} on first PDF
+   *  extraction (synchronized) and destroyed by {@link #disposePdfJSExtractorPool}
+   *  from {@link #close} after worker threads have stopped. Volatile because the
+   *  field is published from a synchronized init and read unsynchronized from
+   *  workers; {@link #extractViaPdfJS} snapshots the reference at method entry
+   *  so a dispose-during-extraction race (possible only on a future
+   *  reconfigure-while-running path) disposes the held extractor locally rather
+   *  than offering it to a nulled-out queue. */
+  private volatile LinkedBlockingQueue<PDFJSTextExtractor> pdfJSExtractorPool;
+
+  /** Every pdf.js extractor created via {@link #createExtractor()} that has not yet been disposed,
+   *  including those currently checked out by a worker (and therefore absent from {@link #pdfJSExtractorPool}).
+   *  Lets shutdown reach in-flight extractors to {@code abort()} them, so a worker parked on extraction
+   *  releases its {@code Browser} before {@code BrowserCore.shutdown()} runs. */
+  private final Set<PDFJSTextExtractor> liveExtractors = ConcurrentHashMap.newKeySet();
+
   private volatile ExecutorService buildWorkerPool, buildLargeFileExecutor;
   private volatile ScheduledExecutorService buildProgressReporter;
   private volatile Runnable statusListener;
@@ -224,21 +247,6 @@ public class FullTextIndexer
   private volatile int buildTotalFiles, buildProcessedFiles;
 
 //---------------------------------------------------------------------------
-
-  /**
-   * Signal the indexer to stop processing without waiting for threads to finish
-   * or closing resources. Call this early in the shutdown sequence so the indexer
-   * stops doing work while other shutdown steps proceed; call {@link #close} later
-   * to join threads and close the IndexWriter.
-   *
-   * <p>Sets the {@code stopRequested} flag so that {@code close()} takes the fast
-   * path: shorter join timeout, {@code writer.rollback()} instead of
-   * {@code writer.commit()}, and no {@code writeMetadataSnapshot()} call. This keeps
-   * application shutdown responsive when a full rebuild is in progress. At most
-   * ~30 seconds of indexed work (one commit interval) is lost; the next startup
-   * recaptures it via the mtime check in {@code initialBuild()}.</p>
-   */
-  public void requestStop()                        { stopRequested = true; }
 
   public int getIndexedFileCount()                 { return metadataMap.size(); }
   public int getBuildTotalFiles()                  { return buildTotalFiles; }
@@ -435,6 +443,12 @@ public class FullTextIndexer
     boolean fast = stopRequested;
     stopRequested = true;
 
+    // Unblock any worker parked in a pdf.js extraction so it returns and releases its Browser before
+    // the join below (and any later BrowserCore.shutdown). requestStop() already does this on the
+    // two-phase app-shutdown path; repeating it here also covers a direct close() (e.g. database switch).
+
+    liveExtractors.forEach(PDFJSTextExtractor::abort);
+
     // Signal multi-threaded build executors to stop. Workers check the
     // stopRequested flag and exit within one file-processing cycle. Use shutdown()
     // (not shutdownNow()) to avoid interrupting threads mid-Lucene-write;
@@ -519,6 +533,8 @@ public class FullTextIndexer
 
     analyzer = null;
     tika = null;
+
+    disposePdfJSExtractorPool();
     currentManifest = null;
     manifestPath = null;
     metadataMap.clear();
@@ -527,6 +543,34 @@ public class FullTextIndexer
 
     fireStatusListener();
     statusListener = null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Signal the indexer to stop processing without waiting for threads to finish
+   * or closing resources. Call this early in the shutdown sequence so the indexer
+   * stops doing work while other shutdown steps proceed; call {@link #close} later
+   * to join threads and close the IndexWriter.
+   *
+   * <p>Sets the {@code stopRequested} flag so that {@code close()} takes the fast
+   * path: shorter join timeout, {@code writer.rollback()} instead of
+   * {@code writer.commit()}, and no {@code writeMetadataSnapshot()} call. This keeps
+   * application shutdown responsive when a full rebuild is in progress. At most
+   * ~30 seconds of indexed work (one commit interval) is lost; the next startup
+   * recaptures it via the mtime check in {@code initialBuild()}.</p>
+   */
+  public void requestStop()
+  {
+    stopRequested = true;
+
+    // Unblock any worker currently parked in a pdf.js extraction so it returns promptly, exits, and
+    // releases its Browser instance. Otherwise the worker would wait out EXTRACTION_TIMEOUT_SECONDS,
+    // keeping that Browser alive past the JxBrowser engine teardown (BrowserCore.shutdown), which then
+    // fails with "Pending Browser instances are detected" and leaves the process running.
+
+    liveExtractors.forEach(PDFJSTextExtractor::abort);
   }
 
 //---------------------------------------------------------------------------
@@ -573,6 +617,14 @@ public class FullTextIndexer
     IndexEvent event = eventQueue.poll(timeoutMs, TimeUnit.MILLISECONDS);
     if (event == null) return false;
 
+    // A stop has been requested. close() also enqueues a sentinel event to wake this poll, and is
+    // concurrently closing the writer and searcherMgr. Don't process events or refresh the searcher
+    // during shutdown: doing so races that teardown (the NPE / AlreadyClosedException seen on exit
+    // while indexing). Returning lets backgroundLoop re-check stopRequested and exit the loop, so
+    // close()'s join completes and the resources are torn down cleanly with no concurrent access.
+
+    if (stopRequested) return false;
+
     // Reflect incremental indexing in the status display, but only when not in
     // the middle of the initial build. During BUILDING, events are still
     // processed (a deletion mid-build must still be honored) but the state
@@ -592,7 +644,21 @@ public class FullTextIndexer
     eventQueue.drainTo(batch);
 
     for (IndexEvent e : batch)
+    {
+      if (stopRequested) return false;  // bail out of a large backlog promptly once shutting down
       processEvent(e);
+    }
+
+    // Once a post-build incremental burst has drained, tear down the lazily-created
+    // extractor pool so a single PDF event (e.g. a cloud-sync touch) does not leave a
+    // Chromium process resident through idle. The initial build disposes the pool at
+    // completion; the incremental path must do the same or the footprint never comes
+    // back down. The pool is re-created on demand for the next PDF event. Guarded by
+    // wasMaintaining so we never dispose mid-build (the worker threads still need it),
+    // and by an empty queue so a multi-batch burst isn't disposed between batches.
+
+    if (wasMaintaining && eventQueue.isEmpty())
+      disposePdfJSExtractorPool();
 
     // Delay the transition back so the UI has time to show the animation
 
@@ -605,7 +671,13 @@ public class FullTextIndexer
         fireStatusListener();
       });
 
-    searcherMgr.maybeRefresh();
+    // Snapshot and guard: if close() stopped waiting for this thread it may have already nulled (and
+    // closed) searcherMgr. Skip the refresh during shutdown rather than dereference a torn-down field.
+
+    SearcherManager mgr = searcherMgr;
+    if ((stopRequested == false) && (mgr != null))
+      mgr.maybeRefresh();
+
     return true;
   }
 
@@ -725,10 +797,12 @@ public class FullTextIndexer
     // the common cloud-sync case where MODIFY fires for an attribute-only
     // touch (xattr update, sync-state bookkeeping), and the Windows
     // DELETE+CREATE save pattern when the resulting file matches what we
-    // already indexed.
+    // already indexed. ABANDONED files are skipped on the same unchanged check
+    // so a spurious touch doesn't trigger another costly (re-)extraction of a
+    // file we've already given up on; a real change resets it to a fresh attempt.
 
     FileIndexEntry existing = metadataMap.get(relPath);
-    if ((existing != null) && (existing.status() == INDEXED))
+    if ((existing != null) && ((existing.status() == INDEXED) || (existing.status() == ABANDONED)))
     {
       try
       {
@@ -815,7 +889,7 @@ public class FullTextIndexer
     System.out.println("Full-text indexer: " + smallFiles.size() + " small, "
       + largeFiles.size() + " large, " + workerThreads + " worker thread" + (workerThreads == 1 ? "" : "s"));
 
-    AtomicInteger docCount = new AtomicInteger(), skipped = new AtomicInteger(), failed = new AtomicInteger();
+    AtomicInteger docCount = new AtomicInteger(), skipped = new AtomicInteger(), failed = new AtomicInteger(), noText = new AtomicInteger();
     long startTime = System.currentTimeMillis();
 
     // Progress reporting thread
@@ -831,10 +905,10 @@ public class FullTextIndexer
     {
       if (stopRequested) return;
 
-      int processed = docCount.get() + skipped.get() + failed.get();
+      int processed = docCount.get() + skipped.get() + failed.get() + noText.get();
       buildProcessedFiles = processed;
       System.out.println("Full-text indexer: " + processed + '/' + totalIndexable
-        + " processed (" + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + failed.get() + " failed)");
+        + " processed (" + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + noText.get() + " no text, " + failed.get() + " failed)");
       fireStatusListener();
 
     }, 5, 5, TimeUnit.SECONDS);
@@ -844,6 +918,9 @@ public class FullTextIndexer
     // stop polling and exit within one file-processing cycle.
 
     ConcurrentLinkedQueue<FilePath> workQueue = new ConcurrentLinkedQueue<>(smallFiles);
+
+    System.out.println("Full-text indexer: pdf.js pool state: " +
+      (pdfJSExtractorPool == null ? "null" : pdfJSExtractorPool.size() + " available of capacity " + (pdfJSExtractorPool.size() + pdfJSExtractorPool.remainingCapacity())));
 
     // Worker pool for small files
 
@@ -860,9 +937,24 @@ public class FullTextIndexer
       buildWorkerPool.submit(() ->
       {
         FilePath filePath;
+        int workerCount = 0;
 
-        while ((stopRequested == false) && ((filePath = workQueue.poll()) != null))
-          processOneFile(filePath, docCount, skipped, failed);
+        try
+        {
+          while ((stopRequested == false) && ((filePath = workQueue.poll()) != null))
+          {
+            processOneFile(filePath, docCount, skipped, failed, noText);
+            workerCount++;
+          }
+        }
+        catch (Throwable t)
+        {
+          System.out.println("Full-text indexer: " + Thread.currentThread().getName() + " CRASHED after " + workerCount + " files");
+          logThrowable(t);
+        }
+
+        System.out.println("Full-text indexer: " + Thread.currentThread().getName()
+          + " exiting after " + workerCount + " files. stopRequested=" + stopRequested + " queueEmpty=" + workQueue.isEmpty());
       });
     }
 
@@ -876,7 +968,12 @@ public class FullTextIndexer
       return hyperThread;
     });
 
-    buildLargeFileExecutor.submit(() -> processFileList(largeFiles, docCount, skipped, failed));
+    buildLargeFileExecutor.submit(() ->
+    {
+      System.out.println("Full-text indexer: large file executor starting with " + largeFiles.size() + " files");
+      processFileList(largeFiles, docCount, skipped, failed, noText);
+      System.out.println("Full-text indexer: large file executor finished. stopRequested=" + stopRequested);
+    });
 
     // All tasks submitted; signal no more will follow
 
@@ -891,7 +988,17 @@ public class FullTextIndexer
 
       waitForExecutorToFinish(buildWorkerPool);
 
+      System.out.println("Full-text indexer: worker pool loop exited. stopRequested=" + stopRequested
+        + " workQueue.size=" + workQueue.size()
+        + " pool.isTerminated=" + (buildWorkerPool == null ? "null" : buildWorkerPool.isTerminated())
+        + " processed=" + (docCount.get() + skipped.get() + failed.get() + noText.get()));
+
       waitForExecutorToFinish(buildLargeFileExecutor);
+
+      System.out.println("Full-text indexer: large file loop exited. stopRequested=" + stopRequested
+        + " executor.isTerminated=" + (buildLargeFileExecutor == null ? "null" : buildLargeFileExecutor.isTerminated())
+        + " processed=" + (docCount.get() + skipped.get() + failed.get() + noText.get())
+        + " pdfJS pool=" + (pdfJSExtractorPool == null ? "null" : pdfJSExtractorPool.size() + " available"));
     }
     finally
     {
@@ -926,20 +1033,22 @@ public class FullTextIndexer
       }
     }
 
-    int processed = docCount.get() + skipped.get() + failed.get();
+    int processed = docCount.get() + skipped.get() + failed.get() + noText.get();
 
     if ((stopRequested == false) && (processed >= totalIndexable))
     {
       System.out.println("Full-text indexer: initial build complete in " + elapsedStr(startTime) + ". "
-        + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + failed.get() + " failed.");
+        + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + noText.get() + " no text, " + failed.get() + " failed.");
 
       state = IndexerState.MAINTAINING;
+
+      disposePdfJSExtractorPool();
     }
     else
     {
       System.out.println("Full-text indexer: initial build interrupted after " + elapsedStr(startTime) + ". "
         + processed + '/' + totalIndexable + " processed ("
-        + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + failed.get() + " failed).");
+        + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + noText.get() + " no text, " + failed.get() + " failed).");
     }
 
     commitAndSave();
@@ -1000,20 +1109,20 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void processFileList(List<FilePath> files, AtomicInteger docCount, AtomicInteger skipped, AtomicInteger failed)
+  private void processFileList(List<FilePath> files, AtomicInteger docCount, AtomicInteger skipped, AtomicInteger failed, AtomicInteger noText)
   {
     for (FilePath filePath : files)
     {
       if (stopRequested) return;
 
-      processOneFile(filePath, docCount, skipped, failed);
+      processOneFile(filePath, docCount, skipped, failed, noText);
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void processOneFile(FilePath filePath, AtomicInteger docCount, AtomicInteger skipped, AtomicInteger failed)
+  private void processOneFile(FilePath filePath, AtomicInteger docCount, AtomicInteger skipped, AtomicInteger failed, AtomicInteger noText)
   {
     if (stopRequested) { skipped.incrementAndGet(); return; }
 
@@ -1026,6 +1135,12 @@ public class FullTextIndexer
       {
         if (isFileUnchanged(filePath, existing))
         {
+          if (existing.status() == NO_TEXT)
+          {
+            noText.incrementAndGet();
+            return;
+          }
+
           if (existing.status() != FAILED)
           {
             skipped.incrementAndGet();
@@ -1049,7 +1164,13 @@ public class FullTextIndexer
       indexFile(filePath);
 
       if (extractionFailures.contains(relPath))
-        failed.incrementAndGet();
+      {
+        FileIndexEntry entry = metadataMap.get(relPath);
+        if ((entry != null) && (entry.status() == NO_TEXT))
+          noText.incrementAndGet();
+        else
+          failed.incrementAndGet();
+      }
       else
         docCount.incrementAndGet();
     }
@@ -1267,13 +1388,30 @@ public class FullTextIndexer
 
   /**
    * Marks a file as having failed extraction: removes any prior Lucene
-   * document and records a FAILED metadata entry. See {@link #markAsNoText}
+   * document and records a FAILED metadata entry, escalated to ABANDONED on a
+   * second consecutive unchanged failure. See {@link #markAsNoText}
    * for the delete/metadata consistency contract.
    */
   private void markAsFailed(String relPath, long mtime, long size) throws IOException
   {
     writer.deleteDocuments(new Term("path", relPath));
-    putMetadataEntry(relPath, mtime, size, FAILED);
+
+    // Retry cap: if this file already failed on its previous attempt and has not
+    // changed since (same mtime and size), give up on it (ABANDONED) so it stops
+    // being retried on every startup. A transient failure clears on the first
+    // retry; a file that fails twice unchanged is treated as permanently
+    // unindexable until it changes (which resets it to a fresh FAILED) or the
+    // index is rebuilt. A prior ABANDONED counts as the failed strike too, so a
+    // re-attempt of an unchanged abandoned file stays ABANDONED.
+
+    FileIndexEntry prior = metadataMap.get(relPath);
+
+    boolean priorFailedUnchanged = (prior != null)
+        && ((prior.status() == FAILED) || (prior.status() == ABANDONED))
+        && (prior.mtime() == mtime)
+        && (prior.size() == size);
+
+    putMetadataEntry(relPath, mtime, size, priorFailedUnchanged ? ABANDONED : FAILED);
   }
 
 //---------------------------------------------------------------------------
@@ -1374,18 +1512,7 @@ public class FullTextIndexer
     if (stopRequested || (tika == null)) return null;
 
     if (getMediaType(filePath).toString().contains("pdf"))
-    {
-      ExtractionResult pdfResult = extractPdfPageByPage(filePath);
-
-      if (pdfResult != null)
-        return pdfResult;
-
-      if (stopRequested) return null;
-
-      // PDFTextStripper failed or produced degenerate output; fall back to Tika
-
-      System.out.println("Full-text indexer: PDFTextStripper fallback to Tika for " + filePath);
-    }
+      return extractViaPdfJS(filePath);
 
     return extractViaTika(filePath);
   }
@@ -1393,43 +1520,242 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ExtractionResult extractPdfPageByPage(FilePath filePath)
+  private void disposePdfJSExtractorPool()
   {
-    try (PDDocument doc = Loader.loadPDF(filePath.toFile()))
+    if ((pdfJSExtractorPool == null) && liveExtractors.isEmpty()) return;
+
+    // Null the field first so any in-flight worker's finally block sees a disposed pool and releases
+    // its own held extractor. Then dispose every extractor we created, both the idle ones still in
+    // the queue and any currently checked out by a worker. abort() unblocks a worker parked in
+    // future.get; disposeExtractor() is idempotent, so a concurrent dispose from that worker is safe.
+
+    pdfJSExtractorPool = null;
+
+    for (PDFJSTextExtractor extractor : liveExtractors)
     {
-      int pageCount = doc.getNumberOfPages();
-      if (pageCount == 0) return null;
+      extractor.abort();
+      disposeExtractor(extractor);
+    }
 
-      PDFTextStripper stripper = new PDFTextStripper();
-      stripper.setSortByPosition(true);
-      stripper.setLineSeparator("\n");
+    System.out.println("Full-text indexer: pdf.js extractor pool disposed");
+  }
 
-      StringBuilder fullText = new StringBuilder();
-      int[] pageOffsets = new int[pageCount + 1];  // +1 for trailing sentinel
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-      for (int page = 1; page <= pageCount; page++)
-      {
-        if (stopRequested) return null;
+  /**
+   * Creates and initializes the pool of pdf.js extractor instances. Each instance
+   * is a separate off-screen Chromium process. For the initial build the pool is
+   * sized to roughly the worker/core count (plus one for the dedicated large-file
+   * thread) and then clamped to a ceiling based on physical RAM; for incremental
+   * indexing a pool of 1 is created on demand. If any instance fails to initialize,
+   * the pool is populated with however many succeeded.
+   */
+  private synchronized void initPdfJSExtractorPool(boolean forBuild)
+  {
+    if (pdfJSExtractorPool != null) return;
 
-        pageOffsets[page - 1] = fullText.length();
-        stripper.setStartPage(page);
-        stripper.setEndPage(page);
-        fullText.append(stripper.getText(doc));
-      }
+    int poolSize;
 
-      pageOffsets[pageCount] = fullText.length();  // trailing sentinel
+    if (forBuild)
+    {
+      // pdf.js instances are heavyweight: each is a Chromium process that, while extracting a large PDF, can
+      // hold 1GB+ resident. Scale with available cores, then clamp to a hard ceiling based on physical RAM so
+      // the Chromium processes plus the JVM heap and the OS cannot exhaust memory.
 
-      // Text density check: if nearly empty, likely image-only or encrypted
+      int workerThreads = Math.max(threadCount < 0 ? Runtime.getRuntime().availableProcessors() - 2 : threadCount, 1);
+      long totalMemoryMB = ((OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalMemorySize() / (1024 * 1024);
+      int coreBasedInstances = Math.max((Runtime.getRuntime().availableProcessors() + 2) / 4, 1);
 
-      if ((fullText.length() / pageCount) < 10)
-        return null;
+      // One instance per worker, plus one for the dedicated large-file thread, so the small-file workers and
+      // the large-file executor don't contend for a single extractor.
 
-      return new ExtractionResult(fullText.toString(), pageOffsets, pageCount);
+      int desiredInstances = Math.min(workerThreads, coreBasedInstances) + 1;  // +1 for large-file executor
+
+      // Hard ceiling on the TOTAL number of Chromium processes, by physical RAM.
+
+      int memoryCap = totalMemoryMB <= 4096 ? 1 : totalMemoryMB <= 16384 ? 2 : totalMemoryMB <= 32768 ? 3 : 5;
+
+      poolSize = Math.clamp(desiredInstances, 1, memoryCap);
+    }
+    else
+    {
+      poolSize = 1;  // Single instance for incremental indexing
+    }
+
+    LinkedBlockingQueue<PDFJSTextExtractor> pool = new LinkedBlockingQueue<>(poolSize);
+
+    System.out.println("Full-text indexer: initializing " + poolSize + " pdf.js extractor instance(s)...");
+
+    for (int ndx = 0; ndx < poolSize; ndx++)
+    {
+      PDFJSTextExtractor extractor = createExtractor();
+
+      if (extractor == null) break;  // stop on first failure (e.g. out of memory); use however many succeeded
+
+      pool.offer(extractor);
+    }
+
+    if (pool.isEmpty())
+    {
+      System.out.println("Full-text indexer: no pdf.js extractors available; PDFs cannot be extracted and will be marked failed");
+    }
+    else
+    {
+      System.out.println("Full-text indexer: " + pool.size() + " pdf.js extractor(s) ready");
+      pdfJSExtractorPool = pool;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Creates and initializes a single pdf.js extractor instance (one Chromium process), or returns null if
+   *  initialization fails (e.g. out of memory). Synchronized so concurrent pool replacements don't spawn
+   *  Chromium instances in parallel, matching the sequential creation in {@link #initPdfJSExtractorPool}. */
+  private synchronized PDFJSTextExtractor createExtractor()
+  {
+    try
+    {
+      PDFJSTextExtractor extractor = new PDFJSTextExtractor();
+      extractor.initialize();
+      liveExtractors.add(extractor);
+      return extractor;
     }
     catch (Exception e)
     {
-      System.out.println("Full-text indexer: PDFTextStripper failed for " + filePath + ": " + getThrowableMessage(e));
+      System.out.println("Full-text indexer: pdf.js extractor failed to initialize: " + getThrowableMessage(e));
       return null;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Dispose a pdf.js extractor and drop it from {@link #liveExtractors}. Idempotent and thread-safe:
+   *  {@code dispose()} is synchronized and a no-op once already disposed, so a concurrent call from a
+   *  worker's finally block and from {@link #disposePdfJSExtractorPool} is harmless.
+   *  <p>
+   *  Dispose the Browser BEFORE removing from {@link #liveExtractors}: a concurrent
+   *  {@link #disposePdfJSExtractorPool} (e.g. from {@link #close} on the FX thread) must still find this
+   *  extractor and block on dispose()'s synchronized lock until disposal actually completes. Removing
+   *  first would let that pool-dispose report "disposed" while a Browser is still being torn down on
+   *  another thread, so the subsequent {@code BrowserCore.shutdown()} would see a pending instance. */
+  private void disposeExtractor(PDFJSTextExtractor extractor)
+  {
+    extractor.dispose();
+    liveExtractors.remove(extractor);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ExtractionResult extractViaPdfJS(FilePath filePath)
+  {
+    if (pdfJSExtractorPool == null)
+      initPdfJSExtractorPool(isInitialBuildComplete() == false);
+
+    // Snapshot the pool reference so subsequent poll/offer operate on the same
+    // queue even if dispose nulls the field mid-extraction.
+
+    LinkedBlockingQueue<PDFJSTextExtractor> pool = pdfJSExtractorPool;
+    if (pool == null) return null;  // Initialization failed
+
+    PDFJSTextExtractor extractor = null;
+
+    try
+    {
+      // Poll in one-second slices instead of a single long timed poll. Workers parked here
+      // waiting for a free extractor are never interrupted, and nothing returns an extractor
+      // to the pool during shutdown, so a single poll would wait out the full extraction
+      // timeout. Slicing lets a parked worker notice a stop request within a second.
+
+      for (long secondsWaited = 0; (extractor == null) && (secondsWaited < PDFJSTextExtractor.EXTRACTION_TIMEOUT_SECONDS); secondsWaited++)
+      {
+        if (stopRequested) return null;
+
+        extractor = pool.poll(1, TimeUnit.SECONDS);
+      }
+    }
+    catch (InterruptedException e)
+    {
+      Thread.currentThread().interrupt();
+      System.out.println("Full-text indexer: pdf.js pool poll interrupted for " + filePath);
+      return null;
+    }
+
+    if (extractor == null)
+    {
+      System.out.println("Full-text indexer: pdf.js pool exhausted for " + filePath);
+      return null;
+    }
+
+    try
+    {
+      PDFJSTextExtractor.ExtractionResult jsResult = extractor.extractText(filePath);
+
+      if (jsResult == null)
+      {
+        System.out.println("Full-text indexer: pdf.js returned null for " + filePath);
+        return null;
+      }
+
+      // Text density check: if nearly empty, likely image-only or encrypted.
+      // Return empty text (not null) so the caller marks it NO_TEXT, not FAILED.
+
+      int pageCount = jsResult.pageCount();
+
+      if ((jsResult.text().length() / Math.max(pageCount, 1)) < 10)
+        return new ExtractionResult("", null, pageCount);
+
+      return new ExtractionResult(jsResult.text(), jsResult.pageOffsets(), pageCount);
+    }
+    finally
+    {
+      // During shutdown (stopRequested) do nothing here: leave the held extractor in liveExtractors for
+      // close()'s disposePdfJSExtractorPool() to dispose after the background-thread join, on the FX thread.
+      // JxBrowser requires Browser.dispose() on the FX thread on Linux/macOS, so disposing here, on a worker
+      // or background thread, would deadlock on the native side and also race close()'s join.
+
+      if (stopRequested == false)
+      {
+        // dispose ran while we were extracting (pdfJSExtractorPool nulled and the queue already drained):
+        // dispose the held extractor rather than returning it to an orphaned queue, which would leak the
+        // underlying Chromium process.
+
+        if (pdfJSExtractorPool == null)
+          disposeExtractor(extractor);
+        else if (extractor.isReady() && (extractor.extractionCount() < EXTRACTOR_RECYCLE_INTERVAL))
+          pool.offer(extractor);
+        else
+        {
+          // Replace this extractor with a fresh Chromium process, for one of two reasons:
+          //   - It is poisoned: a timeout left it un-ready (see PDFJSTextExtractor's timeout handling), so it
+          //     would now return null for every remaining file.
+          //   - It has handled EXTRACTOR_RECYCLE_INTERVAL files: its Chromium RSS has likely crept up (native /
+          //     V8 retention that pdf.destroy() does not return to the OS).
+          // Either way, dispose the process and put a fresh instance back so the pool does not degrade.
+
+          System.out.println("Full-text indexer: " + (extractor.isReady()
+            ? "recycling pdf.js extractor after " + extractor.extractionCount() + " extractions"
+            : "replacing unresponsive pdf.js extractor"));
+
+          disposeExtractor(extractor);
+
+          PDFJSTextExtractor replacement = createExtractor();
+          if (replacement != null)
+          {
+            // disposePdfJSExtractorPool may have run while the replacement was being created;
+            // its liveExtractors sweep (weakly consistent iteration) can miss an extractor added
+            // mid-iteration, so don't return the replacement to the orphaned queue; dispose it.
+
+            if (pdfJSExtractorPool == null)
+              disposeExtractor(replacement);
+            else
+              pool.offer(replacement);
+          }
+        }
+      }
     }
   }
 
@@ -1978,7 +2304,7 @@ public class FullTextIndexer
 
       if (files == null) return;
 
-      int failedCount = 0;
+      int failedCount = 0, noTextCount = 0, abandonedCount = 0;
 
       for (JsonObj obj : files.getObjs())
       {
@@ -1992,7 +2318,16 @@ public class FullTextIndexer
           if (entry.status() == NO_TEXT)
           {
             extractionFailures.add(path);
-            failedCount++;
+            noTextCount++;
+          }
+          else if (entry.status() == ABANDONED)
+          {
+            // Treated like NO_TEXT: a permanently-skipped file. Add to the skip
+            // set so it is not retried. It only gets a fresh attempt if it changes
+            // on disk (which resets it to FAILED) or the index is rebuilt.
+
+            extractionFailures.add(path);
+            abandonedCount++;
           }
           else if (entry.status() == FAILED)
           {
@@ -2006,7 +2341,8 @@ public class FullTextIndexer
         }
       }
 
-      System.out.println("Full-text indexer: loaded metadata for " + metadataMap.size() + " files (" + failedCount + " previously failed)");
+      System.out.println("Full-text indexer: loaded metadata for " + metadataMap.size()
+        + " files (" + noTextCount + " no text, " + failedCount + " previously failed, " + abandonedCount + " abandoned)");
     }
     catch (Exception e)
     {

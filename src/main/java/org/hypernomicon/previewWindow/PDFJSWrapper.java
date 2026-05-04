@@ -482,7 +482,7 @@ public class PDFJSWrapper
 
     addToParent(browserView, apBrowser);
 
-    addCustomProtocolHandler("jar");
+    addCustomProtocolHandler(browser, "jar");
 
     apBrowser.setOnMouseEntered(event ->
     {
@@ -652,7 +652,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("deprecation")
-  private void addCustomProtocolHandler(String protocol)
+  public static void addCustomProtocolHandler(Browser browser, String protocol)
   {
     ProtocolService protocolService = browser.getContext().getProtocolService();
 

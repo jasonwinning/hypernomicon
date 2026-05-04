@@ -39,9 +39,10 @@ record FileIndexEntry(long mtime, long size, IndexStatus status)
 
   enum IndexStatus
   {
-    INDEXED,  // Text successfully extracted and added to Lucene
-    FAILED,   // extractText() threw an exception
-    NO_TEXT   // Extraction succeeded but returned blank (scanned/image-only PDFs)
+    INDEXED,    // Text successfully extracted and added to Lucene
+    FAILED,     // extractText() threw an exception or returned null
+    NO_TEXT,    // Extraction succeeded but returned blank (scanned/image-only PDFs)
+    ABANDONED   // Failed on two consecutive attempts with the file unchanged; no longer retried (resets to FAILED if the file changes)
   }
 
 //---------------------------------------------------------------------------

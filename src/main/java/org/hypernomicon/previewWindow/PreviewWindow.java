@@ -35,6 +35,7 @@ import com.teamdev.jxbrowser.chromium.internal.ipc.IPC;
 import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
 
 import org.hypernomicon.Const.PrefKey;
+import org.hypernomicon.ExitWatchdog;
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.fileManager.FileManager;
@@ -777,10 +778,24 @@ public final class PreviewWindow extends NonmodalWindow
 
       Platform.runLater(() ->
       {
+        System.out.println("Shutdown: closing main window");
+
         ui.getStage().close();
+
+        List<ProcessHandle> browserProcesses = ProcessHandle.current().children()
+          .filter(ph -> ph.info().command().map(cmd -> cmd.contains("browsercore")).orElse(false))
+          .toList();
+
+        if (browserProcesses.isEmpty() == false)
+        {
+          System.out.println("Shutdown: destroying " + browserProcesses.size() + " remaining browsercore process(es)");
+          browserProcesses.forEach(ProcessHandle::destroy);
+        }
 
         if (Environment.isMac())
           Platform.exit();
+
+        ExitWatchdog.arm();  // Teardown is complete; anything still running after the grace period gets logged, then the process exits
       });
     };
   }
