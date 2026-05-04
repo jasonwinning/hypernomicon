@@ -811,11 +811,16 @@ public abstract class AbstractHyperDB
 
     if (checkChecksums() == false) return false;
 
-    if (bibLibraryIsLinked())
-      bibLibrary.saveAllToPersistentStorage();
-
     HyperTask task = new HyperTask("SaveAllToXML", "Saving to XML files...") { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
+      if (bibLibraryIsLinked())
+      {
+        updateMessage("Saving bibliographic data...");
+        bibLibrary.saveAllToPersistentStorage(this::updateMessage);
+      }
+
+      updateMessage("Saving to XML files...");
+
       totalCount = 0;
       accessors.forEach((type, accessor) ->
       {
@@ -865,7 +870,7 @@ public abstract class AbstractHyperDB
         writeDatasetToXML(xmlList, this, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
 
         for (int ndx = 0; ndx < filenameList.size(); ndx++)
-          xmlChecksums.put(filenameList.get(ndx), xmlPath(filenameList.get(ndx)).saveCharSequenceAtomically(xmlList.get(ndx), XML_FILES_CHARSET));
+          xmlChecksums.put(filenameList.get(ndx), xmlPath(filenameList.get(ndx)).saveCharSequenceAtomically(xmlList.get(ndx), XML_FILES_CHARSET, this::updateMessage));
       }
       catch (IOException | HDB_InternalError e)
       {

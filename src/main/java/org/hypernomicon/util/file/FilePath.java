@@ -42,6 +42,7 @@ import java.nio.file.attribute.DosFileAttributeView;
 import java.security.*;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.*;
@@ -512,6 +513,10 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final long RENAME_RETRY_DELAY_MS              = 250,
+                            RENAME_RETRY_TIMEOUT_USER_MS       = IS_OS_WINDOWS ? 30_000 : 0,
+                            RENAME_RETRY_TIMEOUT_UNATTENDED_MS = IS_OS_WINDOWS ? 90_000 : 0;
+
   /**
    * Replaces {@code destFilePath} with this (temporary) file using an atomic rename where
    * supported, with a non-atomic replace-existing fallback. On Windows, first clears the DOS
@@ -526,15 +531,76 @@ public class FilePath implements Comparable<FilePath>
    */
   public void replaceFileAtomically(FilePath destFilePath) throws IOException
   {
+    replaceFileAtomically(destFilePath, null);
+  }
+
+  /**
+   * Same as {@link #replaceFileAtomically(FilePath)}, but accepts a callback
+   * that is invoked the first time a retry is triggered by an
+   * {@link AccessDeniedException}. The callback receives a status message
+   * that the caller can surface in a progress dialog while the rename waits
+   * out the conflict.
+   *
+   * @param destFilePath the destination path to replace
+   * @param onRetry callback invoked once when retry begins, or {@code null}
+   * @throws IOException if the rename fails
+   */
+  public void replaceFileAtomically(FilePath destFilePath, Consumer<String> onRetry) throws IOException
+  {
     destFilePath.clearReadOnlyOnWindows();
 
-    try
+    // Retry on AccessDeniedException to ride out temporary locks held by
+    // other processes like cloud-sync, antivirus, or indexing that hold
+    // the destination file open without FILE_SHARE_DELETE. Genuine
+    // permission failures are distinguished by probing the parent directory's
+    // writability and re-thrown immediately; see canObtainLock for the same
+    // Files.isWritable distinction. Tries for 30 seconds if this computer is
+    // attended, 90 seconds if unattended.
+
+    long timeout = ((ui != null) && ui.isShuttingDown())
+      ? RENAME_RETRY_TIMEOUT_UNATTENDED_MS
+      : RENAME_RETRY_TIMEOUT_USER_MS;
+
+    long deadline = System.currentTimeMillis() + timeout;
+    Path src = toPath(), dest = destFilePath.toPath();
+    boolean retryNotified = false;
+
+    while (true)
     {
-      Files.move(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-    }
-    catch (AtomicMoveNotSupportedException e)
-    {
-      Files.move(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      try
+      {
+        try
+        {
+          Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        }
+        catch (AtomicMoveNotSupportedException e)
+        {
+          Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        return;
+      }
+      catch (AccessDeniedException e)
+      {
+        Path parent = dest.getParent();
+        if ((parent != null) && (Files.isWritable(parent) == false)) throw e;
+
+        if (System.currentTimeMillis() >= deadline) throw e;
+
+        if ((retryNotified == false) && (onRetry != null))
+        {
+          onRetry.accept("Waiting for other process (possibly cloud sync) to release lock on file...");
+          retryNotified = true;
+        }
+
+        sleepForMillis(RENAME_RETRY_DELAY_MS);
+
+        // sleepForMillis swallows InterruptedException but restores the flag.
+        // Check it here so cancel propagates out of the retry loop instead of
+        // continuing to the next attempt.
+
+        if (Thread.currentThread().isInterrupted()) throw e;
+      }
     }
   }
 
@@ -557,6 +623,24 @@ public class FilePath implements Comparable<FilePath>
    */
   public String saveCharSequenceAtomically(CharSequence charSequence, Charset encoding) throws IOException
   {
+    return saveCharSequenceAtomically(charSequence, encoding, null);
+  }
+
+  /**
+   * Same as {@link #saveCharSequenceAtomically(CharSequence, Charset)}, but
+   * accepts a callback that is invoked the first time the atomic rename
+   * triggers a retry due to an {@link AccessDeniedException}. The callback
+   * receives a status message that the caller can surface in a progress
+   * dialog while the rename waits out a cloud-sync conflict.
+   *
+   * @param charSequence the {@code CharSequence} containing the content to be saved
+   * @param encoding the character set to use when writing
+   * @param onRetry callback invoked once when retry begins, or {@code null}
+   * @return the MD5 checksum of the saved content as a hexadecimal string
+   * @throws IOException if an I/O error occurs while writing to the file or performing the rename
+   */
+  public String saveCharSequenceAtomically(CharSequence charSequence, Charset encoding, Consumer<String> onRetry) throws IOException
+  {
     int bufLen = 65536;
     char[] charArray = new char[bufLen];
 
@@ -578,7 +662,7 @@ public class FilePath implements Comparable<FilePath>
         }
       }
 
-      tmpFilePath.replaceFileAtomically(this);
+      tmpFilePath.replaceFileAtomically(this, onRetry);
     }
     catch (IOException e)
     {

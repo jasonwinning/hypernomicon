@@ -101,6 +101,7 @@ public abstract class HyperTask
       {
         // If the task was cancelled (e.g., thread interrupted during I/O),
         // treat any resulting exception as cancellation, not failure
+
         if (isCancelled())
           return null;
 
@@ -111,6 +112,7 @@ public abstract class HyperTask
     }
 
     @Override protected void updateProgress(double cur, double total) { super.updateProgress(cur, total); } // Make visible to outer class
+    @Override protected void updateMessage(String message)            { super.updateMessage(message);     } // Make visible to outer class
 
     @Override protected void failed()
     {
@@ -251,6 +253,16 @@ public abstract class HyperTask
   {
     innerTask.updateProgress(cur, total);
     throwExceptionIfCancelled(this);
+  }
+
+  /**
+   * Update the message displayed on the progress dialog mid-task. Useful for
+   * surfacing transient status changes that don't correspond to progress increments.
+   * @param message The message to display
+   */
+  public void updateMessage(String message)
+  {
+    innerTask.updateMessage(message);
   }
 
   /**

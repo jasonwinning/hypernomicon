@@ -302,6 +302,20 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
   public void saveAllToPersistentStorage()
   {
+    saveAllToPersistentStorage(null);
+  }
+
+  /**
+   * Same as {@link #saveAllToPersistentStorage()}, but accepts a callback that
+   * is invoked the first time the bibliographic data write triggers a retry
+   * due to an {@link AccessDeniedException}. The callback receives a status
+   * message that the caller can surface in a progress dialog while the rename
+   * waits out a cloud-sync conflict.
+   *
+   * @param onRetry callback invoked once when retry begins, or {@code null}
+   */
+  public void saveAllToPersistentStorage(Consumer<String> onRetry)
+  {
     if (db.isOffline()) return;
 
     StringBuilder json = null;
@@ -353,7 +367,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 
     try
     {
-      db.setBibChecksum(db.xmlPath(BIB_FILE_NAME).saveCharSequenceAtomically(json, XML_FILES_CHARSET));
+      db.setBibChecksum(db.xmlPath(BIB_FILE_NAME).saveCharSequenceAtomically(json, XML_FILES_CHARSET, onRetry));
       savePrefs();
     }
     catch (IOException e)
