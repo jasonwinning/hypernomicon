@@ -421,6 +421,22 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Move this file to a different folder, optionally renaming it. The physical move is
+   * performed by {@link FilePath#moveTo}, which delegates to {@link FilePath#filesMove}
+   * for watcher stop/restart, registry eviction, and FTS index notification. After the
+   * physical move, updates all HyperPath instances that referenced the old path to point
+   * to the new location via {@link #assign}.
+   * <p>
+   * Only valid for files; throws {@code HDB_InternalError} if this path is a directory
+   * (directory moves use {@link HDT_Folder#moveToNewParent} instead).
+   *
+   * @param folderID       the ID of the destination folder record
+   * @param confirm        if true, prompts the user before overwriting an existing file
+   * @param changeFilename if true, uses {@code newName} as the filename; otherwise keeps the original name
+   * @param newName        the new filename (only used if {@code changeFilename} is true)
+   * @return true if the move succeeded, false if the user cancelled or an error occurred
+   */
   public boolean moveToFolder(int folderID, boolean confirm, boolean changeFilename, String newName) throws IOException, HDB_InternalError
   {
     if ((folderID == -1) || (db.folders.getByID(folderID) == null))
@@ -448,6 +464,21 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Update this HyperPath's parent folder and/or filename. For file records, this updates
+   * the record's folder pointer and filename after a physical move or rename has already
+   * occurred. For folder records, this additionally triggers
+   * {@link FilePathRegistry#onSubtreeMoved} to re-key all descendant HyperPath associations
+   * in the registry under the new directory path.
+   * <p>
+   * This method does NOT perform the physical filesystem move; that must be done beforehand
+   * (e.g., via {@link FilePath#filesMove}). It also does not evict the old path from the
+   * registry for directories, because {@code onSubtreeMoved()} needs the old entries still
+   * present in order to collect and re-key them.
+   *
+   * @param parentFolder the new parent folder record (or the same folder for a rename)
+   * @param nameOnly     the new leaf filename (directory name for folder records)
+   */
   public void assign(HDT_Folder parentFolder, FilePath nameOnly)
   {
     if (FilePath.isEmpty(fileName) && FilePath.isEmpty(nameOnly)) return;
@@ -676,6 +707,16 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Rename a file on disk and update all HyperPath instances that reference it. If the file
+   * has associated HyperPath records, delegates to {@link #moveToFolder} (which handles the
+   * physical rename via {@link FilePath#filesMove} and updates the record associations). If
+   * the file has no HyperPath records, delegates directly to {@link FilePath#renameTo}.
+   *
+   * @param filePath   the current file path
+   * @param newNameStr the new filename (leaf name only)
+   * @return true if the rename succeeded
+   */
   public static boolean renameFile(FilePath filePath, String newNameStr) throws IOException, HDB_InternalError
   {
     Set<HyperPath> set = getHyperPathSetForFilePath(filePath);

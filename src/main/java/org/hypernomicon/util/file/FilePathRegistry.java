@@ -355,6 +355,17 @@ public final class FilePathRegistry implements RegistryAccessor
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // ---- Iteration ----------------------------------------------------------
+
+  /**
+   * Return an unmodifiable snapshot of all cached file paths. The returned list is a copy;
+   * concurrent modifications to the registry do not affect it.
+   */
+  @Override public Collection<FilePath> allPaths() { return List.copyOf(pathCache.values()); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   // ---- Lifecycle -----------------------------------------------------------
 
   /**

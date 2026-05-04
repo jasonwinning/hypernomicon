@@ -44,6 +44,7 @@ import org.apache.commons.io.FileUtils;
 
 import org.hypernomicon.*;
 import org.hypernomicon.fts.DatabaseSketch;
+import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.PopupDialog;
@@ -69,6 +70,7 @@ public final class HyperDB extends AbstractHyperDB
   public static AbstractHyperDB db;
 
   private final FolderTreeWatcher folderTreeWatcher;
+  private final FullTextIndexer fullTextIndexer = new FullTextIndexer();
 
   private FilePath lockFilePath = null;
 
@@ -98,6 +100,7 @@ public final class HyperDB extends AbstractHyperDB
 
   @Override protected void populateFilePathRegistry()          { registryAccessor.populate(rootFilePath); }
   @Override protected FolderTreeWatcher getFolderTreeWatcher() { return folderTreeWatcher; }
+  @Override public FullTextIndexer getFullTextIndexer()        { return fullTextIndexer; }
 
   @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { InterProcClient.updateRunningInstancesFile(newRootFilePath); }
 
@@ -115,6 +118,7 @@ public final class HyperDB extends AbstractHyperDB
       dbID = randomAlphanumericStr(16);
       prefs.put(PrefKey.DB_ID, dbID);
       DatabaseRegistry.registerDatabase(dbID, rootFilePath);
+      persistSketch(null);
       return true;
     }
 
@@ -125,6 +129,7 @@ public final class HyperDB extends AbstractHyperDB
       // First time this database is seen in the registry
 
       DatabaseRegistry.registerDatabase(dbID, rootFilePath);
+      persistSketch(null);
       return true;
     }
 
@@ -133,6 +138,7 @@ public final class HyperDB extends AbstractHyperDB
       // Same database at same path: normal case
 
       DatabaseRegistry.registerDatabase(dbID, rootFilePath);
+      persistSketch(null);
       return true;
     }
 
@@ -175,7 +181,30 @@ public final class HyperDB extends AbstractHyperDB
       DatabaseRegistry.registerDatabase(dbID, rootFilePath);
     }
 
+    persistSketch(currentSketch);
+
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void persistSketch(DatabaseSketch sketch)
+  {
+    try
+    {
+      FilePath indexDir = DatabaseRegistry.resolveIndexDir(dbID);
+      if (indexDir == null) return;
+
+      if (sketch == null)
+        sketch = DatabaseSketch.compute(xmlPath(), recordXMLFileNames());
+
+      sketch.writeTo(indexDir.resolve("sketch.json"));
+    }
+    catch (Exception e)
+    {
+      logThrowable(e);
+    }
   }
 
 //---------------------------------------------------------------------------

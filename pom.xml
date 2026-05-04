@@ -23,6 +23,7 @@
     <mainClass>org.hypernomicon.Main</mainClass>
     <maven.compiler.release>25</maven.compiler.release>
     <javafx.version>26.0.1</javafx.version>
+    <lucene.version>10.5.0</lucene.version>
   </properties>
 
   <build>
@@ -356,6 +357,26 @@
           <artifactId>pdfbox-io</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-analysis-common</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-queryparser</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-highlighter</artifactId>
+      <version>${lucene.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

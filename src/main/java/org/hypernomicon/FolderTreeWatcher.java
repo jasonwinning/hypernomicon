@@ -45,6 +45,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.PathInfo.FileKind;
 import org.hypernomicon.fileManager.FileManager;
+import org.hypernomicon.fts.IndexEvent;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.file.*;
@@ -68,8 +69,10 @@ public class FolderTreeWatcher
   public static volatile boolean consoleLogging;
 
   private volatile Consumer<FilePath> evictionHook;
+  private volatile Consumer<IndexEvent> generalEventHook;
 
-  public void setEvictionHook(Consumer<FilePath> evictionHook) { this.evictionHook = evictionHook; }
+  public void setEvictionHook(Consumer<FilePath> evictionHook)           { this.evictionHook     = evictionHook; }
+  public void setGeneralEventHook(Consumer<IndexEvent> generalEventHook) { this.generalEventHook = generalEventHook; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -382,6 +385,7 @@ public class FolderTreeWatcher
                            (overflowedDirs.size() == 1 ? "y" : "ies"));
 
       for (FilePath dir : overflowedDirs)
+      {
         if (dir.exists())
         {
           try
@@ -393,6 +397,9 @@ public class FolderTreeWatcher
             logThrowable(e);
           }
         }
+
+        nullSwitch(generalEventHook, hook -> hook.accept(IndexEvent.overflow(dir)));
+      }
 
       // Remove stale watch keys for directories that no longer exist
       // Note: it is not guaranteed that isValid() will be false once the directory no longer exists
@@ -447,6 +454,8 @@ public class FolderTreeWatcher
               }});
             }
 
+            nullSwitch(generalEventHook, hook -> hook.accept(IndexEvent.create(newPath, watcherEvent.isDirectory())));
+
             if (refreshNeeded.ordinal() < RefreshNeeded.REFRESH.ordinal())
               refreshNeeded = RefreshNeeded.REFRESH;
 
@@ -497,6 +506,8 @@ public class FolderTreeWatcher
 //              }
             }
 
+            nullSwitch(generalEventHook, hook -> hook.accept(IndexEvent.delete(oldPathInfo.getFilePath(), watcherEvent.isDirectory())));
+
             // Evict the deleted path from the registry so stale entries don't linger
 
             nullSwitch(evictionHook, hook -> hook.accept(oldPathInfo.getFilePath()));
@@ -516,6 +527,8 @@ public class FolderTreeWatcher
             {
               doImport(newPath);
             }
+
+            nullSwitch(generalEventHook, hook -> hook.accept(IndexEvent.modify(newPath)));
 
             break;
           }
@@ -602,6 +615,8 @@ public class FolderTreeWatcher
               hyperPath.assign(hyperPath.parentFolder(), newPath.getNameOnly());
               registerTree(newPath);
             }
+
+            nullSwitch(generalEventHook, hook -> hook.accept(IndexEvent.move(oldPathInfo.getFilePath(), newPath, watcherEvent.isDirectory())));
 
             if (refreshNeeded.ordinal() < RefreshNeeded.REFRESH.ordinal())
               refreshNeeded = RefreshNeeded.REFRESH;

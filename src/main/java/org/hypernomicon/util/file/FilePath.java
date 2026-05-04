@@ -18,6 +18,7 @@
 package org.hypernomicon.util.file;
 
 import org.hypernomicon.fileManager.FileManager;
+import org.hypernomicon.fts.IndexEvent;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.util.file.deletion.FileDeletion;
 
@@ -57,6 +58,8 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 
   private final InnerFilePath innerVal;
+
+  private static volatile Consumer<IndexEvent> indexEventHook;
 
 //---------------------------------------------------------------------------
 
@@ -127,6 +130,11 @@ public class FilePath implements Comparable<FilePath>
     return Instant.ofEpochMilli(Files.getLastModifiedTime(toPath()).toMillis());
   }
 
+
+  /** Set the hook that receives index events for file move/copy operations.
+   *  Wired by AbstractHyperDB to {@code indexer::queueEvent} during FTS startup. */
+  public static void setIndexEventHook(Consumer<IndexEvent> hook) { indexEventHook = hook; }
+
   /**
    * @see File#deleteOnExit()
    */
@@ -151,9 +159,30 @@ public class FilePath implements Comparable<FilePath>
    */
   public String getExtensionOnly()      { return FilenameUtils.getExtension(toString()); }
 
+  /**
+   * Copy this file to the destination. Delegates to {@link #filesCopy}, which handles
+   * watcher stop/restart, and FTS index notification (queues a CREATE event for the
+   * destination if it is under the database root). If the destination exists and
+   * {@code confirmOverwrite} is true, prompts the user.
+   * @return true if the copy succeeded, false if the user cancelled
+   */
   public boolean copyTo(FilePath destFilePath, boolean confirmOverwrite) throws IOException { return moveOrCopy(destFilePath, confirmOverwrite, false); }
+
+  /**
+   * Move this file to the destination. Delegates to {@link #filesMove}, which handles
+   * watcher stop/restart, registry eviction of the source path, and FTS index notification
+   * (queues a MOVE, CREATE, or DELETE event depending on whether the source and destination
+   * are under the database root). If the destination exists and {@code confirmOverwrite}
+   * is true, prompts the user.
+   * @return true if the move succeeded, false if the user cancelled
+   */
   public boolean moveTo(FilePath destFilePath, boolean confirmOverwrite) throws IOException { return moveOrCopy(destFilePath, confirmOverwrite, true); }
 
+  /**
+   * Rename this file within the same directory. Delegates to {@link #moveTo}, which
+   * handles watcher stop/restart, registry eviction, and FTS index notification.
+   * @return true if the rename succeeded
+   */
   public boolean renameTo(String newNameStr) throws IOException { return moveOrCopy(getDirOnly().resolve(newNameStr), false, true); }
 
   public static boolean isEmpty(FilePath filePath) { return (filePath == null) || strNullOrBlank(filePath.toString()); }
@@ -289,8 +318,9 @@ public class FilePath implements Comparable<FilePath>
   /**
    * Central function for moving files and directories. All database-relevant {@code Files.move}
    * calls should go through this method. Handles watcher stop/restart (if paths are under the
-   * DB root) and registry eviction (for files only; directory moves rely on the caller's
-   * {@code path.assign()} -> {@code onSubtreeMoved()} for registry re-keying).
+   * DB root), registry eviction (for files only; directory moves rely on the caller's
+   * {@code path.assign()} -> {@code onSubtreeMoved()} for registry re-keying), and index
+   * event notification via the hook set by {@link #setIndexEventHook}.
    * <p>
    * This is the low-level primitive. It is intentionally public so that callers that manage
    * their own validation, overwrite policy, and record re-keying (e.g. directory operations
@@ -313,6 +343,18 @@ public class FilePath implements Comparable<FilePath>
 
       if (srcIsDir == false)
         FilePathRegistry.instance().evict(src);
+
+      Consumer<IndexEvent> hookSnapshot = indexEventHook;
+
+      if (hookSnapshot != null)
+      {
+        if (srcUnderRoot && destUnderRoot)
+          hookSnapshot.accept(IndexEvent.move(src, dest, srcIsDir));
+        else if (destUnderRoot)
+          hookSnapshot.accept(IndexEvent.create(dest, srcIsDir));
+        else if (srcUnderRoot)
+          hookSnapshot.accept(IndexEvent.delete(src, srcIsDir));
+      }
     }
     finally
     {
@@ -326,7 +368,8 @@ public class FilePath implements Comparable<FilePath>
 
   /**
    * Central function for copying files. All database-relevant {@code Files.copy} calls should
-   * go through this method. Handles watcher stop/restart (if paths are under the DB root).
+   * go through this method. Handles watcher stop/restart (if paths are under the DB root) and
+   * index event notification via the hook set by {@link #setIndexEventHook}.
    * <p>
    * This is the low-level primitive, intentionally public so that callers managing their own
    * validation and overwrite policy can invoke it directly, bypassing the file-oriented
@@ -341,6 +384,11 @@ public class FilePath implements Comparable<FilePath>
     try
     {
       Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+      Consumer<IndexEvent> hookSnapshot = indexEventHook;
+
+      if ((hookSnapshot != null) && destUnderRoot)
+        hookSnapshot.accept(IndexEvent.create(dest, false));
     }
     finally
     {
@@ -527,6 +575,13 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Rename or move this directory to the destination. Delegates to {@link #filesMove}, which
+   * handles watcher stop/restart and FTS index notification. Does NOT evict from the
+   * {@link FilePathRegistry} because the caller is expected to call
+   * {@code path.assign()} which triggers {@code onSubtreeMoved()} to re-key HyperPath
+   * associations under the new path.
+   */
   public void renameDirectory(FilePath destFilePath) throws IOException
   {
     FileManager.setNeedRefresh();

@@ -32,11 +32,12 @@ import java.util.zip.ZipInputStream;
 
 import org.hypernomicon.App;
 import org.hypernomicon.FolderTreeWatcher;
+import org.hypernomicon.bib.*;
+import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.auth.BibAuthKeys;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
-import org.hypernomicon.bib.*;
-import org.hypernomicon.bib.LibraryWrapper.LibraryType;
+import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.Ternary;
@@ -149,6 +150,7 @@ public final class TestHyperDB extends AbstractHyperDB
   @Override public String getMainTextTemplate(RecordType recordType) { return null; }
 
   @Override protected FolderTreeWatcher getFolderTreeWatcher()       { return null; }
+  @Override public FullTextIndexer getFullTextIndexer()              { return null; }
 
   @Override MentionsIndex createMentionsIndex(List<Runnable> completeHandlers) { return new MentionsIndex(completeHandlers, false); }
 

@@ -17,6 +17,7 @@
 
 package org.hypernomicon.model;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
 import static org.hypernomicon.model.Tag.*;
@@ -61,8 +62,7 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker.State;
 
-import org.hypernomicon.FolderTreeWatcher;
-import org.hypernomicon.HyperTask;
+import org.hypernomicon.*;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.auth.BibAuthKeys;
@@ -70,6 +70,8 @@ import org.hypernomicon.bib.mendeley.auth.MendeleyAuthKeys;
 import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.auth.ZoteroAuthKeys;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
+import org.hypernomicon.fts.FullTextIndexer;
+import org.hypernomicon.fts.IndexEvent;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema.HyperDataCategory;
 import org.hypernomicon.model.authors.RecordAuthors;
@@ -145,6 +147,7 @@ public abstract class AbstractHyperDB
 
   protected abstract void saveSourcePathToSystemSettings(String newPathStr);
   protected abstract FolderTreeWatcher getFolderTreeWatcher();
+  public abstract FullTextIndexer getFullTextIndexer();
 
   /**
    * Traverse through all folder records and show a popup warning for any
@@ -2517,6 +2520,10 @@ public abstract class AbstractHyperDB
 
     nullSwitch(getFolderTreeWatcher(), FolderTreeWatcher::stop);
 
+    nullSwitch(getFullTextIndexer(), FullTextIndexer::close);
+
+    FilePath.setIndexEventHook(null);
+
     unlock();
 
     mentionsIndex.stopRebuild();
@@ -2685,6 +2692,36 @@ public abstract class AbstractHyperDB
       populateFilePathRegistry();
 
       HyperPath.setRegistryAccessor(registryAccessor);
+
+      nullSwitch(getFullTextIndexer(), indexer ->
+      {
+        try
+        {
+          DatabaseRegistry.garbageCollect(dbID);
+
+          FilePath indexDir = DatabaseRegistry.resolveIndexDir(dbID);
+
+          if (indexDir != null)
+          {
+            boolean ftsIndexingEnabled = app.prefs.getBoolean(PrefKey.FTS_INDEXING_ENABLED, true);
+            int ftsThreadCount = app.prefs.getInt(PrefKey.FTS_THREAD_COUNT, -1);
+
+            indexer.bringOnline(rootFilePath, indexDir, registryAccessor);
+
+            if (ftsIndexingEnabled)
+            {
+              indexer.startIndexing(ftsThreadCount);
+
+              nullSwitch(getFolderTreeWatcher(), ftw -> ftw.setGeneralEventHook(indexer::queueEvent));
+
+              FileDeletion.addPostDeletionHook(path -> indexer.queueEvent(IndexEvent.delete(path, path.isDirectory())));
+
+              FilePath.setIndexEventHook(indexer::queueEvent);
+            }
+          }
+        }
+        catch (IOException e) { logThrowable(e); }
+      });
     }
     finally
     {

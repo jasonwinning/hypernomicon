@@ -32,6 +32,7 @@ import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.file.FilePathRegistry;
 import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
@@ -99,6 +100,14 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Rename this folder on disk and update the folder record. The physical rename is
+   * performed by {@link FilePath#renameDirectory}, which delegates to {@link FilePath#filesMove}
+   * for watcher stop/restart and FTS index notification. After the physical rename,
+   * {@code path.assign()} is called, which triggers {@code onSubtreeMoved()} to re-key
+   * HyperPath associations in the {@link FilePathRegistry} under the new path.
+   * @return true if the rename succeeded, false if validation failed or an error occurred
+   */
   public boolean renameTo(String newName)
   {
     if (getID() == ROOT_FOLDER_ID)
@@ -158,7 +167,12 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
    * existing record rather than creating new records and deleting old ones. This preserves
    * record IDs and all associations (notes, work files, misc files).
    * <p>
-   * The caller is responsible for managing the FolderTreeWatcher lifecycle.
+   * The physical move is performed by {@link FilePath#filesMove}, which handles watcher
+   * stop/restart and FTS index notification. After the physical move, {@code path.assign()}
+   * is called, which triggers {@code onSubtreeMoved()} to re-key HyperPath associations
+   * in the {@link FilePathRegistry} under the new path. Registry eviction is NOT performed
+   * by {@code filesMove} for directory moves, because {@code onSubtreeMoved()} needs the
+   * old entries to still be present in order to collect and re-key them.
    * @param newParent The destination parent folder
    * @return True if the folder was moved successfully
    * @throws IOException If the filesystem move fails

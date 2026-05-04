@@ -62,8 +62,9 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
   /**
    * Hooks invoked after each successful deletion. Registered by
    * {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry} (for registry eviction)
-   * during database session start. Cleared on session end via
-   * {@link FileDeletion#clearPostDeletionHooks()}.
+   * and by {@link org.hypernomicon.model.AbstractHyperDB AbstractHyperDB} (forwarding deletions
+   * to the {@link org.hypernomicon.fts.FullTextIndexer FullTextIndexer}) during database session
+   * start. Cleared on session end via {@link FileDeletion#clearPostDeletionHooks()}.
    */
   static final List<Consumer<FilePath>> postDeletionHooks = new ArrayList<>();
 

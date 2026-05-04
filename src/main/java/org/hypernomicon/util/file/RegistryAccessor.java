@@ -18,6 +18,7 @@
 package org.hypernomicon.util.file;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Set;
 
 import org.hypernomicon.model.items.HyperPath;
@@ -62,6 +63,9 @@ public sealed interface RegistryAccessor permits FilePathRegistry
 
   /** Re-register HyperPath associations after a directory move. */
   void onSubtreeMoved(FilePath oldDir);
+
+  /** Return an unmodifiable snapshot of all cached file paths. */
+  Collection<FilePath> allPaths();
 
   /** Populate the registry by walking the filesystem under the root path. */
   void populate(FilePath rootPath);

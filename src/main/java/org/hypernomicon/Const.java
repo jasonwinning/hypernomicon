@@ -221,7 +221,10 @@ public final class Const
 
       XML_DIFF_SELECTED_EXE_NUM = "xmlDiffSelectedExeNum",
 
-      INTEGRITY_CHECKSUMS = "integrityChecksums";
+      INTEGRITY_CHECKSUMS = "integrityChecksums",
+
+      FTS_INDEXING_ENABLED = "ftsIndexingEnabled",
+      FTS_THREAD_COUNT = "ftsThreadCount";
 
     private PrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }
