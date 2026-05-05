@@ -17,12 +17,17 @@
 
 package org.hypernomicon.fts;
 
+import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.HitRange;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
+import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 
@@ -59,6 +64,153 @@ public final class FTSUtil
             .replace("\uFFFD", "")
             .replace("\u00A0", " ")
             .replaceAll("\\s+", " ");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Normalizes text for matching between Tika and pdf.js extractions:
+   * Unicode to ASCII via {@code convertToEnglishCharsWithMap}, collapse whitespace,
+   * lowercase. The position map tracks output positions back to original positions.
+   *
+   * @param text the raw text to normalize
+   * @param posMap output parameter; on return, maps each normalized position to
+   *               the corresponding position in the original text
+   * @return the normalized text
+   */
+  public static String normalizeForMatching(String text, ArrayList<Integer> posMap)
+  {
+    return collapseWhitespace(convertToEnglishCharsWithMap(text, posMap).toLowerCase(), posMap);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Matches the timestamp LibreOffice appends to each converted-PDF header
+  // (HH:MM, optionally :SS, optionally AM/PM). Used to locate where the header ends.
+  private static final Pattern HEADER_TIME = Pattern.compile("\\d{1,2}:\\d{2}(?::\\d{2})?(?:\\s*[ap]m\\b)?", Pattern.CASE_INSENSITIVE);
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Strips a leaked page-header artifact from converted-PDF text and adjusts page
+   * offsets to match. The text is the source document's own header/footer field
+   * codes ({@code FILENAME \p} + {@code PAGE} + {@code SAVEDATE}: full path, page
+   * number, last-saved timestamp), not a banner added by LibreOffice or JodConverter.
+   *
+   * <p>The document holds an inactive/"stashed" header/footer (present in the DOCX
+   * but not shown by Word). LibreOffice 24.x materialized it during headless PDF
+   * export, so it leaked into the converted PDF; 26.2.0 stopped (most likely the
+   * tdf#142785 stashed header/footer fix). The leaked text is absent from the Tika
+   * extraction of the same file, so left in place it drifts passage/highlight
+   * positions. On a version that doesn't materialize it this is a no-op (the db-root
+   * path never appears in the extraction); kept as defense because the affected
+   * versions (24.x/25.x, including the Mac minimum 24.2.6) are current.
+   *
+   * <p>Pattern: "...text C:\folder\...\file.docx - 3 Last saved: 2/20/2026 6:14:00 PM next page text..."
+   *
+   * @param pageOffsets if non-null, each entry is adjusted in-place to account
+   *                    for removed header characters (must be a mutable copy)
+   */
+  public static String stripConvertedPdfHeaders(String text, String dbRoot, int[] pageOffsets)
+  {
+    if ((text == null) || strNullOrEmpty(dbRoot)) return text;
+
+    StringBuilder sb = new StringBuilder(text.length());
+    String textLower = text.toLowerCase(),
+           rootLower = dbRoot.toLowerCase();
+
+    int pos = 0, removedSoFar = 0, pageNdx = 0;
+
+    while (pos < text.length())
+    {
+      int idx = textLower.indexOf(rootLower, pos);
+
+      if (idx < 0)
+      {
+        sb.append(text, pos, text.length());
+        break;
+      }
+
+      sb.append(text, pos, idx);
+
+      // Find end of header: the converter appends "<date> <time>", where <time> is
+      // HH:MM[:SS] optionally followed by AM/PM. Anchor on that time token rather than a
+      // bare "am"/"pm", so this handles 24-hour-clock locales and is not fooled by ordinary
+      // words ending in "am"/"pm" (team, exam, diagram) that may follow the path.
+
+      int searchEnd = Math.min(text.length(), idx + 500);
+
+      Matcher matcher = HEADER_TIME.matcher(text).region(idx + rootLower.length(), searchEnd);
+
+      int headerEnd = matcher.find() ? matcher.end() : (idx + rootLower.length()),
+          headerLen = headerEnd - idx;
+
+      // Adjust any page offsets that fall at or after this header
+
+      if (pageOffsets != null)
+      {
+        while (pageNdx < pageOffsets.length)
+        {
+          if (pageOffsets[pageNdx] < idx)
+          {
+            // Before this header; adjust by cumulative removal so far
+
+            pageOffsets[pageNdx] -= removedSoFar;
+            pageNdx++;
+          }
+          else if (pageOffsets[pageNdx] < headerEnd)
+          {
+            // Inside this header; clamp to the header start in stripped text
+
+            pageOffsets[pageNdx] = idx - removedSoFar;
+            pageNdx++;
+          }
+          else
+            break;  // Past this header; will be adjusted later
+        }
+      }
+
+      removedSoFar += headerLen;
+      pos = headerEnd;
+    }
+
+    // Adjust remaining page offsets (after the last header)
+
+    if (pageOffsets != null)
+    {
+      while (pageNdx < pageOffsets.length)
+      {
+        pageOffsets[pageNdx] -= removedSoFar;
+        pageNdx++;
+      }
+    }
+
+    return sb.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns true if the file is an office document that OfficePreviewer converts to PDF
+   * (as opposed to spreadsheets which convert to HTML).
+   */
+  public static boolean isOfficeDocConvertedToPdf(FilePath filePath)
+  {
+    String mime = getMediaType(filePath).toString();
+
+    return (mime.contains("openxmlformats-officedocument") && (mime.contains("spreadsheet") == false))
+      ||   "application/msword".equalsIgnoreCase(mime)
+      ||   "application/rtf".equalsIgnoreCase(mime)
+      ||   mime.contains("opendocument.text")
+      ||   mime.contains("sun.xml.writer")
+      ||   mime.contains("ms-powerpoint")
+      ||   mime.contains("opendocument.presentation")
+      ||   mime.contains("sun.xml.impress")
+      ||   mime.contains("vnd.wordperfect");
   }
 
 //---------------------------------------------------------------------------
@@ -146,17 +298,14 @@ public final class FTSUtil
 
         if ((matchStart < 0) || (matchEnd > storedContent.length()) || (matchStart >= matchEnd)) continue;
 
-        int ctxStart = Math.max(0, matchStart - contextPad),
-            ctxEnd   = Math.min(storedContent.length(), matchEnd + contextPad);
-
-        String rawCtx = storedContent.substring(ctxStart, ctxEnd);
+        String rawCtx = safeSubstring(storedContent, matchStart - contextPad, matchEnd + contextPad);
 
         // Normalize whitespace and special characters so context matches the DOM's text.
         // Characters that the browser may render as U+FFFD (replacement char) due to
         // encoding mismatches are stripped on both sides so the surrounding text matches.
 
         String ctx = normalizeForDomMatch(rawCtx);
-        int relStart = normalizeForDomMatch(storedContent.substring(ctxStart, matchStart)).length(),
+        int relStart = normalizeForDomMatch(safeSubstring(storedContent, matchStart - contextPad, matchStart)).length(),
             relEnd   = relStart + normalizeForDomMatch(storedContent.substring(matchStart, matchEnd)).length();
 
         if (first == false) sb.append(',');
@@ -174,6 +323,115 @@ public final class FTSUtil
 
     sb.append("]}");
     return first ? null : sb.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Maps a Tika-extracted PageMatch to a 1-based page number in the converted
+   * PDF, by:
+   * 1. Finding the absolute character offset of the first hit in Tika's text
+   * 2. Extracting a context window from the normalized Tika text
+   * 3. Searching for that context in the normalized converted PDF text
+   * 4. Using the converted PDF's page offsets to determine the page number
+   *
+   * @param tikaMatch the Tika match to locate
+   * @param tikaReverseMap input-to-output map for normalized Tika text
+   * @param tikaNormText the normalized Tika text
+   * @param convertedPdfNormText the normalized converted PDF text
+   * @param convertedPdfPosMap output-to-input map for normalized PDF text
+   * @param convertedPdfPageOffsets page boundary offsets in original pdf.js text
+   * @return the 1-based page number, or -1 if not found
+   */
+  public static int findConvertedPdfPage(PageMatch tikaMatch, int[] tikaReverseMap, String tikaNormText,
+                                         String convertedPdfNormText, ArrayList<Integer> convertedPdfPosMap,
+                                         int[] convertedPdfPageOffsets)
+  {
+    if ((tikaReverseMap == null) || (tikaNormText == null) || (convertedPdfNormText == null) ||
+        (convertedPdfPosMap == null) || (convertedPdfPageOffsets == null))
+      return -1;
+
+    // Get the absolute offset of the first hit in the Tika extraction
+
+    int tikaAbsOffset = tikaMatch.startOffset();
+
+    if ((tikaMatch.hitRanges() != null) && (tikaMatch.hitRanges().isEmpty() == false))
+      tikaAbsOffset += tikaMatch.hitRanges().getFirst().start();
+
+    // Convert to position in normalized Tika text
+
+    if ((tikaAbsOffset < 0) || (tikaAbsOffset >= tikaReverseMap.length)) return -1;
+
+    int tikaNormPos = tikaReverseMap[tikaAbsOffset];
+    if (tikaNormPos < 0) return -1;
+
+    // Try progressively shorter context windows. The full 80-char window can span
+    // footnote boundaries or injected page numbers where Tika and pdf.js text diverge.
+    // Shorter windows are more likely to match while still being unique enough.
+
+    double proportionalPos = (double) tikaNormPos / tikaNormText.length();
+    int expectedPdfNormPos = (int) (proportionalPos * convertedPdfNormText.length());
+
+    for (int halfWidth : new int[] { 40, 20, 10 })
+    {
+      int ctxStart = Math.max(0, tikaNormPos - halfWidth);
+
+      String context = safeSubstring(tikaNormText, ctxStart, tikaNormPos + halfWidth);
+
+      if (context.length() < 5) continue;
+
+      // Search for context; if multiple occurrences, pick the one closest to
+      // the proportional position in the document
+
+      int bestPos = -1, bestDist = Integer.MAX_VALUE,
+          searchFrom = 0;
+
+      while (true)
+      {
+        int pos = convertedPdfNormText.indexOf(context, searchFrom);
+        if (pos < 0) break;
+
+        int dist = Math.abs(pos - expectedPdfNormPos);
+        if (dist < bestDist)
+        {
+          bestDist = dist;
+          bestPos = pos;
+        }
+
+        searchFrom = pos + 1;
+      }
+
+      if (bestPos < 0) continue;
+
+      // Map normalized PDF position back to original PDF text position
+
+      int normHitPos = bestPos + (tikaNormPos - ctxStart);
+
+      if ((normHitPos < 0) || (normHitPos >= convertedPdfPosMap.size())) continue;
+
+      int origPdfPos = convertedPdfPosMap.get(normHitPos);
+
+      for (int pageNdx = convertedPdfPageOffsets.length - 1; pageNdx >= 0; pageNdx--)
+        if (origPdfPos >= convertedPdfPageOffsets[pageNdx])
+          return pageNdx + 1;  // 1-based page number
+
+      return 1;
+    }
+
+    // Last resort: estimate page from proportional position
+
+    int estimatedOrigPos = (int) (proportionalPos * convertedPdfPosMap.size());
+    if ((estimatedOrigPos >= 0) && (estimatedOrigPos < convertedPdfPosMap.size()))
+    {
+      int origPos = convertedPdfPosMap.get(estimatedOrigPos);
+
+      for (int pageNdx = convertedPdfPageOffsets.length - 1; pageNdx >= 0; pageNdx--)
+        if (origPos >= convertedPdfPageOffsets[pageNdx])
+          return pageNdx + 1;
+    }
+
+    return -1;
   }
 
 //---------------------------------------------------------------------------

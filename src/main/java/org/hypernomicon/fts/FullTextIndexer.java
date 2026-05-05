@@ -46,8 +46,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.uhighlight.*;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.*;
 import org.apache.lucene.util.BytesRef;
 
 import org.apache.tika.Tika;
@@ -128,7 +127,7 @@ public class FullTextIndexer
     return (ext != null) && INDEXABLE_EXTENSIONS.contains(ext.toLowerCase());
   }
 
-  private record ExtractionResult(String text, int[] pageOffsets, int pageCount) {}
+  public record ExtractionResult(String text, int[] pageOffsets, int pageCount) {}
 
   private static final FieldType CONTENT_FIELD_TYPE;
 
@@ -255,6 +254,7 @@ public class FullTextIndexer
   public int getBuildProcessedFiles()              { return buildProcessedFiles; }
   public IndexerState getState()                   { return state; }
   public int getQueueSize()                        { return eventQueue.size(); }
+  public Analyzer getAnalyzer()                    { return analyzer; }
   public void setStatusListener(Runnable listener) { this.statusListener = listener; }
 
   /** Whether the Lucene index is open and searchable; true in every state except {@code CLOSED}. */
@@ -500,16 +500,7 @@ public class FullTextIndexer
     // they caused phrase searches to silently match wrong results (e.g., "was born of a
     // woman" matching "born to a woman" because "was", "of", "a", "to" were all removed).
 
-    analyzer = new Analyzer()
-    {
-      @SuppressWarnings("resource")
-      @Override protected TokenStreamComponents createComponents(String fieldName)
-      {
-        StandardTokenizer tokenizer = new StandardTokenizer();
-        return new TokenStreamComponents(tokenizer, new ASCIIFoldingFilter(new LowerCaseFilter(tokenizer)));
-      }
-    };
-
+    analyzer = createAnalyzer();
     luceneDir = FSDirectory.open(lucenePath.toPath());
 
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
@@ -1425,7 +1416,7 @@ public class FullTextIndexer
    * @param content     the extracted text (tokenized, stored)
    * @param pageOffsets page boundary offsets, or null for non-paginated content
    * @param pageCount   the page count, or null to omit the pageCount field even
-   *                    when pageOffsets is present
+   *                    when pageOffsets is present (temporary converted-PDF index)
    */
   private static Document buildLuceneDocument(String path, String content, int[] pageOffsets, Integer pageCount)
   {
@@ -2495,6 +2486,89 @@ public class FullTextIndexer
                                       Set<String> pathScope, String folderPrefix) throws ParseException
   {
     return doSearch(after, queryStr, maxResults, fileMask, pathScope, folderPrefix);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Searches extracted text from a converted PDF using a temporary in-memory Lucene index.
+   * This ensures identical search semantics to the main index. The text and page offsets
+   * come from pdf.js extraction of the converted PDF (not Tika extraction of the original).
+   *
+   * @param extractedText the full text extracted from the converted PDF
+   * @param pageOffsets   page boundary offsets (same format as the main index)
+   * @param query         the query to run (same query used for the main search)
+   * @return list of PageMatch results with offsets aligned to the converted PDF, or empty list on error
+   */
+  public static List<SearchResult.PageMatch> searchConvertedPdf(String extractedText, int[] pageOffsets, Query query)
+  {
+    if ((extractedText == null) || (query == null)) return List.of();
+
+    try (ByteBuffersDirectory tempDir = new ByteBuffersDirectory();
+         Analyzer tempAnalyzer = createAnalyzer())
+    {
+      try (IndexWriter tempWriter = new IndexWriter(tempDir, new IndexWriterConfig(tempAnalyzer)))
+      {
+        tempWriter.addDocument(buildLuceneDocument("temp", extractedText, pageOffsets, null));
+        tempWriter.commit();
+      }
+
+      try (DirectoryReader reader = DirectoryReader.open(tempDir))
+      {
+        IndexSearcher tempSearcher = new IndexSearcher(reader);
+
+        TopDocs topDocs = tempSearcher.search(query, 1);
+
+        if (topDocs.scoreDocs.length == 0) return List.of();
+
+        PageAwareFormatter formatter = new PageAwareFormatter();
+
+        UnifiedHighlighter highlighter = UnifiedHighlighter.builder(tempSearcher, tempAnalyzer)
+          .withFormatter(formatter)
+          .withMaxLength(Integer.MAX_VALUE - 1)
+          .build();
+
+        String pageOffsetsStr = reader.storedFields().document(topDocs.scoreDocs[0].doc).get("pageOffsets");
+
+        SearchResult result = buildResult("temp", pageOffsetsStr, topDocs.scoreDocs[0], query, formatter, highlighter, 10_000);
+
+        return nullSwitch(result.pageMatches(), List.of());
+      }
+    }
+    catch (IOException e)
+    {
+      logThrowable(e);
+      return List.of();
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Extracts text from a PDF file via the pdf.js extractor pool, lazily creating
+   * the pool if it isn't open yet. Returns the extraction result, or null on failure.
+   */
+  public ExtractionResult extractPdfText(FilePath filePath)
+  {
+    return extractViaPdfJS(filePath);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("resource")
+  public static Analyzer createAnalyzer()
+  {
+    return new Analyzer()
+    {
+      @Override protected TokenStreamComponents createComponents(String fieldName)
+      {
+        StandardTokenizer tokenizer = new StandardTokenizer();
+        return new TokenStreamComponents(tokenizer, new ASCIIFoldingFilter(new LowerCaseFilter(tokenizer)));
+      }
+    };
   }
 
 //---------------------------------------------------------------------------

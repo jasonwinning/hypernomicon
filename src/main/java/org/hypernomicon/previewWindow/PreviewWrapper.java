@@ -88,9 +88,11 @@ public class PreviewWrapper
   private final ToggleButton btn;
   private final AnchorPane ap;
 
-  PreviewSource getSource()             { return src; }
-  PDFJSWrapper getJSWrapper()           { return jsWrapper; }
+  /** Current display subscription on the active {@link ConversionSession}, if any.
+   *  Unsubscribed when the wrapper is cleared or a new file is loaded into it. */
+  private ConversionSession.Subscription displaySubscription;
 
+  PreviewSource getSource()             { return src; }
   int getPageNum()                      { return pageNum; }
   int getNumPages()                     { return numPages; }
   Tab getTab()                          { return tab; }
@@ -101,13 +103,21 @@ public class PreviewWrapper
   FilePath getFilePathShowing()         { return filePathShowing; }
   void prepareToHide()                  { if (initialized) jsWrapper.prepareToHide(); }
   void prepareToShow()                  { if (initialized) jsWrapper.prepareToShow(); }
-  void setDeferredHitsJson(String json) { deferredHitsJson = json; }
+  void clearAllHits()                   { if (initialized) jsWrapper.clearAllHits(); }
+  void setNoOfficeInstallation()        { if (initialized) jsWrapper.setNoOfficeInstallation(); }
+  void setStartingConverter()           { if (initialized) jsWrapper.setStartingConverter(); }
+  void setUnable(FilePath filePath)     { if (initialized) jsWrapper.setUnable(filePath); }
+
+  void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
+  { if (initialized) jsWrapper.setGenerating(filePath, dontRestartProgressIfSamePreview); }
+
   int lowestHilitePage()                { return collEmpty(hilitePages) ? -1 : hilitePages.getFirst(); }
   int highestHilitePage()               { return collEmpty(hilitePages) ? -1 : hilitePages.getLast(); }
   int getPageByLabel(String label)      { return collEmpty(labelToPage) ? parseInt(label, -1) : labelToPage.getOrDefault(label, -1); }
   String getLabelByPage(int page)       { return collEmpty(pageToLabel) ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
   boolean zoom(boolean zoomingIn)       { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }
 
+  void scrollToHighlightByMatchNdx(int matchNdx) { if (initialized) jsWrapper.scrollToHighlightByMatchNdx(matchNdx); }
   boolean enableFileNavButton(boolean isForward) { return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1; }
 
 //---------------------------------------------------------------------------
@@ -200,6 +210,118 @@ public class PreviewWrapper
     if (jxBrowserDisabled) return;
 
     initialized = true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Lazy-initializes the underlying jsWrapper if it hasn't been created yet.
+   *  Returns {@code true} if the wrapper is initialized after the call (which
+   *  is always the case unless JxBrowser is disabled). */
+  boolean ensureInitialized()
+  {
+    if (initialized == false)
+      initJS();
+
+    return initialized;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Load the HTML output of an office-to-HTML conversion (e.g., spreadsheets).
+   *  Used by the display callback after conversion completes; file tracking
+   *  (curPrevFile, fileList) was already set up by the earlier setPreview call. */
+  void loadConvertedHtml(FilePath convertedPath) throws IOException
+  {
+    if (initialized == false) return;
+
+    jsWrapper.setContentToShowIsDirect(true);
+    jsWrapper.loadFile(convertedPath, false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Load the bytes of an office-to-PDF conversion into the viewer.
+   *  Used by the display callback after conversion completes; file tracking
+   *  (curPrevFile, fileList) was already set up by the earlier setPreview call.
+   *  The FTS path bypasses the normal preview flow and uses the heavier
+   *  {@link #loadConvertedPDF(FilePath, FilePath, int, HDT_Record)} overload,
+   *  which sets up file tracking itself before delegating here. */
+  void loadConvertedPdfBytes(FilePath convertedPath, int pageNum)
+  {
+    if (initialized == false) return;
+
+    jsWrapper.setContentToShowIsDirect(false);
+    jsWrapper.loadPdf(convertedPath, pageNum);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Load a converted PDF into the viewer, bypassing the normal
+   * {@code setPreview -> showFile} path. Initializes {@code curPrevFile} and
+   * page tracking so that subsequent navigation (goToPage, refreshControls)
+   * works against the original (pre-conversion) file path, then delegates to
+   * {@link #loadConvertedPdfBytes} for the actual byte load.
+   *
+   * @param originalPath  the source office document (used for file tracking)
+   * @param convertedPath the LibreOffice-produced PDF to actually load
+   * @param pageNum       1-based first-match page in the converted PDF
+   * @param record        record associated with the original file, or {@code null}
+   */
+  void loadConvertedPDF(FilePath originalPath, FilePath convertedPath, int pageNum, HDT_Record record)
+  {
+    if (initialized == false) return;
+
+    if ((record != null) && (record.getType() != hdtWork    ) && (record.getType() != hdtMiscFile) &&
+                            (record.getType() != hdtWorkFile) && (record.getType() != hdtPerson  ))
+      record = null;
+
+    curPrevFile = new PreviewFile(originalPath, (HDT_RecordWithPath) record);
+
+    fileNdx++;
+
+    while (fileList.size() > fileNdx)
+      fileList.remove(fileNdx);
+
+    fileList.add(curPrevFile);
+
+    this.pageNum = pageNum;
+
+    // Mark the file as currently displayed so that subsequent setPreview calls
+    // (e.g., passage clicks in FTS, which route through doSetPreview,
+    // wrapper.setPreview(page), finishRefresh) see the file as already shown
+    // and trigger navigation instead of a full reload. Clearing needsRefresh
+    // here is part of the same intent: once the converted PDF is actually
+    // displayed, a subsequent tab activation shouldn't force a refresh that
+    // re-enters showFile and re-enqueues the conversion. Without this, the
+    // reload path calls showFile, which creates a new session subscription
+    // and enqueues a redundant office-to-PDF conversion.
+
+    filePathShowing = originalPath;
+    recordShowing   = (HDT_RecordWithPath) record;
+    pageNumShowing  = -1;
+    needsRefresh    = false;
+
+    loadConvertedPdfBytes(convertedPath, pageNum);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Push FTS hit JSON to the underlying jsWrapper. If lazy-init has not yet
+   *  run (the preview window is closed), the JSON is stored on this wrapper
+   *  and will be replayed by {@code finishRefresh} after the file load has
+   *  set the correct {@code contentToShowIsDirect}. */
+  void setAllHits(String allHitsJson)
+  {
+    if (initialized)
+      jsWrapper.setAllHits(allHitsJson);
+    else
+      deferredHitsJson = allHitsJson;
   }
 
 //---------------------------------------------------------------------------
@@ -394,7 +516,11 @@ public class PreviewWrapper
 
     if (initialized == false) return;
 
-    OfficePreviewer.stopPreview(jsWrapper);
+    if (displaySubscription != null)
+    {
+      displaySubscription.unsubscribe();
+      displaySubscription = null;
+    }
 
     jsWrapper.reset();
 
@@ -569,6 +695,18 @@ public class PreviewWrapper
 
   void activate()
   {
+    // A conversion-in-progress alt display (e.g. "Generating preview...") shouldn't
+    // be clobbered by a tab activation. Without this guard, the FTS converted-office
+    // path gets reset to an empty PDF viewer the first time the preview window is
+    // opened during conversion, because finishRefresh's empty-filePath branch calls
+    // clearPreview -> jsWrapper.reset() -> switchToPreviewDisplay.
+
+    if ((jsWrapper != null) && jsWrapper.isShowingAlt())
+    {
+      btn.setSelected(true);
+      return;
+    }
+
     if (needsRefresh)
       refreshPreview(false, true);
     else
@@ -590,11 +728,24 @@ public class PreviewWrapper
     return showFile(filePath, pageNum, jsWrapper, null);
   }
 
+  // The null-previewWrapper branch intentionally does not retain the Subscription
+  // returned by subscribeDisplay (see comment in the office-doc branch below).
+
+  @SuppressWarnings("resource")
   private static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
   {
     String mimetypeStr = getMediaType(filePath).toString();
 
-    OfficePreviewer.stopPreview(jsWrapper);
+    // Unsubscribe the previous display subscription (if this wrapper had one).
+    // Silent displacement via a new subscribe handles the same-session case,
+    // so the order (unsubscribe-first vs subscribe-first) doesn't matter here:
+    // we're clearing state regardless of what comes next.
+
+    if ((previewWrapper != null) && (previewWrapper.displaySubscription != null))
+    {
+      previewWrapper.displaySubscription.unsubscribe();
+      previewWrapper.displaySubscription = null;
+    }
 
     // For PDF, no conversion is necessary. We display it as-is using the PDF viewer.
 
@@ -624,7 +775,21 @@ public class PreviewWrapper
           mimetypeStr.contains("opendocument.spreadsheet")      ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
           mimetypeStr.contains("sun.xml.calc"))                     // sxc  (OpenOffice.org 1.0 spreadsheet)
       {
-        OfficePreviewer.preview(mimetypeStr, filePath, pageNum, jsWrapper, previewWrapper);
+        // Direct session path for both instance-owned wrappers and static
+        // dialog callers. Instance callers track the subscription so future
+        // navigation can unsubscribe cleanly; dialog callers don't navigate,
+        // so silent displacement + session lifecycle handle cleanup when the
+        // dialog closes and the session's subscribers drop away.
+
+        ConversionSession session = OfficePreviewer.getOrCreateSession(filePath, previewWrapper, mimetypeStr);
+        ConversionSession.DisplayCallback callback = OfficePreviewer.displayCallbackForPreview(filePath, previewWrapper, jsWrapper, session.convertToHtml(), pageNum);
+
+        if (previewWrapper != null)
+          previewWrapper.displaySubscription = session.subscribeDisplay(previewWrapper, pageNum, callback);
+        else
+          session.subscribeDisplay(null, pageNum, callback);  // intentionally untracked; see comment above
+
+        OfficePreviewer.enqueueForConversion(session, previewWrapper, jsWrapper);
       }
 
       // Treat as an HTML file (removing scripts and making links external) if it appears to be HTML and load directly into browser.

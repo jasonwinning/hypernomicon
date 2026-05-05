@@ -22,7 +22,6 @@
 // TextLayerBuilder._finishRendering when a page's text layer becomes ready.
 
 var pendingHits = null;  // { "1": [[s,e],...], "3": [[s,e],...], ... }
-var pendingHitsScrolled = false;  // true after first scroll to a highlight
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -35,12 +34,8 @@ var pendingHitsScrolled = false;  // true after first scroll to a highlight
  *                  [startOffset, endOffset] pairs (page-relative offsets)
  */
 function setAllHits(hitsJson) {
-  console.log('FTS-PDF: setAllHits called, json length=' + hitsJson.length);
   clearHighlights();
   pendingHits = JSON.parse(hitsJson);
-  pendingHitsScrolled = false;
-  var pageCount = Object.keys(pendingHits).length;
-  console.log('FTS-PDF: stored hits for ' + pageCount + ' pages');
   applyPendingHitsToRenderedPages();
 }
 
@@ -48,8 +43,10 @@ function setAllHits(hitsJson) {
 //---------------------------------------------------------------------------
 
 /**
- * Apply pending hits to any pages that have already finished rendering.
- * Called after setAllHits() and also from _finishRendering hook in viewer.js.
+ * Apply pending hits to any pages whose text layer has already finished
+ * rendering. Called after setAllHits() to catch pages that rendered before
+ * the hits arrived. Pages that haven't rendered yet will be picked up by the
+ * _finishRendering hook in viewer.js when they do; no retry needed here.
  */
 function applyPendingHitsToRenderedPages() {
   if (pendingHits == null) return;
@@ -60,13 +57,11 @@ function applyPendingHitsToRenderedPages() {
 
   for (var pageNumStr in pendingHits) {
     var pageNum = parseInt(pageNumStr);
-    applyHitsToPage(pageNum);
-  }
+    var pageView = pdfViewer.getPageView(pageNum - 1);
 
-  // Scroll to the first highlight if one was applied
-  var firstHighlight = document.querySelector('.fts-highlight');
-  if (firstHighlight != null) {
-    firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if ((pageView != null) && (pageView.textLayer != null) && pageView.textLayer.renderingDone) {
+      applyHitsToPage(pageNum);
+    }
   }
 }
 
@@ -74,147 +69,28 @@ function applyPendingHitsToRenderedPages() {
 //---------------------------------------------------------------------------
 
 /**
- * Apply pending hits for a single page, if the text layer is ready.
- * Called from _finishRendering hook and from applyPendingHitsToRenderedPages.
+ * Apply pending hits for a single page, assuming the text layer is ready.
+ * Called from the _finishRendering hook in viewer.js (push) and from
+ * applyPendingHitsToRenderedPages after a pre-checked readiness test (pull).
+ * Highlighting only; all navigation is handled by Java via goToPage.
+ *
+ * Re-runs the same concatenation logic as extractor.js to translate Lucene
+ * post-processed character offsets back to the raw text items, then maps item
+ * indices to textDiv elements and adds the .fts-highlight CSS class. The
+ * .fts-active class on the text layer overrides its default opacity: 0.2 so
+ * highlights are visible.
  */
 function applyHitsToPage(pageNum) {
   if (pendingHits == null) return;
 
-  var ranges = pendingHits[String(pageNum)];
-  if ((ranges == null) || (ranges.length === 0)) return;
+  var hitRanges = pendingHits[String(pageNum)];
+  if ((hitRanges == null) || (hitRanges.length === 0)) return;
 
   var pageView = PDFViewerApplication.pdfViewer.getPageView(pageNum - 1);
   if ((pageView == null) || (pageView.textLayer == null) || (pageView.textLayer.renderingDone == false)) {
-    console.log('FTS-PDF: applyHitsToPage(' + pageNum + '): text layer not ready');
+    // Not ready. The _finishRendering hook will re-call us when it is.
     return;
   }
-
-  console.log('FTS-PDF: applyHitsToPage(' + pageNum + '): applying ' + ranges.length + ' ranges');
-  doHighlightHits(pageNum, ranges, false, function() {
-    // Scroll to the first highlight once (when the first page with hits renders)
-    if (pendingHitsScrolled == false) {
-      var firstHighlight = document.querySelector('.fts-highlight');
-      console.log('FTS-PDF: scroll check (onDone): firstHighlight=' + (firstHighlight != null ? 'yes' : 'null') + ' page=' + pageNum);
-      if (firstHighlight != null) {
-        firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        pendingHitsScrolled = true;
-        console.log('FTS-PDF: scrolled to first highlight on page ' + pageNum);
-      }
-    }
-  });
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-/**
- * Clear all stored hit data and remove all highlights.
- */
-function clearAllHits() {
-  pendingHits = null;
-  pendingHitsScrolled = false;
-  clearHighlights();
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-function openPdfFile(fileStr, pageNum, sidebarView) {
-
-  if (PDFViewerApplication.initialized == false) {
-    window.setTimeout(openPdfFile, 50, fileStr, pageNum, sidebarView);
-    return;
-  }
-
-  // Opening a new document into this reused viewer must not inherit the prior
-  // document's hit data. Drop stored hits (and any existing highlight spans)
-  // before the swap; the new file's hits, if any, are pushed by Java after the
-  // open completes. This makes a new document open clear prior hits regardless
-  // of whether the Java caller remembered to clear them.
-
-  clearAllHits();
-
-  PDFViewerApplicationOptions.set('initialPage', pageNum);
-  PDFViewerApplicationOptions.set('sidebarViewOnLoad', sidebarView);
-  PDFViewerApplicationOptions.set('disablePageMode', true);
-  PDFViewerApplicationOptions.set('showPreviousViewOnLoad', false);
-
-  PDFViewerApplication.pdfViewer.eventBus.on('pagechange', function (e) { javaApp.pageChange(e.pageNumber); });
-  PDFViewerApplication.pdfViewer.eventBus.on('sidebarviewchanged', function (e) { javaApp.sidebarChange(e.view); });
-
-  PDFViewerApplication.open(fileStr).then(function() {
-    javaApp.openDone(true, { });
-  }, function (error) {
-    javaApp.openDone(false, error);
-  });
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-function closePdfFile() {
-	PDFViewerApplication.close().then(function () {
-	  javaApp.closeDone(true, { });
-	}, function (error) {
-	  javaApp.closeDone(false, error);
-	});
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-/**
- * Highlight text ranges on a specific page. Called from Java when displaying
- * FTS search results. The hitRangesJson parameter is a JSON array of
- * [startOffset, endOffset] pairs, where offsets are relative to the page's
- * post-processed text (same concatenation logic as extractor.js).
- *
- * @param pageNum     1-based page number
- * @param hitRangesJson  JSON string: [[start1, end1], [start2, end2], ...]
- */
-function highlightHits(pageNum, hitRangesJson) {
-  clearHighlights();
-
-  var hitRanges = JSON.parse(hitRangesJson);
-  if (hitRanges.length === 0) return;
-
-  // Wait for the text layer to be rendered before highlighting.
-  // pdf.js renders text layer spans lazily when the page is visible.
-  waitForTextLayer(pageNum, function () {
-    doHighlightHits(pageNum, hitRanges, true);
-  });
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-function waitForTextLayer(pageNum, callback) {
-  var attempts = 0, maxAttempts = 40;  // 40 * 100ms = 4 seconds max
-
-  function check() {
-    var pageView = PDFViewerApplication.pdfViewer.getPageView(pageNum - 1);
-
-    if (pageView != null && pageView.textLayer != null && pageView.textLayer.renderingDone) {
-      callback();
-      return;
-    }
-
-    attempts++;
-
-    if (attempts < maxAttempts) {
-      setTimeout(check, 100);
-    }
-  }
-
-  check();
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-function doHighlightHits(pageNum, hitRanges, shouldScroll, onDone) {
-  var pageView = PDFViewerApplication.pdfViewer.getPageView(pageNum - 1);
-  if (pageView == null) return;
 
   var pdfPage = pageView.pdfPage;
   if (pdfPage == null) return;
@@ -264,9 +140,8 @@ function doHighlightHits(pageNum, hitRanges, shouldScroll, onDone) {
     }
 
     // Collapse whitespace: replicate the \s+ replacement
-    var collapsedText = '',
-        collapsedMap = [];
 
+    var collapsedMap = [];
     var inWhitespace = false;
 
     for (var pos = 0; pos < text.length; pos++) {
@@ -275,62 +150,45 @@ function doHighlightHits(pageNum, hitRanges, shouldScroll, onDone) {
       if (/\s/.test(ch)) {
         if (inWhitespace == false) {
           collapsedMap.push(offsetMap[pos]);
-          collapsedText += ' ';
           inWhitespace = true;
         }
       } else {
         collapsedMap.push(offsetMap[pos]);
-        collapsedText += ch;
         inWhitespace = false;
       }
     }
 
-    // Trim leading/trailing spaces
-    var trimStart = 0, trimEnd = collapsedText.length;
+    // Trim leading/trailing space mappings
 
-    while (trimStart < trimEnd && collapsedText.charAt(trimStart) === ' ') trimStart++;
-    while (trimEnd > trimStart && collapsedText.charAt(trimEnd - 1) === ' ') trimEnd--;
-
+    var trimStart = 0, trimEnd = collapsedMap.length;
+    while (trimStart < trimEnd && collapsedMap[trimStart] == null) trimStart++;
+    while (trimEnd > trimStart && collapsedMap[trimEnd - 1] == null) trimEnd--;
     collapsedMap = collapsedMap.slice(trimStart, trimEnd);
 
-    // Now collapsedMap[i] maps post-processed character i to { itemNdx, charNdx }
-    // Find which text layer spans to highlight for each hit range
+    // Now collapsedMap[i] maps post-processed character i to { itemNdx, charNdx }.
+    // Find which text layer divs to highlight for each hit range.
 
-    var textLayerDiv = pageView.textLayer ? pageView.textLayer.textLayerDiv : null;
-
+    var textLayerDiv = pageView.textLayer.textLayerDiv;
     if (textLayerDiv == null) return;
 
-    // pdf.js v2.0.943 stores text layer elements in textDivs array (div elements, not spans)
+    // pdf.js v2.0.943 stores text layer elements in textDivs (div elements, not spans)
     var textDivs = pageView.textLayer.textDivs;
-
     if ((textDivs == null) || (textDivs.length === 0)) return;
-
-    // The page container holds both the canvas and the text layer.
-    // We add highlight overlays as children of the page container so they're
-    // outside the text layer's opacity: 0.2 compositing group.
-    var pageContainer = textLayerDiv.parentNode;
-
-    if (pageContainer == null) return;
 
     for (var h = 0; h < hitRanges.length; h++) {
       var hitStart = hitRanges[h][0],
           hitEnd   = hitRanges[h][1];
 
-      // Clamp to valid range
       if (hitStart < 0) hitStart = 0;
       if (hitEnd > collapsedMap.length) hitEnd = collapsedMap.length;
 
-      // Collect the set of item indices that are part of this hit
       var itemsInHit = new Set();
 
-      for (var pos = hitStart; pos < hitEnd; pos++) {
-        var mapping = collapsedMap[pos];
-        if (mapping != null) {
-          itemsInHit.add(mapping.itemNdx);
-        }
+      for (var p = hitStart; p < hitEnd; p++) {
+        var mapping = collapsedMap[p];
+        if (mapping != null) itemsInHit.add(mapping.itemNdx);
       }
 
-      // Highlight text divs
       itemsInHit.forEach(function (itemNdx) {
         if (itemNdx < textDivs.length) {
           textDivs[itemNdx].classList.add('fts-highlight');
@@ -338,35 +196,56 @@ function doHighlightHits(pageNum, hitRanges, shouldScroll, onDone) {
       });
     }
 
-    // Raise the text layer opacity so highlights are visible
-    var hlCount = textLayerDiv.querySelectorAll('.fts-highlight').length;
-    console.log('FTS-PDF: doHighlightHits page=' + pageNum + ' hlCount=' + hlCount + ' textDivs=' + textDivs.length + ' collapsedMapLen=' + collapsedMap.length);
+    // Raise the text layer opacity so highlights are visible.
     textLayerDiv.classList.add('fts-active');
-
-    if (hlCount > 0) {
-      var firstHl = textLayerDiv.querySelector('.fts-highlight');
-      var tlClasses = textLayerDiv.className;
-      var tlStyle = window.getComputedStyle(textLayerDiv);
-      var hlStyle = window.getComputedStyle(firstHl);
-      console.log('FTS-PDF: textLayerDiv classes=' + tlClasses + ' opacity=' + tlStyle.opacity + ' display=' + tlStyle.display);
-      console.log('FTS-PDF: highlight opacity=' + hlStyle.opacity + ' bgColor=' + hlStyle.backgroundColor + ' display=' + hlStyle.display + ' text=' + firstHl.textContent.substring(0, 20));
-      console.log('FTS-PDF: textLayerDiv parent=' + (textLayerDiv.parentNode ? textLayerDiv.parentNode.className : 'null'));
-    }
-
-    // Scroll to the first highlight only when explicitly requested (e.g., clicking
-    // a specific match in the context pane). When applying hits from setAllHits/
-    // applyHitsToPage, we don't scroll because the user already navigated to the
-    // desired page.
-    if (shouldScroll) {
-      var firstHighlight = textLayerDiv.querySelector('.fts-highlight');
-
-      if (firstHighlight != null) {
-        firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-
-    if (typeof onDone === 'function') onDone();
   });
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+/**
+ * Clear all stored hit data and remove all highlights.
+ */
+function clearAllHits() {
+  pendingHits = null;
+  clearHighlights();
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+function openPdfFile(fileStr, pageNum, sidebarView) {
+
+  if (PDFViewerApplication.initialized == false) {
+    window.setTimeout(openPdfFile, 50, fileStr, pageNum, sidebarView);
+    return;
+  }
+
+  PDFViewerApplicationOptions.set('initialPage', pageNum);
+  PDFViewerApplicationOptions.set('sidebarViewOnLoad', sidebarView);
+  PDFViewerApplicationOptions.set('disablePageMode', true);
+  PDFViewerApplicationOptions.set('showPreviousViewOnLoad', false);
+
+  PDFViewerApplication.pdfViewer.eventBus.on('pagechange', function (e) { javaApp.pageChange(e.pageNumber); });
+  PDFViewerApplication.pdfViewer.eventBus.on('sidebarviewchanged', function (e) { javaApp.sidebarChange(e.view); });
+
+  PDFViewerApplication.open(fileStr).then(function() {
+    javaApp.openDone(true, { });
+  }, function (error) {
+    javaApp.openDone(false, error);
+  });
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+function closePdfFile() {
+	PDFViewerApplication.close().then(function () {
+	  javaApp.closeDone(true, { });
+	}, function (error) {
+	  javaApp.closeDone(false, error);
+	});
 }
 
 //---------------------------------------------------------------------------

@@ -813,6 +813,91 @@ public final class StringUtil
 
 //---------------------------------------------------------------------------
 
+  /**
+   * Builds a reverse position map from the forward map returned by
+   * {@link #convertToEnglishCharsWithMap}. The forward map maps output positions
+   * to input positions. The reverse map maps input positions to the first
+   * corresponding output position.
+   *
+   * @param forwardMap output-to-input position map from convertToEnglishCharsWithMap
+   * @param inputLength the length of the original input string
+   * @return array where reverseMap[inputPos] = first output position that maps to inputPos,
+   *         or -1 if no output position maps to that input position
+   */
+  public static int[] buildReversePositionMap(ArrayList<Integer> forwardMap, int inputLength)
+  {
+    int[] reverseMap = new int[inputLength];
+    Arrays.fill(reverseMap, -1);
+
+    for (int outNdx = 0; outNdx < forwardMap.size(); outNdx++)
+    {
+      int inNdx = forwardMap.get(outNdx);
+      if ((inNdx >= 0) && (inNdx < inputLength) && (reverseMap[inNdx] < 0))
+        reverseMap[inNdx] = outNdx;
+    }
+
+    return reverseMap;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Collapses runs of whitespace to single spaces, updating the position map
+   * so that each position in the output maps to the corresponding original position.
+   *
+   * @param input the string to collapse
+   * @param inputPosMap forward position map (output -> original) from convertToEnglishCharsWithMap;
+   *                    if non-null, entries are removed for collapsed characters and a new map
+   *                    is returned via the same list (cleared and repopulated)
+   * @return the whitespace-collapsed string
+   */
+  public static String collapseWhitespace(String input, ArrayList<Integer> inputPosMap)
+  {
+    StringBuilder sb = new StringBuilder(input.length());
+    ArrayList<Integer> newMap = (inputPosMap != null) ? new ArrayList<>(input.length()) : null;
+    boolean inWhiteSpace = false;
+
+    for (int ndx = 0; ndx < input.length(); ndx++)
+    {
+      char ch = input.charAt(ndx);
+
+      if (ch == '\ufffd')
+        continue;  // Strip stray U+FFFD replacement char; see Util.getClipboardText
+
+      if (Character.isWhitespace(ch))
+      {
+        if (inWhiteSpace == false)
+        {
+          sb.append(' ');
+          if (newMap != null)
+            newMap.add(ndx < inputPosMap.size() ? inputPosMap.get(ndx) : ndx);
+
+          inWhiteSpace = true;
+        }
+      }
+      else
+      {
+        sb.append(ch);
+        if (newMap != null)
+          newMap.add(ndx < inputPosMap.size() ? inputPosMap.get(ndx) : ndx);
+
+        inWhiteSpace = false;
+      }
+    }
+
+    if (inputPosMap != null)
+    {
+      inputPosMap.clear();
+      inputPosMap.addAll(newMap);
+    }
+
+    return sb.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static String convertToEnglishCharsWithMap(CharSequence input, ArrayList<Integer> posMap)
   {
     if (isAscii(input))

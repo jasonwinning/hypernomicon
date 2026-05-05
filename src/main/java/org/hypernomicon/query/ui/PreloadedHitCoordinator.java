@@ -35,6 +35,9 @@ import org.hypernomicon.query.ui.FTSQueryCtrlr.FTSResultRow;
  * pushed in a single pass. {@link #start()} loads the preview at the start
  * page, clears any prior hits, and ships the JSON returned by
  * {@link #buildHitsJson()}; subclasses supply only that method.
+ * <p>
+ * Contrast with coordinators whose hits become available only after an async
+ * conversion or extraction step.
  */
 abstract class PreloadedHitCoordinator extends FileHighlightCoordinator
 {

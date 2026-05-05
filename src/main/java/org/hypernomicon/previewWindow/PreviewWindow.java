@@ -521,20 +521,7 @@ public final class PreviewWindow extends NonmodalWindow
     PreviewWrapper wrapper = instance.srcToWrapper.get(src);
     if (wrapper == null) return false;
 
-    PDFJSWrapper jsWrapper = wrapper.getJSWrapper();
-
-    // jsWrapper is created lazily on first refresh (which only happens when
-    // the preview window is showing). If FTS delivers hits while the window
-    // is closed, defer them on the wrapper so that finishRefresh can replay
-    // them once the file load has set the right contentToShowIsDirect.
-
-    if (jsWrapper == null)
-    {
-      wrapper.setDeferredHitsJson(allHitsJson);
-      return true;
-    }
-
-    jsWrapper.setAllHits(allHitsJson);
+    wrapper.setAllHits(allHitsJson);
     return true;
   }
 
@@ -545,12 +532,62 @@ public final class PreviewWindow extends NonmodalWindow
   {
     if (jxBrowserDisabled || (instance == null)) return;
 
-    PreviewWrapper wrapper = instance.srcToWrapper.get(src);
-    if (wrapper == null) return;
+    nullSwitch(instance.srcToWrapper.get(src), wrapper -> wrapper.scrollToHighlightByMatchNdx(matchNdx));
+  }
 
-    PDFJSWrapper jsWrapper = wrapper.getJSWrapper();
-    if (jsWrapper != null)
-      jsWrapper.scrollToHighlightByMatchNdx(matchNdx);
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Find or create the {@link ConversionSession} for the given source wrapper
+   * and file. Returns {@code null} if the preview system is unavailable.
+   *
+   * <p>The caller attaches display or extraction subscribers to the returned
+   * session to drive the UI and/or receive the converted path, and should call
+   * {@link OfficePreviewer#enqueueForConversion} to actually queue the
+   * conversion for the background thread.
+   */
+  public static ConversionSession getOrCreateSession(PreviewSource src, String mimetypeStr, FilePath filePath)
+  {
+    if (jxBrowserDisabled || (instance == null)) return null;
+
+    PreviewWrapper wrapper = instance.srcToWrapper.get(src);
+    if (wrapper == null) return null;
+
+    if (wrapper.ensureInitialized() == false) return null;
+
+    return OfficePreviewer.getOrCreateSession(filePath, wrapper, mimetypeStr);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Enqueues a conversion for the session returned from {@link #getOrCreateSession}.
+   * Separated from {@code getOrCreateSession} so callers can subscribe first,
+   * then enqueue (ensuring no state transition fires before the subscriber
+   * is ready to receive it).
+   */
+  public static void enqueueForConversion(PreviewSource src, ConversionSession session)
+  {
+    if ((instance == null) || (session == null)) return;
+
+    nullSwitch(instance.srcToWrapper.get(src), wrapper ->
+      OfficePreviewer.enqueueForConversion(session, wrapper, null));  // null jsWrapper: the fallback only applies to dialog-hosted (wrapper-less) sessions
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Load a converted PDF into the viewer at the specified page. Called by
+   * FTSQueryCtrlr after extraction determines the correct first-match page.
+   */
+  public static void loadConvertedPDF(PreviewSource src, FilePath originalPath, FilePath convertedPath, int pageNum, HDT_Record record)
+  {
+    if (jxBrowserDisabled || (instance == null)) return;
+
+    nullSwitch(instance.srcToWrapper.get(src), wrapper -> wrapper.loadConvertedPDF(originalPath, convertedPath, pageNum, record));
   }
 
 //---------------------------------------------------------------------------
@@ -560,12 +597,23 @@ public final class PreviewWindow extends NonmodalWindow
   {
     if (jxBrowserDisabled || (instance == null)) return;
 
-    PreviewWrapper wrapper = instance.srcToWrapper.get(src);
-    if (wrapper == null) return;
+    nullSwitch(instance.srcToWrapper.get(src), PreviewWrapper::clearAllHits);
+  }
 
-    PDFJSWrapper jsWrapper = wrapper.getJSWrapper();
-    if (jsWrapper != null)
-      jsWrapper.clearAllHits();
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Show the unable-to-preview indicator for the given source wrapper. Used by
+   * callers that drive a conversion without a display subscription (the FTS
+   * converted-office path) to surface a conversion failure that would
+   * otherwise leave the generating-preview display up indefinitely.
+   */
+  public static void setUnable(PreviewSource src, FilePath filePath)
+  {
+    if (jxBrowserDisabled || (instance == null)) return;
+
+    nullSwitch(instance.srcToWrapper.get(src), wrapper -> wrapper.setUnable(filePath));
   }
 
 //---------------------------------------------------------------------------

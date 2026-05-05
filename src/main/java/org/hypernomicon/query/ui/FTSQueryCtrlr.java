@@ -18,6 +18,7 @@
 package org.hypernomicon.query.ui;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.fts.FTSUtil.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
@@ -126,9 +127,10 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   private List<HDT_RecordWithPath> recordScopeRecords;
   private String lastQueryStr, lastFileMask, lastFolderPrefix, cachedContextHtml;
 
-  /** Owns the current file's highlight lifecycle (viewer load sequencing, hit
-   *  application). Disposed and replaced on file switch; {@code null} when no
-   *  file is being previewed. */
+  /** Owns the current file's highlight lifecycle (viewer load sequencing,
+   *  extraction future for converted office docs, coordinate-translation
+   *  state for passage-click navigation). Disposed and replaced on file
+   *  switch; {@code null} when no file is being previewed. */
   private FileHighlightCoordinator currentCoordinator;
 
   private int currentPreviewPage = 1, totalMatchCount = -1;
@@ -491,8 +493,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
       // The listener also fires when a row in allRows is replaced in place (e.g., when the Record column is updated after record resolution).
       // JavaFX re-fires with oldValue=null, newValue=the replacement row. That's not a real navigation event; the user is still on the same
-      // file. Don't reset the page or re-trigger setPreview (which would scroll the preview back to page 1). Just refresh the context view
-      // since the row's resolvedRecord may have changed.
+      // file. Don't reset the page or re-trigger setPreview (which would scroll the preview back to page 1 and, for converted docs, risk
+      // re-queueing work). Just refresh the context view since the row's resolvedRecord may have changed.
 
       if ((currentCoordinator != null) && currentCoordinator.path().equals(newValue.path()))
       {
@@ -1210,6 +1212,24 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
         if (selected != null)
         {
+          // For converted PDFs, ask the coordinator to map the passage index to a viewer page
+          // via the Tika/pdf.js normalized-text alignment it computed during extraction.
+
+          if ((currentCoordinator != null) && (passageNdx >= 0))
+          {
+            List<PageMatch> tikaMatches = highlightCache.get(selected.path());
+            if (tikaMatches == null) tikaMatches = selected.result().pageMatches();
+
+            int targetPage = currentCoordinator.pageForPassage(passageNdx, tikaMatches);
+
+            if (targetPage > 0)
+            {
+              currentPreviewPage = targetPage;
+              setPreview(selected);
+              return;
+            }
+          }
+
           setPreview(selected);
 
           // Scroll to the highlight for this passage. Each highlight span has a
@@ -1276,12 +1296,30 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     // Same file: user is navigating within it (passage click, Record-column
     // re-resolve). Keep the active coordinator; just move the viewer to the
-    // requested page.
+    // requested page. For converted office docs this relies on PreviewWindow
+    // detecting that the file is already loaded and short-circuiting to
+    // goToPage (see PreviewWindow.doSetPreview), which is only valid once the
+    // coordinator's pipeline has actually loaded the viewer.
 
     if ((currentCoordinator != null) && currentCoordinator.path().equals(row.path()))
     {
-      PreviewWindow.setPreview(pvsQueriesTab, filePath, currentPreviewPage, -1, row.resolvedRecord());
-      return;
+      if (currentCoordinator.viewerLoaded())
+      {
+        PreviewWindow.setPreview(pvsQueriesTab, filePath, currentPreviewPage, -1, row.resolvedRecord());
+        return;
+      }
+
+      // The viewer doesn't have this file yet, so doSetPreview's already-loaded
+      // check cannot short-circuit; routing the request through
+      // PreviewWindow.setPreview would fall through to showFile and start a
+      // duplicate, display-path conversion with no hit highlighting. If the
+      // pipeline is still in flight, it will load the viewer itself when it
+      // finishes. If it already failed without loading anything (e.g. no office
+      // installation was configured at the time), fall through and rebuild the
+      // coordinator so the retry runs the full pipeline.
+
+      if (currentCoordinator.failedBeforeViewerLoad() == false)
+        return;
     }
 
     List<PageMatch> matches = nullSwitch(row.result().pageMatches(), highlightCache.get(row.path()));
@@ -1298,6 +1336,30 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       if (firstPage > 1)
         currentPreviewPage = firstPage;
     }
+
+    boolean isConvertedPdf = isOfficeDocConvertedToPdf(filePath);
+
+    // Converted office: the coordinator owns the viewer load because the first
+    // page shown depends on the first-match page determined after extraction.
+    // Skip entirely until matches are available; requestHighlight's callback
+    // will re-invoke setPreview once the cache is populated.
+
+    if (isConvertedPdf)
+    {
+      if (matches == null) return;
+
+      FullTextIndexer indexer = db.getFullTextIndexer();
+      if (indexer == null) return;
+
+      disposeCurrentCoordinator();
+      currentCoordinator = new ConvertedOfficeHitCoordinator(row, indexer, lastQueryStr, highlightExecutor);
+      currentCoordinator.start();
+      return;
+    }
+
+    // Native PDF / direct content: load the file immediately (so the user
+    // sees it while highlights compute), then create a coordinator to apply
+    // hits if matches are ready.
 
     PreviewWindow.setPreview(pvsQueriesTab, filePath, currentPreviewPage, -1, row.resolvedRecord());
 

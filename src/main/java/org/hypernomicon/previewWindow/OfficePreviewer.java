@@ -20,12 +20,14 @@ package org.hypernomicon.previewWindow;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.previewWindow.ConversionSession.ConversionState;
+import org.hypernomicon.previewWindow.ConversionSession.NoOfficeInstallationException;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.deletion.FileDeletion;
 
@@ -42,14 +44,35 @@ final class OfficePreviewer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private record OfficePreviewInfo(PreviewWrapper previewWrapper, PDFJSWrapper jsWrapper, FilePath filePath, int pageNum, boolean convertToHtml, String officePath) { }
+  /**
+   * Background-thread work item: a session to convert plus the pieces of
+   * context the bkg thread needs that aren't on the session itself (the
+   * {@link PreviewWrapper} for the cross-tab "needs refresh" signal, the
+   * {@link PDFJSWrapper} that alt-display calls fall back to for dialog-hosted
+   * sessions with no PreviewWrapper, and the {@code officePath} captured at
+   * enqueue time for converter-config comparison).
+   */
+  private record PendingWork(ConversionSession session, PreviewWrapper previewWrapper, PDFJSWrapper jsWrapper, String officePath) { }
 
   private static OfficePreviewThread bkgThread;
 
   private static final Object LOCK = new Object();
-  private static final Map<PDFJSWrapper, Boolean> wrapperStopped = new ConcurrentHashMap<>();
 
-  private static volatile OfficePreviewInfo lastInfo, nextInfo;
+  private static volatile PendingWork nextWork, currentWork;
+
+  /**
+   * Key for {@link #sessions}: a conversion is uniquely identified by
+   * (source file, target viewer wrapper). Two wrappers requesting the same
+   * file get two sessions, in accordance with the per-wrapper temp-dir model.
+   */
+  private record SessionKey(FilePath file, PreviewWrapper wrapper) { }
+
+  /**
+   * Registry of active {@link ConversionSession} instances. Populated by
+   * {@link #getOrCreateSession} and purged via each session's {@code onAbandoned}
+   * hook when its last subscriber unsubscribes.
+   */
+  private static final Map<SessionKey, ConversionSession> sessions = new ConcurrentHashMap<>();
 
   private OfficePreviewer() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
 
@@ -58,9 +81,165 @@ final class OfficePreviewer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void preview(String mimetypeStr, FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
+  /**
+   * Find or create the {@link ConversionSession} for the given
+   * (file, jsWrapper) pair. Callers then attach display or extraction
+   * subscribers to drive the UI and receive the converted path.
+   *
+   * <p>The session is held in the registry while it has at least one
+   * subscriber (including during terminal states, so a late subscriber can
+   * still pick up a cached result). When the last subscriber unsubscribes,
+   * the session is purged.
+   */
+  static ConversionSession getOrCreateSession(FilePath filePath, PreviewWrapper previewWrapper, String mimetypeStr)
   {
-    assert (previewWrapper == null) || (jsWrapper == previewWrapper.getJSWrapper());
+    SessionKey key = new SessionKey(filePath, previewWrapper);
+
+    // A cached COMPLETED session's converted file can be deleted out from under it: the
+    // per-wrapper temp-dir pre-clean when a different file is converted for the same
+    // wrapper, the full temp-folder clear when the office path changes, or an external
+    // temp cleaner. Serving the dangling path would fail extraction and blank the viewer
+    // (terminal replay delivers the path and enqueueForConversion early-returns on a
+    // terminal session, so nothing reconverts), so validate the artifact and start a
+    // fresh session if it is gone. The evicted session's remaining subscribers are
+    // unaffected: its onAbandoned hook removes by (key, session) pair, so it cannot
+    // dislodge the replacement session from the registry.
+
+    ConversionSession existing = sessions.get(key);
+
+    if ((existing != null) && (existing.state() == ConversionState.COMPLETED) && (existing.convertedPath().exists() == false))
+      sessions.remove(key, existing);
+
+    return sessions.computeIfAbsent(key, k ->
+      new ConversionSession(filePath, previewWrapper, mimetypeStr, session -> sessions.remove(key, session)));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds the DisplayCallback used for previewing an office document. On
+   * COMPLETED, loads the PDF (or HTML for spreadsheets) into the viewer. On
+   * FAILED, shows the unable-to-preview indicator, or the no-office message
+   * if the failure is a {@link NoOfficeInstallationException}.
+   * On CANCELLED, does nothing;
+   * cancellation means either supersession by a newer request or the user
+   * navigated away, in which case the wrapper's UI has already moved on.
+   *
+   * <p>{@code previewWrapper} is null for dialog-hosted previews (WorkDlgCtrlr,
+   * SelectWorkDlgCtrlr, MergeWorksDlgCtrlr), which own a bare {@code jsWrapper}
+   * with no preview pane; in that case the callback drives {@code jsWrapper}
+   * directly, mirroring what the PreviewWrapper load methods do for panes.
+   *
+   * <p>{@code setStartingConverter}/{@code setGenerating} is handled by
+   * {@link #enqueueForConversion} directly (before this callback is ever
+   * invoked) so the first-conversion-vs-not distinction can use the current
+   * bkg-thread state.
+   */
+  static ConversionSession.DisplayCallback displayCallbackForPreview(FilePath filePath, PreviewWrapper previewWrapper, PDFJSWrapper jsWrapper, boolean convertToHtml, int pageNum)
+  {
+    return (state, convertedPath, failure) ->
+    {
+      switch (state)
+      {
+        case COMPLETED ->
+        {
+          if (convertToHtml)
+          {
+            try
+            {
+              if (previewWrapper != null)
+                previewWrapper.loadConvertedHtml(convertedPath);
+              else
+              {
+                jsWrapper.setContentToShowIsDirect(true);
+                jsWrapper.loadFile(convertedPath, false);
+              }
+            }
+            catch (IOException e)
+            {
+              if (previewWrapper != null)
+                previewWrapper.setUnable(filePath);
+              else
+                jsWrapper.setUnable(filePath);
+            }
+          }
+          else
+          {
+            if (previewWrapper != null)
+              previewWrapper.loadConvertedPdfBytes(convertedPath, pageNum);
+            else
+            {
+              jsWrapper.setContentToShowIsDirect(false);
+              jsWrapper.loadPdf(convertedPath, pageNum);
+            }
+          }
+        }
+
+        case FAILED ->
+        {
+          // For the no-office failure, enqueueForConversion already drove the
+          // no-office alt display before failing the session; re-asserting it
+          // here (rather than doing nothing) matters for the terminal-state
+          // replay case, where a late subscriber sees FAILED without any
+          // preceding enqueue-time alt-display call.
+
+          if (failure instanceof NoOfficeInstallationException)
+          {
+            if (previewWrapper != null)
+              previewWrapper.setNoOfficeInstallation();
+            else
+              jsWrapper.setNoOfficeInstallation();
+          }
+          else if (previewWrapper != null)
+            previewWrapper.setUnable(filePath);
+          else
+            jsWrapper.setUnable(filePath);
+        }
+
+        default -> { /* PENDING, CONVERTING, CANCELLED: no action */ }
+      }
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Queue a session for the background conversion thread. Handles:
+   * <ul>
+   *   <li>Office-path validation (drives the no-office alt display and fails the session
+   *       with {@link NoOfficeInstallationException} if no office
+   *       install is configured);</li>
+   *   <li>altDisplay setup on the wrapper ({@code setStartingConverter} for the first conversion
+   *       under the current office install, {@code setGenerating} for subsequent ones);</li>
+   *   <li>Cross-tab "needs refresh" signal when a different tab's conversion is being displaced;</li>
+   *   <li>Supersession: cancels any pending request for a different session on the same wrapper;</li>
+   *   <li>The {@code nextWork} slot replacement and {@code bkgThread} wakeup.</li>
+   * </ul>
+   *
+   * <p>altDisplay calls go through the session's {@link PreviewWrapper} when it
+   * has one (so the wrapper's initialized guard applies); for dialog-hosted
+   * sessions (WorkDlgCtrlr, SelectWorkDlgCtrlr, MergeWorksDlgCtrlr), which have
+   * no PreviewWrapper, they drive {@code jsWrapper} directly. Callers enqueueing
+   * a pane-hosted session may pass null for {@code jsWrapper}.
+   *
+   * <p>Package-private so PreviewWrapper (and any other in-package caller that drives
+   * sessions directly) can enqueue after subscribing.
+   */
+  static void enqueueForConversion(ConversionSession session, PreviewWrapper previewWrapper, PDFJSWrapper jsWrapper)
+  {
+    // If the session already has a result (or has been cancelled/failed),
+    // new subscribers picked up the cached outcome via their own subscribe
+    // callback. There's nothing for the background thread to do.
+
+    if (session.state().isTerminal())
+      return;
+
+    FilePath       filePath  = session.source();
+    PreviewWrapper sessionWrapper = session.previewWrapper();
+
+    ConversionSession supersededSession = null;
 
     synchronized(LOCK)
     {
@@ -68,73 +247,58 @@ final class OfficePreviewer
 
       if (officePath.isBlank())
       {
-        if (lastInfo != null)
-          wrapperStopped.put(jsWrapper, true);
+        if (sessionWrapper != null)
+          sessionWrapper.setNoOfficeInstallation();
+        else
+          jsWrapper.setNoOfficeInstallation();
 
-        jsWrapper.setNoOfficeInstallation();
+        session.fail(new NoOfficeInstallationException());
         return;
       }
 
       if (bkgThread == null)
         (bkgThread = new OfficePreviewThread()).start();
 
-      if ((lastInfo == null) || (lastInfo.officePath.equals(officePath) == false))
-        jsWrapper.setStartingConverter();
+      if ((currentWork == null) || (currentWork.officePath().equals(officePath) == false))
+      {
+        if (sessionWrapper != null)
+          sessionWrapper.setStartingConverter();
+        else
+          jsWrapper.setStartingConverter();
+      }
       else
-        jsWrapper.setGenerating(filePath, false);
-
-      boolean convertToHtml = mimetypeStr.contains("spreadsheetml.sheet")      ||  // xlsx (Microsoft Excel XML)
-                              mimetypeStr.contains("ms-excel")                 ||  // xls  (Microsoft Excel)
-                              "text/csv".equalsIgnoreCase(mimetypeStr)         ||  // csv  (Comma-separated values)
-                              mimetypeStr.contains("tab-separated-values")     ||  // tsv  (Tab-separated values)
-                              mimetypeStr.contains("opendocument.spreadsheet") ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
-                              mimetypeStr.contains("sun.xml.calc");                // sxc  (OpenOffice.org 1.0 spreadsheet)
+      {
+        if (sessionWrapper != null)
+          sessionWrapper.setGenerating(filePath, false);
+        else
+          jsWrapper.setGenerating(filePath, false);
+      }
 
       // If a preview is currently being generated in a different tab from the one a preview is now being requested in, set the other tab as needing refresh
 
-      if ((lastInfo != nextInfo) && (nextInfo != null) && (nextInfo.jsWrapper != jsWrapper) && (nextInfo.previewWrapper != null))
-        nextInfo.previewWrapper.setNeedsRefresh(nextInfo.filePath);
+      if ((currentWork != nextWork) && (nextWork != null) && (nextWork.session().previewWrapper() != sessionWrapper) && (nextWork.previewWrapper() != null))
+        nextWork.previewWrapper().setNeedsRefresh(nextWork.session().source());
 
-      nextInfo = new OfficePreviewInfo(previewWrapper, jsWrapper, filePath, pageNum, convertToHtml, officePath);
+      if ((nextWork != null) && (nextWork.session() != session))
+        supersededSession = nextWork.session();
+
+      nextWork = new PendingWork(session, previewWrapper, jsWrapper, officePath);
       LOCK.notifyAll();
     }
+
+    if (supersededSession != null)
+      supersededSession.cancel(new CancellationException("Superseded by new conversion request"));
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private static void stopPreview()
-  {
-    synchronized(LOCK)
-    {
-      wrapperStopped.keySet().forEach(jsWrapper -> wrapperStopped.put(jsWrapper, true));
-
-      nextInfo = null;
-    }
-  }
-
-  static void stopPreview(PDFJSWrapper jsWrapper)
-  {
-    synchronized(LOCK)
-    {
-      wrapperStopped.put(jsWrapper, true);
-
-      if ((nextInfo != null) && (nextInfo.jsWrapper == jsWrapper))
-        nextInfo = null;
-    }
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private static final class OfficePreviewThread extends HyperThread
   {
     private static volatile LocalOfficeManager officeManager;
     private static volatile LocalConverter officeConverter;
 
-    private static volatile boolean shutDown;
-
-    private static volatile boolean firstConversion = true;
+    private static volatile boolean shutDown, firstConversion = true;
 
 //---------------------------------------------------------------------------
 
@@ -149,15 +313,15 @@ final class OfficePreviewer
 
     @Override public void run()
     {
-      Map<PDFJSWrapper, FilePath> wrapperToTempDir = new HashMap<>();
-      File tempPath,
-           previewFilePath;
+      Map<PreviewWrapper, FilePath> wrapperToTempDir = new HashMap<>();
+      File tempPath        = null,
+           previewFilePath = null;
 
       while (shutDown == false)
       {
         synchronized(LOCK)
         {
-          while ((nextInfo == null) && (shutDown == false))
+          while ((nextWork == null) && (shutDown == false))
           {
             try { LOCK.wait(); }
             catch (InterruptedException e) { currentThread().interrupt(); return; }
@@ -167,81 +331,141 @@ final class OfficePreviewer
         if (shutDown)
           break;
 
+        ConversionSession preConvertFailure = null;
+        Throwable preConvertCause = null;
+
         synchronized(LOCK)
         {
+          PreviewWrapper nextWrapper = nextWork.session().previewWrapper();
+
           try
           {
-            FilePath tempDir = wrapperToTempDir.get(nextInfo.jsWrapper);
+            FilePath tempDir = wrapperToTempDir.get(nextWrapper);
             if (tempDir != null)
               FileDeletion.ofDirWithContents(tempDir).nonInteractiveFailureOK().execute();
 
             tempDir = tempOfficePreviewFolder(false, false).resolve("preview" + randomAlphanumericStr(8));
-            tempPath = tempDir.resolve("preview" + randomAlphanumericStr(8) + '.' + (nextInfo.convertToHtml ? "html" : "pdf")).toFile();
+            tempPath = tempDir.resolve("preview" + randomAlphanumericStr(8) + '.' + (nextWork.session().convertToHtml() ? "html" : "pdf")).toFile();
 
-            wrapperToTempDir.put(nextInfo.jsWrapper, tempDir);
+            wrapperToTempDir.put(nextWrapper, tempDir);
           }
           catch (IOException e)
           {
-            nextInfo.jsWrapper.setUnable(nextInfo.filePath);
-            stopPreview(nextInfo.jsWrapper);
-            wrapperToTempDir.remove(nextInfo.jsWrapper);
-            continue;
+            preConvertFailure = nextWork.session();
+            preConvertCause = e;
+            wrapperToTempDir.remove(nextWrapper);
+            nextWork = null;
           }
 
-          if (updateOfficeConverter(nextInfo.officePath) == false)
+          if ((preConvertFailure == null) && (updateOfficeConverter(nextWork.officePath()) == false))
           {
-            nextInfo.jsWrapper.setUnable(nextInfo.filePath);
-            stopPreview(nextInfo.jsWrapper);
-            continue;
+            preConvertFailure = nextWork.session();
+            preConvertCause = new IOException("Office converter unavailable");
+            nextWork = null;
           }
 
-          lastInfo = nextInfo;
-          wrapperStopped.put(lastInfo.jsWrapper, false);
-          lastInfo.jsWrapper.setGenerating(lastInfo.filePath, true);
+          if (preConvertFailure == null)
+          {
+            currentWork = nextWork;
 
-          previewFilePath = lastInfo.filePath.toFile();
+            PreviewWrapper curWrapper = currentWork.session().previewWrapper();
+
+            if (curWrapper != null)
+              curWrapper.setGenerating(currentWork.session().source(), true);
+            else
+              currentWork.jsWrapper().setGenerating(currentWork.session().source(), true);
+
+            previewFilePath = currentWork.session().source().toFile();
+          }
         }
 
-        try
+        if (preConvertFailure != null)
         {
-          officeConverter.convert(previewFilePath).to(tempPath).execute();
+          // session.fail() fires the DisplayCallback (which calls setUnable)
+          // and completes extraction futures exceptionally.
 
-          firstConversion = false;
+          preConvertFailure.fail(preConvertCause);
+          continue;
         }
-        catch (OfficeException e)
+
+        ConversionSession curSession = currentWork.session();
+
+        curSession.markConverting();
+
+        OfficeException conversionFailure = null;
+
+        for (int attemptNdx = 0; attemptNdx < 2; attemptNdx++)
+        {
+          try
+          {
+            officeConverter.convert(previewFilePath).to(tempPath).execute();
+
+            conversionFailure = null;
+            firstConversion = false;
+            break;
+          }
+          catch (OfficeException e)
+          {
+            // LibreOffice (observed with 26.2.3.2) sometimes exits cleanly right as a
+            // conversion finishes; jodconverter then cancels the task ("Task was cancelled")
+            // and restarts the office process in the background. The export itself has
+            // usually completed by then: if the target is a structurally complete PDF,
+            // use it instead of converting again. Otherwise retry against the restarted
+            // process, and only fail the session if that attempt also fails.
+
+            if ((curSession.convertToHtml() == false) && (tempPath != null) && isCompletePDF(tempPath))
+            {
+              conversionFailure = null;
+              firstConversion = false;
+              break;
+            }
+
+            conversionFailure = e;
+
+            if (shutDown) break;
+          }
+        }
+
+        if (conversionFailure != null)
         {
           synchronized(LOCK)
           {
-            if ((nextInfo == lastInfo) || ((nextInfo != null) && (lastInfo.jsWrapper != nextInfo.jsWrapper)))
-              lastInfo.jsWrapper.setUnable(lastInfo.filePath);
-
-            if (nextInfo == lastInfo)
-              nextInfo = null;
-
-            continue;
+            if (nextWork == currentWork)
+              nextWork = null;
           }
+
+          // session.fail() fires the DisplayCallback (which calls setUnable)
+          // and the extraction futures. No direct jsWrapper calls needed here.
+
+          curSession.fail(conversionFailure);
+          continue;
         }
+
+        FilePath convertedPath = FilePath.of(tempPath);
+        boolean discarded;
 
         synchronized(LOCK)
         {
-          if (shutDown || Boolean.TRUE.equals(wrapperStopped.get(lastInfo.jsWrapper)) || ((nextInfo != null) && (lastInfo != nextInfo) && (lastInfo.jsWrapper == nextInfo.jsWrapper)))
-            continue;
+          // A superseding request for the same wrapper means the user moved on;
+          // discard this result. The session-level check ("no subscribers left")
+          // is already covered: session.complete() on a CANCELLED session is a
+          // no-op, so we don't need to inspect state here for that case.
 
-          if (lastInfo.convertToHtml)
-            try
-            {
-              lastInfo.jsWrapper.loadFile(FilePath.of(tempPath), false);
-            }
-            catch (IOException e)
-            {
-              lastInfo.jsWrapper.setUnable(lastInfo.filePath);
-            }
-          else
-            lastInfo.jsWrapper.loadPdf(FilePath.of(tempPath), lastInfo.pageNum);
+          boolean superseded = (nextWork != null) && (currentWork != nextWork) && (curSession.previewWrapper() == nextWork.session().previewWrapper());
+          discarded = shutDown || superseded;
 
-          if (nextInfo == lastInfo)
-            nextInfo = null;
+          if (nextWork == currentWork)
+            nextWork = null;
         }
+
+        // Drive session transition outside the LOCK; callbacks fire
+        // DisplayCallbacks via Platform.runLater and complete extraction
+        // futures, which may invoke caller-supplied code.
+
+        if (discarded)
+          curSession.cancel(new CancellationException("Conversion superseded or stopped"));
+        else
+          curSession.complete(convertedPath);
       }
 
       if (officeConverter != null)
@@ -262,7 +486,7 @@ final class OfficePreviewer
       if (officePath.isBlank())
         return false;
 
-      if ((lastInfo == null) || (lastInfo.officePath.equals(officePath) == false))
+      if ((currentWork == null) || (currentWork.officePath().equals(officePath) == false))
       {
         if (officeConverter != null)
         {
@@ -297,6 +521,45 @@ final class OfficePreviewer
       }
 
       return true;
+    }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+    /**
+     * Whether the file is a structurally complete PDF: starts with the {@code %PDF-}
+     * header and contains the {@code %%EOF} trailer marker near the end. LibreOffice
+     * writes PDFs in a single pass with {@code %%EOF} last, so its presence means the
+     * export finished even if the office process died before the conversion task
+     * could report success.
+     */
+    private static boolean isCompletePDF(File file)
+    {
+      long len = file.length();
+
+      if ((file.isFile() == false) || (len < 32L))
+        return false;
+
+      try (RandomAccessFile raf = new RandomAccessFile(file, "r"))
+      {
+        byte[] head = new byte[5];
+        raf.readFully(head);
+
+        if ("%PDF-".equals(new String(head, StandardCharsets.US_ASCII)) == false)
+          return false;
+
+        int tailLen = (int) Math.min(1024L, len);
+        byte[] tail = new byte[tailLen];
+
+        raf.seek(len - tailLen);
+        raf.readFully(tail);
+
+        return new String(tail, StandardCharsets.US_ASCII).contains("%%EOF");
+      }
+      catch (IOException e)
+      {
+        return false;
+      }
     }
 
 //---------------------------------------------------------------------------
@@ -346,9 +609,20 @@ final class OfficePreviewer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void cleanup()
+  static void cleanup()
   {
-    stopPreview();
+    ConversionSession[] toCancel;
+
+    synchronized(LOCK)
+    {
+      nextWork = null;
+      toCancel = sessions.values().toArray(ConversionSession[]::new);
+    }
+
+    // Cancel outside the lock so callbacks don't deadlock on LOCK.
+
+    for (ConversionSession session : toCancel)
+      session.cancel(new CancellationException("Office previewer shutting down"));
 
     new HyperThread("OfficePreviewCleanup", OfficePreviewThread::cleanup).start();
   }

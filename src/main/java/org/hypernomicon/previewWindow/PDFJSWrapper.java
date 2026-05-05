@@ -160,7 +160,8 @@ public class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  int getNumPages() { return numPages; }
+  int getNumPages()      { return numPages; }
+  boolean isShowingAlt() { return showingAlt; }
 
   /** Declares whether the content for the next preview is direct browser content; set by the load
    *  path. See {@link #contentToShowIsDirect}. */
