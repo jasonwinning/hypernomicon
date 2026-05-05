@@ -2214,6 +2214,39 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
+   * Retrieves the page offset array for a document from the Lucene index.
+   * Used by FTS hit highlighting to convert absolute text offsets to page-relative offsets.
+   *
+   * @param relativePath the document path relative to the database root
+   * @return the page offsets array (pageCount + 1 elements with trailing sentinel), or null
+   */
+  public int[] getPageOffsets(String relativePath)
+  {
+    if ((searcherMgr == null) || (relativePath == null)) return null;
+
+    try
+    {
+      return withSearcher(searcher ->
+      {
+        int docID = findDocIDByPath(searcher, relativePath);
+
+        if (docID < 0) return null;
+
+        String encoded = searcher.storedFields().document(docID).get("pageOffsets");
+        return decodePageOffsets(encoded);
+      });
+    }
+    catch (IOException e)
+    {
+      logThrowable(e);
+      return null;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Counts the number of documents matching a Lucene query string.
    *
    * @param queryStr the Lucene query

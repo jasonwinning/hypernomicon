@@ -68,6 +68,24 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  enum PDFJSOperation { pjsOpen, pjsClose }
+
+//---------------------------------------------------------------------------
+
+  @FunctionalInterface interface PDFJSDoneHandler
+  {
+    void handle(PDFJSOperation operation, boolean success, String errMessage);
+  }
+
+//---------------------------------------------------------------------------
+
+  @FunctionalInterface interface PDFJSRetrievedDataHandler
+  {
+    void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages);
+  }
+
+//---------------------------------------------------------------------------
+
   private final AnchorPane apBrowser;
   private final Consumer<Integer> pageChangeHndlr;
   private final GridPane gpAltDisplay;
@@ -78,41 +96,43 @@ public class PDFJSWrapper
   private static final String basePlaceholder = "<!-- base placeholder -->";
 
   private static BrowserContext browserContext = null;
-  private static String viewerHTMLStr = null;
+  private static String viewerHTMLStr = null, directContentHighlightJS = null;
 
   private Browser browser = null, oldBrowser = null;
   private BrowserView browserView = null;
   private PreviewAltDisplayCtrlr altDisplay = null;
   private Runnable postBrowserLoadCode = null;
 
+  /**
+   * Whether the content slated for the viewer is direct browser content (HTML, plain text, XML,
+   * media loaded straight into the WebView). <b>Declared</b> by the load path as intent for what we
+   * are about to show; not read back from the browser. Used to route pending FTS hits to the
+   * direct-content highlighter rather than the pdf.js one.
+   * <p>
+   * False means "not direct", which is not the same as "PDF": the alternative is a pdf.js-rendered
+   * PDF <i>or</i> nothing (an unpreviewable file). Whether a PDF is actually up is the separate
+   * {@link #pdfjsViewerLoaded}, of which this is <i>not</i> the complement; the two can disagree
+   * during a transition (the old pdf.js viewer still up while direct content has been declared),
+   * and both can be false.
+   */
+  private boolean contentToShowIsDirect = false;
+
+  /**
+   * Whether the pdf.js viewer ({@code PDFViewerApplication}) is actually live in the browser right
+   * now. <b>Discovered</b>, not declared: read back from the DOM after each load, and used to gate
+   * calls into the pdf.js JS API, which exist only while the viewer is present.
+   * <p>
+   * <i>Not</i> the complement of {@link #contentToShowIsDirect}; see that field for why the two can
+   * disagree.
+   */
+  private boolean pdfjsViewerLoaded = true;
+
+  private String pendingDirectContentHits = null, pendingPdfHits = null;
   private int numPages = -1;
-  private boolean ready = false, pdfjsViewerLoaded = true, hiding = false, showingAlt = false;
+  private boolean ready = false, hiding = false, showingAlt = false;
 
   private volatile boolean opened = false;
 
-  int getNumPages()    { return numPages; }
-
-//---------------------------------------------------------------------------
-
-  enum PDFJSOperation
-  {
-    pjsOpen,
-    pjsClose
-  }
-
-//---------------------------------------------------------------------------
-
-  @FunctionalInterface interface PDFJSDoneHandler {
-    void handle(PDFJSOperation operation, boolean success, String errMessage);
-  }
-
-//---------------------------------------------------------------------------
-
-  @FunctionalInterface interface PDFJSRetrievedDataHandler {
-    void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages);
-  }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public PDFJSWrapper(AnchorPane apBrowser)
@@ -137,6 +157,14 @@ public class PDFJSWrapper
 
     reloadBrowser(null);
   }
+
+//---------------------------------------------------------------------------
+
+  int getNumPages() { return numPages; }
+
+  /** Declares whether the content for the next preview is direct browser content; set by the load
+   *  path. See {@link #contentToShowIsDirect}. */
+  void setContentToShowIsDirect(boolean contentToShowIsDirect) { this.contentToShowIsDirect = contentToShowIsDirect; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -533,6 +561,12 @@ public class PDFJSWrapper
 
       pdfjsViewerLoaded = browser.executeJavaScriptAndReturnValue("'PDFViewerApplication' in window").getBooleanValue();
 
+      if (contentToShowIsDirect && (pendingDirectContentHits != null))
+        applyDirectContentHits();
+
+      if (pdfjsViewerLoaded && (pendingPdfHits != null))
+        applyPdfHits();
+
       if (postBrowserLoadCode == null) return;
 
       postBrowserLoadCode.run();
@@ -646,6 +680,16 @@ public class PDFJSWrapper
     viewerHTMLSB.replace(ndx, ndx + basePlaceholder.length(), baseTag);
 
     viewerHTMLStr = viewerHTMLSB.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void initDirectContentHighlightJS() throws IOException
+  {
+    StringBuilder sb = new StringBuilder();
+    readResourceTextFile("resources/pdfjs/web/directContentHighlight.js", sb);
+    directContentHighlightJS = sb.toString();
   }
 
 //---------------------------------------------------------------------------
@@ -776,6 +820,14 @@ public class PDFJSWrapper
         numPages = browser.executeJavaScriptAndReturnValue("PDFViewerApplication.pagesCount").asNumber().getInteger();
         browser.executeJavaScript("getPdfData();");
         opened = true;
+
+        // Drain any setAllHits queued during the PDF swap. In the PDF->PDF
+        // case there's no browser navigation, so onFinishLoadingFrame doesn't
+        // fire; this is the only point where we know the new PDF is ready
+        // for the viewer's setAllHits JS to be called.
+
+        if (pendingPdfHits != null)
+          applyPdfHits();
       }
       else
       {
@@ -836,6 +888,9 @@ public class PDFJSWrapper
 
     cleanupPdfHtml();
 
+    ready = false;
+    resetHitState();
+
     if (isHtml)
     {
       // Parse with charset auto-detection (BOM, then the document's own charset
@@ -876,6 +931,14 @@ public class PDFJSWrapper
   {
     final boolean wasPdfjsViewerLoaded = pdfjsViewerLoaded;
 
+    // Reset ready synchronously so any cross-thread setAllHits / goToPage call
+    // queued before the deferred runnable runs sees a not-ready state and
+    // buffers (or no-ops) instead of dispatching to the previous page's JS.
+    // Mirrors what loadFile does at the start of its body.
+
+    ready = false;
+    resetHitState();
+
     Runnable runnable = () ->
     {
       opened = false;
@@ -901,7 +964,6 @@ public class PDFJSWrapper
       browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " +
                                                    initialPage + ", " +
                                                    app.prefs.getInt(PrefKey.PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");
-      ready = false;
     };
 
     switchToPreviewDisplay();
@@ -920,6 +982,165 @@ public class PDFJSWrapper
     if (ready == false) return;
 
     browser.executeJavaScript("PDFViewerApplication.pdfViewer.currentPageNumber = " + pageNum + ';');
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void applyPdfHits()
+  {
+    if ((pendingPdfHits == null) || (browser == null) || browser.isDisposed()) return;
+
+    // Confirm the viewer's setAllHits function is available before consuming
+    // pendingPdfHits. If we're called prematurely (e.g., before loadViewerHtml
+    // has navigated away from a previous DIRECT_CONTENT page), leave the buffer
+    // intact so onFinishLoadingFrame can drain it once pdf.js is loaded.
+
+    boolean fnExists = browser.executeJavaScriptAndReturnValue("typeof setAllHits === 'function'").getBooleanValue();
+
+    if (fnExists == false) return;
+
+    String json = pendingPdfHits;
+    pendingPdfHits = null;
+
+    browser.executeJavaScript("setAllHits('" + json.replace("'", "\\'") + "');");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Send all hit data for the current file. The viewer stores it and applies
+   * highlights lazily as each page's text layer finishes rendering.
+   *
+   * @param allHitsJson JSON object mapping 1-based page numbers to arrays of
+   *                    [startOffset, endOffset] pairs (page-relative offsets).
+   *                    Example: {"1":[[10,20],[50,60]],"3":[[5,15]]}
+   */
+  void setAllHits(String allHitsJson)
+  {
+    if (contentToShowIsDirect)
+    {
+      // For non-PDF content, store hits and apply after content finishes loading
+      pendingDirectContentHits = allHitsJson;
+
+      if (ready)
+        applyDirectContentHits();
+
+      return;
+    }
+
+    // For PDF content, store hits if not ready yet; apply when PDF finishes loading
+    pendingPdfHits = allHitsJson;
+
+    if (ready == false) return;
+
+    applyPdfHits();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Scroll to the highlight with the given match index (stored in data-match-ndx attribute).
+   */
+  void scrollToHighlightByMatchNdx(int matchNdx)
+  {
+    if ((ready == false) || (browser == null) || browser.isDisposed()) return;
+
+    browser.executeJavaScript
+    (
+      "(function() {" +
+      "  var el = document.querySelector('.fts-highlight[data-match-ndx=\"" + matchNdx + "\"]');" +
+      "  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });" +
+      "})();"
+    );
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Drops any buffered FTS hit data so a newly-loading file cannot inherit the
+   * previous file's hits. Called at the start of every load ({@link #loadPdf},
+   * {@link #loadFile}); the JS viewer separately resets its own stored hits when
+   * a new document opens (see openPdfFile in javaapp.js). Together these make
+   * "loading a file clears prior hits" an invariant, independent of any caller.
+   *
+   * <p>Only the Java-side buffers are touched here; the browser is not, because
+   * the in-progress load is replacing the document (and its highlight DOM)
+   * anyway. Hits intended for the file being loaded are pushed afterward, so
+   * this reset never clobbers them.
+   * <p>Also reused by {@link #clearAllHits}, which drops these same buffers and
+   * then clears the browser-side highlights.
+   */
+  private void resetHitState()
+  {
+    pendingDirectContentHits = null;
+    pendingPdfHits = null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void clearAllHits()
+  {
+    resetHitState();
+
+    if (ready == false) return;
+
+    if (contentToShowIsDirect)
+    {
+      browser.executeJavaScript
+      (
+        "var hl = document.querySelectorAll('.fts-highlight');" +
+        "for (var i = 0; i < hl.length; i++) {" +
+        "  var parent = hl[i].parentNode;" +
+        "  parent.replaceChild(document.createTextNode(hl[i].textContent), hl[i]);" +
+        "  parent.normalize();" +
+        '}'
+      );
+
+      return;
+    }
+
+    if (browser.executeJavaScriptAndReturnValue("typeof clearAllHits === 'function'").getBooleanValue())
+      browser.executeJavaScript("clearAllHits();");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Inject JavaScript to highlight text at the stored character offsets in
+   * directly-loaded content (HTML, text, XML, etc.). Walks DOM text nodes,
+   * maps character offsets, and wraps matching ranges in highlight spans.
+   */
+  private void applyDirectContentHits()
+  {
+    if ((pendingDirectContentHits == null) || (browser == null) || browser.isDisposed()) return;
+
+    if (directContentHighlightJS == null)
+    {
+      try { initDirectContentHighlightJS(); }
+      catch (IOException e)
+      {
+        System.out.println("PDFJSWrapper.applyDirectContentHits: failed to load JS resource: " + getThrowableMessage(e));
+        return;
+      }
+    }
+
+    String json = pendingDirectContentHits;
+    pendingDirectContentHits = null;
+
+    // The JS resource is a function expression "function (data) { ... }" that
+    // we wrap in parens and immediately invoke with the parsed JSON data.
+    // The JSON format is: {"matches":[{"ctx":"...context...","s":20,"e":27},...]}
+    // Each entry has context text from stored content, plus the start/end offsets
+    // of the matched word within the context. The JS searches for the context in
+    // the rendered DOM and wraps the match portion in a highlight span.
+
+    browser.executeJavaScript('(' + directContentHighlightJS + ")(" + json + ");");
   }
 
 //---------------------------------------------------------------------------

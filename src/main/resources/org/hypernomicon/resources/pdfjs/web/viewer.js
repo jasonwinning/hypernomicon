@@ -10393,6 +10393,10 @@ var TextLayerBuilder = function () {
         endOfContent.className = 'endOfContent';
         this.textLayerDiv.appendChild(endOfContent);
       }
+      if (typeof applyHitsToPage === 'function') {
+        console.log('FTS-PDF: _finishRendering page=' + this.pageNumber + ' pendingHits=' + (typeof pendingHits !== 'undefined' && pendingHits !== null ? 'yes' : 'null'));
+        applyHitsToPage(this.pageNumber);
+      }
       this.eventBus.dispatch('textlayerrendered', {
         source: this,
         pageNumber: this.pageNumber,

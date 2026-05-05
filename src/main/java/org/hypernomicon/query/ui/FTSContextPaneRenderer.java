@@ -17,13 +17,13 @@
 
 package org.hypernomicon.query.ui;
 
+import static org.hypernomicon.fts.FTSUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
 
-import org.hypernomicon.fts.FullTextIndexer.SearchResult;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile.WorkBoundary;
@@ -294,40 +294,6 @@ class FTSContextPaneRenderer
       sb.append(" <span class=\"pages\">").append(formatPageRange(boundary.startPage(), boundary.endPage())).append("</span>");
 
     sb.append("\n</div>\n");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String highlightSnippet(PageMatch pm)
-  {
-    String snippet = pm.snippet();
-    List<SearchResult.HitRange> ranges = pm.hitRanges();
-
-    if (collEmpty(ranges))
-      return htmlEscaper.escape(snippet);
-
-    StringBuilder sb = new StringBuilder();
-    int pos = 0;
-
-    for (SearchResult.HitRange range : ranges)
-    {
-      int start = Math.max(range.start(), pos),
-          end = Math.min(range.end(), snippet.length());
-
-      if (start > pos)
-        sb.append(htmlEscaper.escape(snippet.substring(pos, start)));
-
-      if (end > start)
-        sb.append("<mark>").append(htmlEscaper.escape(snippet.substring(start, end))).append("</mark>");
-
-      pos = end;
-    }
-
-    if (pos < snippet.length())
-      sb.append(htmlEscaper.escape(snippet.substring(pos)));
-
-    return sb.toString();
   }
 
 //---------------------------------------------------------------------------

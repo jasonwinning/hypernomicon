@@ -125,8 +125,22 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   private ScoreDoc lastScoreDoc;
   private List<HDT_RecordWithPath> recordScopeRecords;
   private String lastQueryStr, lastFileMask, lastFolderPrefix, cachedContextHtml;
+
+  /** Owns the current file's highlight lifecycle (viewer load sequencing, hit
+   *  application). Disposed and replaced on file switch; {@code null} when no
+   *  file is being previewed. */
+  private FileHighlightCoordinator currentCoordinator;
+
   private int currentPreviewPage = 1, totalMatchCount = -1;
   private boolean hasMore;
+
+  // searchGeneration: incremented only on the JavaFX Application Thread (in executeSearch),
+  // read on the FX thread and on highlightExecutor worker threads to detect and abort
+  // stale per-row highlight work when a new query replaces the current results.
+  // Single-writer model; volatile provides the required visibility.
+  //
+  // Per-file highlight cancellation (previously the job of a sibling highlightGeneration
+  // counter) is now handled by FileHighlightCoordinator.dispose().
 
   private volatile int searchGeneration;
 
@@ -475,6 +489,17 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     {
       if (newValue == null) return;
 
+      // The listener also fires when a row in allRows is replaced in place (e.g., when the Record column is updated after record resolution).
+      // JavaFX re-fires with oldValue=null, newValue=the replacement row. That's not a real navigation event; the user is still on the same
+      // file. Don't reset the page or re-trigger setPreview (which would scroll the preview back to page 1). Just refresh the context view
+      // since the row's resolvedRecord may have changed.
+
+      if ((currentCoordinator != null) && currentCoordinator.path().equals(newValue.path()))
+      {
+        updateContextView(newValue);
+        return;
+      }
+
       currentPreviewPage = 1;
       updateContextView(newValue);
       setPreview(newValue);
@@ -506,11 +531,17 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       previewItem .setOnAction(event -> nullSwitch(row.getItem(), item ->
       {
         FilePath fp = db.getRootPath(item.path());
-        if (fp.exists())
-        {
-          PreviewWindow.setPreview(pvsQueriesTab, fp, currentPreviewPage, -1, item.resolvedRecord());
-          PreviewWindow.show(pvsQueriesTab);
-        }
+        if (fp.exists() == false) return;
+
+        // Open the window first so the WebView is initialized before the
+        // coordinator pushes hits into it. Dispose the existing coordinator
+        // so setPreview's same-file check fails and a fresh coordinator is
+        // created against the now-visible viewer (otherwise direct-content
+        // hits set while the window was closed would be silently dropped).
+
+        PreviewWindow.show(pvsQueriesTab);
+        disposeCurrentCoordinator();
+        setPreview(item);
       }));
 
       contextMenu.getItems().addAll(launchItem, explorerItem, fmItem, copyPathItem, previewItem, goToItem);
@@ -717,6 +748,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     highlightCache.clear();
     highlightRequested.clear();
     currentPreviewPage = 1;
+    disposeCurrentCoordinator();
 
     // Fast light search: no highlighting, just paths and scores. Both the
     // searchLight and the countMatches run off the FX thread inside one
@@ -968,7 +1000,14 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
           FTSResultRow selected = tvResults.getSelectionModel().getSelectedItem();
           if ((selected != null) && selected.path().equals(path))
+          {
             updateContextView(selected);
+
+            // Force re-send of hits now that we have match data
+
+            disposeCurrentCoordinator();
+            setPreview(selected);
+          }
         });
       }
       catch (ParseException e) { /* query was valid when search ran */ }
@@ -1203,21 +1242,70 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   private void setPreview(FTSResultRow row)
   {
-    if (row == null)
+    if ((row == null) || (db.getRootPath(row.path()).exists() == false))
     {
+      disposeCurrentCoordinator();
       PreviewWindow.clearPreview(pvsQueriesTab);
       return;
     }
 
     FilePath filePath = db.getRootPath(row.path());
 
-    if (filePath.exists() == false)
+    // Same file: user is navigating within it (passage click, Record-column
+    // re-resolve). Keep the active coordinator; just move the viewer to the
+    // requested page.
+
+    if ((currentCoordinator != null) && currentCoordinator.path().equals(row.path()))
     {
-      PreviewWindow.clearPreview(pvsQueriesTab);
+      PreviewWindow.setPreview(pvsQueriesTab, filePath, currentPreviewPage, -1, row.resolvedRecord());
       return;
     }
 
+    List<PageMatch> matches = nullSwitch(row.result().pageMatches(), highlightCache.get(row.path()));
+
+    // For new files, navigate to the first page with a match (if known)
+
+    if ((currentPreviewPage <= 1) && (collEmpty(matches) == false))
+    {
+      int firstPage = matches.stream()
+        .mapToInt(PageMatch::pageNumber)
+        .filter(p -> p > 0)
+        .min().orElse(1);
+
+      if (firstPage > 1)
+        currentPreviewPage = firstPage;
+    }
+
     PreviewWindow.setPreview(pvsQueriesTab, filePath, currentPreviewPage, -1, row.resolvedRecord());
+
+    disposeCurrentCoordinator();
+
+    if (matches == null) return;
+
+    FullTextIndexer indexer = db.getFullTextIndexer();
+    if (indexer == null) return;
+
+    int[] pageOffsets = indexer.getPageOffsets(row.path());
+    if (pageOffsets == null) return;
+
+    currentCoordinator = new PdfHitCoordinator(row, indexer, matches, currentPreviewPage);
+    currentCoordinator.start();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Disposes the current coordinator (if any) and nulls the reference. Safe
+   * to call when no coordinator is active.
+   */
+  private void disposeCurrentCoordinator()
+  {
+    if (currentCoordinator != null)
+    {
+      currentCoordinator.dispose();
+      currentCoordinator = null;
+    }
   }
 
 //---------------------------------------------------------------------------

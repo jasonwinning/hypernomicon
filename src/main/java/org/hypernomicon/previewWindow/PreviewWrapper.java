@@ -73,6 +73,13 @@ public class PreviewWrapper
   private final Tab tab;
   private boolean viewerErrOccurred = false, needsRefresh = true, initialized = false;
   private PDFJSWrapper jsWrapper;
+
+  /** FTS hit JSON received via {@link PreviewWindow#setAllHits} while
+   *  {@link #jsWrapper} did not yet exist (the preview window was closed when
+   *  the FTS coordinator delivered hits, so the hits could not be queued in
+   *  the JS layer). Drained in {@link #finishRefresh} after the file load has
+   *  set the correct {@code contentToShowIsDirect} on the newly-created jsWrapper. */
+  private String deferredHitsJson;
   private Map<String, Integer> labelToPage;
   private Map<Integer, String> pageToLabel;
   private List<Integer> hilitePages;
@@ -81,23 +88,25 @@ public class PreviewWrapper
   private final ToggleButton btn;
   private final AnchorPane ap;
 
-  PreviewSource getSource()        { return src; }
-  PDFJSWrapper getJSWrapper()      { return jsWrapper; }
-  int getPageNum()                 { return pageNum; }
-  int getNumPages()                { return numPages; }
-  Tab getTab()                     { return tab; }
-  FilePath getFilePath()           { return curPrevFile == null ? null : curPrevFile.filePath; }
-  int getWorkStartPageNum()        { return workStartPageNum; }
-  int getWorkEndPageNum()          { return workEndPageNum; }
-  HDT_RecordWithPath getRecord()   { return curPrevFile == null ? null : curPrevFile.record; }
-  FilePath getFilePathShowing()    { return filePathShowing; }
-  void prepareToHide()             { if (initialized) jsWrapper.prepareToHide(); }
-  void prepareToShow()             { if (initialized) jsWrapper.prepareToShow(); }
-  int lowestHilitePage()           { return collEmpty(hilitePages) ? -1 : hilitePages.getFirst(); }
-  int highestHilitePage()          { return collEmpty(hilitePages) ? -1 : hilitePages.getLast(); }
-  int getPageByLabel(String label) { return collEmpty(labelToPage) ? parseInt(label, -1) : labelToPage.getOrDefault(label, -1); }
-  String getLabelByPage(int page)  { return collEmpty(pageToLabel) ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
-  boolean zoom(boolean zoomingIn)  { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }
+  PreviewSource getSource()             { return src; }
+  PDFJSWrapper getJSWrapper()           { return jsWrapper; }
+
+  int getPageNum()                      { return pageNum; }
+  int getNumPages()                     { return numPages; }
+  Tab getTab()                          { return tab; }
+  FilePath getFilePath()                { return curPrevFile == null ? null : curPrevFile.filePath; }
+  int getWorkStartPageNum()             { return workStartPageNum; }
+  int getWorkEndPageNum()               { return workEndPageNum; }
+  HDT_RecordWithPath getRecord()        { return curPrevFile == null ? null : curPrevFile.record; }
+  FilePath getFilePathShowing()         { return filePathShowing; }
+  void prepareToHide()                  { if (initialized) jsWrapper.prepareToHide(); }
+  void prepareToShow()                  { if (initialized) jsWrapper.prepareToShow(); }
+  void setDeferredHitsJson(String json) { deferredHitsJson = json; }
+  int lowestHilitePage()                { return collEmpty(hilitePages) ? -1 : hilitePages.getFirst(); }
+  int highestHilitePage()               { return collEmpty(hilitePages) ? -1 : hilitePages.getLast(); }
+  int getPageByLabel(String label)      { return collEmpty(labelToPage) ? parseInt(label, -1) : labelToPage.getOrDefault(label, -1); }
+  String getLabelByPage(int page)       { return collEmpty(pageToLabel) ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
+  boolean zoom(boolean zoomingIn)       { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }
 
   boolean enableFileNavButton(boolean isForward) { return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1; }
 
@@ -519,6 +528,17 @@ public class PreviewWrapper
 
       String mimetypeStr = showFile(curPrevFile.filePath, pageNum, jsWrapper, this);  // This can set needsRefresh to true
 
+      // Drain any FTS hits that were delivered while jsWrapper did not yet exist
+      // (preview window closed at the time). showFile has just set the correct
+      // contentToShowIsDirect, so jsWrapper.setAllHits will route to the right pending-hits
+      // bucket and apply once the browser finishes loading.
+
+      if (deferredHitsJson != null)
+      {
+        jsWrapper.setAllHits(deferredHitsJson);
+        deferredHitsJson = null;
+      }
+
       if (mimetypeStr.contains("pdf"))
       {
         filePathShowing = curPrevFile.filePath;
@@ -580,6 +600,7 @@ public class PreviewWrapper
 
     if (mimetypeStr.contains("pdf"))
     {
+      jsWrapper.setContentToShowIsDirect(false);
       jsWrapper.loadPdf(filePath, pageNum);
       return mimetypeStr;
     }
@@ -609,7 +630,10 @@ public class PreviewWrapper
       // Treat as an HTML file (removing scripts and making links external) if it appears to be HTML and load directly into browser.
 
       else if (mimetypeStr.contains("html"))
+      {
+        jsWrapper.setContentToShowIsDirect(true);
         jsWrapper.loadFile(filePath, true);
+      }
 
       // Otherwise load into the browser as-is if it appears to be an ASCII text file or embeddable media file.
 
@@ -617,12 +641,18 @@ public class PreviewWrapper
                "application/xml".equalsIgnoreCase(mimetypeStr) ||
                "application/json".equalsIgnoreCase(mimetypeStr) ||
                isAsciiFile(filePath))
+      {
+        jsWrapper.setContentToShowIsDirect(true);
         jsWrapper.loadFile(filePath, false);
+      }
 
       // None of the above, so tell the user it cannot be previewed
 
       else
+      {
+        jsWrapper.setContentToShowIsDirect(false);
         jsWrapper.setUnable(filePath);
+      }
     }
     catch (IllegalStateException | IOException e)
     {

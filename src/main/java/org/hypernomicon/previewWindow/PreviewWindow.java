@@ -504,6 +504,58 @@ public final class PreviewWindow extends NonmodalWindow
     instance.doSetPreview(src, filePath, startPageNum, endPageNum, record);
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Send all hit data for the current file. Highlights are applied lazily as
+   * each page's text layer finishes rendering in pdf.js.
+   *
+   * @param src         the preview source tab
+   * @param allHitsJson JSON object mapping 1-based page numbers to hit range arrays
+   */
+  public static boolean setAllHits(PreviewSource src, String allHitsJson)
+  {
+    if (jxBrowserDisabled || (instance == null)) return false;
+
+    PreviewWrapper wrapper = instance.srcToWrapper.get(src);
+    if (wrapper == null) return false;
+
+    PDFJSWrapper jsWrapper = wrapper.getJSWrapper();
+
+    // jsWrapper is created lazily on first refresh (which only happens when
+    // the preview window is showing). If FTS delivers hits while the window
+    // is closed, defer them on the wrapper so that finishRefresh can replay
+    // them once the file load has set the right contentToShowIsDirect.
+
+    if (jsWrapper == null)
+    {
+      wrapper.setDeferredHitsJson(allHitsJson);
+      return true;
+    }
+
+    jsWrapper.setAllHits(allHitsJson);
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void clearAllHits(PreviewSource src)
+  {
+    if (jxBrowserDisabled || (instance == null)) return;
+
+    PreviewWrapper wrapper = instance.srcToWrapper.get(src);
+    if (wrapper == null) return;
+
+    PDFJSWrapper jsWrapper = wrapper.getJSWrapper();
+    if (jsWrapper != null)
+      jsWrapper.clearAllHits();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void doSetPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
   {
     if (jxBrowserDisabled || disablePreviewUpdating) return;
@@ -532,7 +584,11 @@ public final class PreviewWindow extends NonmodalWindow
 
       if ((wrapper == curWrapper()) && (src == curSource()))
       {
-        wrapper.refreshControls();
+        if ((startPageNum > 0) && (wrapper.getPageNum() != startPageNum))
+          wrapper.setPreview(startPageNum, false);
+        else
+          wrapper.refreshControls();
+
         previewAlreadySet = true;
       }
     }
