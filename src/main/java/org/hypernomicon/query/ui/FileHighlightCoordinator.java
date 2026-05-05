@@ -32,8 +32,11 @@ import org.hypernomicon.query.ui.FTSQueryCtrlr.FTSResultRow;
  * unreferenced, so async work checks {@link #isDisposed} at each await point
  * rather than comparing a generation counter.
  * <p>
- * Concrete subclasses select behavior by file type. {@link PdfHitCoordinator}
- * handles native PDFs with per-page offsets.
+ * Concrete subclasses select behavior by file type:
+ * <ul>
+ *   <li>{@link PdfHitCoordinator}: native PDFs with per-page offsets</li>
+ *   <li>{@link DirectContentHitCoordinator}: HTML/TXT loaded directly into the browser</li>
+ * </ul>
  */
 abstract class FileHighlightCoordinator
 {

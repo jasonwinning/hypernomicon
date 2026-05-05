@@ -541,6 +541,21 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static void scrollToHighlightByMatchNdx(PreviewSource src, int matchNdx)
+  {
+    if (jxBrowserDisabled || (instance == null)) return;
+
+    PreviewWrapper wrapper = instance.srcToWrapper.get(src);
+    if (wrapper == null) return;
+
+    PDFJSWrapper jsWrapper = wrapper.getJSWrapper();
+    if (jsWrapper != null)
+      jsWrapper.scrollToHighlightByMatchNdx(matchNdx);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void clearAllHits(PreviewSource src)
   {
     if (jxBrowserDisabled || (instance == null)) return;

@@ -1201,12 +1201,35 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
       if (data.startsWith("page:"))
       {
-        currentPreviewPage = Math.max(parseInt(data.substring(5), 1), 1);
+        String[] parts = data.substring(5).split(":");
+        currentPreviewPage = Math.max(parseInt(parts[0], 1), 1);
+
+        int passageNdx = (parts.length > 1) ? parseInt(parts[1], -1) : -1;
 
         FTSResultRow selected = tvResults.getSelectionModel().getSelectedItem();
 
         if (selected != null)
+        {
           setPreview(selected);
+
+          // Scroll to the highlight for this passage. Each highlight span has a
+          // data-match-ndx attribute corresponding to its index in the matches list.
+
+          if (passageNdx >= 0)
+          {
+            List<PageMatch> matches = nullSwitch(highlightCache.get(selected.path()), selected.result().pageMatches());
+
+            int matchNdx = 0;
+
+            if (matches != null)
+            {
+              for (int ndx = 0; (ndx < passageNdx) && (ndx < matches.size()); ndx++)
+                matchNdx += (matches.get(ndx).hitRanges() != null) ? matches.get(ndx).hitRanges().size() : 0;
+            }
+
+            PreviewWindow.scrollToHighlightByMatchNdx(pvsQueriesTab, matchNdx);
+          }
+        }
       }
       else if (data.startsWith("work:"))
       {
@@ -1286,9 +1309,11 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     if (indexer == null) return;
 
     int[] pageOffsets = indexer.getPageOffsets(row.path());
-    if (pageOffsets == null) return;
 
-    currentCoordinator = new PdfHitCoordinator(row, indexer, matches, currentPreviewPage);
+    currentCoordinator = (pageOffsets != null)
+      ? new PdfHitCoordinator          (row, indexer, matches, currentPreviewPage)
+      : new DirectContentHitCoordinator(row, indexer, matches, currentPreviewPage);
+
     currentCoordinator.start();
   }
 

@@ -41,6 +41,30 @@ public final class FTSUtil
 //---------------------------------------------------------------------------
 
   /**
+   * Whitespace and Unicode-curly-quote normalization so server-side context
+   * snippets can be located in the DOM's rendered text. Strips fancy quotes
+   * and dashes that may have been encoded differently by the browser.
+   */
+  private static String normalizeForDomMatch(String s)
+  {
+    // Strip fancy quotes/dashes and the replacement char first, then convert
+    // NBSP to space, then collapse whitespace. The order matters: collapsing
+    // whitespace before stripping would leave a double space wherever a stripped
+    // char sat between two spaces (e.g. " \u2014 "), and the JS-side normalizer
+    // collapses on the fly, so contexts produced here would no longer match.
+
+    return s.replace("\u2018", "").replace("\u2019", "")
+            .replace("\u201C", "").replace("\u201D", "")
+            .replace("\u2014", "").replace("\u2013", "")
+            .replace("\uFFFD", "")
+            .replace("\u00A0", " ")
+            .replaceAll("\\s+", " ");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Builds the per-page hit JSON consumed by the pdf.js viewer to highlight
    * matches. Maps each {@link PageMatch} to its page number and converts
    * absolute character offsets within the document to page-relative offsets
@@ -96,6 +120,60 @@ public final class FTSUtil
 
     sb.append('}');
     return sb.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds the JSON consumed by the direct-content viewer: a list of context
+   * windows (with embedded match offsets) extracted from {@code storedContent}.
+   * The viewer's JS walks the DOM to locate each context and wraps the matched
+   * portion. Returns {@code null} when no usable matches were produced.
+   */
+  public static String buildDirectContentHitsJson(List<PageMatch> matches, String storedContent)
+  {
+    StringBuilder sb = new StringBuilder("{\"matches\":[");
+    boolean first = true;
+    int contextPad = 20;
+
+    for (PageMatch pm : matches)
+    {
+      for (HitRange hr : pm.hitRanges())
+      {
+        int matchStart = pm.startOffset() + hr.start(),
+            matchEnd   = pm.startOffset() + hr.end();
+
+        if ((matchStart < 0) || (matchEnd > storedContent.length()) || (matchStart >= matchEnd)) continue;
+
+        int ctxStart = Math.max(0, matchStart - contextPad),
+            ctxEnd   = Math.min(storedContent.length(), matchEnd + contextPad);
+
+        String rawCtx = storedContent.substring(ctxStart, ctxEnd);
+
+        // Normalize whitespace and special characters so context matches the DOM's text.
+        // Characters that the browser may render as U+FFFD (replacement char) due to
+        // encoding mismatches are stripped on both sides so the surrounding text matches.
+
+        String ctx = normalizeForDomMatch(rawCtx);
+        int relStart = normalizeForDomMatch(storedContent.substring(ctxStart, matchStart)).length(),
+            relEnd   = relStart + normalizeForDomMatch(storedContent.substring(matchStart, matchEnd)).length();
+
+        if (first == false) sb.append(',');
+        sb.append("{\"ctx\":\"").append(ctx
+          .replace("\\", "\\\\")
+          .replace("\"", "\\\"")
+          .replace("\n", "\\n")
+          .replace("\r", "\\r")
+          .replace("\t", "\\t"))
+          .append("\",\"s\":").append(relStart)
+          .append(",\"e\":").append(relEnd).append('}');
+        first = false;
+      }
+    }
+
+    sb.append("]}");
+    return first ? null : sb.toString();
   }
 
 //---------------------------------------------------------------------------

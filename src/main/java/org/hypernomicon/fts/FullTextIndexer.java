@@ -2289,6 +2289,39 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Retrieves the full stored content for a document from
+   * the Lucene index. Returns null if the path is not found, the content
+   * field is missing, or an error occurs.
+   *
+   * @param relativePath the document path relative to the database root
+   * @return the stored content string, or null
+   */
+  public String getStoredContent(String relativePath)
+  {
+    if ((searcherMgr == null) || (relativePath == null)) return null;
+
+    try
+    {
+      return withSearcher(searcher ->
+      {
+        int docID = findDocIDByPath(searcher, relativePath);
+
+        if (docID < 0) return null;
+
+        return searcher.storedFields().document(docID).get("content");
+      });
+    }
+    catch (IOException e)
+    {
+      logThrowable(e);
+      return null;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final String EXCLUSIONS_FILENAME = "exclusions.json";
 
   private void loadExclusions()
