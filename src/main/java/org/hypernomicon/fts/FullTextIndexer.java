@@ -143,6 +143,7 @@ public class FullTextIndexer
 
   private static final int MAX_TEXT_LENGTH              = -1,  // No limit
                            MAX_RESULTS_PER_FILE         = 20,
+                           MAX_FILES_TO_SHOW_IN_STATS   = 500,
                            SIZE_STABILITY_RETRIES       = 5,
 
                            // Recycle each pdf.js extractor's Chromium process after this many extractions: its RSS
@@ -241,9 +242,11 @@ public class FullTextIndexer
   private volatile ExecutorService buildWorkerPool, buildLargeFileExecutor;
   private volatile ScheduledExecutorService buildProgressReporter;
   private volatile Runnable statusListener;
-
+  private volatile List<PathMatcher> excludedFileMasks = List.of();
+  private volatile List<String> excludedPaths = List.of();
+  private volatile String excludedFileMasksStr = "";
   private volatile IndexerState state = IndexerState.CLOSED;
-  private volatile boolean stopRequested;
+  private volatile boolean stopRequested, rebuildRequested;
   private volatile int buildTotalFiles, buildProcessedFiles;
 
 //---------------------------------------------------------------------------
@@ -252,6 +255,7 @@ public class FullTextIndexer
   public int getBuildTotalFiles()                  { return buildTotalFiles; }
   public int getBuildProcessedFiles()              { return buildProcessedFiles; }
   public IndexerState getState()                   { return state; }
+  public int getQueueSize()                        { return eventQueue.size(); }
   public void setStatusListener(Runnable listener) { this.statusListener = listener; }
 
   /** Whether the Lucene index is open and searchable; true in every state except {@code CLOSED}. */
@@ -262,6 +266,142 @@ public class FullTextIndexer
 
   /** Whether the initial build has finished. */
   private boolean isInitialBuildComplete()         { return (state == IndexerState.MAINTAINING) || (state == IndexerState.INCREMENTAL_INDEXING); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns a formatted string of index statistics for display.
+   */
+  public String getStatistics()
+  {
+    int total = 0, indexed = 0, noText = 0, failed = 0, abandoned = 0;
+
+    List<String> failedFiles = new ArrayList<>(), abandonedFiles = new ArrayList<>(), noTextFiles = new ArrayList<>();
+
+    for (Map.Entry<String, FileIndexEntry> mapEntry : metadataMap.entrySet())
+    {
+      total++;
+
+      switch (mapEntry.getValue().status())
+      {
+        case INDEXED   -> indexed++;
+        case NO_TEXT   -> { noText++;    noTextFiles   .add(mapEntry.getKey()); }
+        case FAILED    -> { failed++;    failedFiles   .add(mapEntry.getKey()); }
+        case ABANDONED -> { abandoned++; abandonedFiles.add(mapEntry.getKey()); }
+      }
+    }
+
+    long indexSizeBytes = 0;
+
+    if (indexDir != null)
+    {
+      try (var stream = Files.walk(indexDir.toPath()))
+      {
+        indexSizeBytes = stream
+          .filter(Files::isRegularFile)
+          .mapToLong(p -> { try { return Files.size(p); } catch (IOException e) { return 0; } })
+          .sum();
+      }
+      catch (IOException e) { /* ignore */ }
+    }
+
+    String sizeStr = formatFileSize(indexSizeBytes, true, 1);
+
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("Index directory: ").append(indexDir).append('\n')
+      .append("Total files tracked: ").append(total).append('\n')
+      .append("Successfully indexed: ").append(indexed).append('\n')
+      .append("No extractable text: ").append(noText).append('\n')
+      .append("Failed: ").append(failed).append('\n')
+      .append("Abandoned (repeatedly failed): ").append(abandoned).append('\n')
+      .append("Index size on disk: ").append(sizeStr);
+
+    appendFileList(sb, "Failed files"                  , failedFiles   );
+    appendFileList(sb, "Abandoned files"               , abandonedFiles);
+    appendFileList(sb, "Files without extractable text", noTextFiles   );
+
+    return sb.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Appends a sorted, size-limited list of relative file paths to {@code sb} under a header.
+   *  Does nothing if {@code files} is empty. */
+  private static void appendFileList(StringBuilder sb, String label, List<String> files)
+  {
+    if (files.isEmpty()) return;
+
+    files.sort(null);
+
+    sb.append("\n\n").append(label).append(" (").append(files.size());
+
+    if (files.size() > MAX_FILES_TO_SHOW_IN_STATS)
+      sb.append(", showing first ").append(MAX_FILES_TO_SHOW_IN_STATS);
+
+    sb.append("):");
+
+    int shown = Math.min(files.size(), MAX_FILES_TO_SHOW_IN_STATS);
+
+    for (int ndx = 0; ndx < shown; ndx++)
+      sb.append("\n  ").append(files.get(ndx));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Request that the index be wiped and rebuilt from scratch. Safe to call
+   * from any thread. The actual rebuild runs on the background indexer
+   * thread (so writer/metadata mutations stay single-threaded); if the
+   * background thread is currently mid-build or mid-event-processing, the
+   * rebuild defers until it next reaches the top of its loop. Any in-flight
+   * pdf.js extraction is aborted so an in-progress build winds down promptly
+   * rather than waiting out the per-file extraction timeout first.
+   */
+  public void rebuildIndex()
+  {
+    if (isIndexingEnabled() == false) return;
+
+    rebuildRequested = true;
+
+    liveExtractors.forEach(PDFJSTextExtractor::abort);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Performs the actual rebuild. Called from the background thread only, at the top
+   *  of the background loop when no initial-build workers are active (a rebuild request
+   *  makes any in-progress build bail out first), so it has exclusive access to the
+   *  writer and metadataMap and needs no locking. */
+  private void performRebuild()
+  {
+    System.out.println("Full-text indexer: rebuilding index from scratch");
+
+    state = IndexerState.BUILDING;
+    metadataMap.clear();
+
+    // Also reset the in-session skip set: a rebuild means every file gets a fresh attempt.
+    // A stale entry (e.g. from an extraction the rebuild request itself aborted) would
+    // otherwise make processOneFile count that file as failed after it indexes cleanly.
+
+    extractionFailures.clear();
+
+    try
+    {
+      writer.deleteAll();
+      writer.commit();
+      writeMetadataSnapshot(buildMetadataJson());
+    }
+    catch (IOException e)
+    {
+      logThrowable(e);
+    }
+
+    fireStatusListener();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -292,8 +432,8 @@ public class FullTextIndexer
 
   /**
    * Bring the indexer online: open the Lucene index and make it searchable. This
-   * does the unconditional setup (schema housekeeping, Lucene open, metadata load)
-   * and leaves the indexer in {@code ONLINE_INDEXING_DISABLED}.
+   * does the unconditional setup (schema housekeeping, Lucene open, metadata load,
+   * exclusion purge) and leaves the indexer in {@code ONLINE_INDEXING_DISABLED}.
    * To start active background indexing, the caller then invokes
    * {@link #startIndexing}; if it does not, the existing index contents stay
    * searchable but no new files are indexed.
@@ -382,6 +522,8 @@ public class FullTextIndexer
     System.out.println("Full-text indexer: index directory = " + indexDir);
 
     loadMetadata();
+    loadExclusions();
+    purgeExcludedEntries();
 
     state = IndexerState.ONLINE_INDEXING_DISABLED;
   }
@@ -487,11 +629,11 @@ public class FullTextIndexer
     buildLargeFileExecutor = null;
 
     // Transition to CLOSED only after the background thread has been joined.
-    // The BG thread also writes `state` (initialBuild, drainAndProcessEvents);
-    // setting CLOSED before the join would race with those writes and could
-    // leave a stale non-CLOSED state after close() returns. stopRequested, set
-    // above, is the actual signal the BG thread and workers obey, so shutdown
-    // does not depend on this write happening early.
+    // The BG thread also writes `state` (initialBuild, drainAndProcessEvents,
+    // performRebuild); setting CLOSED before the join would race with those
+    // writes and could leave a stale non-CLOSED state after close() returns.
+    // stopRequested, set above, is the actual signal the BG thread and workers
+    // obey, so shutdown does not depend on this write happening early.
 
     state = IndexerState.CLOSED;
 
@@ -582,6 +724,12 @@ public class FullTextIndexer
     {
       try
       {
+        if (rebuildRequested)
+        {
+          performRebuild();
+          rebuildRequested = false;
+        }
+
         if ((drainAndProcessEvents(1000) == false) && (isInitialBuildComplete() == false))
           initialBuild();
 
@@ -941,7 +1089,7 @@ public class FullTextIndexer
 
         try
         {
-          while ((stopRequested == false) && ((filePath = workQueue.poll()) != null))
+          while ((stopRequested == false) && (rebuildRequested == false) && ((filePath = workQueue.poll()) != null))
           {
             processOneFile(filePath, docCount, skipped, failed, noText);
             workerCount++;
@@ -1113,7 +1261,7 @@ public class FullTextIndexer
   {
     for (FilePath filePath : files)
     {
-      if (stopRequested) return;
+      if (stopRequested || rebuildRequested) return;
 
       processOneFile(filePath, docCount, skipped, failed, noText);
     }
@@ -1195,7 +1343,7 @@ public class FullTextIndexer
 
     boolean changed = false;
 
-    // Remove stale entries (in metadata but no longer in registry)
+    // Remove stale entries (in metadata but no longer indexable: gone from the registry, now excluded, or non-indexable)
 
     List<String> toRemove = metadataMap.keySet().stream().filter(key -> indexableInRegistry.containsKey(key) == false).toList();
 
@@ -1668,11 +1816,11 @@ public class FullTextIndexer
       // Poll in one-second slices instead of a single long timed poll. Workers parked here
       // waiting for a free extractor are never interrupted, and nothing returns an extractor
       // to the pool during shutdown, so a single poll would wait out the full extraction
-      // timeout. Slicing lets a parked worker notice a stop request within a second.
+      // timeout. Slicing lets a parked worker notice a stop or rebuild request within a second.
 
       for (long secondsWaited = 0; (extractor == null) && (secondsWaited < PDFJSTextExtractor.EXTRACTION_TIMEOUT_SECONDS); secondsWaited++)
       {
-        if (stopRequested) return null;
+        if (stopRequested || rebuildRequested) return null;
 
         extractor = pool.poll(1, TimeUnit.SECONDS);
       }
@@ -1888,15 +2036,46 @@ public class FullTextIndexer
 
   private boolean isIndexable(FilePath filePath)
   {
-    if (FilePath.isEmpty(filePath)) return false;
+    if (FilePath.isEmpty(filePath))
+      return false;
 
     if (db.xmlPath().contains(filePath))
       return false;
 
-    if (FilePath.isTemporaryFile(filePath.getNameOnly().toString())) return false;
+    if (isExcluded(filePath))
+      return false;
+
+    String fileNameStr = filePath.getNameOnly().toString();
+
+    if (FilePath.isTemporaryFile(fileNameStr) || matchesAnyPattern(fileNameStr, excludedFileMasks))
+      return false;
+
+    // Skip paths that don't resolve to a real file on disk. On case-sensitive
+    // filesystems, a record whose stored file_name differs in case from the actual
+    // file yields a registry FilePath pointing at a non-existent path (a phantom);
+    // the real file is still indexed via its own filesystem-walk entry, so skipping
+    // the phantom loses no content and stops it being re-indexed on every startup.
+
+    if (filePath.isFile() == false)
+      return false;
 
     String ext = filePath.getExtensionOnly();
     return strNotNullOrBlank(ext) && INDEXABLE_EXTENSIONS.contains(ext.toLowerCase());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean matchesAnyPattern(String filenameStr, List<PathMatcher> matchers)
+  {
+    if (matchers.isEmpty()) return false;
+
+    // See parseFileMask: the patterns are lowercased, so lowercase the filename too for
+    // case-insensitive matching that behaves the same on every platform.
+
+    Path filenamePath = Path.of(filenameStr.toLowerCase(Locale.ROOT));
+
+    return matchers.stream().anyMatch(matcher -> matcher.matches(filenamePath));
   }
 
 //---------------------------------------------------------------------------
@@ -1955,6 +2134,31 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // ---- Excluded folder paths -----------------------------------------------
+
+  private boolean isExcluded(FilePath filePath)
+  {
+    if (excludedPaths.isEmpty()) return false;
+
+    return isRelPathExcluded(relativePath(filePath));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether {@code relPath} falls under an excluded folder: it either equals an
+   * excluded path or sits beneath one. The {@code '/'} boundary check prevents
+   * a folder named "foobar" from being excluded by an exclusion of "foo".
+   */
+  private boolean isRelPathExcluded(String relPath)
+  {
+    return excludedPaths.stream().anyMatch(excluded -> relPath.startsWith(excluded + '/') || relPath.equals(excluded));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FunctionalInterface
   private interface SearcherTask<T>
   {
@@ -2005,6 +2209,144 @@ public class FullTextIndexer
     TopDocs topDocs = searcher.search(new TermQuery(new Term("path", relPath)), 1);
 
     return (topDocs.scoreDocs.length == 0) ? -1 : topDocs.scoreDocs[0].doc;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final String EXCLUSIONS_FILENAME = "exclusions.json";
+
+  private void loadExclusions()
+  {
+    FilePath exclusionsFile = indexDir.resolve(EXCLUSIONS_FILENAME);
+
+    if (exclusionsFile.exists() == false)
+    {
+      excludedPaths = List.of();
+      excludedFileMasksStr = "";
+      excludedFileMasks = List.of();
+      return;
+    }
+
+    try
+    {
+      String json = Files.readString(exclusionsFile.toPath(), StandardCharsets.UTF_8);
+      JsonObj obj = JsonObj.parseJsonObj(json);
+
+      JsonArray arr = obj.getArray("excludedPaths");
+      excludedPaths = (arr == null) ? List.of() : arr.strStream().toList();
+
+      excludedFileMasksStr = obj.getStrSafe("excludedFileMasks");
+      excludedFileMasks = parseFileMask(excludedFileMasksStr);
+    }
+    catch (Exception e)
+    {
+      System.out.println("Full-text indexer: failed to load exclusions: " + getThrowableMessage(e));
+      excludedPaths = List.of();
+      excludedFileMasksStr = "";
+      excludedFileMasks = List.of();
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void purgeExcludedEntries() throws IOException
+  {
+    Set<String> toPurge = new LinkedHashSet<>();
+
+    for (String relPath : metadataMap.keySet())
+    {
+      if (isRelPathExcluded(relPath))
+        toPurge.add(relPath);
+
+      int lastSlash = relPath.lastIndexOf('/');
+      String filename = (lastSlash >= 0) ? relPath.substring(lastSlash + 1) : relPath;
+
+      if (matchesAnyPattern(filename, excludedFileMasks))
+        toPurge.add(relPath);
+    }
+
+    if (toPurge.isEmpty()) return;
+
+    for (String relPath : toPurge)
+      removeFile(relPath);
+
+    commitAndSave();
+
+    System.out.println("Full-text indexer: purged " + toPurge.size() + " excluded entry/entries");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void saveExclusions()
+  {
+    if (indexDir == null) return;
+
+    JsonObj obj = new JsonObj();
+    JsonArray arr = new JsonArray();
+
+    for (String path : excludedPaths)
+      arr.add(path);
+
+    obj.put("excludedPaths", arr);
+
+    if (excludedFileMasksStr.isEmpty() == false)
+      obj.put("excludedFileMasks", excludedFileMasksStr);
+
+    try
+    {
+      indexDir.resolve(EXCLUSIONS_FILENAME).saveCharSequenceAtomically(obj.toString(), StandardCharsets.UTF_8);
+    }
+    catch (IOException e)
+    {
+      System.out.println("Full-text indexer: failed to save exclusions: " + getThrowableMessage(e));
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public List<FilePath> getExcludedPaths()
+  {
+    return excludedPaths.stream()
+                        .map(dbRoot::resolve)
+                        .toList();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setExcludedPaths(List<FilePath> paths)
+  {
+    excludedPaths = paths.stream()
+                         .map(dbRoot::relativize)
+                         .filter(Objects::nonNull)
+                         .map(rel -> rel.toString().replace('\\', '/'))
+                         .sorted()
+                         .toList();
+
+    saveExclusions();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public String getExcludedFileMasks()
+  {
+    return excludedFileMasksStr;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setExcludedFileMasks(String masks)
+  {
+    excludedFileMasksStr = safeStr(masks).strip();
+    excludedFileMasks = parseFileMask(excludedFileMasksStr);
+
+    saveExclusions();
   }
 
 //---------------------------------------------------------------------------
@@ -2185,9 +2527,9 @@ public class FullTextIndexer
 
             if (matchers.isEmpty() == false)
             {
-              Path filenamePath = Path.of(path).getFileName();
+              String filename = Path.of(path).getFileName().toString();
 
-              if (matchers.stream().noneMatch(matcher -> matcher.matches(filenamePath)))
+              if (matchesAnyPattern(filename, matchers) == false)
               {
                 cursor = scoreDoc;
                 continue;
@@ -2246,10 +2588,16 @@ public class FullTextIndexer
   {
     if (strNullOrBlank(fileMask)) return List.of();
 
+    // Lowercase each glob (and the filename, in matchesAnyPattern) so mask matching, for both
+    // exclusions and search file masks, is case-insensitive and identical on every platform.
+    // PathMatcher glob matching otherwise follows the filesystem's case sensitivity
+    // (case-insensitive on Windows, case-sensitive on Linux), so the same pattern in a shared
+    // database would match different files per machine.
+
     return Arrays.stream(fileMask.split(","))
                  .map(String::trim)
                  .filter(p -> p.isEmpty() == false)
-                 .map(p -> FileSystems.getDefault().getPathMatcher("glob:" + p))
+                 .map(p -> FileSystems.getDefault().getPathMatcher("glob:" + p.toLowerCase(Locale.ROOT)))
                  .toList();
   }
 

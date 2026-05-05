@@ -48,6 +48,7 @@ import org.hypernomicon.dialogs.base.NonmodalWindow;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.fileManager.FileRow;
+import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.authors.WorkAuthors;
@@ -101,8 +102,7 @@ import com.google.common.collect.EnumHashBiMap;
 
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.PauseTransition;
+import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.Property;
@@ -112,6 +112,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -139,8 +140,8 @@ public final class MainCtrlr
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpFindTable;
   @FXML private HBox topHBox, bottomToolBar, indexingStatusBox;
-  @FXML private ImageView ivDates;
-  @FXML private Label lblProgress, lblFindToast;
+  @FXML private ImageView ivDates, ivFTSMagnifier;
+  @FXML private Label lblMentionsProgress, lblFindToast;
   @FXML private Menu mnuFolders, mnuOpenRecent;
   @FXML private MenuBar menuBar;
   @FXML private MenuItem mnuAddToQueryResults, mnuChangeID, mnuCloseDatabase, mnuExitNoSave, mnuFindNextAll, mnuFindNextInName,
@@ -151,8 +152,9 @@ public final class MainCtrlr
                          mnuChangeArgVerdictOrder, mnuChangePosVerdictOrder, mnuChangeInstitutionTypeOrder, mnuTestConsole;
 
   @FXML private MenuButton mbCreateNew;
-  @FXML private ProgressBar progressBar;
+  @FXML private ProgressBar mentionsProgressBar;
   @FXML private SplitMenuButton btnGoTo, btnCreateNew;
+  @FXML private StackPane spFTSStatus;
   @FXML private Tab tabViewSelector, tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
   @FXML private TabPane selectorTabPane, tabPane;
   @FXML private TextField tfID, tfOmniGoTo, tfRecord;
@@ -181,6 +183,7 @@ public final class MainCtrlr
   private final HyperCB hcbGoTo;
   private final HyperTable htFind;
   private final CreateMenuItems createMenuItems;
+  private final Tooltip ttFTSStatus = new Tooltip();
 
   private ComboBox<ResultRow> cbResultGoTo = null;
   private TextField tfSelector = null;
@@ -190,6 +193,7 @@ public final class MainCtrlr
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
   private Instant lastImportTime = Instant.EPOCH;
   private FilePath lastImportFilePath = null;
+  private Timeline ftsOrbitAnimation;
 
   private static final Object LOCK = new Object();
   private static final String TREE_SELECT_BTN_CAPTION = "Select";
@@ -305,7 +309,7 @@ public final class MainCtrlr
 
     menuBar.setUseSystemMenuBar(true);
 
-    updateProgress("", -1);
+    updateMentionsProgress("", -1);
 
     windows.push(stage);
 
@@ -352,6 +356,9 @@ public final class MainCtrlr
     MainTextWrapper.init();
 
     ttDates = makeTooltip(NO_DATES_TOOLTIP);
+
+    setToolTip(lblMentionsProgress, "Rebuilding Mentions Index");
+    setToolTip(mentionsProgressBar, "Rebuilding Mentions Index");
 
     initHyperTabs();
 
@@ -1421,6 +1428,9 @@ public final class MainCtrlr
       /* ********************************************** */
 
       shuttingDown = true;
+
+      nullSwitch(db.getFullTextIndexer(), FullTextIndexer::requestStop);
+
       forEachHyperTab(hyperTab -> hyperTab.clear(true));
 
       folderTreeWatcher.stop();
@@ -2264,27 +2274,127 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void updateProgress(String task, double amount)
+  public void updateMentionsProgress(String task, double amount)
   {
     if (amount < 0)
     {
-      setAllVisible(false, progressBar, lblProgress);
+      setAllVisible(false, mentionsProgressBar, lblMentionsProgress);
       return;
     }
 
-    if (progressBar.isVisible() == false)
-      progressBar.setVisible(true);
+    if (mentionsProgressBar.isVisible() == false)
+      mentionsProgressBar.setVisible(true);
 
     if (strNotNullOrBlank(task))
     {
-      if (lblProgress.isVisible() == false)
-        lblProgress.setVisible(true);
+      if (lblMentionsProgress.isVisible() == false)
+        lblMentionsProgress.setVisible(true);
 
-      if (lblProgress.getText().equals(task) == false)
-        lblProgress.setText(task);
+      if (lblMentionsProgress.getText().equals(task) == false)
+        lblMentionsProgress.setText(task);
     }
 
-    progressBar.setProgress(amount);
+    mentionsProgressBar.setProgress(amount);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static double magXTransform(double angle) { return 2 + (Math.cos(angle) * 2); }
+  private static double magYTransform(double angle) { return 2 + (Math.sin(angle) * 2); }
+
+  private static final double FTS_CYCLE_MS = 2500;
+
+  // Resting position for FTS magnifier overlay: 135 degrees clockwise from 12 o'clock (between 4 and 5)
+  private static final double FTS_REST_ANGLE = Math.PI / 4.0;
+
+  private void updateFTSIndicator()
+  {
+    FullTextIndexer indexer = db.getFullTextIndexer();
+
+    if ((indexer == null) || (indexer.isQueryable() == false))
+    {
+      spFTSStatus.setVisible(false);
+      stopFTSAnimation();
+      return;
+    }
+
+    if (spFTSStatus.isVisible() == false)
+    {
+      spFTSStatus.setVisible(true);
+      Tooltip.install(spFTSStatus, ttFTSStatus);
+    }
+
+    switch (indexer.getState())
+    {
+      case MAINTAINING ->
+      {
+        stopFTSAnimation();
+        ivFTSMagnifier.setOpacity(1.0);
+        ivFTSMagnifier.setTranslateX(magXTransform(FTS_REST_ANGLE));
+        ivFTSMagnifier.setTranslateY(magYTransform(FTS_REST_ANGLE));
+        ttFTSStatus.setText("Full-text search ready (" + indexer.getIndexedFileCount() + " files)");
+      }
+
+      case ONLINE_INDEXING_DISABLED ->
+      {
+        stopFTSAnimation();
+        ivFTSMagnifier.setOpacity(0.5);
+        ivFTSMagnifier.setTranslateX(magXTransform(FTS_REST_ANGLE));
+        ivFTSMagnifier.setTranslateY(magYTransform(FTS_REST_ANGLE));
+        ttFTSStatus.setText("Full-text indexing paused");
+      }
+
+      case INCREMENTAL_INDEXING ->
+      {
+        ivFTSMagnifier.setOpacity(1.0);
+        startFTSAnimation();
+        int queued = indexer.getQueueSize();
+        ttFTSStatus.setText("Full-text indexing in progress..." + (queued > 0 ? " (" + queued + " queued)" : ""));
+      }
+
+      case BUILDING ->
+      {
+        ivFTSMagnifier.setOpacity(1.0);
+        startFTSAnimation();
+        int processed = indexer.getBuildProcessedFiles(), total = indexer.getBuildTotalFiles();
+        ttFTSStatus.setText("Full-text indexing in progress: " + processed + " / " + total + " files");
+      }
+
+      case CLOSED -> { /* unreachable; the isQueryable() guard above returns for CLOSED */ }
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void startFTSAnimation()
+  {
+    if (ftsOrbitAnimation != null) return;
+
+    ftsOrbitAnimation = new Timeline(new KeyFrame(Duration.millis(50), event ->
+    {
+      double angle = (System.currentTimeMillis() % FTS_CYCLE_MS) * (2 * Math.PI / FTS_CYCLE_MS);
+
+      ivFTSMagnifier.setTranslateX(magXTransform(angle));
+      ivFTSMagnifier.setTranslateY(magYTransform(angle));
+    }));
+
+    ftsOrbitAnimation.setCycleCount(Animation.INDEFINITE);
+
+    ftsOrbitAnimation.play();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void stopFTSAnimation()
+  {
+    if (ftsOrbitAnimation != null)
+    {
+      ftsOrbitAnimation.stop();
+      ftsOrbitAnimation = null;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -2396,6 +2506,12 @@ public final class MainCtrlr
     }
 
     QueryCtrlr curQueryCtrlr = queryHyperTab().getCurQueryCtrlr();
+
+    if (curQueryCtrlr == null)
+    {
+      errorPopup("That menu option cannot be used with a file content search tab.");
+      return;
+    }
 
     if (curQueryCtrlr.inReportMode())
     {
@@ -2672,6 +2788,11 @@ public final class MainCtrlr
       FileManager.instance().folderTree.expandMainBranches();
 
       stage.setTitle(appTitle + " - " + db.getHdbPath());
+
+      nullSwitch(db.getFullTextIndexer(), indexer -> indexer.setStatusListener(this::updateFTSIndicator));
+
+      spFTSStatus.setCursor(Cursor.HAND);
+      spFTSStatus.setOnMouseClicked(event -> new SettingsDlgCtrlr(SettingsPage.FTS).showModal());
     }
     else
       close(false);

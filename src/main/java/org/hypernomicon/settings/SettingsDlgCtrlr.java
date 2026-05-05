@@ -90,7 +90,8 @@ public class SettingsDlgCtrlr extends ModalDialog
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
-  @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabWorkSearchKey, tabArgNaming, tabWebButtons, tabShortcuts;
+  @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabWorkSearchKey, tabArgNaming, tabWebButtons, tabShortcuts,
+                    tabFTS;
   @FXML private TabPane tpMain;
   @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfLogPath, tfOffice, tfVerificationCode;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
@@ -119,7 +120,8 @@ public class SettingsDlgCtrlr extends ModalDialog
     WorkNaming("Work File Naming"),
     WorkSearchKey("Work Search Key Generation"),
     ArgNaming("Argument/Stance Naming"),
-    BibMgr("Bibliography Manager");
+    BibMgr("Bibliography Manager"),
+    FTS("Full-Text Search");
 
     private final String caption;
 
@@ -169,7 +171,8 @@ public class SettingsDlgCtrlr extends ModalDialog
       initControl(tabFolders      , "FolderSettings"        ),
       initControl(tabNaming       , "WorkFileNamingSettings"),
       initControl(tabWorkSearchKey, "WorkSearchKeys"        ),
-      initControl(tabArgNaming    , "ArgumentNaming"        )
+      initControl(tabArgNaming    , "ArgumentNaming"        ),
+      initControl(tabFTS          , "FTSSettings"           )
     );
 
     btnVerify.setOnAction(event ->
@@ -329,10 +332,13 @@ public class SettingsDlgCtrlr extends ModalDialog
     addTreeItem(WorkSearchKey, tabWorkSearchKey   , DBSpecific );
     addTreeItem(ArgNaming    , tabArgNaming       , DBSpecific );
     addTreeItem(BibMgr       , tabLinkToExtBibMgr , DBSpecific );
+    addTreeItem(FTS          , tabFTS             , null       );
 
     root.getChildren().add(pageToTreeItem.get(CompGeneral));
 
     if (db.isOnline()) root.getChildren().add(pageToTreeItem.get(DBSpecific));
+
+    root.getChildren().add(pageToTreeItem.get(FTS));
 
     treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {

@@ -282,6 +282,8 @@
       </Tab>
       <Tab fx:id="tabArgNaming" text="Argument/Stance Naming">
       </Tab>
+      <Tab fx:id="tabFTS" text="Full-Text Search">
+      </Tab>
       <Tab fx:id="tabLinkToExtBibMgr" text="Bibliography Manager">
         <VBox fx:id="vbRefMgr">
           <AnchorPane fx:id="apUnlinkFromExtBibMgr" minHeight="0.0" minWidth="0.0" prefHeight="106.0"

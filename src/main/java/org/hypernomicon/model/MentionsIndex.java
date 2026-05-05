@@ -366,7 +366,7 @@ class MentionsIndex
 
     task.addDoneHandler(state ->
     {
-      ui.updateProgress("", -1);
+      ui.updateMentionsProgress("", -1);
 
       ndxCompleteHandlers.forEach(Runnable::run);
     });
@@ -374,7 +374,7 @@ class MentionsIndex
     task.progressProperty().addListener((ob, oldValue, newValue) -> Platform.runLater(() ->
     {
       if (task.isDone() == false)
-        ui.updateProgress("Indexing:", (double)task.completedCount / (double)task.totalCount);
+        ui.updateMentionsProgress("Indexing:", (double)task.completedCount / (double)task.totalCount);
     }));
 
     new RebuildThread(task).start();

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2026 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.hypernomicon.settings.FTSSettingsCtrlr">
+  <VBox spacing="6.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+        AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <padding>
+      <Insets bottom="6.0" left="12.0" right="12.0" top="12.0"/>
+    </padding>
+    <Label style="-fx-font-weight: bold;" text="Changes on this page take effect next time application starts.">
+      <graphic>
+        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+          <Image url="@../resources/images/information-italic.png"/>
+        </ImageView>
+      </graphic>
+    </Label>
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
+      <CheckBox fx:id="chkFTSIndexingEnabled" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                prefHeight="25.0" text="Enable full-text search indexing"/>
+    </HBox>
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
+      <BorderPane>
+        <center>
+          <Label text="Number of indexing threads:"/>
+        </center>
+      </BorderPane>
+      <Spinner fx:id="spnThreadCount" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="80.0"/>
+      <Button fx:id="btnIndexStats" mnemonicParsing="false" prefHeight="25.0" text="Index Statistics">
+        <HBox.margin><Insets left="16.0" /></HBox.margin>
+      </Button>
+      <Button fx:id="btnRebuildIndex" mnemonicParsing="false" prefHeight="25.0" text="Rebuild Index" />
+    </HBox>
+    <Label text="Excluded file patterns (comma-separated, e.g. *.docx, draft*):">
+      <VBox.margin>
+        <Insets top="6.0"/>
+      </VBox.margin>
+    </Label>
+    <TextField fx:id="tfExcludedFileMasks" promptText="e.g. *.docx, draft*, *.bak"/>
+    <Label text="Excluded folders (not indexed for full-text search):">
+      <VBox.margin>
+        <Insets top="6.0"/>
+      </VBox.margin>
+    </Label>
+    <TableView fx:id="tvExcludedFolders" editable="true" prefHeight="300.0" VBox.vgrow="ALWAYS">
+      <columns>
+        <TableColumn text="Folder Path"/>
+        <TableColumn prefWidth="35.0" minWidth="35.0" maxWidth="35.0"/>
+        <TableColumn prefWidth="35.0" minWidth="35.0" maxWidth="35.0"/>
+      </columns>
+      <columnResizePolicy>
+        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+      </columnResizePolicy>
+    </TableView>
+  </VBox>
+</AnchorPane>

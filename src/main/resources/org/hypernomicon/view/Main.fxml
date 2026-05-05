@@ -351,8 +351,19 @@
         </Label>
         <Label fx:id="lblFindToast" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" style="-fx-padding: 0em 1em 0em 1em;" styleClass="tooltip" text="Find within all fields" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
         <HBox fx:id="indexingStatusBox" alignment="CENTER" layoutX="1227.0" layoutY="27.0" prefHeight="22.0" spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="6.0">
-          <Label fx:id="lblProgress" alignment="CENTER_RIGHT" contentDisplay="RIGHT" nodeOrientation="LEFT_TO_RIGHT" text="Indexing:" textAlignment="RIGHT" />
-          <ProgressBar fx:id="progressBar" prefHeight="17.0" prefWidth="77.0" progress="0.0" />
+          <Label fx:id="lblMentionsProgress" alignment="CENTER_RIGHT" contentDisplay="RIGHT" nodeOrientation="LEFT_TO_RIGHT" text="Indexing:" textAlignment="RIGHT" />
+          <ProgressBar fx:id="mentionsProgressBar" prefHeight="17.0" prefWidth="77.0" progress="0.0" />
+          <StackPane fx:id="spFTSStatus" visible="false" managed="false">
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+              <Image url="@../resources/images/documents-stack.png" />
+            </ImageView>
+            <ImageView fx:id="ivFTSMagnifier" fitHeight="11.0" fitWidth="10.0" preserveRatio="true">
+              <Image url="@../resources/images/magnifier-10x11.png" />
+            </ImageView>
+            <HBox.margin>
+              <Insets left="6.0" />
+            </HBox.margin>
+          </StackPane>
           <ImageView fx:id="ivDates" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
             <Image url="@../resources/images/calendar-month.png" />
             <HBox.margin>
