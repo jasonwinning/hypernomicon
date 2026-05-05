@@ -46,6 +46,10 @@
       </graphic>
     </Label>
     <HBox alignment="CENTER_LEFT" spacing="8.0">
+      <CheckBox fx:id="chkFTSDisabledForThisDb" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                prefHeight="25.0" text="Disable full-text search for this database on this computer"/>
+    </HBox>
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
       <CheckBox fx:id="chkFTSIndexingEnabled" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
                 prefHeight="25.0" text="Enable full-text search indexing"/>
     </HBox>
@@ -59,7 +63,19 @@
       <Button fx:id="btnIndexStats" mnemonicParsing="false" prefHeight="25.0" text="Index Statistics">
         <HBox.margin><Insets left="16.0" /></HBox.margin>
       </Button>
+      <Button fx:id="btnRetryFailed" mnemonicParsing="false" prefHeight="25.0" text="Retry Failed" />
       <Button fx:id="btnRebuildIndex" mnemonicParsing="false" prefHeight="25.0" text="Rebuild Index" />
+    </HBox>
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
+      <BorderPane>
+        <center>
+          <Label text="Maximum time to index a file (minutes):"/>
+        </center>
+      </BorderPane>
+      <Spinner fx:id="spnExtractionTimeout" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="80.0"/>
+      <CheckBox fx:id="chkNoExtractionTimeout" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" text="No limit">
+        <HBox.margin><Insets left="8.0" /></HBox.margin>
+      </CheckBox>
     </HBox>
     <Label text="Excluded file patterns (comma-separated, e.g. *.docx, draft*):">
       <VBox.margin>

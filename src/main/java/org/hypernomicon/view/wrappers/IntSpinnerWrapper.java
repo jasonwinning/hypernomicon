@@ -171,4 +171,17 @@ public class IntSpinnerWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Sets the amount the spinner's up/down arrows step by (the factory default is 1). Returns {@code this}
+   * so it can be chained onto {@link #of} or {@link #withNone}.
+   */
+  public IntSpinnerWrapper stepBy(int amountToStepBy)
+  {
+    ((IntegerSpinnerValueFactory) spinner.getValueFactory()).setAmountToStepBy(amountToStepBy);
+    return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

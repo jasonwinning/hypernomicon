@@ -789,6 +789,20 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 
   /**
+   * Displays a dialog with a scrollable text area and a Refresh button. The
+   * initial text comes from {@code textSupplier}, and each Refresh click
+   * replaces the displayed text with a fresh call to it.
+   * @param title The window title
+   * @param textSupplier Supplies the text, re-invoked on every Refresh click
+   */
+  public static void longMessagePopup(String title, Supplier<String> textSupplier)
+  {
+    new LongMessageDlgCtrlr(title, textSupplier).showModal();
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
    * Displays a dialog with an icon, header message, and scrollable text area,
    * similar in appearance to a standard {@link Alert} but with a text area
    * for displaying longer content.

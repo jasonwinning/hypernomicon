@@ -227,7 +227,9 @@ public final class Const
       INTEGRITY_CHECKSUMS = "integrityChecksums",
 
       FTS_INDEXING_ENABLED = "ftsIndexingEnabled",
-      FTS_THREAD_COUNT = "ftsThreadCount";
+      FTS_THREAD_COUNT = "ftsThreadCount",
+      FTS_EXTRACTION_TIMEOUT = "ftsExtractionTimeoutMinutes",   // per-computer; minutes, 0 means no timeout (wait indefinitely)
+      FTS_DISABLED_DBS = "ftsDisabledDatabases";   // app.prefs sub-node: key = dbID, value = true when FTS is disabled for that database on this computer
 
     private PrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }

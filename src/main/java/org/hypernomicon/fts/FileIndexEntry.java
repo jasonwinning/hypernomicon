@@ -42,7 +42,11 @@ record FileIndexEntry(long mtime, long size, IndexStatus status)
     INDEXED,    // Text successfully extracted and added to Lucene
     FAILED,     // extractText() threw an exception or returned null
     NO_TEXT,    // Extraction succeeded but returned blank (scanned/image-only PDFs)
-    ABANDONED   // Failed on two consecutive attempts with the file unchanged; no longer retried (resets to FAILED if the file changes)
+    ABANDONED;  // Failed on two consecutive attempts with the file unchanged; no longer retried (resets to FAILED if the file changes)
+
+    /** True for an extraction-failure status: {@link #FAILED} (will be retried) or {@link #ABANDONED}
+     *  (retries exhausted). {@link #INDEXED} and {@link #NO_TEXT} are successes, not failures. */
+    public boolean isFailedOrAbandoned() { return (this == FAILED) || (this == ABANDONED); }
   }
 
 //---------------------------------------------------------------------------

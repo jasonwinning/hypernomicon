@@ -40,7 +40,8 @@
       </TextArea>
     </center>
     <bottom>
-      <HBox alignment="CENTER" prefHeight="42.0">
+      <HBox alignment="CENTER" prefHeight="42.0" spacing="10.0">
+        <Button fx:id="btnRefresh" managed="false" mnemonicParsing="false" prefWidth="90.0" text="Refresh" visible="false" />
         <Button fx:id="btnOk" cancelButton="true" defaultButton="true" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="90.0" text="OK" />
       </HBox>
     </bottom>

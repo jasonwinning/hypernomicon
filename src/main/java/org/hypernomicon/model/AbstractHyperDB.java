@@ -218,6 +218,10 @@ public abstract class AbstractHyperDB
   private Instant dbCreationDate;
   protected String dbID = "";
 
+  // Whether FTS is enabled for the loaded database on this computer. Decided once at load time from
+  // app.prefs and cached, so toggling the setting mid-session takes effect only on the next load.
+  private boolean ftsEnabledForCurDB = true;
+
   protected DialogResult deleteFileAnswer;
 
   protected RegistryAccessor registryAccessor;
@@ -260,6 +264,15 @@ public abstract class AbstractHyperDB
   public HDT_Work getWorkByBibEntryKey(String key)                   { return bibEntryKeyToWork.get(key); }
   public boolean reindexingMentioners()                              { return mentionsIndex.isRebuilding(); }
   public BibEntry<?, ?> getBibEntryByKey(String key)                 { return bibLibrary.getEntryByKey(key); }
+
+  /**
+   * Whether full-text search is enabled for the currently-loaded database on this computer.
+   * Controlled per (database, machine) by a checkbox on the FTS settings page; the flag lives in
+   * the per-machine {@code app.prefs} under {@link PrefKey#FTS_DISABLED_DBS}, keyed by dbID. The
+   * value is decided once when the database is loaded and cached for the session, so toggling the
+   * setting takes effect only on the next load (matching the FTS settings page's notice).
+   */
+  public boolean ftsEnabledOnThisComputer() { return ftsEnabledForCurDB; }
 
   public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions, boolean confirmDup) throws DuplicateSearchKeyException, SearchKeyTooShortException
   { searchKeys.setSearchKey(record, newKey, noMod, rebuildMentions, confirmDup); }
@@ -2693,12 +2706,26 @@ public abstract class AbstractHyperDB
 
       HyperPath.setRegistryAccessor(registryAccessor);
 
+      ftsEnabledForCurDB = (app != null) && (app.prefs.node(PrefKey.FTS_DISABLED_DBS).getBoolean(dbID, false) == false);   // decide (and cache) FTS-enabled for this session from the live pref (a null App, e.g. in unit tests, leaves FTS off)
+
+      DatabaseRegistry.garbageCollect(dbID);   // hoisted out of the nullSwitch so stale indexes for other databases are cleaned up even when FTS is disabled for this one
+
+      if (ftsEnabledOnThisComputer() == false)
+      {
+        // FTS is disabled for this database on this computer (getFullTextIndexer() returns null below, so the index is never opened).
+        // Delete its now-unused index content here, while it is guaranteed not open, to reclaim disk space. The exclusions list
+        // survives so a later re-enable doesn't lose it.
+
+        FilePath disabledIndexDir = DatabaseRegistry.resolveIndexDir(dbID);
+
+        if ((FilePath.isEmpty(disabledIndexDir) == false) && disabledIndexDir.exists())
+          FullTextIndexer.deleteIndexContents(disabledIndexDir);
+      }
+
       nullSwitch(getFullTextIndexer(), indexer ->
       {
         try
         {
-          DatabaseRegistry.garbageCollect(dbID);
-
           FilePath indexDir = DatabaseRegistry.resolveIndexDir(dbID);
 
           if (indexDir != null)

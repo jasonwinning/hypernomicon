@@ -19,6 +19,8 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.util.UIUtil.*;
 
+import java.util.function.Supplier;
+
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -39,6 +41,7 @@ public class LongMessageDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @FXML private Button btnRefresh;
   @FXML private HBox hboxHeader;
   @FXML private Label lblHeaderText;
   @FXML private TextArea taMessage;
@@ -53,6 +56,24 @@ public class LongMessageDlgCtrlr extends ModalDialog
   public LongMessageDlgCtrlr(String title, String text)
   {
     this(title, null, null, text);
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Creates a dialog with a text area (no header) and a Refresh button. The
+   * initial text comes from {@code textSupplier}, and each Refresh click
+   * replaces the displayed text with a fresh call to it.
+   * @param title The window title
+   * @param textSupplier Supplies the text, re-invoked on every Refresh click
+   */
+  public LongMessageDlgCtrlr(String title, Supplier<String> textSupplier)
+  {
+    this(title, null, null, textSupplier.get());
+
+    bindManagedToVisible(btnRefresh);
+    btnRefresh.setVisible(true);
+    btnRefresh.setOnAction(event -> taMessage.setText(textSupplier.get()));
   }
 
 //---------------------------------------------------------------------------

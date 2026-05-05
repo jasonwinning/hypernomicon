@@ -56,6 +56,7 @@ import org.apache.tika.Tika;
 import javafx.application.Platform;
 
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.fts.FileIndexEntry.IndexStatus;
 import org.hypernomicon.model.searchKeys.Keyword;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.RegistryAccessor;
@@ -173,6 +174,10 @@ public class FullTextIndexer
                             FAST_CLOSE_JOIN_MS          = 3_000,
                             CLOSE_JOIN_MS               = (2 * POOL_DRAIN_TIMEOUT_MS) + 5_000;
 
+  private static final String LUCENE_DIR_NAME   = "lucene",
+                              METADATA_FILENAME = "metadata.json",
+                              MANIFEST_FILENAME = "index-manifest.json";
+
   private final LinkedBlockingQueue<IndexEvent> eventQueue = new LinkedBlockingQueue<>();
 
   /** Paths with a CREATE or MODIFY event currently in the queue or being
@@ -247,7 +252,7 @@ public class FullTextIndexer
   private volatile List<String> excludedPaths = List.of();
   private volatile String excludedFileMasksStr = "";
   private volatile IndexerState state = IndexerState.CLOSED;
-  private volatile boolean stopRequested, rebuildRequested;
+  private volatile boolean stopRequested, rebuildRequested, retryFailedRequested;
   private volatile int buildTotalFiles, buildProcessedFiles;
 
 //---------------------------------------------------------------------------
@@ -408,6 +413,88 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Request that every FAILED and ABANDONED entry be re-indexed from scratch.
+   * Safe to call from any thread. The actual retry runs on the background
+   * indexer thread (so writer/metadata mutations stay single-threaded); if the
+   * background thread is currently mid-build or mid-event-processing, the retry
+   * defers until it next reaches the top of its loop.
+   * <p>
+   * Returns the number of FAILED/ABANDONED entries observed at call time so the
+   * caller can report it. The retry is only scheduled when indexing is enabled;
+   * when it is not (the index is open but no background thread is running) the
+   * count is still returned but no work is queued, so callers should check
+   * {@link #isIndexingEnabled()} before relying on the retry actually happening.
+   */
+  public int retryFailed()
+  {
+    int count = (int) metadataMap.values().stream()
+      .map(FileIndexEntry::status)
+      .filter(IndexStatus::isFailedOrAbandoned)
+      .count();
+
+    if ((count > 0) && isIndexingEnabled())
+      retryFailedRequested = true;
+
+    return count;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Performs the actual retry. Called from the background thread only, so
+   *  writer mutations and metadataMap mutations stay single-threaded. Each
+   *  FAILED/ABANDONED entry is dropped from the metadata map and the in-session
+   *  skip set, then re-indexed from scratch. Because {@link #markAsFailed}
+   *  consults the prior entry (now absent) to decide FAILED vs ABANDONED, a file
+   *  that fails again is recorded as FAILED, giving it a clean retry budget. */
+  private void performRetryFailed()
+  {
+    List<String> toRetry = new ArrayList<>();
+
+    for (Map.Entry<String, FileIndexEntry> mapEntry : metadataMap.entrySet())
+      if (mapEntry.getValue().status().isFailedOrAbandoned())
+        toRetry.add(mapEntry.getKey());
+
+    if (toRetry.isEmpty()) return;
+
+    System.out.println("Full-text indexer: retrying " + toRetry.size() + " failed/abandoned entr" + (toRetry.size() == 1 ? "y" : "ies"));
+
+    for (String relPath : toRetry)
+    {
+      if (stopRequested || rebuildRequested) break;
+
+      metadataMap.remove(relPath);
+      extractionFailures.remove(relPath);
+
+      FilePath filePath = dbRoot.resolve(relPath);
+
+      // A failed/abandoned entry whose file no longer exists (or is no longer
+      // indexable) is simply dropped: removing it above already cleans it up.
+
+      if (filePath.exists() && isIndexable(filePath))
+      {
+        try { indexFile(filePath); }
+        catch (IOException e)
+        {
+          System.out.println("Full-text indexer: error retrying " + filePath + ": " + getThrowableMessage(e));
+        }
+      }
+    }
+
+    // This was a discrete batch of PDF-capable work; release the lazily-created
+    // extractor pool so a single retry doesn't leave a Chromium process resident,
+    // matching what the initial build and the incremental path do on completion.
+
+    disposePdfJSExtractorPool();
+
+    commitAndSave();
+    fireStatusListener();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void queueEvent(IndexEvent event)
   {
     if (isIndexingEnabled() == false) return;
@@ -450,11 +537,11 @@ public class FullTextIndexer
     this.indexDir = indexDir;
     this.registry = registry;
 
-    FilePath lucenePath = indexDir.resolve("lucene");
+    FilePath lucenePath = indexDir.resolve(LUCENE_DIR_NAME);
     Files.createDirectories(lucenePath.toPath());
 
-    manifestPath = indexDir.resolve("index-manifest.json");
-    FilePath metadataPath = indexDir.resolve("metadata.json");
+    manifestPath = indexDir.resolve(MANIFEST_FILENAME);
+    FilePath metadataPath = indexDir.resolve(METADATA_FILENAME);
 
     // Schema versioning: detect config changes and wipe stale index.
     // Only wipe when the stored manifest exists but mismatches (genuine schema change).
@@ -521,6 +608,24 @@ public class FullTextIndexer
     purgeExcludedEntries();
 
     state = IndexerState.ONLINE_INDEXING_DISABLED;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Deletes the derived index content (Lucene directory, metadata, manifest) from
+   * {@code indexDir}, sparing everything else the directory holds: {@code exclusions.json}
+   * is user-authored configuration (excluded folders and file masks) that should survive
+   * a disable/re-enable round trip, and other components keep their own files there
+   * (e.g. {@code sketch.json}). Deletion failures are logged so leftover index files
+   * don't read as corruption at the next startup. Call only when the index is not open.
+   */
+  public static void deleteIndexContents(FilePath indexDir)
+  {
+    FileDeletion.ofDirWithContents(indexDir.resolve(LUCENE_DIR_NAME)).nonInteractiveLogErrors().execute();
+    FileDeletion.ofFile(indexDir.resolve(METADATA_FILENAME)).nonInteractiveLogErrors().execute();
+    FileDeletion.ofFile(indexDir.resolve(MANIFEST_FILENAME)).nonInteractiveLogErrors().execute();
   }
 
 //---------------------------------------------------------------------------
@@ -723,6 +828,16 @@ public class FullTextIndexer
         {
           performRebuild();
           rebuildRequested = false;
+        }
+
+        // Run a requested retry only once the initial build is complete. During
+        // BUILDING the build itself already re-attempts FAILED entries; the
+        // pending flag fires afterward to pick up the ABANDONED ones too.
+
+        if (retryFailedRequested && isInitialBuildComplete())
+        {
+          performRetryFailed();
+          retryFailedRequested = false;
         }
 
         if ((drainAndProcessEvents(1000) == false) && (isInitialBuildComplete() == false))
@@ -1550,7 +1665,7 @@ public class FullTextIndexer
     FileIndexEntry prior = metadataMap.get(relPath);
 
     boolean priorFailedUnchanged = (prior != null)
-        && ((prior.status() == FAILED) || (prior.status() == ABANDONED))
+        && prior.status().isFailedOrAbandoned()
         && (prior.mtime() == mtime)
         && (prior.size() == size);
 
@@ -1813,7 +1928,9 @@ public class FullTextIndexer
       // to the pool during shutdown, so a single poll would wait out the full extraction
       // timeout. Slicing lets a parked worker notice a stop or rebuild request within a second.
 
-      for (long secondsWaited = 0; (extractor == null) && (secondsWaited < PDFJSTextExtractor.EXTRACTION_TIMEOUT_SECONDS); secondsWaited++)
+      long timeoutSeconds = PDFJSTextExtractor.extractionTimeoutSeconds();
+
+      for (long secondsWaited = 0; (extractor == null) && (secondsWaited < timeoutSeconds); secondsWaited++)
       {
         if (stopRequested || rebuildRequested) return null;
 
@@ -1926,7 +2043,11 @@ public class FullTextIndexer
   {
     try (var stream = Files.list(lucenePath.toPath()))
     {
-      return stream.findFirst().isPresent();
+      // A lone write.lock is not index content: a hard-killed process leaves one behind
+      // in an otherwise empty directory, and counting it would make the metadata/Lucene
+      // mismatch check in bringOnline wipe and rebuild over nothing.
+
+      return stream.anyMatch(path -> IndexWriter.WRITE_LOCK_NAME.equals(path.getFileName().toString()) == false);
     }
     catch (IOException e) { return false; }
   }
@@ -3076,7 +3197,7 @@ public class FullTextIndexer
 
   private void writeMetadataSnapshot(String json) throws IOException
   {
-    indexDir.resolve("metadata.json").saveCharSequenceAtomically(json, StandardCharsets.UTF_8);
+    indexDir.resolve(METADATA_FILENAME).saveCharSequenceAtomically(json, StandardCharsets.UTF_8);
   }
 
 //---------------------------------------------------------------------------
@@ -3084,7 +3205,7 @@ public class FullTextIndexer
 
   private void loadMetadata()
   {
-    FilePath metadataFile = indexDir.resolve("metadata.json");
+    FilePath metadataFile = indexDir.resolve(METADATA_FILENAME);
 
     if (metadataFile.exists() == false) return;
 

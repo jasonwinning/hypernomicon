@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.fts.FullTextIndexer;
+import org.hypernomicon.fts.PDFJSTextExtractor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.util.file.FilePath;
@@ -49,13 +50,14 @@ public class FTSSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private Button btnIndexStats, btnRebuildIndex;
-  @FXML private CheckBox chkFTSIndexingEnabled;
-  @FXML private Spinner<Integer> spnThreadCount;
+  @FXML private Button btnIndexStats, btnRetryFailed, btnRebuildIndex;
+  @FXML private CheckBox chkFTSDisabledForThisDb, chkFTSIndexingEnabled, chkNoExtractionTimeout;
+  @FXML private Spinner<Integer> spnThreadCount, spnExtractionTimeout;
   @FXML private TableView<HyperTableRow> tvExcludedFolders;
   @FXML private TextField tfExcludedFileMasks;
 
   private HyperTable htFolders;
+  private IntSpinnerWrapper extractionTimeoutWrapper;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -70,6 +72,19 @@ public class FTSSettingsCtrlr implements SettingsControl
 
     IntSpinnerWrapper.of(spnThreadCount, 1, maxThreads, initial, () -> app.prefs.putInt(FTS_THREAD_COUNT, spnThreadCount.getValue()));
 
+    int defaultMin = PDFJSTextExtractor.DEFAULT_EXTRACTION_TIMEOUT_MINUTES,
+        storedMin  = app.prefs.getInt(FTS_EXTRACTION_TIMEOUT, defaultMin),
+        initialMin = (storedMin <= 0) ? defaultMin : Math.max(storedMin, 5);
+
+    extractionTimeoutWrapper = IntSpinnerWrapper
+        .withNone(spnExtractionTimeout, 5, 240, initialMin, chkNoExtractionTimeout, 0, storedMin <= 0, this::persistExtractionTimeout)
+        .stepBy(5);  // the timeout steps by 5 minutes
+
+    setToolTip(spnExtractionTimeout, "A file that takes longer than this to index is skipped and recorded as failed (see Retry Failed). Raise the limit, or choose No limit, to give slow files more time.");
+    setToolTip(chkNoExtractionTimeout, "Index every file no matter how long it takes (no time limit).");
+
+    setToolTip(btnIndexStats, "Display information about the current full-text search index including files that couldn't be indexed");
+
     btnIndexStats.setOnAction(event ->
     {
       FullTextIndexer indexer = db.isLoaded() ? db.getFullTextIndexer() : null;
@@ -77,8 +92,37 @@ public class FTSSettingsCtrlr implements SettingsControl
       if (indexer == null)
         infoPopup("No index is currently active.");
       else
-        longMessagePopup("Index Statistics", indexer.getStatistics());
+        longMessagePopup("Index Statistics", indexer::getStatistics);
     });
+
+    setToolTip(btnRetryFailed, "Re-attempt to index files that previously were not able to be indexed. Click [Index Statistics] to see the list of files.");
+
+    btnRetryFailed.setOnAction(event ->
+    {
+      FullTextIndexer indexer = db.isLoaded() ? db.getFullTextIndexer() : null;
+
+      if (indexer == null)
+      {
+        errorPopup("No index is currently active.");
+        return;
+      }
+
+      if (indexer.isIndexingEnabled() == false)
+      {
+        infoPopup("Full-text indexing is not currently running, so failed entries cannot be retried.");
+        return;
+      }
+
+      int count = indexer.retryFailed();
+
+      infoPopup(count == 0 ?
+        "There are no failed or abandoned entries to retry."
+      :
+        "Retrying full-text indexing for " + count + " failed or abandoned entr" + (count == 1 ? "y" : "ies") + ".\n\n" +
+        "Tip: if a file failed because it took too long to index, raising the maximum time (or choosing No limit) may help it succeed.");
+    });
+
+    setToolTip(btnRebuildIndex, "Wipe the current full-text index and rebuild it from scratch");
 
     btnRebuildIndex.setOnAction(event ->
     {
@@ -101,7 +145,46 @@ public class FTSSettingsCtrlr implements SettingsControl
       }
     });
 
-    if (noDB) return;
+    // Per-database "disable FTS on this computer" switch. Disabling deletes the index (at next startup), so
+    // checking it requires confirmation. With no database loaded there is no "this database" to act on.
+
+    if (noDB)
+      chkFTSDisabledForThisDb.setDisable(true);
+    else
+      initCheckBox(app.prefs.node(FTS_DISABLED_DBS), chkFTSDisabledForThisDb, db.getDBID(), false, disabled ->
+      {
+        if (disabled && (confirmDialog("""
+            Disabling full-text search for this database will DELETE its full-text index on this computer the next time the application starts.
+            If you re-enable it later, the entire index is rebuilt from scratch, which can take a long time for a large database.
+            If you only want to stop updating the index (keeping it searchable), uncheck "Enable full-text search indexing" instead.
+
+            Continue?""", false) == false))
+          chkFTSDisabledForThisDb.setSelected(false);
+      });
+
+    // When FTS is being disabled for this database, the indexing sub-options below are moot.
+
+    chkFTSIndexingEnabled .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
+    spnThreadCount        .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
+    btnIndexStats         .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
+    btnRetryFailed        .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
+    btnRebuildIndex       .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
+    chkNoExtractionTimeout.disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
+    spnExtractionTimeout  .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty().or(chkNoExtractionTimeout.selectedProperty()));
+
+    if (noDB)
+    {
+      // The excluded patterns/folders are per-database settings read from (and saved to) the
+      // current database's index. With no database loaded there is nothing to edit, so disable
+      // them rather than leaving them active-but-empty: save() discards any changes when noDB.
+
+      disableAll(tfExcludedFileMasks, tvExcludedFolders);
+
+      return;
+    }
+
+    tfExcludedFileMasks.disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
+    tvExcludedFolders  .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
 
     htFolders = new HyperTable(tvExcludedFolders, 0, true, "");
 
@@ -176,6 +259,16 @@ public class FTSSettingsCtrlr implements SettingsControl
     if (noDB || (htFolders == null)) return;
 
     saveToIndexer();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Persists the per-computer PDF extraction timeout: 0 when "No timeout" is checked (read as infinite
+   *  by {@code PDFJSTextExtractor.extractionTimeoutSeconds()}), otherwise the spinner's minutes value. */
+  private void persistExtractionTimeout()
+  {
+    app.prefs.putInt(FTS_EXTRACTION_TIMEOUT, extractionTimeoutWrapper.getValue());
   }
 
 //---------------------------------------------------------------------------

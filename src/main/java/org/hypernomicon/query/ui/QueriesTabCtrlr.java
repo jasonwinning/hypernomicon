@@ -166,6 +166,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     setToolTip(btnSearchWithinFiles, "Search file contents within the files associated with the current query results");
 
+    bindManagedToVisible(btnNewFTSSearch, btnSearchWithinFiles);
+
     tabPane.getTabs().addListener((Change<? extends Tab> c) -> Platform.runLater(tabPane::requestLayout));
 
     tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
@@ -365,7 +367,13 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (curSubCtrlr != null)
         tabPane.getSelectionModel().select(curSubCtrlr.getTab());
 
-      showNewTabPopup();
+      // When FTS is disabled for this database, skip the chooser popup and just open a record query (pre-FTS behavior).
+
+      if (db.ftsEnabledOnThisComputer())
+        showNewTabPopup();
+      else
+        openNewRecordQueryTab();
+
       return;
     }
 
@@ -441,6 +449,26 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     QueryCtrlr queryCtrlr = addQueryCtrlr();
     tabPane.getSelectionModel().select(queryCtrlr.getTab());
     queryCtrlr.focusOnFields();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Shows/hides the always-visible "+ File Content Search" toolbar button to match whether FTS is
+   *  enabled for the current database on this computer. Called on database load (the state is per-DB). */
+  public void updateFtsToolbar()
+  {
+    boolean ftsEnabled = db.ftsEnabledOnThisComputer();
+
+    setAllVisible(ftsEnabled, btnNewFTSSearch);
+
+    // btnSearchWithinFiles is otherwise shown/hidden per active sub-tab by setQueryToolbarVisible; force it
+    // hidden here when FTS is off so it can't linger visible from a previously-active record-query tab.
+
+    if (ftsEnabled == false)
+    {
+      setAllVisible(false, btnSearchWithinFiles);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -744,8 +772,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     if (visible == false)
       setFavNameToggle(false);
 
-    setAllVisible(visible, btnSearchWithinFiles);
-    btnSearchWithinFiles.setManaged(visible);
+    boolean showSearchWithin = visible && db.ftsEnabledOnThisComputer();
+    setAllVisible(showSearchWithin, btnSearchWithinFiles);
   }
 
 //---------------------------------------------------------------------------
@@ -844,7 +872,11 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     tabNewHeader.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
     {
       event.consume();
-      showNewTabPopup();
+
+      if (db.ftsEnabledOnThisComputer())
+        showNewTabPopup();
+      else
+        openNewRecordQueryTab();
     });
 
     tabNewHeader.setOnMouseEntered(e ->
@@ -861,7 +893,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void showNewTabPopup()
   {
-    if ((tabNewHeader == null) || (db.isLoaded() == false) || newTabPopup.isShowing()) return;
+    if ((tabNewHeader == null) || (db.isLoaded() == false) || (db.ftsEnabledOnThisComputer() == false) || newTabPopup.isShowing()) return;
 
     Bounds bounds = tabNewHeader.localToScreen(tabNewHeader.getBoundsInLocal());
     if (bounds == null) return;

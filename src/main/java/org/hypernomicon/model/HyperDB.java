@@ -100,7 +100,7 @@ public final class HyperDB extends AbstractHyperDB
 
   @Override protected void populateFilePathRegistry()          { registryAccessor.populate(rootFilePath); }
   @Override protected FolderTreeWatcher getFolderTreeWatcher() { return folderTreeWatcher; }
-  @Override public FullTextIndexer getFullTextIndexer()        { return fullTextIndexer; }
+  @Override public FullTextIndexer getFullTextIndexer()        { return ftsEnabledOnThisComputer() ? fullTextIndexer : null; }
 
   @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { InterProcClient.updateRunningInstancesFile(newRootFilePath); }
 

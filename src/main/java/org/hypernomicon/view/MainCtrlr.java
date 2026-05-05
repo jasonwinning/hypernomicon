@@ -136,8 +136,9 @@ public final class MainCtrlr
 
   @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, midAnchorPane;
-  @FXML private Button btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnPreviewWindow, btnSave,
-                       btnDelete, btnRevert, btnBack, btnForward, btnSaveAll, btnPrevResult, btnNextResult;
+  @FXML private Button btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnPreviewWindow, btnSave, btnDelete, btnRevert,
+                       btnBack, btnForward, btnSaveAll, btnPrevResult, btnNextResult, btnMentionsPlain;
+
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpFindTable;
@@ -483,7 +484,10 @@ public final class MainCtrlr
     setToolTip(btnPointerLaunch , "On right/secondary click on link to work record, launch work file");
     setToolTip(btnPointerPreview, "On right/secondary click on link to work record, show in preview window");
 
-    setToolTip(btnMentions, "Show records whose description mentions this record");
+    String mentionsToolTipStr = "Show records whose description mentions this record";
+
+    setToolTip(btnMentions,      mentionsToolTipStr);
+    setToolTip(btnMentionsPlain, mentionsToolTipStr);
 
     MenuItem mnuMentionsInRecords = new MenuItem("Mentions within records"),
              mnuMentionsInFiles   = new MenuItem("Mentions within files");
@@ -868,6 +872,7 @@ public final class MainCtrlr
 
     bindManagedToVisible(bottomToolBar    .getChildren());
     bindManagedToVisible(indexingStatusBox.getChildren());
+    bindManagedToVisible(topToolBar       .getItems());
     bindManagedToVisible(lblFTSCount);
 
     selectorTabPane.layoutXProperty().addListener((obs, ov, nv) -> AnchorPane.setLeftAnchor(lblFindToast, nv.doubleValue()));
@@ -1037,7 +1042,13 @@ public final class MainCtrlr
         btnPreviewWindow.fire();
     });
 
-    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.ShowMentions, () -> { if (btnMentions.isDisabled() == false) btnMentions.fire(); });
+    assignShortcut(ShortcutContext.MainWindow, ShortcutAction.ShowMentions, () ->
+    {
+      ButtonBase btn = db.ftsEnabledOnThisComputer() ? btnMentions : btnMentionsPlain;
+
+      if (btn.isDisabled() == false)
+        btn.fire();
+    });
 
     assignShortcut(ShortcutContext.MainWindow, ShortcutAction.CreateNewRecord, () ->
     {
@@ -1545,7 +1556,7 @@ public final class MainCtrlr
 
     enableAllIff(enabled, mnuCloseDatabase,      mnuImportWork,     mnuImportFile,         mnuExitNoSave, mnuChangeID,      mnuChangeFieldOrder.getParentMenu(),
                           mnuImportBibClipboard, mnuImportBibFile,  mnuRevertToXmlVersion, btnFileMgr,    btnBibMgr,        mnuNewRank.getParentMenu(),
-                          btnPreviewWindow,      btnMentions,       mnuAddToQueryResults,  btnSaveAll,    mnuSaveReloadAll);
+                          btnPreviewWindow,      btnMentions,       btnMentionsPlain,      btnSaveAll,    mnuSaveReloadAll, mnuAddToQueryResults);
     if (disabled)
       tree().clear();
 
@@ -2329,6 +2340,24 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Refreshes FTS-dependent UI to match whether FTS is enabled for the current database on this computer.
+   *  The per-database state is decided at database load, so this is called from the DB-load path. */
+  private void updateFtsUI()
+  {
+    boolean ftsEnabled = db.ftsEnabledOnThisComputer();
+
+    // Mentions: a SplitMenuButton (with the "within files" option) when FTS is enabled; a plain Button when not.
+
+    btnMentions     .setVisible(ftsEnabled);
+    btnMentionsPlain.setVisible(ftsEnabled == false);
+
+    queryHyperTab().updateFtsToolbar();
+    updateFTSIndicator();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static double magXTransform(double angle) { return 2 + (Math.cos(angle) * 2); }
   private static double magYTransform(double angle) { return 2 + (Math.sin(angle) * 2); }
 
@@ -2850,6 +2879,8 @@ public final class MainCtrlr
 
       spFTSStatus.setCursor(Cursor.HAND);
       spFTSStatus.setOnMouseClicked(event -> new SettingsDlgCtrlr(SettingsPage.FTS).showModal());
+
+      updateFtsUI();
     }
     else
       close(false);

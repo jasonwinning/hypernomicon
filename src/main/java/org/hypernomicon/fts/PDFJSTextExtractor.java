@@ -18,6 +18,7 @@
 package org.hypernomicon.fts;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.PrefKey.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -64,7 +65,7 @@ public class PDFJSTextExtractor
   /** Result of a successful text extraction. */
   public record ExtractionResult(String text, int[] pageOffsets, int pageCount) {}
 
-  static final long EXTRACTION_TIMEOUT_SECONDS = 900;  // 15 minutes; same value for indexing and diagnostic extraction
+  public static final int DEFAULT_EXTRACTION_TIMEOUT_MINUTES = 15;  // overridable per-computer on the FTS settings page
 
   private static final String BASE_PLACEHOLDER = "<!-- base placeholder -->";
 
@@ -138,6 +139,23 @@ public class PDFJSTextExtractor
   /** Number of extractions this instance has performed; the pool uses it to recycle the Chromium process
    *  periodically, before its accumulated memory footprint grows large enough to risk an OOM. */
   public int extractionCount() { return extractionCount; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The per-computer PDF extraction timeout, in seconds, for both indexing and the diagnostic extraction.
+   * Read live from prefs so a change on the FTS settings page applies to the next extraction without a
+   * restart. The pref stores minutes; a value of 0 (or less) means "no timeout", for which this returns
+   * {@link Long#MAX_VALUE} (TimeUnit saturation makes the timed {@code future.get}/{@code pool.poll}
+   * effectively unbounded).
+   */
+  static long extractionTimeoutSeconds()
+  {
+    int minutes = (app == null) ? DEFAULT_EXTRACTION_TIMEOUT_MINUTES : app.prefs.getInt(FTS_EXTRACTION_TIMEOUT, DEFAULT_EXTRACTION_TIMEOUT_MINUTES);
+
+    return (minutes <= 0) ? Long.MAX_VALUE : (minutes * 60L);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -277,7 +295,7 @@ public class PDFJSTextExtractor
 
     try
     {
-      return future.get(EXTRACTION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+      return future.get(extractionTimeoutSeconds(), TimeUnit.SECONDS);
     }
     catch (TimeoutException e)
     {
