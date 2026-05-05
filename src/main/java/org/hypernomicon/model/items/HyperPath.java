@@ -268,6 +268,40 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Resolves the most specific record associated with the given file path
+   * and page number. For work files referenced by multiple works (e.g., a
+   * multi-volume PDF), selects the work whose page range for this file is
+   * the smallest that still contains the given page (most specific wins).
+   *
+   * @param filePath   The absolute file path to resolve
+   * @param pageNumber The 1-based page number of interest, or {@code <= 0} if not applicable
+   * @return The most specific record, or {@code null} if the file has no record association
+   */
+  public static HDT_RecordWithPath resolveRecord(FilePath filePath, int pageNumber)
+  {
+    Set<HyperPath> hyperPaths = getHyperPathSetForFilePath(filePath);
+
+    if (collEmpty(hyperPaths))
+      return null;
+
+    HDT_Work bestWork = HDT_WorkFile.smallestCoveringWork(hyperPaths, pageNumber, pageNumber);
+    if (bestWork != null) return bestWork;
+
+    // No associated work covers the page; fall back to any record associated with the file
+
+    for (HyperPath hyperPath : hyperPaths)
+    {
+      HDT_RecordWithPath recordWithPath = hyperPath.getRecord();
+      if (recordWithPath != null) return recordWithPath;
+    }
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public FilePath filePath()
   {
     if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))

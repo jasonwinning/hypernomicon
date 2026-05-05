@@ -138,7 +138,7 @@ public final class GeneralQueries
           return false;
 
         List<String> list = new ArrayList<>();
-        record.getAllStrings(list, ui.queryHyperTab().getCurQueryCtrlr().getSearchLinkedRecords(), true, true);
+        record.getAllStrings(list, ui.queryHyperTab().curQueryCtrlr().getSearchLinkedRecords(), true, true);
 
         return list.stream().anyMatch(str -> str.toLowerCase(Locale.ROOT).contains(queryText));
       }

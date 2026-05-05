@@ -142,7 +142,6 @@ public class FullTextIndexer
   }
 
   private static final int MAX_TEXT_LENGTH              = -1,  // No limit
-                           MAX_RESULTS_PER_FILE         = 20,
                            MAX_FILES_TO_SHOW_IN_STATS   = 500,
                            SIZE_STABILITY_RETRIES       = 5,
 
@@ -2214,6 +2213,49 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Counts the number of documents matching a Lucene query string.
+   *
+   * @param queryStr the Lucene query
+   * @return the number of matching documents, or 0 on error
+   */
+  public int countMatches(String queryStr) throws ParseException
+  {
+    if ((searcherMgr == null) || (analyzer == null)) return 0;
+
+    QueryParser parser = new QueryParser("content", analyzer);
+    parser.setDefaultOperator(QueryParser.Operator.AND);
+    return countMatches(parser.parse(queryStr.toLowerCase()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Counts the number of documents matching a pre-built query. Uses
+   * {@link IndexSearcher#count(Query)} which is fast (no document retrieval).
+   *
+   * @param query the pre-built query
+   * @return the number of matching documents, or 0 on error
+   */
+  public int countMatches(Query query)
+  {
+    if (searcherMgr == null) return 0;
+
+    try
+    {
+      return withSearcher(searcher -> searcher.count(query));
+    }
+    catch (IOException e)
+    {
+      logThrowable(e);
+      return 0;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final String EXCLUSIONS_FILENAME = "exclusions.json";
 
   private void loadExclusions()
@@ -2399,10 +2441,11 @@ public class FullTextIndexer
    *
    * @param queryStr     the same Lucene query string used in the original search
    * @param lightResults results from {@link #searchLight} with null {@code pageMatches}
+   * @param maxPassages  maximum number of highlighted passages per document
    * @return highlighted results with populated {@code pageMatches}; documents
    *         that are no longer in the index are silently skipped
    */
-  public List<SearchResult> highlightResults(String queryStr, List<SearchResult> lightResults) throws ParseException
+  public List<SearchResult> highlightResults(String queryStr, List<SearchResult> lightResults, int maxPassages) throws ParseException
   {
     List<SearchResult> highlighted = new ArrayList<>();
 
@@ -2437,7 +2480,7 @@ public class FullTextIndexer
           Document doc = storedFields.document(docID, Set.of("pageOffsets"));
 
           ScoreDoc scoreDoc = new ScoreDoc(docID, light.score());
-          highlighted.add(buildResult(light.path(), doc.get("pageOffsets"), scoreDoc, query, formatter, highlighter));
+          highlighted.add(buildResult(light.path(), doc.get("pageOffsets"), scoreDoc, query, formatter, highlighter, maxPassages));
         }
 
         return highlighted;
@@ -2568,14 +2611,14 @@ public class FullTextIndexer
 
   private static SearchResult buildResult(String path, String pageOffsetsStr, ScoreDoc scoreDoc,
                                           Query query, PageAwareFormatter formatter,
-                                          UnifiedHighlighter highlighter) throws IOException
+                                          UnifiedHighlighter highlighter, int maxPassages) throws IOException
   {
     formatter.setPageOffsets(decodePageOffsets(pageOffsetsStr));
     formatter.lastResult = List.of();
 
     TopDocs singleDoc = new TopDocs(new TotalHits(1, TotalHits.Relation.EQUAL_TO), new ScoreDoc[] { scoreDoc });
 
-    highlighter.highlight("content", query, singleDoc, MAX_RESULTS_PER_FILE);
+    highlighter.highlight("content", query, singleDoc, maxPassages);
 
     return new SearchResult(path, scoreDoc.score, formatter.getLastResult(), scoreDoc);
   }

@@ -433,7 +433,8 @@ public final class Const
       WORK_FILES      = "htWorkFiles",
       WORK_MISC       = "htWorkMisc",
       MGR_FILES       = "htMgrFiles",
-      BIB_ENTRIES     = "htBibEntries";
+      BIB_ENTRIES     = "htBibEntries",
+      FTS_RESULTS     = "htFTSResults";
 
     private TablePrefKey() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
   }

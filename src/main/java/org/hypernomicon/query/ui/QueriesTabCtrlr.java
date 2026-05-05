@@ -18,12 +18,12 @@
 package org.hypernomicon.query.ui;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
@@ -33,11 +33,17 @@ import javafx.concurrent.Worker;
 import javafx.concurrent.Worker.State;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.stage.Popup;
+import javafx.util.Duration;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.fileManager.FileManager;
@@ -75,7 +81,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 
   @FXML private AnchorPane apOrigDescription;
-  @FXML private Button btnToggleFavorite, btnFileActionsHelp;
+  @FXML private Button btnToggleFavorite, btnFileActionsHelp, btnSearchWithinFiles, btnNewRecordsQuery, btnNewFTSSearch;
   @FXML private MenuButton btnFileActions;
   @FXML private MenuItem mnuClear, mnuClearAndAdd, mnuAddSelected, mnuShowInSysExplorer, mnuShowInFileMgr;
   @FXML private Tab tabNew;
@@ -91,41 +97,47 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private ComboBox<ResultRow> cb;
   private boolean clearingViews = false;
 
-  private final List<QueryCtrlr> queryCtrlrs = new ArrayList<>();
+  private final List<QuerySubCtrlr> subCtrlrs = new ArrayList<>();
   private final Highlighter highlighter;
 
-  private QueryCtrlr curQueryCtrlr;
+  private QuerySubCtrlr curSubCtrlr;
+  private WebView ftsWebView;
+  private Popup newTabPopup;
+  private Node tabNewHeader;
+  private PauseTransition popupDismissTimer;
 
   private static final List<Query<?>> allQueries = new ArrayList<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean inReportMode()                     { return (curQueryCtrlr != null) && curQueryCtrlr.inReportMode(); }
+  private boolean inReportMode()                     { return nullSwitch(curQueryCtrlr(), false, QueryCtrlr::inReportMode); }
+  private WebView curWebView()                       { return isFTSTabActive() && (ftsWebView != null) ? ftsWebView : webView; }
 
-  public List<ResultRow> results()                   { return curQueryCtrlr == null ? List.of() : curQueryCtrlr.results(); }
-  public void refreshTables()                        { queryCtrlrs.forEach(queryCtrlr -> queryCtrlr.getResultsTV().refresh()); }
-  public void setCB(ComboBox<ResultRow> cb)          { this.cb = cb; updateCB(curQueryCtrlr); }
-  public void btnExecuteClick()                      { curQueryCtrlr.btnExecuteClick(true); }
-  public QueryCtrlr getCurQueryCtrlr()               { return curQueryCtrlr; }
+  public QueryCtrlr curQueryCtrlr()                  { return curSubCtrlr instanceof QueryCtrlr qc ? qc : null; }
+  public List<ResultRow> results()                   { return nullSwitch(curQueryCtrlr(), List.of(), QueryCtrlr::results); }
+  public void refreshTables()                        { subCtrlrs.forEach(sc -> { if (sc instanceof QueryCtrlr qc) qc.getResultsTV().refresh(); }); }
+  public void setCB(ComboBox<ResultRow> cb)          { this.cb = cb; updateCB(curQueryCtrlr()); }
+  public void btnExecuteClick()                      { if (curSubCtrlr != null) curSubCtrlr.executeOrSearch(); }
+  public boolean isFTSTabActive()                    { return curSubCtrlr instanceof FTSQueryCtrlr; }
 
   @Override protected RecordType type()              { return hdtNone; }
-  @Override protected void setRecord(HDT_Record rec) { if (curQueryCtrlr != null) curQueryCtrlr.setRecord(rec); }
-  @Override protected void updateFromRecord()        { curQueryCtrlr.refreshView(true); }
+  @Override protected void setRecord(HDT_Record rec) { nullSwitch(curQueryCtrlr(), qc -> qc.setRecord(rec)); }
+  @Override protected void updateFromRecord()        { nullSwitch(curQueryCtrlr(), qc -> qc.refreshView(true)); }
 
   @Override public int recordCount()                 { return results().size(); }
   @Override public void setDividerPositions()        { }
   @Override public void getDividerPositions()        { }
-  @Override public HDT_Record activeRecord()         { return curQueryCtrlr == null ? null : curQueryCtrlr.getRecord(); }
+  @Override public HDT_Record activeRecord()         { return nullSwitch(curQueryCtrlr(), null, QueryCtrlr::getRecord); }
   @Override public HDT_Record viewRecord()           { return activeRecord(); }
   @Override public String recordName()               { return nullSwitch(activeRecord(), "", HDT_Record::defaultChoiceText); }
-  @Override public int recordNdx()                   { return recordCount() > 0 ? curQueryCtrlr.getResultsTV().getSelectionModel().getSelectedIndex() : -1; }
-  @Override public void findWithinDesc()             { if ((activeRecord() != null) || inReportMode()) highlighter.hilite(); }
-  @Override public void nextSearchResult()           { highlighter.nextSearchResult    (); }
-  @Override public void previousSearchResult()       { highlighter.previousSearchResult(); }
+  @Override public int recordNdx()                   { QueryCtrlr qc = curQueryCtrlr(); return (qc != null) && (recordCount() > 0) ? qc.getResultsTV().getSelectionModel().getSelectedIndex() : -1; }
+  @Override public void findWithinDesc()             { if ((isFTSTabActive() == false) && ((activeRecord() != null) || inReportMode())) highlighter.hilite(); }
+  @Override public void nextSearchResult()           { if (isFTSTabActive() == false) highlighter.nextSearchResult    (); }
+  @Override public void previousSearchResult()       { if (isFTSTabActive() == false) highlighter.previousSearchResult(); }
 
   @Override public boolean saveToRecord(boolean saveNameIfBlank) { return false; }
-  @Override public TextViewInfo mainTextInfo(HDT_Record record)  { return new TextViewInfo(record, webEngineScrollPos(webView.getEngine())); }
+  @Override public TextViewInfo mainTextInfo(HDT_Record record)  { return new TextViewInfo(record, webEngineScrollPos(curWebView().getEngine())); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -143,7 +155,16 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 
     btnExecute.setOnAction(event -> btnExecuteClick());
-    btnToggleFavorite.setOnAction(event -> curQueryCtrlr.btnFavoriteClick());
+    btnToggleFavorite.setOnAction(event -> nullSwitch(curQueryCtrlr(), QueryCtrlr::btnFavoriteClick));
+
+    btnNewRecordsQuery.setOnAction(event -> openNewRecordQueryTab());
+
+    setToolTip(btnNewRecordsQuery, "Open a new tab for a record query or report");
+
+    btnNewFTSSearch.setOnAction(event -> goToNewFTSTab());
+    setToolTip(btnNewFTSSearch, "Open a new tab for searching file contents (full-text search)");
+
+    setToolTip(btnSearchWithinFiles, "Search file contents within the files associated with the current query results");
 
     tabPane.getTabs().addListener((Change<? extends Tab> c) -> Platform.runLater(tabPane::requestLayout));
 
@@ -157,7 +178,10 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (curQueryCtrlr.inReportMode())
+      QueryCtrlr qc = curQueryCtrlr();
+      if (qc == null) return;
+
+      if (qc.inReportMode())
       {
         handleJSEvent("", webView.getEngine());
         return;
@@ -173,9 +197,11 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     webView.getEngine().getLoadWorker().stateProperty().addListener((ob, oldState, newState) ->
     {
-      if (newState == Worker.State.SUCCEEDED)
+      QueryCtrlr qc = curQueryCtrlr();
+
+      if ((newState == Worker.State.SUCCEEDED) && (qc != null))
       {
-        if ((collEmpty(curQueryCtrlr.getRecordsToHilite()) == false) && ui.currentFindInDescriptionText().isBlank())
+        if ((collEmpty(qc.getRecordsToHilite()) == false) && ui.currentFindInDescriptionText().isBlank())
           highlighter.hiliteAlreadyTagged();
         else
           highlighter.hilite(true);
@@ -190,6 +216,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
 
     initFileActions();
+    initNewTabPopup();
   }
 
 //---------------------------------------------------------------------------
@@ -256,6 +283,53 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     WebTooltip.setupClickHandler(btnFileActionsHelp, btnFileActions);
 
     setToolTip(btnFileActionsHelp, "File Actions Help");
+
+    btnSearchWithinFiles.setOnAction(event -> searchWithinFiles());
+    setToolTip(btnSearchWithinFiles, "Search file contents of the current query results");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void searchWithinFiles()
+  {
+    if (inReportMode())
+    {
+      errorPopup("This cannot be used with reports.");
+      return;
+    }
+
+    List<ResultRow> resultRows = results();
+
+    if (resultRows.isEmpty())
+    {
+      errorPopup("No query results to search within.");
+      return;
+    }
+
+    List<HDT_RecordWithPath> sourceRecords = new ArrayList<>();
+
+    for (ResultRow row : resultRows)
+    {
+      HDT_Record record = row.getRecord();
+      if (record instanceof HDT_RecordWithPath recordWithPath)
+        sourceRecords.add(recordWithPath);
+    }
+
+    // Include edited works: the user explicitly selected these records
+
+    SearchResultFileList scopeList = new SearchResultFileList(false, true);
+    sourceRecords.forEach(scopeList::addRecord);
+
+    if (scopeList.getPathScope().isEmpty())
+    {
+      errorPopup("No indexable files found in the query results.");
+      return;
+    }
+
+    goToNewFTSTab().setRecordScope(scopeList, sourceRecords);
+
+    scopeList.showErrors();
   }
 
 //---------------------------------------------------------------------------
@@ -276,7 +350,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   public void removeRecord(HDT_Record record)
   {
-    queryCtrlrs.forEach(queryCtrlr -> queryCtrlr.getResultsTV().getItems().removeIf(row -> row.getRecord() == record));
+    subCtrlrs.forEach(sc -> sc.removeRecord(record));
   }
 
 //---------------------------------------------------------------------------
@@ -284,41 +358,52 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void tabPaneChange(Tab newValue)
   {
-    QueryCtrlr queryCtrlr;
-
     if (newValue == tabNew)
     {
-      queryCtrlr = addQueryCtrlr();
-      tabPane.getSelectionModel().select(queryCtrlr.getTab());
-      queryCtrlr.focusOnFields();
+      // Revert selection to previously active tab; show popup
+
+      if (curSubCtrlr != null)
+        tabPane.getSelectionModel().select(curSubCtrlr.getTab());
+
+      showNewTabPopup();
+      return;
     }
-    else
+
+    QuerySubCtrlr subCtrlr = findFirst(subCtrlrs, sc -> sc.getTab() == newValue);
+
+    if (subCtrlr != null)
     {
-      queryCtrlr = findFirst(queryCtrlrs, view -> view.getTab() == newValue);
-      if (queryCtrlr == null) return;
+      deactivateCurrent();
+      curSubCtrlr = subCtrlr;
+      subCtrlr.onTabSelected(this);
     }
-
-    if (curQueryCtrlr != null)
-      curQueryCtrlr.deactivate();
-
-    queryCtrlr.activate();
-
-    curQueryCtrlr = queryCtrlr;
-    updateCB(curQueryCtrlr);
-
-    queryCtrlr.refreshView(true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void deleteView(Tab tab)
+  void deleteSubView(Tab tab)
   {
-    QueryCtrlr queryCtrlr = findFirst(queryCtrlrs, view -> view.getTab() == tab);
-    if (queryCtrlr == null) return;
+    QuerySubCtrlr sc = findFirst(subCtrlrs, s -> s.getTab() == tab);
+    if (sc == null) return;
 
-    queryCtrlr.saveColumnWidths();
-    queryCtrlrs.remove(queryCtrlr);
+    sc.onTabClosing();
+    subCtrlrs.remove(sc);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private FTSQueryCtrlr addFTSQueryCtrlr()
+  {
+    if (ftsWebView == null)
+      ftsWebView = new WebView();
+
+    FTSQueryCtrlr ftsCtrlr = new FTSQueryCtrlr(this, ftsWebView, tabPane);
+
+    subCtrlrs.add(ftsCtrlr);
+
+    return ftsCtrlr;
   }
 
 //---------------------------------------------------------------------------
@@ -328,10 +413,20 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     QueryCtrlr queryCtrlr = new QueryCtrlr(this, webView, tabPane);
 
-    queryCtrlrs.add(queryCtrlr);
+    subCtrlrs.add(queryCtrlr);
     queryCtrlr.resetFields();
 
     return queryCtrlr;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void openNewRecordQueryTab()
+  {
+    QueryCtrlr queryCtrlr = addQueryCtrlr();
+    tabPane.getSelectionModel().select(queryCtrlr.getTab());
+    queryCtrlr.focusOnFields();
   }
 
 //---------------------------------------------------------------------------
@@ -341,18 +436,21 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     clearingViews = true;
 
-    if (curQueryCtrlr != null)
-      curQueryCtrlr.deactivate();
+    deactivateCurrent();
 
     removeFromParent(webView);
     addToParent(webView, apOrigDescription);
 
-    queryCtrlrs.removeIf(queryCtrlr ->
+    if (ftsWebView != null)
+      removeFromParent(ftsWebView);
+
+    subCtrlrs.removeIf(sc ->
     {
-      queryCtrlr.saveColumnWidths();
-      tabPane.getTabs().remove(queryCtrlr.getTab());
+      sc.onClear(tabPane);
       return true;
     });
+
+    curSubCtrlr = null;
 
     clearingViews = false;
 
@@ -432,7 +530,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     if (new HyperTask("BuildListOfFilesToCopy", "Building list...") { @Override protected void call() throws CancelledTaskException
     {
-      List<ResultRow> resultRowList = onlySelected ? curQueryCtrlr.getResultsTV().getSelectionModel().getSelectedItems() : results();
+      QueryCtrlr qc = curQueryCtrlr();
+      List<ResultRow> resultRowList = (onlySelected && (qc != null)) ? qc.getResultsTV().getSelectionModel().getSelectedItems() : results();
 
       totalCount = resultRowList.size();
 
@@ -486,8 +585,10 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   public void closeCurrentView()
   {
+    Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
     int ndx = tabPane.getSelectionModel().getSelectedIndex(), nextNdx = ndx + 1;
-    deleteView(tabPane.getSelectionModel().getSelectedItem());
+
+    deleteSubView(selectedTab);
 
     if ((nextNdx + 1) == tabPane.getTabs().size())
       nextNdx = ndx - 1;
@@ -511,9 +612,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   void updateCB(QueryCtrlr queryCtrlr)
   {
-    if ((cb == null) || (queryCtrlr == null)) return;
-
-    TableView<ResultRow> tvResults = queryCtrlr.getResultsTV();
+    if (cb == null) return;
 
     if (propToUnbind != null)
     {
@@ -521,16 +620,27 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       propToUnbind = null;
     }
 
-    if (tvListenerToRemove != null)
-    {
-      tvResults.getSelectionModel().selectedItemProperty().removeListener(tvListenerToRemove);
-      tvListenerToRemove = null;
-    }
-
     if (cbListenerToRemove != null)
     {
       cb.getSelectionModel().selectedItemProperty().removeListener(cbListenerToRemove);
       cbListenerToRemove = null;
+    }
+
+    if (queryCtrlr == null)
+    {
+      if (tvListenerToRemove != null)
+        tvListenerToRemove = null;
+
+      cb.setItems(null);
+      return;
+    }
+
+    TableView<ResultRow> tvResults = queryCtrlr.getResultsTV();
+
+    if (tvListenerToRemove != null)
+    {
+      tvResults.getSelectionModel().selectedItemProperty().removeListener(tvListenerToRemove);
+      tvListenerToRemove = null;
     }
 
     if (queryCtrlr.inReportMode())
@@ -576,6 +686,154 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   }
 
   private boolean alreadySettingSelection = false;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void deactivateCurrent()
+  {
+    if (curSubCtrlr != null)
+      curSubCtrlr.deactivate();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void setQueryToolbarVisible(boolean visible)
+  {
+    // btnToggleFavorite is disabled (not hidden) on FTS sub-tabs so the
+    // toolbar layout doesn't collapse and leave a gap next to Execute Query.
+    // Reset the icon to star-empty so the disabled state doesn't display the
+    // filled star left over from a previously-active favorited records tab.
+
+    btnToggleFavorite.setDisable(visible == false);
+    if (visible == false)
+      setFavNameToggle(false);
+
+    setAllVisible(visible, btnSearchWithinFiles);
+    btnSearchWithinFiles.setManaged(visible);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initNewTabPopup()
+  {
+    popupDismissTimer = new PauseTransition(Duration.millis(200));
+    popupDismissTimer.setOnFinished(event ->
+    {
+      if (newTabPopup == null) return;
+
+      Node content = newTabPopup.getContent().getFirst();
+      if (content.isHover() || ((tabNewHeader != null) && tabNewHeader.isHover()))
+      {
+        popupDismissTimer.playFromStart();
+        return;
+      }
+
+      newTabPopup.hide();
+    });
+
+    Label lblNewQuery = new Label("New record search"),
+          lblNewFTS   = new Label("New file content search");
+
+    String itemStyle  = "-fx-padding: 6 12 6 12; -fx-cursor: hand; -fx-background-color: -fx-control-inner-background;",
+           hoverStyle = "-fx-padding: 6 12 6 12; -fx-cursor: hand; -fx-background-color: -fx-accent;";
+
+    for (Label lbl : List.of(lblNewQuery, lblNewFTS))
+    {
+      lbl.setStyle(itemStyle);
+      lbl.setMaxWidth(Double.MAX_VALUE);
+      lbl.setOnMouseEntered(e -> lbl.setStyle(hoverStyle));
+      lbl.setOnMouseExited (e -> lbl.setStyle(itemStyle));
+    }
+
+    lblNewQuery.setOnMouseClicked(event ->
+    {
+      newTabPopup.hide();
+      openNewRecordQueryTab();
+    });
+
+    lblNewFTS.setOnMouseClicked(event ->
+    {
+      newTabPopup.hide();
+      goToNewFTSTab();
+    });
+
+    VBox innerBox = new VBox(lblNewQuery, lblNewFTS);
+    innerBox.setStyle("-fx-background-color: -fx-background; -fx-border-color: -fx-box-border; -fx-border-width: 1; -fx-padding: 2;");
+
+    // Wrap in a container with padding so the drop shadow isn't clipped by the Popup bounds
+
+    VBox vbox = new VBox(innerBox);
+    vbox.setStyle("-fx-padding: 0 8 8 0; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 2, 2);");
+
+    innerBox.setOnMouseEntered(e -> popupDismissTimer.stop());
+    innerBox.setOnMouseExited (e -> popupDismissTimer.playFromStart());
+
+    newTabPopup = new Popup();
+    newTabPopup.setAutoHide(true);
+    newTabPopup.getContent().add(vbox);
+
+    newTabPopup.setOnShowing(event ->
+    {
+      scaleNodeForDPI(innerBox);
+      setFontSize(innerBox);
+    });
+
+    Platform.runLater(this::initTabNewHeader);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  FTSQueryCtrlr goToNewFTSTab()
+  {
+    FTSQueryCtrlr ftsCtrlr = addFTSQueryCtrlr();
+    tabPane.getSelectionModel().select(ftsCtrlr.getTab());
+    return ftsCtrlr;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initTabNewHeader()
+  {
+    tabNewHeader = findFirst(tabPane.lookupAll(".tab"), header ->
+    {
+      Label label = (Label) header.lookup(".tab-label");
+      return (label != null) && "+".equals(label.getText());
+    });
+
+    if (tabNewHeader == null) return;
+
+    tabNewHeader.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
+    {
+      event.consume();
+      showNewTabPopup();
+    });
+
+    tabNewHeader.setOnMouseEntered(e ->
+    {
+      popupDismissTimer.stop();
+      showNewTabPopup();
+    });
+
+    tabNewHeader.setOnMouseExited(e -> popupDismissTimer.playFromStart());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void showNewTabPopup()
+  {
+    if ((tabNewHeader == null) || (db.isLoaded() == false) || newTabPopup.isShowing()) return;
+
+    Bounds bounds = tabNewHeader.localToScreen(tabNewHeader.getBoundsInLocal());
+    if (bounds == null) return;
+
+    newTabPopup.show(tabPane.getScene().getWindow(), bounds.getMinX(), bounds.getMaxY());
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

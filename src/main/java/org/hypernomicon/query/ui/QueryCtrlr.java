@@ -55,7 +55,6 @@ import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.populators.QueryPopulator.QueryCell;
@@ -78,13 +77,13 @@ import javafx.scene.web.WebView;
 
 //---------------------------------------------------------------------------
 
-public final class QueryCtrlr
+public final class QueryCtrlr extends QuerySubCtrlr
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private AnchorPane apDescription, apResults;
+  @FXML private AnchorPane apResults;
   @FXML private Button btnResetFields;
   @FXML private SplitPane spMain, spLower;
   @FXML private TableView<HyperTableRow> tvFields;
@@ -97,16 +96,13 @@ public final class QueryCtrlr
   private final Map<HDT_Record, ResultRow> recordToRow = new HashMap<>();
 
   private final QueriesTabCtrlr queriesTabCtrlr;
-  private final WebView webView;
   private final TabPane tabPane;
 
   private HyperTable htFields;
   private ReportTable reportTable;
-  private Tab tab;
   private QueryFavorite fav = null;
   private OneTouchExpandableWrapper lowerOneTouchExpandableWrapper;
   private HDT_Record curResult = null;
-  private int scrollPosPriorToBeingDeactivated = 0;
 
   private ResultsTable resultsTable;
 
@@ -128,13 +124,18 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 
   public List<ResultRow> results()        { return inReportMode() ? List.of() : Collections.unmodifiableList(resultsBackingList); }
-  void saveColumnWidths()                 { HyperTable.saveColWidthsForTable(tvFields, tvFields.getColumns(), TablePrefKey.QUERY_FIELDS); }
-  void focusOnFields()                    { safeFocus(tvFields); }
-  public boolean inReportMode()           { return inRecordMode == false; }
-  Tab getTab()                            { return tab; }
-  HDT_Record getRecord()                  { return curResult; }
   public boolean getSearchLinkedRecords() { return searchLinkedRecords; }
+  public boolean inReportMode()           { return inRecordMode == false; }
+
+  void focusOnFields()                    { safeFocus(tvFields); }
+  HDT_Record getRecord()                  { return curResult; }
   TableView<ResultRow> getResultsTV()     { return tvResults; }
+
+  private void saveColumnWidths()         { HyperTable.saveColWidthsForTable(tvFields, tvFields.getColumns(), TablePrefKey.QUERY_FIELDS); }
+
+  @Override void activate()        { apDescription.getChildren().setAll(webView); }
+  @Override void executeOrSearch() { btnExecuteClick(true); }
+  @Override void onTabClosing()    { saveColumnWidths(); }
 
   private static Query<?> getQuery(HyperTableRow row)      { return row.getCell(QUERY_COL_NDX) instanceof QueryCell queryCell ? queryCell.getQuery() : null; }
   private static QueryType getQueryType(HyperTableRow row) { return QueryType.codeToVal(row.getID(QUERY_TYPE_COL_NDX)); }
@@ -144,8 +145,9 @@ public final class QueryCtrlr
 
   QueryCtrlr(QueriesTabCtrlr queriesTabCtrlr, WebView webView, TabPane tabPane)
   {
+    super(webView);
+
     this.queriesTabCtrlr = queriesTabCtrlr;
-    this.webView = webView;
     this.tabPane = tabPane;
 
     EventHandler<ActionEvent> onAction = event ->
@@ -164,7 +166,7 @@ public final class QueryCtrlr
     }
 
     tabPane.getTabs().add(tabPane.getTabs().size() - 1, tab);
-    tab.setOnCloseRequest(event -> queriesTabCtrlr.deleteView((Tab) event.getSource()));
+    tab.setOnCloseRequest(event -> queriesTabCtrlr.deleteSubView((Tab) event.getSource()));
 
     forceToggleSelection(tgLogic);
 
@@ -808,7 +810,7 @@ public final class QueryCtrlr
    * @return True if the query ran successfully, regardless of whether there were any results;
    * false if the query did not run, encountered an error during execution, or was cancelled by the user.
    */
-  boolean btnExecuteClick(boolean setCaption)
+  private boolean btnExecuteClick(boolean setCaption)
   {
     for (HyperTableRow row : htFields.dataRows())
     {
@@ -1231,19 +1233,30 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void deactivate()
+  @Override void removeRecord(HDT_Record record)
   {
-    scrollPosPriorToBeingDeactivated = MainTextUtil.webEngineScrollPos(webView.getEngine());
-
-    removeFromParent(webView);
+    recordToRow.remove(record);
+    tvResults.getItems().removeIf(row -> row.getRecord() == record);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void activate()
+  @Override void onTabSelected(QueriesTabCtrlr queriesTabCtrlr)
   {
-    apDescription.getChildren().setAll(webView);
+    activate();
+    queriesTabCtrlr.updateCB(this);
+    refreshView(true);
+    queriesTabCtrlr.setQueryToolbarVisible(true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override void onClear(TabPane tabPane)
+  {
+    saveColumnWidths();
+    tabPane.getTabs().remove(getTab());
   }
 
 //---------------------------------------------------------------------------

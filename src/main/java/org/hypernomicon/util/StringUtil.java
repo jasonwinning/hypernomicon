@@ -453,6 +453,32 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Formats a page range for display using the application's standard convention:
+   * {@code "p. 5"} for a single page, {@code "pp. 5–10"} for a range (en dash, U+2013),
+   * and {@code "p. 5+"} for an open-ended range (a start page with no known end).
+   * Callers supply any surrounding text themselves (brackets, an HTML wrapper, etc.).
+   * <p>
+   * This is for display only. Do NOT use it to build interchange data such as the
+   * bibliographic {@code bfPages} field, which must use an ASCII hyphen for round-tripping
+   * through Zotero, Mendeley, RIS, and BibTeX.
+   *
+   * @param startPage the first page, or {@code <= 0} if there is no page information
+   * @param endPage the last page, or {@code <= 0} for an open-ended range
+   * @return the formatted range, or an empty string when {@code startPage <= 0}
+   */
+  public static String formatPageRange(int startPage, int endPage)
+  {
+    if (startPage <= 0)       return "";
+    if (endPage   <= 0)       return "p. " + startPage + '+';   // open-ended
+    if (startPage == endPage) return "p. " + startPage;         // single page
+
+    return "pp. " + startPage + '–' + endPage;             // en dash
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static char toLowerAscii(char c)
   {
     return (c >= 'A') && (c <= 'Z') ? (char)(c + 32) : c;

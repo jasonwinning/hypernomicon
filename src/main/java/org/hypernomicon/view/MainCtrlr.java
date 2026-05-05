@@ -2505,7 +2505,7 @@ public final class MainCtrlr
       return;
     }
 
-    QueryCtrlr curQueryCtrlr = queryHyperTab().getCurQueryCtrlr();
+    QueryCtrlr curQueryCtrlr = queryHyperTab().curQueryCtrlr();
 
     if (curQueryCtrlr == null)
     {
@@ -3235,18 +3235,27 @@ public final class MainCtrlr
 
     if (activeTabEnum == queryTabEnum)
     {
-      btnSave.setText("Accept Edits");
-
-      btnRevert.setDisable(false);
-      btnRevert.setText("Refresh");
-      setToolTip(btnRevert, "Refresh data in table. This does not re-run the query.");
-
-      btnDelete.setDisable(activeRec == null);
-      setToolTip(btnDelete, "Delete selected record");
-
       btnCreateNew.setVisible(false);
 
-      disableAll(btnSave, btnIncrement, btnDecrement);
+      if (queryHyperTab().isFTSTabActive())
+      {
+        disableAll(btnSave, btnRevert, btnDelete, btnIncrement, btnDecrement);
+        btnSave.setText("Accept Edits");
+        btnRevert.setText("Refresh");
+      }
+      else
+      {
+        btnSave.setText("Accept Edits");
+
+        btnRevert.setDisable(false);
+        btnRevert.setText("Refresh");
+        setToolTip(btnRevert, "Refresh data in table. This does not re-run the query.");
+
+        btnDelete.setDisable(activeRec == null);
+        setToolTip(btnDelete, "Delete selected record");
+
+        disableAll(btnSave, btnIncrement, btnDecrement);
+      }
     }
 
   //---------------------------------------------------------------------------

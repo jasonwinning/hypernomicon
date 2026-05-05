@@ -24,8 +24,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.Loader;
@@ -34,6 +33,9 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.fts.FullTextIndexer;
+import org.hypernomicon.fts.FullTextIndexer.SearchResult;
+import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.file.FilePath;
@@ -78,12 +80,9 @@ class SearchResultFileList
     }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-    private boolean overlaps(SearchResultFile other)
-    {
-      return filePath.equals(other.filePath) && (endPage >= other.startPage) && (other.endPage >= startPage);
-    }
+    private boolean hasPageRestriction()             { return (startPage > 1) || (endPage < Integer.MAX_VALUE); }
+    private boolean overlaps(SearchResultFile other) { return filePath.equals(other.filePath) && (endPage >= other.startPage) && (other.endPage >= startPage); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -339,6 +338,151 @@ class SearchResultFileList
       incrementAndUpdateProgress();
     }
   }}; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns the set of relative paths (forward-slash separated, relative to DB root)
+   * suitable for use as a Lucene TermInSetQuery filter.
+   */
+  Set<String> getPathScope()
+  {
+    Set<String> paths = new HashSet<>();
+
+    for (SearchResultFile resultFile : list)
+    {
+      String ext = resultFile.filePath.getExtensionOnly();
+      if (FullTextIndexer.isIndexableExtension(ext) == false) continue;
+
+      FilePath relPath = db.getRootPath().relativize(resultFile.filePath);
+      if (relPath != null)
+        paths.add(relPath.toString().replace('\\', '/'));
+    }
+
+    return paths;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns a summary string for the scope label (e.g., "47 files (3 with page restrictions)").
+   */
+  String getSummary()
+  {
+    Set<FilePath> uniqueFiles = new HashSet<>();
+    int restrictedCount = 0;
+
+    for (SearchResultFile rf : list)
+    {
+      uniqueFiles.add(rf.filePath);
+
+      if (rf.hasPageRestriction())
+        restrictedCount++;
+    }
+
+    String summary = uniqueFiles.size() + " file" + (uniqueFiles.size() == 1 ? "" : "s");
+
+    if (restrictedCount > 0)
+      summary += " (" + restrictedCount + " with page restrictions)";
+
+    return summary;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Filters FTS search results by page range. Returns a new list containing only results
+   * whose page matches fall within the scoped page ranges for the corresponding file.
+   */
+  List<SearchResult> filterResults(List<SearchResult> results)
+  {
+    List<SearchResult> filtered = new ArrayList<>();
+
+    for (SearchResult result : results)
+    {
+      List<PageMatch> filteredMatches = filterPageMatches(result.path(), result.pageMatches());
+
+      if (collEmpty(filteredMatches)) continue;
+
+      filtered.add(new SearchResult(result.path(), result.score(), filteredMatches, result.scoreDoc()));
+    }
+
+    return filtered;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private List<PageMatch> filterPageMatches(String relPath, List<PageMatch> matches)
+  {
+    if (collEmpty(matches)) return matches;
+
+    FilePath absPath = db.getRootPath(relPath);
+
+    // Find all page range entries for this file
+
+    List<SearchResultFile> entries = list.stream().filter(rf -> rf.filePath.equals(absPath)).toList();
+    if (entries.isEmpty()) return null;  // file not in scope
+
+    // If any entry covers the entire file, no filtering needed
+
+    for (SearchResultFile entry : entries)
+      if (entry.hasPageRestriction() == false)
+        return matches;
+
+    // Filter page matches to those within at least one allowed range
+
+    List<PageMatch> filtered = new ArrayList<>();
+
+    for (PageMatch pm : matches)
+    {
+      if (pm.pageNumber() == 0)  // non-PDF or unknown page; include unconditionally
+      {
+        filtered.add(pm);
+        continue;
+      }
+
+      for (SearchResultFile entry : entries)
+      {
+        if ((pm.pageNumber() >= entry.startPage) && (pm.pageNumber() <= entry.endPage))
+        {
+          filtered.add(pm);
+          break;
+        }
+      }
+    }
+
+    return filtered;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns a sorted list of scope descriptions for display in a popup
+   * (e.g., "Papers/anthology.pdf  [pp. 50–75]").
+   */
+  List<String> getScopeDescription()
+  {
+    List<String> desc = new ArrayList<>();
+
+    for (SearchResultFile rf : list)
+    {
+      FilePath relPath = db.getRootPath().relativize(rf.filePath);
+      String pathStr = relPath != null ? relPath.toString().replace('\\', '/') : rf.filePath.toString();
+
+      if (rf.hasPageRestriction())
+        desc.add(pathStr + "  [" + formatPageRange(rf.startPage, rf.endPage == Integer.MAX_VALUE ? 0 : rf.endPage) + ']');
+      else
+        desc.add(pathStr);
+    }
+
+    desc.sort(String.CASE_INSENSITIVE_ORDER);
+    return desc;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2026 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="vbMain" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.FTSQueryCtrlr">
+  <AnchorPane maxHeight="125.0" minHeight="120.0" minWidth="0.0" prefHeight="125.0" prefWidth="160.0" style="-fx-background-color: -fx-background;">
+    <!-- Row 1: Label, query field, search button, help, checkboxes -->
+    <HBox alignment="CENTER_LEFT" spacing="6.0" AnchorPane.leftAnchor="9.0" AnchorPane.topAnchor="9.0">
+      <Label text="Search file contents:" />
+      <TextField fx:id="tfQuery" prefHeight="28.0" prefWidth="400.0" />
+      <Button fx:id="btnSearch" mnemonicParsing="false" prefHeight="28.0" style="-fx-font-weight: bold;" text="Search">
+        <graphic>
+          <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@../resources/images/magnifier.png" />
+          </ImageView>
+        </graphic>
+      </Button>
+      <Button fx:id="btnSearchHelp" mnemonicParsing="false" prefHeight="28.0">
+        <graphic>
+          <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+            <Image url="@../resources/images/question.png" />
+          </ImageView>
+        </graphic>
+      </Button>
+      <CheckBox fx:id="chkExactPhrase" mnemonicParsing="false" text="Exact phrase">
+            <HBox.margin>
+               <Insets left="12.0" right="12.0" />
+            </HBox.margin></CheckBox>
+      <CheckBox fx:id="chkIncludeUnassociated" mnemonicParsing="false" selected="true" text="Include unassociated files" />
+      <HBox alignment="CENTER_LEFT" spacing="6.0" style="-fx-border-color: -fx-box-border; -fx-border-width: 1; -fx-padding: 4; -fx-border-radius: 3;">
+            <HBox.margin>
+               <Insets left="12.0" />
+            </HBox.margin>
+      </HBox>
+    </HBox>
+    <HBox alignment="BASELINE_LEFT" spacing="12.0" AnchorPane.leftAnchor="9.0" AnchorPane.topAnchor="43.0">
+      <padding><Insets top="4.0" /></padding>
+      <RadioButton fx:id="rbFolderScope" mnemonicParsing="false" selected="true" text="By folder/file mask">
+            <toggleGroup>
+               <ToggleGroup fx:id="scopeToggle" />
+            </toggleGroup></RadioButton>
+      <HBox fx:id="hbFolderGroup" alignment="BASELINE_LEFT" spacing="8.0" style="-fx-border-color: -fx-box-border; -fx-border-width: 1; -fx-padding: 4; -fx-border-radius: 3;">
+        <Label text="Folder:" />
+        <TextField fx:id="tfFolder" prefWidth="280.0" />
+        <Button fx:id="btnChooseFolder" minWidth="28.0" mnemonicParsing="false" prefWidth="28.0" text="..." />
+        <Label text="File mask:">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin></Label>
+        <TextField fx:id="tfFileMask" prefWidth="150.0" promptText="*.pdf, *.docx" />
+      </HBox>
+      <Label fx:id="lblStatus" />
+      <Button fx:id="btnShowMore" mnemonicParsing="false" text="Show More" visible="false" />
+      <Button fx:id="btnShowAll" mnemonicParsing="false" text="Show All" visible="false" />
+    </HBox>
+    <!-- Row 3: Record scope radio + label + include edited checkbox + View button -->
+    <HBox alignment="BASELINE_LEFT" spacing="12.0" AnchorPane.leftAnchor="9.0" AnchorPane.topAnchor="87.0">
+      <padding><Insets top="4.0" /></padding>
+      <RadioButton fx:id="rbRecordScope" mnemonicParsing="false" text="By record query results" toggleGroup="$scopeToggle" />
+      <Label fx:id="lblRecordScope" />
+      <CheckBox fx:id="chkIncludeEdited" mnemonicParsing="false" text="Include edited works" />
+      <Button fx:id="btnViewScope" mnemonicParsing="false" text="View" visible="false" />
+    </HBox>
+  </AnchorPane>
+  <SplitPane fx:id="spLower" dividerPositions="0.6" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+      <TableView fx:id="tvResults" prefHeight="382.0" prefWidth="1055.0" styleClass="noScale" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <columns>
+          <TableColumn fx:id="colFileName" prefWidth="180.0" text="File Name" />
+          <TableColumn fx:id="colRecord" prefWidth="250.0" text="Record" />
+          <TableColumn fx:id="colDate" prefWidth="60.0" text="Date" />
+          <TableColumn fx:id="colMatches" text="Matches" />
+          <TableColumn fx:id="colExcerpt" prefWidth="400.0" text="Excerpt" />
+          <TableColumn fx:id="colFilePath" prefWidth="200.0" text="File Path" />
+        </columns>
+      </TableView>
+    </AnchorPane>
+    <AnchorPane fx:id="apDescription" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+    </AnchorPane>
+  </SplitPane>
+</VBox>

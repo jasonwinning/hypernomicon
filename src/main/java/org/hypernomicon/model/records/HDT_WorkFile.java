@@ -35,8 +35,8 @@ import org.hypernomicon.util.file.FilePath;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.IntStream;
 
 //---------------------------------------------------------------------------
 
@@ -287,6 +287,144 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
     int ndx = StringUtils.indexOfAny(str, ":?|");
 
     return ((ndx >= 0) ? str.substring(0, ndx) : str).strip();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * A work's page range within a particular work file. {@code startPage} is
+   * always {@code > 0}; {@code endPage <= 0} indicates the range extends to
+   * the end of the file.
+   *
+   * @see #getBoundariesForFile(FilePath)
+   */
+  public record WorkBoundary(int startPage, int endPage, HDT_Work work) {}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Collects the page-range boundaries for every work associated with the given
+   * file via its work file record(s). Works without an explicit start page are
+   * omitted. Results are sorted by start page ascending.
+   *
+   * @param filePath a file path (typically under the database root)
+   * @return an ordered list of work boundaries; empty if no {@code HDT_WorkFile}
+   *         is associated with the file, or if no associated work has a start page
+   */
+  public static List<WorkBoundary> getBoundariesForFile(FilePath filePath)
+  {
+    Set<HyperPath> hyperPaths = HyperPath.getHyperPathSetForFilePath(filePath);
+    if (collEmpty(hyperPaths)) return List.of();
+
+    List<WorkBoundary> boundaries = new ArrayList<>();
+
+    for (HyperPath hp : hyperPaths)
+    {
+      if (hp.getRecord() instanceof HDT_WorkFile workFile)
+      {
+        for (HDT_Work work : workFile.works)
+        {
+          int startPage = work.getStartPageNum(workFile),
+              endPage   = work.getEndPageNum  (workFile);
+
+          if (startPage > 0)
+            boundaries.add(new WorkBoundary(startPage, endPage, work));
+        }
+      }
+    }
+
+    boundaries.sort(Comparator.comparingInt(WorkBoundary::startPage));
+    return boundaries;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Among all works of all {@link HDT_WorkFile} records associated with {@code hyperPaths},
+   * returns the one whose explicit page range most tightly covers {@code [minPage, maxPage]}
+   * (smallest span wins). A work with no explicit page range, and any work when
+   * {@code minPage <= 0} (no page constraint), is used only as a last resort. Page values
+   * {@code <= 0} are treated as "not set" (matching {@code HDT_Work}'s {@code -1} sentinel
+   * from {@code parseInt}, and guarding against a stray {@code 0}).
+   *
+   * @return the most specific covering work, or {@code null} if no associated work qualifies
+   */
+  public static HDT_Work smallestCoveringWork(Set<HyperPath> hyperPaths, int minPage, int maxPage)
+  {
+    HDT_Work bestWork = null;
+    int bestSpan = Integer.MAX_VALUE;
+
+    for (HyperPath hyperPath : hyperPaths)
+    {
+      if (hyperPath.getRecord() instanceof HDT_WorkFile workFile)
+      {
+        for (HDT_Work work : workFile.works)
+        {
+          int startPage = work.getStartPageNum(workFile),
+              endPage   = work.getEndPageNum  (workFile);
+
+          // No explicit range, or no page constraint: last-resort candidate only
+
+          if (((startPage <= 0) && (endPage <= 0)) || (minPage <= 0))
+          {
+            if (bestWork == null)
+              bestWork = work;
+
+            continue;
+          }
+
+          // Does this work's range contain every page in [minPage, maxPage]?
+
+          boolean containsAll = ((startPage <= 0) || (minPage >= startPage)) &&
+                                ((endPage   <= 0) || (maxPage <= endPage));
+
+          if (containsAll == false) continue;
+
+          int span = ((startPage > 0) && (endPage > 0)) ? (endPage - startPage) : (Integer.MAX_VALUE - 1);
+
+          if (span < bestSpan)
+          {
+            bestSpan = span;
+            bestWork = work;
+          }
+        }
+      }
+    }
+
+    return bestWork;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Finds the most specific work (smallest explicit page range) whose range
+   * contains every page in {@code pages}. Works with no explicit page range
+   * are treated as covering the entire file and used only as a last resort.
+   * Non-positive page numbers in the stream are ignored.
+   *
+   * @param filePath     a file path (typically under the database root)
+   * @param pageNumbers  the page numbers that must all be covered
+   * @param fallback     the record to return if no single covering work is found
+   *                     (including when {@code pages} reduces to empty, or when
+   *                     no {@code HDT_WorkFile} is associated with the file)
+   * @return the most specific covering work, or {@code fallback}
+   */
+  public static HDT_RecordWithPath resolveRecordForPages(FilePath filePath, IntStream pageNumbers, HDT_RecordWithPath fallback)
+  {
+    IntSummaryStatistics pageNumberStats = pageNumbers.filter(pageNumber -> pageNumber > 0).summaryStatistics();
+
+    if (pageNumberStats.getCount() == 0) return fallback;
+
+    Set<HyperPath> hyperPaths = HyperPath.getHyperPathSetForFilePath(filePath);
+
+    return collEmpty(hyperPaths) ?
+      fallback
+    :
+      nullSwitch(smallestCoveringWork(hyperPaths, pageNumberStats.getMin(), pageNumberStats.getMax()), fallback);
   }
 
 //---------------------------------------------------------------------------
