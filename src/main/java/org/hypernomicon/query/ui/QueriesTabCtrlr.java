@@ -376,7 +376,21 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       deactivateCurrent();
       curSubCtrlr = subCtrlr;
       subCtrlr.onTabSelected(this);
+      updateFileActionsForMode();
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Hides record-only File Actions checkbox options when an FTS tab is active.
+   * "Include edited works" and "Always copy entire PDF file" are record-query
+   * concepts; "Strip annotations from PDFs on copy" applies in both modes.
+   */
+  private void updateFileActionsForMode()
+  {
+    setAllVisible(isFTSTabActive() == false, mnuIncludeEdited, mnuEntirePDF);
   }
 
 //---------------------------------------------------------------------------
@@ -524,24 +538,44 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private boolean copyFilesToFolder(boolean onlySelected)
   {
-    SearchResultFileList fileList = new SearchResultFileList(mnuEntirePDF.isSelected(), mnuIncludeEdited.isSelected());
+    if (db.isOffline()) return false;
 
-    if (db.isOffline() || results().isEmpty()) return false;
+    boolean fts = isFTSTabActive();
+    FTSQueryCtrlr ftsCtrlr = fts ? (FTSQueryCtrlr) curSubCtrlr : null;
+
+    if (fts ? (ftsCtrlr.hasResults() == false) : results().isEmpty()) return false;
+
+    // FTS rows always represent a single file with no page bounds; the
+    // entire-PDF and include-edited options are record-query concepts,
+    // hidden in FTS mode and irrelevant here: the FTS path builds the list
+    // via populateFileList (addFilePath), which ignores these flags, so the
+    // true/true below is just a harmless default.
+
+    SearchResultFileList fileList = fts
+      ? new SearchResultFileList(true, true)
+      : new SearchResultFileList(mnuEntirePDF.isSelected(), mnuIncludeEdited.isSelected());
 
     if (new HyperTask("BuildListOfFilesToCopy", "Building list...") { @Override protected void call() throws CancelledTaskException
     {
-      QueryCtrlr qc = curQueryCtrlr();
-      List<ResultRow> resultRowList = (onlySelected && (qc != null)) ? qc.getResultsTV().getSelectionModel().getSelectedItems() : results();
-
-      totalCount = resultRowList.size();
-
-      for (ResultRow row : resultRowList)
+      if (fts)
       {
-        HDT_Record record = row.getRecord();
-        if (record instanceof HDT_RecordWithPath recordWithPath)
-          fileList.addRecord(recordWithPath);
+        ftsCtrlr.populateFileList(fileList, onlySelected);
+      }
+      else
+      {
+        QueryCtrlr qc = curQueryCtrlr();
+        List<ResultRow> resultRowList = (onlySelected && (qc != null)) ? qc.getResultsTV().getSelectionModel().getSelectedItems() : results();
 
-        incrementAndUpdateProgress();
+        totalCount = resultRowList.size();
+
+        for (ResultRow row : resultRowList)
+        {
+          HDT_Record record = row.getRecord();
+          if (record instanceof HDT_RecordWithPath recordWithPath)
+            fileList.addRecord(recordWithPath);
+
+          incrementAndUpdateProgress();
+        }
       }
 
     }}.runWithProgressDialog() != State.SUCCEEDED) return false;

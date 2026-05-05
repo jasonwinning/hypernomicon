@@ -240,7 +240,7 @@ class SearchResultFileList
     {
       case hdtMiscFile : case hdtWorkFile :
 
-        addFile(record.filePath(), -1, -1);
+        addFilePath(record.filePath());
         break;
 
       case hdtWork :
@@ -286,6 +286,19 @@ class SearchResultFileList
       default :
         break;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Adds a single file with no page bounds. Used for FTS result rows and for
+   * single-file record types (misc files, work files), each of which maps to
+   * exactly one file.
+   */
+  void addFilePath(FilePath filePath)
+  {
+    addFile(filePath, -1, -1);
   }
 
 //---------------------------------------------------------------------------

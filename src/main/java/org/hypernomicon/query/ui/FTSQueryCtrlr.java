@@ -272,6 +272,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   @Override void onTabClosing()           { }
   @Override void onClear(TabPane tabPane) { tabPane.getTabs().remove(getTab()); }
 
+  boolean hasResults() { return allRows.isEmpty() == false; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -1122,6 +1124,38 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     hasMore = outcome.hasMore();
 
     updateStatusLabel();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Adds the current FTS row(s) to the given file list. With
+   * {@code onlySelected=true} this contributes the single selected row
+   * (FTS uses single-select); with {@code onlySelected=false} it contributes
+   * every row in {@link #allRows}. Files are added without page bounds:
+   * each FTS row already represents a specific file the user picked.
+   */
+  void populateFileList(SearchResultFileList fileList, boolean onlySelected)
+  {
+    List<FTSResultRow> rows;
+
+    if (onlySelected)
+    {
+      FTSResultRow selected = tvResults.getSelectionModel().getSelectedItem();
+      rows = (selected == null) ? List.of() : List.of(selected);
+    }
+    else
+    {
+      rows = List.copyOf(allRows);  // snapshot to avoid concurrent mutation by the highlight executor
+    }
+
+    for (FTSResultRow row : rows)
+    {
+      FilePath filePath = db.getRootPath(row.path());
+      if (FilePath.isEmpty(filePath) == false)
+        fileList.addFilePath(filePath);
+    }
   }
 
 //---------------------------------------------------------------------------
