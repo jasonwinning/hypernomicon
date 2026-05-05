@@ -47,6 +47,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
 <BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" stylesheets="@../resources/css.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
   <top>
@@ -193,17 +194,22 @@
               <RowConstraints percentHeight="40.0" vgrow="SOMETIMES" />
               <RowConstraints percentHeight="60.0" vgrow="SOMETIMES" />
             </rowConstraints>
-            <TableView fx:id="tvFind" GridPane.rowIndex="1">
-              <columns>
-                <TableColumn maxWidth="32.0" minWidth="32.0" prefWidth="32.0" resizable="false" />
-                <TableColumn prefWidth="500.0" text="Name" />
-                <TableColumn maxWidth="1000.0" prefWidth="100.0" text="Date" />
-                <TableColumn maxWidth="2500.0" prefWidth="250.0" text="Additional Info" />
-              </columns>
-              <columnResizePolicy>
-                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-              </columnResizePolicy>
-            </TableView>
+            <VBox GridPane.rowIndex="1">
+              <TableView fx:id="tvFind" VBox.vgrow="ALWAYS">
+                <columns>
+                  <TableColumn maxWidth="32.0" minWidth="32.0" prefWidth="32.0" resizable="false" />
+                  <TableColumn prefWidth="500.0" text="Name" />
+                  <TableColumn maxWidth="1000.0" prefWidth="100.0" text="Date" />
+                  <TableColumn maxWidth="2500.0" prefWidth="250.0" text="Additional Info" />
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+              </TableView>
+              <Label fx:id="lblFTSCount" visible="false" managed="false" maxWidth="1.7976931348623157E308"
+                     minHeight="28.0" prefHeight="28.0"
+                     style="-fx-text-fill: #0066cc; -fx-cursor: hand; -fx-padding: 4 8 4 8; -fx-background-color: -fx-background;" />
+            </VBox>
           </GridPane>
         </AnchorPane>
       </StackPane>

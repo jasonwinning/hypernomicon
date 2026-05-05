@@ -88,6 +88,7 @@ import java.nio.file.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -97,6 +98,8 @@ import org.controlsfx.control.textfield.TextFields;
 
 import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
+
+import org.apache.lucene.search.Query;
 
 import com.google.common.collect.EnumHashBiMap;
 
@@ -112,8 +115,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
-import javafx.scene.Cursor;
-import javafx.scene.Scene;
+import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -141,7 +143,7 @@ public final class MainCtrlr
   @FXML private GridPane gpFindTable;
   @FXML private HBox topHBox, bottomToolBar, indexingStatusBox;
   @FXML private ImageView ivDates, ivFTSMagnifier;
-  @FXML private Label lblMentionsProgress, lblFindToast;
+  @FXML private Label lblFTSCount, lblMentionsProgress, lblFindToast;
   @FXML private Menu mnuFolders, mnuOpenRecent;
   @FXML private MenuBar menuBar;
   @FXML private MenuItem mnuAddToQueryResults, mnuChangeID, mnuCloseDatabase, mnuExitNoSave, mnuFindNextAll, mnuFindNextInName,
@@ -178,6 +180,7 @@ public final class MainCtrlr
   private final EnumHashBiMap<TabEnum, Tab> selectorTabs = EnumHashBiMap.create(TabEnum.class);
   private final Stage stage;
   private final OmniFinder omniFinder;
+  private final PauseTransition ftsCountDebounce;
   private final CustomTextField ctfOmniGoTo;
   private final ClickHoldButton chbBack, chbForward;
   private final HyperCB hcbGoTo;
@@ -406,6 +409,11 @@ public final class MainCtrlr
 
     omniFinder = new OmniFinder(htFind);
 
+    ftsCountDebounce = new PauseTransition(Duration.millis(300));
+    ftsCountDebounce.setOnFinished(event -> runFTSCountQuery(ctfOmniGoTo.getText()));
+
+    lblFTSCount.setOnMouseClicked(event -> navigateToFTSSearch((String) lblFTSCount.getUserData()));
+
     btnFileMgr.setOnAction(event -> FileManager.show(    ));
     btnBibMgr .setOnAction(event -> BibManager .show(true));
 
@@ -481,7 +489,7 @@ public final class MainCtrlr
              mnuMentionsInFiles   = new MenuItem("Mentions within files");
 
     mnuMentionsInRecords.setOnAction(event -> { if (cantSaveRecord() == false) searchForMentions(false); });
-    mnuMentionsInFiles  .setOnAction(event -> { if (cantSaveRecord() == false) searchForMentionsInFiles(); });
+    mnuMentionsInFiles  .setOnAction(event -> searchForMentionsInFiles());
 
     btnMentions.getItems().setAll(mnuMentionsInRecords, mnuMentionsInFiles);
 
@@ -498,7 +506,19 @@ public final class MainCtrlr
 
     btnSaveAll.setText(underlinedChar('S') + "ave to XML");
 
-    apFindBackground.setOnMousePressed(event -> hideFindTable());
+    apFindBackground.setOnMousePressed(event ->
+    {
+      if (event.getTarget() instanceof Node node)
+      {
+        while (node != null)
+        {
+          if (node == lblFTSCount) return;
+          node = node.getParent();
+        }
+      }
+
+      hideFindTable();
+    });
 
     ttDates.setAutoHide(true);
 
@@ -848,6 +868,7 @@ public final class MainCtrlr
 
     bindManagedToVisible(bottomToolBar    .getChildren());
     bindManagedToVisible(indexingStatusBox.getChildren());
+    bindManagedToVisible(lblFTSCount);
 
     selectorTabPane.layoutXProperty().addListener((obs, ov, nv) -> AnchorPane.setLeftAnchor(lblFindToast, nv.doubleValue()));
     btnTextSearch  .layoutXProperty().addListener((obs, ov, nv) -> AnchorPane.setLeftAnchor(gpFindTable , nv.doubleValue()));
@@ -2464,7 +2485,8 @@ public final class MainCtrlr
     if (record == null) return;
 
     windows.focusStage(getStage());
-    viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(queryHyperTab().newView(queryHyperTab().activeRecord()));
+
+    if (prepareToShowQuery() == false) return;
 
     String searchKey = record.getSearchKey();
 
@@ -3408,14 +3430,30 @@ public final class MainCtrlr
    */
   public boolean showSearch(boolean doSearch, QueryType type, int query, QueryFavorite fav, HyperTableCell op1, HyperTableCell op2, String caption)
   {
-    if (cantSaveRecord()) return false;
-
-    viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(queryHyperTab().newView(queryHyperTab().activeRecord()));
+    if (prepareToShowQuery() == false) return false;
 
     boolean result = queryHyperTab().showSearch(doSearch, type, query, fav, op1, op2, caption);
     updateFavorites();
 
     return result;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Saves the current record (if any) and advances to a fresh query view, so a new
+   * record search or full-text search can be shown in the Queries tab.
+   *
+   * @return false if the active record could not be saved (the query tab should not open)
+   */
+  private boolean prepareToShowQuery()
+  {
+    if (cantSaveRecord()) return false;
+
+    viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(queryHyperTab().newView(queryHyperTab().activeRecord()));
+
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -3489,6 +3527,11 @@ public final class MainCtrlr
   {
     tvFind.setVisible(true);
     apFindBackground.setMouseTransparent(false);
+
+    if ((lblFTSCount.getUserData() instanceof String storedQuery) && storedQuery.equals(ctfOmniGoTo.getText()))
+    {
+      lblFTSCount.setVisible(true);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -3498,6 +3541,81 @@ public final class MainCtrlr
   {
     apFindBackground.setMouseTransparent(true);
     tvFind.setVisible(false);
+    ftsCountDebounce.stop();
+    hideFTSCountLabel();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void hideFTSCountLabel()
+  {
+    lblFTSCount.setVisible(false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void runFTSCountQuery(String queryText)
+  {
+    if (strNullOrBlank(queryText) || (queryText.strip().length() < 3))
+    {
+      hideFTSCountLabel();
+      return;
+    }
+
+    FullTextIndexer indexer = db.getFullTextIndexer();
+
+    if ((indexer == null) || (indexer.isIndexingEnabled() == false))
+    {
+      hideFTSCountLabel();
+      return;
+    }
+
+    Query query = FullTextIndexer.buildSearchKeyQuery('^' + queryText.strip());
+
+    if (query == null)
+    {
+      hideFTSCountLabel();
+      return;
+    }
+
+    CompletableFuture.supplyAsync(() ->
+    {
+      try { return indexer.countMatches(query); }
+      catch (Exception e) { return 0; }
+    })
+    .thenAcceptAsync(count ->
+    {
+      if ((omniSearchMode.getValue() != OmniSearchMode.asYouType) ||
+          (ctfOmniGoTo.getText().equals(queryText) == false))
+      {
+        hideFTSCountLabel();
+        return;
+      }
+
+      if ((count > 0) && tvFind.isVisible())
+      {
+        lblFTSCount.setText("Found within contents of " + count + " file" + (count == 1 ? "" : "s") + "...");
+        lblFTSCount.setUserData(queryText);
+        lblFTSCount.setVisible(true);
+      }
+      else
+        hideFTSCountLabel();
+
+    }, Platform::runLater);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void navigateToFTSSearch(String queryText)
+  {
+    if (prepareToShowQuery() == false) return;
+
+    hideFindTable();
+
+    queryHyperTab().goToNewFTSTab().setQueryTextAndSearch('^' + queryText.strip(), true);
   }
 
 //---------------------------------------------------------------------------
@@ -3943,24 +4061,33 @@ public final class MainCtrlr
   {
     if (omniSearchMode.getValue() == OmniSearchMode.currentDesc)
     {
+      ftsCountDebounce.stop();
+      hideFTSCountLabel();
       findWithinDesc();
       return;
     }
 
     if (omniSearchMode.getValue() != OmniSearchMode.asYouType)
+    {
+      ftsCountDebounce.stop();
+      hideFTSCountLabel();
       return;
+    }
 
     if ((dontShowOmniTable == false) && strNotNullOrBlank(newValue) && (selectorTabEnum() == omniTabEnum))
       showFindTable();
 
     if (newValue.isEmpty())
     {
+      ftsCountDebounce.stop();
+      hideFTSCountLabel();
       clearOmniFinder();
       return;
     }
 
     tvFind.setPlaceholder(new Text("Searching..."));
     omniFinder.setQueryAndStart(newValue, showingMore);
+    ftsCountDebounce.playFromStart();
   }
 
 //---------------------------------------------------------------------------
