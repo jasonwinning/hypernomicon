@@ -231,6 +231,7 @@ public final class App extends Application
       FilePath dbPath = (db == null) || db.isOffline() ? FilePath.of("") : db.getRootPath();
 
       // Clear log if this is the first instance
+
       if (InterProcClient.updateRunningInstancesFile(dbPath).size() == 1)
         FileUtils.write(newLogFilePath.toFile(), "", Charset.defaultCharset());
 
@@ -244,6 +245,7 @@ public final class App extends Application
     }
 
     // Create TeeOutputStream to write both to console and file
+
     teeOut = new PrintStream(new TeeOutputStream(origOut, logFileOut));
     teeErr = new PrintStream(new TeeOutputStream(origErr, logFileOut));
 
@@ -265,6 +267,7 @@ public final class App extends Application
     suppressLibreOfficePrinterLookup();
 
     // On Mac OS Chromium engine must be initialized outside of FX application thread
+
     if (Environment.isMac()) PDFJSWrapper.init();
   }
 

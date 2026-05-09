@@ -121,27 +121,33 @@ public final class TestHyperDB extends AbstractHyperDB
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  @Override protected boolean checkChecksums() { return true; }
+  @Override protected boolean checkChecksums()        { return true; }
+
   @Override public void fileNoLongerInUse(FilePath filePath) { }
-  @Override public FilePath extPath() { return null; }
+  @Override public void updateMainTextTemplate(RecordType recordType, String html) { }
+
   @Override protected void lock() { }
   @Override protected void unlock() { }
   @Override protected void updateFilenameRules() { }
   @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { }
   @Override protected void saveSourcePathToSystemSettings(String newPathStr) { }
-  @Override public FilePath getRequestMessageFilePath(boolean useAppPrefs) { return FilePath.of(""); }
-  @Override public FilePath getResponseMessageFilePath(boolean useAppPrefs) { return FilePath.of(""); }
-  @Override public FilePath getLockFilePath(boolean useAppPrefs) { return FilePath.of(""); }
-  @Override public String getLockOwner() { return null; }
-  @Override public String getOtherLockOwner() { return null; }
   @Override protected void checkWhetherFoldersExist() { }
-  @Override public void updateMainTextTemplate(RecordType recordType, String html) { }
-  @Override public String getMainTextTemplate(RecordType recordType) { return null; }
-  @Override protected void loadMainTextTemplates() { }
-  @Override protected FolderTreeWatcher getFolderTreeWatcher() { return null; }
+  @Override protected void loadMainTextTemplates()    { }
+
   @Override protected void populateFilePathRegistry() { registryAccessor.populateForTesting(rootFilePath); }
+
+  @Override public FilePath getRequestMessageFilePath (boolean useAppPrefs) { return FilePath.of(""); }
+  @Override public FilePath getResponseMessageFilePath(boolean useAppPrefs) { return FilePath.of(""); }
+  @Override public FilePath getLockFilePath           (boolean useAppPrefs) { return FilePath.of(""); }
+
+  @Override public FilePath extPath()                                { return null; }
+
+  @Override public String getLockOwner()                             { return null; }
+  @Override public String getOtherLockOwner()                        { return null; }
+  @Override public String getMainTextTemplate(RecordType recordType) { return null; }
+
+  @Override protected FolderTreeWatcher getFolderTreeWatcher()       { return null; }
 
   @Override MentionsIndex createMentionsIndex(List<Runnable> completeHandlers) { return new MentionsIndex(completeHandlers, false); }
 

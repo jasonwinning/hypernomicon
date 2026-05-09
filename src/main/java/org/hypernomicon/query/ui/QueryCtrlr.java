@@ -192,7 +192,7 @@ public final class QueryCtrlr
 
     // Query type column with change handler
 
-    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, queryTypePopulator, (row, cellVal, nextColNdx, nextPopulator) ->
+    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, queryTypePopulator, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       int rowNdx = tvFields.getItems().indexOf(row);
 
@@ -248,7 +248,7 @@ public final class QueryCtrlr
 
     // Query select column with change handler
 
-    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, new QueryPopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
+    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, new QueryPopulator(), (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       boolean tempDASD = disableAutoShowDropdownList;
       disableAutoShowDropdownList = true;
@@ -270,7 +270,7 @@ public final class QueryCtrlr
 
     // Operand 1 column with change handler
 
-    htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctEditableUnlimitedDropDown, new VariablePopulator(), onAction, (row, cellVal, nextColNdx, nextPopulator) ->
+    htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctEditableUnlimitedDropDown, new VariablePopulator(), onAction, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       Query<?> query = getQuery(row);
 
@@ -319,7 +319,7 @@ public final class QueryCtrlr
 
     // Operand 2 column with change handler
 
-    htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctEditableUnlimitedDropDown, new VariablePopulator(), onAction, (row, cellVal, nextColNdx, nextPopulator) ->
+    htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctEditableUnlimitedDropDown, new VariablePopulator(), onAction, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       boolean tempDASD = disableAutoShowDropdownList;
       disableAutoShowDropdownList = true;

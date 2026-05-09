@@ -66,7 +66,7 @@ public final class DebateTabCtrlr extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
 
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, rtp, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 

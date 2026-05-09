@@ -72,7 +72,7 @@ public class ParentConceptDlgCtrlr extends ModalDialog
       return curTerm.concepts.contains(db.concepts.getByID(id)) == false;
     }, DisplayKind.defaultCellText);
 
-    hyperTable.addColAltPopulatorWithUpdateHandler(hdtConcept, ctEditableLimitedDropDown, pop, (row, cellVal, nextColNdx, nextPop) ->
+    hyperTable.addColAltPopulatorWithUpdateHandler(hdtConcept, ctEditableLimitedDropDown, pop, (row, _, cellVal, nextColNdx, nextPop) ->
     {
       if (cellVal.isEmpty() == false)
         hyperTable.edit(hyperTable.getRow(hyperTable.dataRowCount()), 0);

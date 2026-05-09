@@ -327,10 +327,10 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
         return concept == null ? "Select a Glossary or create a new one" : "Select a Glossary, create a new Glossary, or add a parent Concept from the Tree";
       });
 
-    htConcepts.addColWithUpdateHandler(hdtGlossary, ctEditableLimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> handleGlossaryEdit(row))
+    htConcepts.addColWithUpdateHandler(hdtGlossary, ctEditableLimitedDropDown, (row, _, cellVal, nextColNdx, nextPopulator) -> handleGlossaryEdit(row))
       .setDontCreateNewRecord(true);
 
-    htConcepts.addColWithUpdateHandler(hdtConceptSense, ctEditableUnlimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) -> handleSenseEdit(row, cellVal));
+    htConcepts.addColWithUpdateHandler(hdtConceptSense, ctEditableUnlimitedDropDown, (row, _, cellVal, nextColNdx, nextPopulator) -> handleSenseEdit(row, cellVal));
 
     CellTestHandler cellTestHandler = (row, colNdx) ->
     {
@@ -348,7 +348,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
       .setCellToolTipHndlr(row -> makeTooltip(row.getText(PARENTS_COL_NDX)))
       .beginEditHandler.setValue(cellTestHandler);
 
-    htConcepts.addTextEditColWithUpdateHandler(hdtConcept, false, (row, cellVal, nextColNdx, nextPopulator) -> handleSearchKeyEdit(row, cellVal))
+    htConcepts.addTextEditColWithUpdateHandler(hdtConcept, false, (row, _, cellVal, nextColNdx, nextPopulator) -> handleSearchKeyEdit(row, cellVal))
       .setHeaderTooltip(MainCtrlr.getSearchKeyToolTip())
       .setCellToolTipHndlr(row -> MainCtrlr.getSearchKeyToolTip())
       .beginEditHandler.setValue(cellTestHandler);

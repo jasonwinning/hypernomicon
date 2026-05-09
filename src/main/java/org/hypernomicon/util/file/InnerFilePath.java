@@ -31,10 +31,10 @@ class InnerFilePath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String pathStr = null;
-  private File file = null;
-  private Path path = null, realPath = null;
-  private boolean realPathResolved = false;
+  private volatile String pathStr = null;
+  private volatile File file = null;
+  private volatile Path path = null, realPath = null;
+  private volatile boolean realPathResolved = false;
 
 //---------------------------------------------------------------------------
 

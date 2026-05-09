@@ -104,7 +104,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     RecordTypePopulator rtp = new RecordTypePopulator(hdtPosition, hdtArgument);
 
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, rtp, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
@@ -124,7 +124,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
       row.setCellValue(nextColNdx + 1, "", verdictPopulator.getRecordType(row));
     });
 
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, new RecordByTypePopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, new RecordByTypePopulator(), (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       if (HyperTableCell.getCellID(cellVal) < 1)
         row.setCellValue(nextColNdx, "", verdictPopulator.getRecordType(row));
@@ -135,7 +135,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
     htWhereMade = new HyperTable(lowerCtrlr.tvWhereMade, 2, true, TablePrefKey.ARG_SRC);
 
     htWhereMade.addGoNewCol(hdtWork, 2);
-    htWhereMade.addAuthorEditCol(null, (row, cellVal, nextColNdx, nextPopulator) ->
+    htWhereMade.addAuthorEditCol(null, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       HDT_Record obj = HyperTableCell.getRecord(cellVal);
       HybridSubjectPopulator hsPop = (HybridSubjectPopulator)nextPopulator;
@@ -147,7 +147,7 @@ public final class ArgumentTabCtrlr extends HyperNodeTab<HDT_Argument, HDT_Argum
 
     }).setTextHndlr(row -> nullSwitch((HDT_Work) row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), HDT_RecordWithAuthors::getLongAuthorsStr));
 
-    htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctEditableLimitedDropDown, new HybridSubjectPopulator(rtAuthorOfWork), (row, cellVal, nextColNdx, nextPopulator) ->
+    htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctEditableLimitedDropDown, new HybridSubjectPopulator(rtAuthorOfWork), (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       if (HyperTableCell.getCellID(cellVal) > 0)
       {

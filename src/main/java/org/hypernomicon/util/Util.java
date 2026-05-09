@@ -305,6 +305,21 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static String elapsedStr(long startTimeMs)
+  {
+    long elapsed = System.currentTimeMillis() - startTimeMs,
+         totalSec = elapsed / 1000,
+         ms = elapsed % 1000;
+
+    return totalSec < 60 ?
+      totalSec + "." + String.format("%03d", ms) + 's'
+    :
+      (totalSec / 60) + "m " + (totalSec % 60) + '.' + String.format("%03d", ms) + 's';
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /**
    * Returns a string representation of the given Locale in the format "language-country".
    * If the country code is blank, only the language code is returned.

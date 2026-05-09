@@ -73,7 +73,7 @@ class WebButtonTable extends WebButtonCtrl
 
     ht.addTextEditCol(hdtNone, true);
     ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctEditableLimitedDropDown, pop,
-                                           (row, cellVal, nextColNdx, nextPopulator) ->
+                                           (row, _, cellVal, nextColNdx, nextPopulator) ->
                                              row.setCellValue(0, nullSwitch(htcToWebButton(cellVal), "", WebButton::getCaption), hdtNone));
 
     ht.addCustomActionCol(-1, "Advanced", (row, colNdx) ->

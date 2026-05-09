@@ -1414,7 +1414,7 @@ public final class FileManagerTestRunner
 
         // Create a probe-renamed directory (simulating a crash during canObtainLock)
         FilePath probeRenamed = probeDir.resolve(probeName);
-        Files.createDirectories(probeRenamed.toPath());
+        probeRenamed.createDirectories();
         Files.writeString(probeRenamed.resolve("content.txt").toPath(), "content.txt");
 
         // The cleanup happens during DB open, but we can call it indirectly
@@ -1447,9 +1447,9 @@ public final class FileManagerTestRunner
         FilePath probe1 = probeDir.resolve(probeName1),
                  probe2 = probeDir.resolve(probeName2);
 
-        Files.createDirectories(probe1.toPath());
+        probe1.createDirectories();
         Files.writeString(probe1.resolve("f1.txt").toPath(), "f1.txt");
-        Files.createDirectories(probe2.toPath());
+        probe2.createDirectories();
         Files.writeString(probe2.resolve("f2.txt").toPath(), "f2.txt");
 
         FilePath orig1 = probeDir.resolve(origName1),
@@ -1477,7 +1477,7 @@ public final class FileManagerTestRunner
         FilePath originalPath = probeDir.resolve(origName),
                  probeRenamed = probeDir.resolve(probeName);
 
-        Files.createDirectories(probeRenamed.toPath());
+        probeRenamed.createDirectories();
         Files.writeString(probeRenamed.resolve("probe.txt").toPath(), "probe.txt");
 
         // The cleanup logic skips the rename if original already exists
@@ -3626,21 +3626,21 @@ public final class FileManagerTestRunner
 
   private static void setupDir(FilePath root, String... parts) throws IOException
   {
-    Files.createDirectories(root.resolve(parts).toPath());
+    root.resolve(parts).createDirectories();
   }
 
   private static void setupFile(FilePath root, String... parts) throws IOException
   {
-    Path file = root.resolve(parts).toPath();
-    Files.createDirectories(file.getParent());
-    Files.writeString(file, file.getFileName().toString());
+    FilePath file = root.resolve(parts);
+    file.getParent().createDirectories();
+    Files.writeString(file.toPath(), file.getNameOnly().toString());
   }
 
   private static void setupFileCustom(FilePath root, String content, String... parts) throws IOException
   {
-    Path file = root.resolve(parts).toPath();
-    Files.createDirectories(file.getParent());
-    Files.writeString(file, content);
+    FilePath file = root.resolve(parts);
+    file.getParent().createDirectories();
+    Files.writeString(file.toPath(), content);
   }
 
 //---------------------------------------------------------------------------

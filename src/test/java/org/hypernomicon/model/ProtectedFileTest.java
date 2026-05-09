@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,7 +63,7 @@ class ProtectedFileTest
 
     db.specialFolders().forEach(folder ->
     {
-      try { Files.createDirectories(folder.filePath().toPath()); }
+      try { folder.filePath().createDirectories(); }
       catch (IOException e) { throw new UncheckedIOException(e); }
     });
   }

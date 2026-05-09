@@ -85,7 +85,7 @@ public final class PositionTabCtrlr extends HyperNodeTab<HDT_Position, HDT_Posit
 
     RecordTypePopulator rtp = new RecordTypePopulator(hdtDebate, hdtPosition);
 
-    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, rtp, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 

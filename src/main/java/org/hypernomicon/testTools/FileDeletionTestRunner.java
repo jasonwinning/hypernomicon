@@ -88,7 +88,7 @@ public final class FileDeletionTestRunner
   {
     testRoot = dbRoot.resolve(TEST_DIR_NAME);
 
-    try { Files.createDirectories(testRoot.toPath()); }
+    try { testRoot.createDirectories(); }
     catch (IOException e)
     {
       e.printStackTrace();
@@ -352,7 +352,7 @@ public final class FileDeletionTestRunner
       try
       {
         FilePath dir = testRoot.resolve("type_val_dir");
-        Files.createDirectories(dir.toPath());
+        dir.createDirectories();
 
         try
         {
@@ -696,7 +696,7 @@ public final class FileDeletionTestRunner
       try
       {
         FilePath emptyDir = testRoot.resolve("empty_dir");
-        Files.createDirectories(emptyDir.toPath());
+        emptyDir.createDirectories();
 
         DeletionResult result = FileDeletion.ofDirWithContents(emptyDir).nonInteractive().execute();
 
@@ -713,7 +713,7 @@ public final class FileDeletionTestRunner
       try
       {
         FilePath emptyDir = testRoot.resolve("empty_dir_contents");
-        Files.createDirectories(emptyDir.toPath());
+        emptyDir.createDirectories();
 
         DeletionResult result = FileDeletion.ofDirContentsOnly(emptyDir).nonInteractive().execute();
 

@@ -221,13 +221,11 @@ class DeletionTask
 
       throw new IOException("Failed to delete directory: " + root);
     }
-    else
+
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(root))
     {
-      try (DirectoryStream<Path> stream = Files.newDirectoryStream(root))
-      {
-        if (stream.iterator().hasNext())
-          throw lastError != null ? lastError : new IOException("Failed to clean directory contents: " + root);
-      }
+      if (stream.iterator().hasNext())
+        throw lastError != null ? lastError : new IOException("Failed to clean directory contents: " + root);
     }
   }
 

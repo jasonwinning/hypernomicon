@@ -70,7 +70,7 @@ public final class FXTestSequencer
     private boolean runCondition = true;
     private String skipReason;
 
-    QueueEntry(int pulses, long millis, Runnable task, boolean printStep)
+    private QueueEntry(int pulses, long millis, Runnable task, boolean printStep)
     {
       this.pulses = pulses;
       this.millis = millis;
@@ -368,16 +368,7 @@ public final class FXTestSequencer
     if (entry == null)
     {
       running = false;
-      long elapsed = System.currentTimeMillis() - startTime,
-           totalSec = elapsed / 1000,
-           ms = elapsed % 1000;
-
-      String timeStr = totalSec < 60 ?
-        totalSec + "." + String.format("%03d", ms) + 's'
-      :
-        (totalSec / 60) + "m " + (totalSec % 60) + '.' + String.format("%03d", ms) + 's';
-
-      System.out.println("Test sequence completed successfully in " + timeStr + '.');
+      System.out.println("Test sequence completed successfully in " + elapsedStr(startTime) + '.');
       runFinalizer();
       return;
     }

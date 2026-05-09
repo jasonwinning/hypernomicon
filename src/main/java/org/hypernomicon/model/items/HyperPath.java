@@ -462,7 +462,7 @@ public class HyperPath
     if (record != null) record.modifyNow();
 
     // When a folder record's path changes, re-key descendant HyperPath associations
-    // in the registry. assignNameInternal handles THIS record's own association;
+    // in the registry. assignInternal handles THIS record's own association;
     // onSubtreeMoved handles all descendants whose paths changed as a consequence.
 
     if ((registryAccessor != null) && (record instanceof HDT_Folder) &&

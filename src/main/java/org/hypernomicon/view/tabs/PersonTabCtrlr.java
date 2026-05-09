@@ -149,7 +149,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
     htPersonInst.addCheckboxCol();
 
-    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctEditableLimitedDropDown, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name), (row, cellVal, nextColNdx, nextPopulator) ->
+    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctEditableLimitedDropDown, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, DisplayKind.name), (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
       row.setCellValue(nextColNdx, "", nextPopulator.getRecordType(row));

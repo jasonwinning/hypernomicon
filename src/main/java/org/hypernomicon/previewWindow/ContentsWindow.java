@@ -102,7 +102,7 @@ public final class ContentsWindow extends NonmodalWindow
     htContents.addLabelCol(hdtWork);
     htContents.addLabelCol(hdtWork, smStandard);  // Date column
 
-    htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
+    htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       if (PreviewWindow.disablePreviewUpdating) return;
 
@@ -130,7 +130,7 @@ public final class ContentsWindow extends NonmodalWindow
 
     }).setButtonTooltip(ButtonAction.baCustom, "Assign page currently visible in preview window as start page");
 
-    htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
+    htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       if (PreviewWindow.disablePreviewUpdating) return;
 

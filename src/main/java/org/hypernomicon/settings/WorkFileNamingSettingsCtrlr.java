@@ -191,7 +191,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     Populator pop = Populator.createWithIDMatching(CellValueType.cvtFileNameComponent,
         EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new GenericNonRecordHTC(type.prefValue, type.caption, hdtNone)).toList());
 
-    hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableUnlimitedDropDown, pop, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
+    hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableUnlimitedDropDown, pop, (row, _, cellVal, nextColNdx, nextPopulator) -> refreshExample());
 
     hyperTable.addLabelEditCol((row, colNdx) ->
     {
@@ -259,7 +259,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
   private void initColumn(int colNdx)
   {
-    hyperTable.addTextEditColWithUpdateHandler(hdtNone, true, (row, cellVal, nextColNdx, nextPopulator) -> refreshExample());
+    hyperTable.addTextEditColWithUpdateHandler(hdtNone, true, (row, _, cellVal, nextColNdx, nextPopulator) -> refreshExample());
 
     Platform.runLater(() ->
     {

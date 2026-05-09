@@ -128,11 +128,11 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
   public boolean setCellValue(int colNdx, HyperTableCell newCell)  // return true if changed
   {
-    HyperTableCell cell = cells.get(colNdx);
+    HyperTableCell oldCell = cells.get(colNdx);
     HyperTableColumn col = table.getColumn(colNdx);
     boolean isNotCheckBox = col.getCtrlType() != ctCheckbox;
 
-    if (Objects.equals(cell, newCell))
+    if (Objects.equals(oldCell, newCell))
     {
       if (isNotCheckBox) table.refresh();
       return false;
@@ -170,7 +170,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     {
       boolean isNotLastColumn = table.getColumns().size() > (colNdx + 1);
 
-      col.updateHandler.handle(this, newCell, colNdx + 1, isNotLastColumn ? table.getPopulator(colNdx + 1) : null);
+      col.updateHandler.handle(this, oldCell, newCell, colNdx + 1, isNotLastColumn ? table.getPopulator(colNdx + 1) : null);
 
       if (isNotLastColumn && isNotCheckBox)
         table.refresh();

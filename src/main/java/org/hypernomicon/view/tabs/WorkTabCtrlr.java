@@ -257,7 +257,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htWorkFiles.addCheckboxCol();
     htWorkFiles.addLabelCol(hdtWorkFile);
 
-    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
+    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       int startPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (startPageNum < 0) return;
@@ -271,7 +271,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     }).setHeaderTooltip("Start page in PDF (actual PDF page, not page label)");
 
-    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, cellVal, nextColNdx, nextPopulator) ->
+    htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, smNumeric, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       int endPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (endPageNum < 0) return;

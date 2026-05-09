@@ -134,7 +134,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     htParents.addActionCol(ctGoBtn    , 2).setGoTooltipBasedOnTarget(record -> "Go to this parent " + getTypeName(record.getType()));
     htParents.addActionCol(ctBrowseBtn, 2).setButtonTooltip(ButtonAction.baBrowse, "Select parent Note record from the Tree");
-    htParents.addColWithUpdateHandler(hdtNote, ctEditableLimitedDropDown, (row, cellVal, nextColNdx, nextPopulator) ->
+    htParents.addColWithUpdateHandler(hdtNote, ctEditableLimitedDropDown, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       HDT_Note parentNote = cellVal.getRecord();
       updateRelativeRow(row, parentNote, 3, true);

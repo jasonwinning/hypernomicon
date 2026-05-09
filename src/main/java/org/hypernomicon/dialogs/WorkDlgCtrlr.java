@@ -363,7 +363,7 @@ public class WorkDlgCtrlr extends ModalDialog
   {
     HyperTable hyperTable = new HyperTable(tvAuthors, 0, true, TablePrefKey.WORK_DLG);
 
-    hyperTable.addAuthorEditCol(() -> curWork, (row, cellVal, nextColNdx, nextPopulator) ->
+    hyperTable.addAuthorEditCol(() -> curWork, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       dontRegenerateFilename = true;
 
@@ -399,7 +399,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     hyperTable.addCheckboxColWithUpdateHandler(createAuthorRecordHandler(hyperTable, () -> curWork));
 
-    CellUpdateHandler handler = (row, cellVal, nextColNdx, nextPopulator) -> btnRegenerateFilenameClick();
+    CellUpdateHandler handler = (row, _, cellVal, nextColNdx, nextPopulator) -> btnRegenerateFilenameClick();
 
     hyperTable.addCheckboxColWithUpdateHandler(handler);
     hyperTable.addCheckboxColWithUpdateHandler(handler);
@@ -569,7 +569,7 @@ public class WorkDlgCtrlr extends ModalDialog
    */
   public static CellUpdateHandler createAuthorRecordHandler(HyperTable htAuthors, Supplier<HDT_Work> workSupplier)
   {
-    return (row, cellVal, nextColNdx, nextPopulator) ->
+    return (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
       // If the user unchecked the Record checkbox while a record is selected, re-check it.
 

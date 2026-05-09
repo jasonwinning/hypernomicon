@@ -127,7 +127,7 @@ public class HyperTableColumn
 
   @FunctionalInterface public interface CellClickHandler { void handle(HyperTableRow row, int colNdx); }
 
-  @FunctionalInterface public interface CellUpdateHandler { void handle(HyperTableRow row, HyperTableCell cellVal, int nextColNdx, Populator nextPopulator); }
+  @FunctionalInterface public interface CellUpdateHandler { void handle(HyperTableRow row, HyperTableCell oldVal, HyperTableCell newVal, int nextColNdx, Populator nextPopulator); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
