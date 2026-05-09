@@ -123,6 +123,7 @@ public final class TestHyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 
   @Override protected boolean checkChecksums()        { return true; }
+  @Override protected boolean checkDatabaseIdentity() { return true; }
 
   @Override public void fileNoLongerInUse(FilePath filePath) { }
   @Override public void updateMainTextTemplate(RecordType recordType, String html) { }

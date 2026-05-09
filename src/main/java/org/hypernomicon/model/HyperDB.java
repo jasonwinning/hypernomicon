@@ -29,10 +29,11 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
-import java.io.IOException;
-
+import javafx.concurrent.Worker.State;
 import javafx.scene.control.Alert.AlertType;
+
 import java.io.InputStream;
+import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -41,11 +42,12 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 
-import org.hypernomicon.FolderTreeWatcher;
-import org.hypernomicon.HyperTask;
-import org.hypernomicon.InterProcClient;
+import org.hypernomicon.*;
+import org.hypernomicon.fts.DatabaseSketch;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.util.PopupDialog;
+import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.file.*;
 import org.hypernomicon.util.file.deletion.FileDeletion;
@@ -53,8 +55,6 @@ import org.hypernomicon.view.HyperFavorites;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
 
 import com.google.common.collect.SetMultimap;
-
-import javafx.concurrent.Worker.State;
 
 //---------------------------------------------------------------------------
 
@@ -102,6 +102,81 @@ public final class HyperDB extends AbstractHyperDB
   @Override protected void updateRunningInstancesFile(FilePath newRootFilePath) { InterProcClient.updateRunningInstancesFile(newRootFilePath); }
 
   public static String getTypeName(RecordType type) { return nullSwitch(getTag(type), type == hdtNone ? "All" : "Unknown", tag -> tag.header); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean checkDatabaseIdentity()
+  {
+    if (strNullOrBlank(dbID))
+    {
+      // Legacy database or blank template: assign a new DBID (no collision check needed)
+
+      dbID = randomAlphanumericStr(16);
+      prefs.put(PrefKey.DB_ID, dbID);
+      DatabaseRegistry.registerDatabase(dbID, rootFilePath);
+      return true;
+    }
+
+    FilePath existingPath = DatabaseRegistry.findByDBID(dbID);
+
+    if (existingPath == null)
+    {
+      // First time this database is seen in the registry
+
+      DatabaseRegistry.registerDatabase(dbID, rootFilePath);
+      return true;
+    }
+
+    if (existingPath.equals(rootFilePath))
+    {
+      // Same database at same path: normal case
+
+      DatabaseRegistry.registerDatabase(dbID, rootFilePath);
+      return true;
+    }
+
+    // DBID collision at a different path: moved or copied?
+
+    String promptMessage;
+
+    DatabaseSketch currentSketch = DatabaseSketch.compute(xmlPath(), recordXMLFileNames());
+    FilePath indexDir = DatabaseRegistry.resolveIndexDir(dbID);
+    DatabaseSketch existingSketch = (indexDir == null) ? null : DatabaseSketch.readFrom(indexDir.resolve("sketch.json"));
+
+    if ((existingSketch != null) && currentSketch.isVerySimilarTo(existingSketch))
+      promptMessage = "This database appears to have been moved or copied from:\n" + existingPath +
+                      "\n\nWill both databases continue to exist, or only this one?";
+    else
+      promptMessage = "This database appears to be derived from an existing database at:\n" + existingPath +
+                      "\n\nWill both databases continue to exist, or only this one?";
+
+    DialogResult response = new PopupDialog(promptMessage)
+      .addButton("Only this one", mrMove)
+      .addButton("Both", mrCopy)
+      .addButton("Cancel", mrCancel)
+      .showModal();
+
+    if (response == mrCancel)
+      return false;
+
+    if (response == mrMove)
+    {
+      // Moved: update the root path in the existing registry entry
+
+      DatabaseRegistry.registerDatabase(dbID, rootFilePath);
+    }
+    else
+    {
+      // Copied: regenerate DBID for this database
+
+      dbID = randomAlphanumericStr(16);
+      prefs.put(PrefKey.DB_ID, dbID);
+      DatabaseRegistry.registerDatabase(dbID, rootFilePath);
+    }
+
+    return true;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

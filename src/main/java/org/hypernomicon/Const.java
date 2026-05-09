@@ -119,6 +119,7 @@ public final class Const
       SETTINGS_VERSION = "settingsVersion",
       NOTIFY_USER_NOT_LINKED = "notifyUnlinked",
       DB_CREATION_DATE = "dbCreationDate",
+      DB_ID = "dbID",
       SOURCE_PATH = "sourcePath",
       SOURCE_FILENAME = "sourceFile",
       TRANSIENT_TEST_PARENT_PATH = "transientTestParentPath",

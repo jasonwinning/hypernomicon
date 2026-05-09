@@ -66,6 +66,7 @@ public final class JsonArray
   @SuppressWarnings("unchecked") public void add(JsonObj   element) { jArr.add(element.jObj); }
   @SuppressWarnings("unchecked") public void add(JsonArray element) { jArr.add(element.jArr); }
   @SuppressWarnings("unchecked") public void add(String    element) { jArr.add(element); }
+  @SuppressWarnings("unchecked") public void add(Long      element) { jArr.add(element); }
 
   @Override public String toString() { return jArr.toJSONString(); }
 

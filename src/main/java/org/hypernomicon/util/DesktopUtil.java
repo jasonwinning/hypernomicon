@@ -526,6 +526,31 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static FilePath appDataDir()
+  {
+    String base;
+
+    if (IS_OS_WINDOWS)
+    {
+      base = System.getenv("APPDATA");
+      if (strNullOrBlank(base))
+        base = System.getProperty("user.home") + "/AppData/Roaming";
+    }
+    else if (IS_OS_MAC)
+      base = System.getProperty("user.home") + "/Library/Application Support";
+    else
+    {
+      base = System.getenv("XDG_DATA_HOME");
+      if (strNullOrBlank(base))
+        base = System.getProperty("user.home") + "/.local/share";
+    }
+
+    return FilePath.of(base).resolve("Hypernomicon");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static String userWorkingDir()
   {
     return System.getProperty("user.dir");

@@ -155,6 +155,14 @@ public abstract class AbstractHyperDB
   protected abstract void loadMainTextTemplates();
   protected abstract void populateFilePathRegistry();
   protected abstract void loadSettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException;
+
+  /**
+   * Check this database's DBID against the DatabaseRegistry to detect
+   * moves and copies. Called after settings are loaded. Assigns a
+   * new DBID if this database doesn't have one yet.
+   * @return true to continue loading; false to abort
+   */
+  protected abstract boolean checkDatabaseIdentity();
   protected abstract boolean loadFromXMLFiles(List<FilePath> xmlFileList, boolean creatingNew, EnumMap<RecordType, VersionNumber> recordTypeToDataVersion, SetMultimap<Integer, Integer> workIDtoInvIDs);
   protected abstract boolean bringAllRecordsOnline();
   protected abstract boolean checkChecksums();
@@ -205,6 +213,7 @@ public abstract class AbstractHyperDB
   private LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection> bibLibrary = null;
 
   private Instant dbCreationDate;
+  protected String dbID = "";
 
   protected DialogResult deleteFileAnswer;
 
@@ -235,6 +244,7 @@ public abstract class AbstractHyperDB
   public String bibLibraryUserFriendlyName()                         { return bibLibraryIsLinked() ? bibLibrary.getUserFriendlyName() : ""; }
   public void setBibChecksum(String checksum)                        { xmlChecksums.put(BIB_FILE_NAME, checksum); }
   public Instant getCreationDate()                                   { return dbCreationDate; }
+  public String getDBID()                                            { return dbID; }
   public RecordType getSubjType(RelationType relType)                { return relationSets.get(relType).getSubjType(); }
   public RecordType getObjType(RelationType relType)                 { return relationSets.get(relType).getObjType(); }
   public boolean relationIsMulti(RelationType relType)               { return relTypeToIsMulti.get(relType); }
@@ -892,6 +902,8 @@ public abstract class AbstractHyperDB
 
         prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
+        prefs.put(PrefKey.DB_ID, dbID);
+
         prefs.put(PrefKey.INTEGRITY_CHECKSUMS, buildIntegrityManifest());
 
         prefs.exportSubtree(dos);  // Hardcoded to export in UTF-8
@@ -1152,7 +1164,23 @@ public abstract class AbstractHyperDB
     try
     {
       loadSettings(creatingNew, favorites);
+    }
+    catch (HyperDataException e)
+    {
+      errorPopup(e);
 
+      close(null);
+      return false;
+    }
+
+    if (checkDatabaseIdentity() == false)
+    {
+      close(null);
+      return false;
+    }
+
+    try
+    {
       resolvePointers();
 
       initializeAndPopulateFilePathRegistry();
@@ -1838,6 +1866,8 @@ public abstract class AbstractHyperDB
         if (dbCreationDate.isAfter(Instant.now())) // Creation date in template is year 9999 so it will be set
           dbCreationDate = Instant.now();          // to the current date when loaded for the first time
       }
+
+      dbID = prefs.get(PrefKey.DB_ID, "");
     }
     catch (IOException | InvalidPreferencesFormatException e)
     {
@@ -2604,6 +2634,9 @@ public abstract class AbstractHyperDB
     dbCreationDate = Instant.now();
     prefs.put(PrefKey.DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
+    dbID = randomAlphanumericStr(16);
+    prefs.put(PrefKey.DB_ID, dbID);
+
     rootFilePath = newPath.toRealFilePath();
     saveSourcePathToSystemSettings(newPath.toString());
     hdbFilePath = rootFilePath.resolve(hdbFileName);
@@ -2766,7 +2799,7 @@ public abstract class AbstractHyperDB
 
 //---------------------------------------------------------------------------
 
-  static Stream<String> recordXMLFileNames()
+  public static Stream<String> recordXMLFileNames()
   {
     return Stream.of(OTHER_FILE_NAME,  PERSON_FILE_NAME,   INSTITUTION_FILE_NAME, INVESTIGATION_FILE_NAME,
                      DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
