@@ -99,7 +99,6 @@ public final class QueryCtrlr
   private final QueriesTabCtrlr queriesTabCtrlr;
   private final WebView webView;
   private final TabPane tabPane;
-  private final TextField tfFavName;
 
   private HyperTable htFields;
   private ReportTable reportTable;
@@ -111,8 +110,7 @@ public final class QueryCtrlr
 
   private ResultsTable resultsTable;
 
-  private boolean programmaticFavNameChange = false,
-                  programmaticCustomLogicChange = false,
+  private boolean programmaticCustomLogicChange = false,
                   disableAutoShowDropdownList = false,
                   inRecordMode = true,
                   searchLinkedRecords;
@@ -144,12 +142,11 @@ public final class QueryCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  QueryCtrlr(QueriesTabCtrlr queriesTabCtrlr, WebView webView, TabPane tabPane, TextField tfFavName)
+  QueryCtrlr(QueriesTabCtrlr queriesTabCtrlr, WebView webView, TabPane tabPane)
   {
     this.queriesTabCtrlr = queriesTabCtrlr;
     this.webView = webView;
     this.tabPane = tabPane;
-    this.tfFavName = tfFavName;
 
     EventHandler<ActionEvent> onAction = event ->
     {
@@ -441,10 +438,6 @@ public final class QueryCtrlr
     setPreview();
 
     queriesTabCtrlr.setFavNameToggle(fav != null);
-
-    programmaticFavNameChange = true;
-    tfFavName.setText(fav == null ? "" : fav.name);
-    programmaticFavNameChange = false;
   }
 
 //---------------------------------------------------------------------------
@@ -470,16 +463,6 @@ public final class QueryCtrlr
         PreviewWindow.clearPreview(pvsQueriesTab);
         break;
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void favNameChange()
-  {
-    if (programmaticFavNameChange) return;
-    fav = null;
-    queriesTabCtrlr.setFavNameToggle(false);
   }
 
 //---------------------------------------------------------------------------
@@ -532,6 +515,15 @@ public final class QueryCtrlr
 
     fav = newFav;
 
+    // Set tab caption early so it applies even when doSearch is false (e.g.,
+    // a favorite without auto-exec). Favorited tabs get "★ favName" regardless
+    // of the supplied caption; otherwise use the supplied caption if any.
+
+    if (fav != null)
+      tab.setText("★ " + fav.name);
+    else if (strNotNullOrBlank(caption))
+      tab.setText(caption);
+
     if (doSearch == false)
     {
       Platform.runLater(tabPane::requestLayout);
@@ -573,9 +565,6 @@ public final class QueryCtrlr
       htFields.selectRow(0);
     }
 
-    if (strNotNullOrBlank(caption))
-      tab.setText(caption);
-
     return btnExecuteClick(caption.isEmpty());
   }
 
@@ -588,7 +577,7 @@ public final class QueryCtrlr
 
     if (fav == null)
     {
-      NewQueryFavDlgCtrlr ctrlr = new NewQueryFavDlgCtrlr(tfFavName.getText());
+      NewQueryFavDlgCtrlr ctrlr = new NewQueryFavDlgCtrlr("");
 
       if (ctrlr.showModal() == false) return;
 
@@ -609,23 +598,33 @@ public final class QueryCtrlr
 
       ui.mnuQueries.getItems().add(fav);
 
-      programmaticFavNameChange = true;
-      tfFavName.setText(fav.name);
-      programmaticFavNameChange = false;
-
       queriesTabCtrlr.setFavNameToggle(true);
+      tab.setText("★ " + fav.name);
     }
 
     else
     {
-      fav.removeFromList(ui.mnuQueries.getItems());
-      fav = null;
+      NewQueryFavDlgCtrlr ctrlr = new NewQueryFavDlgCtrlr(fav);
+      boolean saved = ctrlr.showModal();
 
-      programmaticFavNameChange = true;
-      tfFavName.setText("");
-      programmaticFavNameChange = false;
+      if (ctrlr.wasRemoveClicked())
+      {
+        fav.removeFromList(ui.mnuQueries.getItems());
+        fav = null;
 
-      queriesTabCtrlr.setFavNameToggle(false);
+        queriesTabCtrlr.setFavNameToggle(false);
+        setCaption();  // revert tab caption to a query-derived label
+      }
+      else if (saved)
+      {
+        // Dialog mutated fav.name in place via fav.rename(). Refresh tab caption.
+
+        tab.setText("★ " + fav.name);
+      }
+      else
+      {
+        return;  // user cancelled
+      }
     }
 
     ui.updateFavorites();
@@ -667,13 +666,23 @@ public final class QueryCtrlr
 
   private void setCaption()
   {
+    // A favorited tab's caption is "★ favName"; don't overwrite it. The
+    // btnFavoriteClick remove branch explicitly calls this method to revert
+    // the caption to a query-derived label after unfavoriting (at which
+    // point fav is already null, so we fall through).
+
+    if (fav != null) return;
+
     htFields.dataRows().forEach(row ->
     {
-      for (int colNdx = QUERY_COL_NDX; colNdx <= OPERAND_3_COL_NDX; colNdx++)
+      for (int colNdx = OPERAND_3_COL_NDX; colNdx >= QUERY_COL_NDX; colNdx--)
       {
         String text = row.getText(colNdx);
         if (strNotNullOrBlank(text))
+        {
           tab.setText(text);
+          break;
+        }
       }
     });
   }

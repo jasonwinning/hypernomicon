@@ -36,14 +36,12 @@
       </ImageView>
     </graphic>
   </Button>
-  <Button fx:id="btnToggleFavorite" layoutX="161.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="173.0" text="Remove from Favorites" AnchorPane.leftAnchor="161.0" AnchorPane.topAnchor="9.0">
+  <Button fx:id="btnToggleFavorite" layoutX="161.0" layoutY="9.0" maxHeight="28.0" maxWidth="28.0" minHeight="28.0" minWidth="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" AnchorPane.leftAnchor="161.0" AnchorPane.topAnchor="9.0">
     <graphic>
       <ImageView fitHeight="19.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
         <Image url="@../resources/images/star-empty.png"/>
       </ImageView>
     </graphic></Button>
-  <Label layoutX="348.0" layoutY="15.0" text="Favorite name:" AnchorPane.leftAnchor="348.0" AnchorPane.topAnchor="15.0" />
-  <TextField fx:id="tfFavName" layoutX="429.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" prefHeight="28.0" prefWidth="245.0" AnchorPane.leftAnchor="429.0" AnchorPane.topAnchor="9.0" />
    <MenuButton fx:id="btnFileActions" layoutX="914.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="157.0" text="File Actions" AnchorPane.rightAnchor="42.0" AnchorPane.topAnchor="9.0">
      <items>
          <MenuItem fx:id="mnuClearAndAdd" mnemonicParsing="false" text="Clear Search Results Folder and Add All Results" />

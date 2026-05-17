@@ -16,46 +16,45 @@
    limitations under the License.
 -->
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="99.0" minHeight="99.0" prefHeight="99.0" prefWidth="567.0" minWidth="300.0"
-            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.hypernomicon.query.ui.NewQueryFavDlgCtrlr">
-  <GridPane layoutX="60.0" layoutY="19.0" prefHeight="98.0" prefWidth="567.0" AnchorPane.bottomAnchor="0.0"
-            AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-    <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
-      <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
-    </columnConstraints>
-    <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-    </rowConstraints>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2">
-      <Label layoutX="45.0" layoutY="10.0" text="Name:" AnchorPane.leftAnchor="6.0"/>
-      <TextField fx:id="tfName" layoutX="88.0" layoutY="6.0" prefHeight="22.0" prefWidth="513.0"
-                 AnchorPane.leftAnchor="48.0" AnchorPane.rightAnchor="6.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
-      <CheckBox fx:id="chkAutoExec" layoutX="14.0" layoutY="9.0" mnemonicParsing="false"
-                text="Query should execute immediately when invoked" AnchorPane.leftAnchor="6.0"
-                AnchorPane.rightAnchor="6.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-      <Button fx:id="btnOk" defaultButton="true" layoutX="213.0" layoutY="9.0" mnemonicParsing="false"
-              onAction="#btnOkClick" prefWidth="70.0" text="OK" AnchorPane.rightAnchor="4.0"/>
-    </AnchorPane>
-    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-      <Button fx:id="btnCancel" cancelButton="true" layoutX="23.0" layoutY="9.0" mnemonicParsing="false"
-              onAction="#btnCancelClick" prefWidth="70.0" text="Cancel" AnchorPane.leftAnchor="4.0"/>
-    </AnchorPane>
-  </GridPane>
+<AnchorPane minWidth="380.0" prefWidth="540.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.NewQueryFavDlgCtrlr">
+  <VBox spacing="12.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <padding>
+      <Insets bottom="14.0" left="16.0" right="16.0" top="14.0" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="8.0">
+      <Label text="Name:" />
+      <TextField fx:id="tfName" HBox.hgrow="ALWAYS" />
+    </HBox>
+
+    <CheckBox fx:id="chkAutoExec" mnemonicParsing="false" text="Query should execute immediately when invoked" />
+
+    <Label fx:id="lblInfo" style="-fx-font-weight: bold;" text="The favorite's saved search criteria will not be changed here.">
+      <graphic>
+        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+          <Image url="@../resources/images/information-italic.png" />
+        </ImageView>
+      </graphic>
+    </Label>
+
+    <Region VBox.vgrow="ALWAYS" />
+
+    <HBox alignment="CENTER" spacing="10.0">
+      <Button fx:id="btnRemove" mnemonicParsing="false" prefWidth="180.0" text="Remove from Favorites" />
+      <Button fx:id="btnOk" defaultButton="true" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="70.0" text="OK" />
+      <Button fx:id="btnCancel" cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="70.0" text="Cancel" />
+    </HBox>
+  </VBox>
 </AnchorPane>

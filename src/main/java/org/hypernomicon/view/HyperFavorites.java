@@ -89,14 +89,30 @@ public class HyperFavorites
       this.customLogic = customLogic;
       this.orLogic = orLogic;
 
-      setOnAction(event -> ui.showSearch(autoexec, null, -1, this, null, null, name));
+      // Lambda uses this.name and this.autoexec (not the constructor parameters)
+      // so later edits via rename() or direct autoexec mutation take effect for
+      // future invocations of this menu item.
+
+      setOnAction(event -> ui.showSearch(this.autoexec, null, -1, this, null, null, this.name));
     }
 
   //---------------------------------------------------------------------------
 
     public final List<QueryRow> rows = new ArrayList<>();
-    public final String name, customLogic;
-    public final boolean autoexec, orLogic;
+    public final String customLogic;
+    public final boolean orLogic;
+
+    public String name;
+    public boolean autoexec;
+
+  //---------------------------------------------------------------------------
+
+    /** Update the favorite's name and the menu item text in sync. */
+    public void rename(String newName)
+    {
+      this.name = newName;
+      setText("Query: " + newName);
+    }
 
   //---------------------------------------------------------------------------
 

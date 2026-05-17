@@ -62,7 +62,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
@@ -81,7 +80,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML private MenuItem mnuClear, mnuClearAndAdd, mnuAddSelected, mnuShowInSysExplorer, mnuShowInFileMgr;
   @FXML private Tab tabNew;
   @FXML private TabPane tabPane;
-  @FXML private TextField tfFavName;
   @FXML private WebView webView;
 
   @FXML Button btnExecute;
@@ -190,13 +188,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     webViewAddZoom(webView, ZoomPrefKey.QUERYTAB);
 
     webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
-
-    tfFavName.textProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if ((newValue == null) || newValue.equals(safeStr(oldValue)) || (curQueryCtrlr == null)) return;
-
-      curQueryCtrlr.favNameChange();
-    });
 
     initFileActions();
   }
@@ -334,7 +325,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private QueryCtrlr addQueryCtrlr()
   {
-    QueryCtrlr queryCtrlr = new QueryCtrlr(this, webView, tabPane, tfFavName);
+    QueryCtrlr queryCtrlr = new QueryCtrlr(this, webView, tabPane);
 
     queryCtrlrs.add(queryCtrlr);
     queryCtrlr.resetFields();
@@ -603,17 +594,17 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     if (selected)
     {
-      btnToggleFavorite.setText("Remove from favorites");
-
       if (btnToggleFavorite.getGraphic() != ivStar)
         btnToggleFavorite.setGraphic(ivStar);
+
+      setToolTip(btnToggleFavorite, "Edit name or remove from favorites");
     }
     else
     {
-      btnToggleFavorite.setText("Add to favorites");
-
       if (btnToggleFavorite.getGraphic() != ivStarEmpty)
         btnToggleFavorite.setGraphic(ivStarEmpty);
+
+      setToolTip(btnToggleFavorite, "Add to favorites");
     }
   }
 
