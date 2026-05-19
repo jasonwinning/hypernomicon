@@ -383,33 +383,95 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns true if {@code filename} fails the minimal validation that any sensible
+   * filename-component operation should apply: the string equals {@code "."} or {@code ".."},
+   * or contains NUL ({@code 0x00}) or forward slash. These violations make the string
+   * structurally meaningless as a filename component on any operating system, independent
+   * of cross-platform portability concerns.
+   * <p>
+   * Empty string is intentionally NOT a failure here; {@code normalize} uses empty to
+   * represent the root component, while {@code isFilenameValid} rejects it separately as
+   * a blank-input case.
+   */
+  static boolean failsMinimalFilenameValidation(String filename)
+  {
+    if (".".equals(filename) || "..".equals(filename)) return true;
+
+    for (int ndx = 0; ndx < filename.length(); ndx++)
+    {
+      char ch = filename.charAt(ndx);
+
+      if ((ch == '\0') || (ch == '/')) return true;
+    }
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Windows reserved device names. Case-insensitive; apply to the part before the first dot. */
+  private static final Set<String> WINDOWS_RESERVED_DEVICE_NAMES = Set.of
+  (
+    "CON" , "PRN" , "AUX" , "NUL" ,
+    "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+    "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+  );
+
+  /**
+   * Validates a single-component filename for cross-platform portability. Performs no I/O.
+   * <p>
+   * Hypernomicon databases are commonly kept on cloud-sync services (Dropbox, OneDrive,
+   * Nextcloud) and synced across Windows, macOS, and Linux. A filename that is valid on
+   * the current OS but rejected by Windows will break the sync: the cloud service either
+   * refuses the file, silently renames it, or flags a conflict, leaving the database XML
+   * referring to a name that doesn't exist on disk on the other machine. To avoid that,
+   * the check applies the union of every supported platform's restrictions even when
+   * running on macOS or Linux.
+   * <p>
+   * Rejects (on all platforms):
+   * <ul>
+   *   <li>Null, empty, or whitespace-only strings</li>
+   *   <li>Strings longer than 255 characters</li>
+   *   <li>"." and ".."</li>
+   *   <li>NUL and other control characters (0x00-0x1F)</li>
+   *   <li>Forward slash, backslash, and any of {@code < > : " | ? *}</li>
+   *   <li>Reserved Windows device names (CON, PRN, AUX, NUL, COM0-9, LPT0-9),
+   *       with or without an extension</li>
+   *   <li>Names ending in {@code .} or space, since Windows would silently strip them</li>
+   * </ul>
+   * <p>
+   * This is a syntactic check on the string itself; it does not verify that a file
+   * with this name could actually be created (which depends on directory permissions,
+   * disk space, prior occupant, etc.).
+   *
+   * @param fileName the candidate filename component (not a path)
+   * @return {@code true} if the filename is valid across all supported platforms
+   */
   public static boolean isFilenameValid(String fileName)
   {
     if (strNullOrBlank(fileName)) return false;
+    if (fileName.length() > 255) return false;
+    if (failsMinimalFilenameValidation(fileName)) return false;
 
-    if (fileName.length() > 255)
-      return false;
-
-    if (invalidCharsPattern.matcher(fileName).find())
-      return false;
-
-    try
+    for (int ndx = 0; ndx < fileName.length(); ndx++)
     {
-      Path path = Paths.get(fileName);
+      char ch = fileName.charAt(ndx);
 
-      if (fileName.equals(path.normalize().toString()) == false)
+      if (ch < 0x20) return false;
+      if (ch == '\\') return false;
+      if ((ch == '<') || (ch == '>') || (ch == ':') || (ch == '"') || (ch == '|') || (ch == '?') || (ch == '*'))
         return false;
+    }
 
-      Files.getLastModifiedTime(path);
-    }
-    catch (NoSuchFileException e)
-    {
-      return true;
-    }
-    catch (IOException | InvalidPathException e)
-    {
-      return false;
-    }
+    int dotNdx = fileName.indexOf('.');
+    String base = (dotNdx < 0) ? fileName : fileName.substring(0, dotNdx);
+
+    if (WINDOWS_RESERVED_DEVICE_NAMES.contains(base.toUpperCase(Locale.ROOT))) return false;
+
+    char last = fileName.charAt(fileName.length() - 1);
+    if ((last == '.') || (last == ' ')) return false;
 
     return true;
   }

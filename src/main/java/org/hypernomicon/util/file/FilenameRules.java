@@ -390,7 +390,24 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
     if (filename == null)
       return null;
 
-    validateFilename(filename);
+    // Precondition checks. Empty string is allowed; it represents the root
+    // component when normalizePath iterates over a Path's name components.
+
+    if (filename.isEmpty() == false)
+    {
+      // Universal invariants shared with FilePath.isFilenameValid; any new
+      // always-invalid rule belongs in the shared helper, not here.
+
+      if (FilePath.failsMinimalFilenameValidation(filename))
+        throw new IllegalArgumentException("Invalid filename: " + filename);
+
+      // Backslash is a path separator only on Windows. On POSIX it's a valid
+      // character within a filename component, which is why it can't go in
+      // the shared helper.
+
+      if (IS_OS_WINDOWS && (filename.indexOf('\\') >= 0))
+        throw new IllegalArgumentException("Filename contains path separator: " + filename);
+    }
 
     String s = filename;
 
@@ -466,31 +483,6 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
     }
 
     return sb.toString();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void validateFilename(String filename)
-  {
-    // Empty string is allowed (represents root directory)
-    if (filename.isEmpty())
-      return;
-
-    // Reject "." and ".."
-    if (".".equals(filename) || "..".equals(filename))
-      throw new IllegalArgumentException("Invalid filename: " + filename);
-
-    // Reject filenames containing NUL
-    if (filename.indexOf('\0') >= 0)
-      throw new IllegalArgumentException("Filename contains NUL character");
-
-    // Reject filenames containing path separators
-    if (filename.indexOf('/') >= 0)
-      throw new IllegalArgumentException("Filename contains path separator: " + filename);
-
-    if (IS_OS_WINDOWS && (filename.indexOf('\\') >= 0))
-      throw new IllegalArgumentException("Filename contains path separator: " + filename);
   }
 
 //---------------------------------------------------------------------------
