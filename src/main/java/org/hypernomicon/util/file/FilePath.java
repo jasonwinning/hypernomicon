@@ -111,7 +111,21 @@ public class FilePath implements Comparable<FilePath>
   public boolean isFile()               { return toFile().isFile();  }
   public boolean isDirectory()          { return toFile().isDirectory(); }
   public FilePath getParent()           { return nullSwitch(nullSwitch(toPath(), null, Path::getParent), null, FilePath::of); }
-  public Instant lastModified()         { return Instant.ofEpochMilli(toFile().lastModified()); }
+
+  /**
+   * Returns the file's last-modified time. Unlike the legacy {@code File.lastModified()},
+   * this surfaces failure instead of silently returning the epoch, so a missing or
+   * unreadable file cannot be mistaken for one genuinely modified in 1970.
+   *
+   * @throws IOException if the file does not exist or its modification time cannot be read
+   */
+  public Instant lastModified() throws IOException
+  {
+    // Truncate to milliseconds deliberately: no caller needs finer granularity, and a
+    // coarse, stable value avoids sub-millisecond equality mismatches in change detection.
+
+    return Instant.ofEpochMilli(Files.getLastModifiedTime(toPath()).toMillis());
+  }
 
   /**
    * @see File#deleteOnExit()

@@ -523,7 +523,7 @@ public final class App extends Application
     {
       jarUrl = nullSwitch(nullSwitch(App.class.getProtectionDomain(), null, ProtectionDomain::getCodeSource), null, CodeSource::getLocation);
 
-      if (jarUrl != null)
+      if ((jarUrl != null) && jarUrl.toString().endsWith(".jar"))  // Skip silently when running unjarred (IDE/dev); only attempt when we have a real jar URL
       {
         try (InputStream jarStream = jarUrl.openStream())
         {
@@ -536,9 +536,13 @@ public final class App extends Application
         }
       }
     }
-    catch (SecurityException | IOException e)
+    catch (SecurityException e)
     {
-      noOp();
+      // Expected trigger for the fallback path below; fall through silently
+    }
+    catch (IOException e)
+    {
+      System.out.println("Hypernomicon manifest: WARNING: primary path failed reading \"" + key + "\": " + e.getMessage());
     }
 
     // Security exception likely happened so try less reliable method
@@ -556,7 +560,10 @@ public final class App extends Application
         return manifest == null ? "" : nullSwitch(manifest.getMainAttributes(), "", attributes -> safeStr(attributes.getValue(key)));
       }
     }
-    catch (IOException e) { noOp(); }
+    catch (IOException e)
+    {
+      System.out.println("Hypernomicon manifest: WARNING: fallback path failed reading \"" + key + "\": " + e.getMessage());
+    }
 
     return "";
   }

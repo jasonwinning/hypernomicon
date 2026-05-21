@@ -162,9 +162,15 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     if (FilePath.isEmpty(filePath))
       return new ObjectCellValue<>("", Instant.MIN);
 
-    Instant i = filePath.lastModified();
-
-    return new ObjectCellValue<>(dateTimeToUserReadableStr(i), i);
+    try
+    {
+      Instant i = filePath.lastModified();
+      return new ObjectCellValue<>(dateTimeToUserReadableStr(i), i);
+    }
+    catch (IOException e)
+    {
+      return new ObjectCellValue<>("", Instant.MIN);
+    }
   }
 
 //---------------------------------------------------------------------------
