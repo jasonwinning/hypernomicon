@@ -254,7 +254,7 @@ public abstract class BibDataStandalone extends BibData
       if (FilePath.isEmpty(filePath))
         return null;
 
-      lines = filePath.readToStrList();
+      lines = filePath.readToStrListDetectEncoding();
     }
 
     BibDataStandalone fileBibData = null;

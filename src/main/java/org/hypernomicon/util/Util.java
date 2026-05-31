@@ -27,8 +27,8 @@ import static org.hypernomicon.util.StringUtil.*;
 
 import java.io.*;
 import java.net.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
+import java.nio.charset.*;
 import java.nio.file.*;
 import java.security.*;
 import java.text.NumberFormat;
@@ -1317,9 +1317,9 @@ public final class Util
    * @param byteData the byte array for which to detect the charset
    * @return the detected charset as a Charset object
    * @throws IllegalArgumentException if the input byte array is null
-   * @throws java.nio.charset.UnsupportedCharsetException if the detected charset is not supported
+   * @throws UnsupportedCharsetException if the detected charset is not supported
    */
-  public static Charset detectCharset(byte[] byteData)
+  private static Charset detectCharsetUsingICU(byte[] byteData)
   {
     if (byteData == null)
       throw new IllegalArgumentException("Input byte array cannot be null");
@@ -1334,55 +1334,59 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Detects the charset of the given input stream using the ICU CharsetDetector.
-   *
-   * <p>This method uses the ICU4J library's CharsetDetector to analyze the given input stream
-   * and identify the most likely charset. It then returns the detected charset as a Charset object.</p>
-   *
-   * <p>If the input stream is null, an IllegalArgumentException is thrown. If an IOException occurs
-   * while setting the text of the CharsetDetector, null is returned.</p>
-   *
-   * @param streamData the input stream for which to detect the charset
-   * @return the detected charset as a Charset object, or null if an IOException occurs
-   * @throws IllegalArgumentException if the input stream is null
-   */
-  public static Charset detectCharset(InputStream streamData)
-  {
-    if (streamData == null)
-      throw new IllegalArgumentException("Input byte array cannot be null");
+  private static final Charset WINDOWS_1252 = Charset.forName("windows-1252");
 
-    CharsetDetector detector = new CharsetDetector();
+  /**
+   * Determines the charset to decode a text file of unknown origin with. It
+   * combines a deterministic UTF-8 check with ICU statistical detection.
+   *
+   * <p>Valid UTF-8 is treated as UTF-8. This is deterministic (any byte sequence
+   * that decodes cleanly as UTF-8 is taken to be UTF-8) and covers ASCII and
+   * every modern export, sidestepping the misfires statistical detection can have
+   * on short or mostly-ASCII input. Anything that is not valid UTF-8 is some
+   * legacy encoding, which ICU identifies. An ISO-8859-1 verdict is upgraded to
+   * windows-1252: the two agree on the accented Latin letters in 0xA0..0xFF but
+   * differ in 0x80..0x9F, where windows-1252 carries the curly quotes, en/em
+   * dashes, and ellipsis that Windows-authored citation files actually use
+   * (ISO-8859-1 maps those bytes to C1 control characters). If ICU cannot decide,
+   * windows-1252 is used as the best fallback for Western legacy text.</p>
+   *
+   * @param bytes the file contents to examine
+   * @return the charset to decode {@code bytes} with
+   */
+  public static Charset detectCharset(byte[] bytes)
+  {
+    if (isValidUtf8(bytes))
+      return StandardCharsets.UTF_8;
 
     try
     {
-      detector.setText(streamData);
-    }
-    catch (IOException e)
-    {
-      return null;
-    }
+      Charset charset = detectCharsetUsingICU(bytes);
 
-    return Charset.forName(detector.detect().getName());
+      return StandardCharsets.ISO_8859_1.equals(charset) ? WINDOWS_1252 : charset;
+    }
+    catch (RuntimeException e)  // ICU found no match, or named a charset the JVM lacks
+    {
+      return WINDOWS_1252;
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Converts a byte buffer to a string using the detected character set.
-   *
-   * <p>This method takes a byte array and decodes it into a string using the charset
-   * determined by {@link #detectCharset(byte[])}.</p>
-   *
-   * @param buf The byte array to convert. Must not be {@code null}.
-   * @return A string representation of the byte buffer using the detected charset.
-   * @throws NullPointerException if {@code buf} is {@code null}.
-   * @throws java.nio.charset.UnsupportedCharsetException if the detected charset is not supported.
-   */
-  public static String byteBufferToString(byte[] buf)
+  private static boolean isValidUtf8(byte[] bytes)
   {
-    return new String(buf, detectCharset(buf));
+    CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder().onMalformedInput     (CodingErrorAction.REPORT)
+                                                                .onUnmappableCharacter(CodingErrorAction.REPORT);
+    try
+    {
+      decoder.decode(ByteBuffer.wrap(bytes));
+      return true;
+    }
+    catch (CharacterCodingException e)
+    {
+      return false;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1576,7 +1580,6 @@ public final class Util
    * is called, the stream cannot be used again.
    *
    * <p>Example usage:<pre>
-   * {@code
    * Stream<String> stream = Stream.of("one", "two", "three");
    *
    * for (String s : streamToIterable(stream))

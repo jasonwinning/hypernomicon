@@ -119,7 +119,7 @@ public class ImportBibEntryDlgCtrlr extends ModalDialog
 
     try
     {
-      lines = filePath.readToStrList();
+      lines = filePath.readToStrListDetectEncoding();
     }
     catch (IOException e)
     {

@@ -1062,4 +1062,25 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Reads a text file of unknown encoding (e.g. a user-supplied bibliography
+   * file) into a list of lines, decoding with the charset chosen by
+   * {@link org.hypernomicon.util.Util#detectCharset(byte[])}. Use this
+   * rather than {@link #readToStrList()} only for foreign files; app-written
+   * files should keep using the plain reader so they stay matched to their
+   * writer's charset.
+   */
+  public List<String> readToStrListDetectEncoding() throws IOException
+  {
+    if (size() > MAX_SIZE_TO_READ_INTO_STRING_LIST)
+      throw new IOException("File is too large");
+
+    byte[] bytes = FileUtils.readFileToByteArray(toFile());
+
+    return IOUtils.readLines(new ByteArrayInputStream(bytes), detectCharset(bytes));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }
