@@ -19,7 +19,7 @@ package org.hypernomicon.previewWindow;
 
 import java.io.*;
 import java.net.*;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -45,8 +45,6 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import static java.util.logging.Level.*;
-
-import org.apache.commons.io.FileUtils;
 
 import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
@@ -819,7 +817,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void loadFile(FilePath file, boolean isHtml) throws IOException
+  void loadFile(FilePath filePath, boolean isHtml) throws IOException
   {
     switchToPreviewDisplay();
 
@@ -827,14 +825,30 @@ public class PDFJSWrapper
 
     if (isHtml)
     {
-      Document doc = Jsoup.parse(FileUtils.readFileToString(file.toFile(), Charset.defaultCharset()));
+      // Parse with charset auto-detection (BOM, then the document's own charset
+      // declaration, defaulting to UTF-8) rather than decoding with the JVM
+      // default charset.
+
+      Document doc = Jsoup.parse(filePath.toFile());
 
       doc.getElementsByTag("script").forEach(Element::remove);
+
+      // browser.loadHTML transmits the string to Chromium as UTF-8. Serialize as
+      // UTF-8 and drop the document's now-stale charset declaration so it can't
+      // tell Chromium to re-decode the UTF-8 byte stream as windows-1252.
+
+      doc.outputSettings().charset(StandardCharsets.UTF_8);
+
+      doc.getElementsByTag("meta").forEach(meta ->
+      {
+        if (meta.hasAttr("charset") || meta.attr("http-equiv").equalsIgnoreCase("Content-Type"))
+          meta.remove();
+      });
 
       browser.loadHTML(doc.html());
     }
     else
-      browser.loadURL(file.toURLString());
+      browser.loadURL(filePath.toURLString());
   }
 
 //---------------------------------------------------------------------------
