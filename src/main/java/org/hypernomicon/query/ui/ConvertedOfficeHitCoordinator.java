@@ -27,12 +27,13 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Function;
 
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 
 import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
+import org.hypernomicon.model.searchKeys.Keyword;
 import org.hypernomicon.previewWindow.ConversionSession;
 import org.hypernomicon.previewWindow.ConversionSession.NoOfficeInstallationException;
 import org.hypernomicon.previewWindow.PreviewWindow;
@@ -63,6 +64,8 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
 //---------------------------------------------------------------------------
 
   private final String queryStr;
+  private final Query searchKeyQuery;
+  private final Function<String, Iterable<Keyword>> keyLookup;
   private final ExecutorService executor;
 
   private CompletableFuture<FilePath> extractionFuture;
@@ -88,15 +91,19 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
   /**
    * @param row            the currently-selected FTS result row (converted office file)
    * @param indexer        the live {@link FullTextIndexer}
-   * @param queryStr       the original Lucene query string
+   * @param queryStr       the original Lucene query string (ignored if {@code searchKeyQuery} is non-null)
+   * @param searchKeyQuery a prebuilt search-key query, or {@code null} to re-parse {@code queryStr}
+   * @param keyLookup      the ad-hoc keyword lookup for search-key mode, or {@code null} for a plain query
    * @param executor       the executor to run the conversion/extraction pipeline on
    */
-  ConvertedOfficeHitCoordinator(FTSResultRow row, FullTextIndexer indexer,
-                                String queryStr, ExecutorService executor)
+  ConvertedOfficeHitCoordinator(FTSResultRow row, FullTextIndexer indexer, String queryStr, Query searchKeyQuery,
+                                Function<String, Iterable<Keyword>> keyLookup, ExecutorService executor)
   {
     super(row, indexer);
 
     this.queryStr = queryStr;
+    this.searchKeyQuery = searchKeyQuery;
+    this.keyLookup = keyLookup;
     this.executor = executor;
   }
 
@@ -300,26 +307,31 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
 
     // Build the query
 
-    Query query;
+    Query query = searchKeyQuery;
 
-    try
+    if (query == null)
     {
-      @SuppressWarnings("resource")
-      QueryParser parser = new QueryParser("content", indexer.getAnalyzer());
-      parser.setDefaultOperator(QueryParser.Operator.AND);
-      query = parser.parse(queryStr.toLowerCase());
-    }
-    catch (Exception e)
-    {
-      // The query parsed when the search ran, so this is unexpected; propagate so
-      // runExtractAndHighlight logs it and falls back to a highlight-free load.
+      try
+      {
+        @SuppressWarnings("resource")
+        var parser = FullTextIndexer.createQueryParser(indexer.getAnalyzer());
+        query = parser.parse(queryStr);
+      }
+      catch (Exception e)
+      {
+        // The query parsed when the search ran, so this is unexpected; propagate so
+        // runExtractAndHighlight logs it and falls back to a highlight-free load.
 
-      throw new RuntimeException("Unable to re-parse FTS query for converted-PDF search", e);
+        throw new RuntimeException("Unable to re-parse FTS query for converted-PDF search", e);
+      }
     }
 
     // Search the converted PDF's text using a temporary in-memory Lucene index
 
     List<PageMatch> convertedMatches = FullTextIndexer.searchConvertedPdf(extraction.text(), extraction.pageOffsets(), query);
+
+    if (keyLookup != null)
+      convertedMatches = rescanHitRanges(convertedMatches, keyLookup);
 
     if (isDisposed()) return;
 

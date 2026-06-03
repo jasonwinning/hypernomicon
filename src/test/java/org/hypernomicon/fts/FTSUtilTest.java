@@ -17,23 +17,103 @@
 
 package org.hypernomicon.fts;
 
+import org.hypernomicon.fts.FullTextIndexer.SearchResult.HitRange;
+import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
+import org.hypernomicon.model.searchKeys.Keyword;
+import org.hypernomicon.model.searchKeys.SearchKeys;
+
 import static org.hypernomicon.fts.FTSUtil.*;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+import java.util.function.Function;
+
 //---------------------------------------------------------------------------
 
 /**
  * Unit tests for pure (no-database) {@link FTSUtil} helpers:
  * <ul>
+ *   <li>{@link FTSUtil#rescanHitRanges}: the search-key highlight refinement that replaces
+ *       Lucene's per-term offsets with one separator-insensitive span per keyword occurrence.</li>
  *   <li>{@link FTSUtil#stripConvertedPdfHeaders}: removal of LibreOffice page-header metadata
  *       (source path + date/time) from converted-PDF text, with page-offset adjustment.</li>
  * </ul>
  */
 class FTSUtilTest
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static PageMatch passage(String snippet)
+  {
+    return new PageMatch(1, 0, snippet.length(), snippet, 1.0f, List.of());
+  }
+
+  private static String spanText(PageMatch pm, int rangeNdx)
+  {
+    HitRange hr = pm.hitRanges().get(rangeNdx);
+    return pm.snippet().substring(hr.start(), hr.end());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testRescanCollapsesMultiWordKeyToSingleSpan()
+  {
+    Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("Friedrich Nietzsche; ^Nietzsche");
+
+    List<PageMatch> result = rescanHitRanges(List.of(passage("As Friedrich Nietzsche later argued, ...")), lookup);
+
+    assertEquals(1, result.size());
+    assertEquals(1, result.getFirst().hitRanges().size(), "the phrase is one span, not duplicated by ^Nietzsche");
+    assertEquals("Friedrich Nietzsche", spanText(result.getFirst(), 0));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testRescanDropsPassageWithNoOccurrence()
+  {
+    Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("Nietzsche");
+
+    List<PageMatch> result = rescanHitRanges(List.of(passage("Nietzsche wrote this."), passage("This passage is about cats.")), lookup);
+
+    assertEquals(1, result.size(), "the passage with no occurrence is dropped");
+    assertEquals("Nietzsche", spanText(result.getFirst(), 0));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testRescanFallsBackToLuceneWhenFileHasNoOccurrence()
+  {
+    Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("Nietzsche");
+
+    List<PageMatch> input = List.of(passage("Only cats here."), passage("And more cats."));
+
+    assertSame(input, rescanHitRanges(input, lookup), "with no occurrence anywhere, the original Lucene matches are kept (no blank row)");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testRescanIsSeparatorInsensitive()
+  {
+    Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("dual-aspect");
+
+    List<PageMatch> result = rescanHitRanges(List.of(passage("the dual aspect theory of mind")), lookup);
+
+    assertEquals(1, result.size());
+    assertEquals("dual aspect", spanText(result.getFirst(), 0), "hyphenated key matches the spaced text");
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

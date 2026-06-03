@@ -56,10 +56,27 @@ public final class KeywordLinkScanner
 
   public static List<KeywordLink> scan(String text)
   {
-    return scan(text, db::getKeywordsByPrefix);
+    return scan(text, db::getKeywordsByPrefix, false);
   }
 
   public static List<KeywordLink> scan(String text, Function<String, Iterable<Keyword>> prefixToKeys)
+  {
+    return scan(text, prefixToKeys, false);
+  }
+
+  /**
+   * Variant of {@link #scan(String, Function)} with optional separator-insensitive matching.
+   *
+   * @param separatorInsensitive when true, a separator (whitespace, dash, or slash) in a
+   *        keyword matches any run of separators in the text, so a multi-word key matches
+   *        regardless of how the text punctuates the gap (e.g. a "well-being" key matches
+   *        "well being", "well/being", or a dash variant). Used by full-text-search
+   *        highlighting so a hand-typed key still finds the occurrences a Lucene phrase
+   *        query would. The 3-character prefix bucket is still matched literally, so this
+   *        only bridges separators after the first three characters of a key; a key whose
+   *        first word is one or two characters (e.g. "x-ray") won't bridge.
+   */
+  public static List<KeywordLink> scan(String text, Function<String, Iterable<Keyword>> prefixToKeys, boolean separatorInsensitive)
   {
     List<KeywordLink> keywordLinks = new ArrayList<>();
 
@@ -110,8 +127,8 @@ public final class KeywordLinkScanner
       {
         int matchLen;
 
-        if (checkPeriods)
-          matchLen = matchNormalizedLength(text, ndx, key.normalizedText);
+        if (checkPeriods || separatorInsensitive)
+          matchLen = matchNormalizedLength(text, ndx, key.normalizedText, separatorInsensitive);
         else if ((text.length() - ndx) >= key.normalizedText.length())
           matchLen = text.regionMatches(true, ndx, key.normalizedText, 0, key.normalizedText.length()) ? key.normalizedText.length() : -1;
         else
@@ -181,12 +198,13 @@ public final class KeywordLinkScanner
    *   '.' + any # of spaces as ". "
    *   runs of >=2 spaces as one space
    *
-   * @param text             the full source string
-   * @param textStartOffset  where in <code>input</code> to start matching
-   * @param keyword          the keyword text to match (exact chars + single spaces)
-   * @return                 the number of input chars consumed on success, or -1 if no match
+   * @param text                  the full source string
+   * @param textStartOffset       where in <code>input</code> to start matching
+   * @param keyword               the keyword text to match (exact chars + single spaces)
+   * @param separatorInsensitive  treat any run of whitespace/dash/slash as one separator (see scan)
+   * @return                      the number of input chars consumed on success, or -1 if no match
    */
-  private static int matchNormalizedLength(CharSequence text, int textStartOffset, CharSequence keyword)
+  private static int matchNormalizedLength(CharSequence text, int textStartOffset, CharSequence keyword, boolean separatorInsensitive)
   {
     int textOffset = textStartOffset,
         textLength = text.length(),
@@ -218,18 +236,18 @@ public final class KeywordLinkScanner
         continue;
       }
 
-      // 2) Multi-space collapse
+      // 2) Separator run: a separator in the keyword matches a run of separators in the
+      //    text. Without separatorInsensitive a separator is just a space (so this collapses
+      //    multiple text spaces); with it, any run of whitespace/dash/slash is consumed on
+      //    each side, so the same compound may be punctuated differently in key and text.
 
-      if ((textChar == ' ') && (keywordChar == ' '))
+      if (isSeparator(textChar, separatorInsensitive) && isSeparator(keywordChar, separatorInsensitive))
       {
-        textOffset++;
-        keywordOffset++;
-
-        // Skip extra spaces in input
-        while ((textOffset < textLength) && (text.charAt(textOffset) == ' '))
+        while ((textOffset < textLength) && isSeparator(text.charAt(textOffset), separatorInsensitive))
           textOffset++;
 
-        // Keyword should not have extra spaces
+        while ((keywordOffset < keywordLength) && isSeparator(keyword.charAt(keywordOffset), separatorInsensitive))
+          keywordOffset++;
 
         continue;
       }
@@ -244,6 +262,23 @@ public final class KeywordLinkScanner
     // Success only if we've consumed the entire keyword pattern
 
     return keywordOffset == keywordLength ? (textOffset - textStartOffset) : -1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * @return whether {@code c} acts as a word separator for keyword matching. A space always
+   *         separates; when {@code separatorInsensitive} is set, any whitespace, dash
+   *         ({@code \p{Pd}}), or slash separates too, so an equivalent compound punctuated
+   *         differently still matches.
+   */
+  private static boolean isSeparator(char c, boolean separatorInsensitive)
+  {
+    if (separatorInsensitive)
+      return Character.isWhitespace(c) || (c == '/') || (Character.getType(c) == Character.DASH_PUNCTUATION);
+
+    return c == ' ';
   }
 
 //---------------------------------------------------------------------------

@@ -32,7 +32,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="vbMain" prefHeight="566.0" prefWidth="1059.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.FTSQueryCtrlr">
+<VBox fx:id="vbMain" prefHeight="566.0" prefWidth="1209.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.FTSQueryCtrlr">
   <AnchorPane maxHeight="125.0" minHeight="120.0" minWidth="0.0" prefHeight="125.0" prefWidth="160.0" style="-fx-background-color: -fx-background;">
     <!-- Row 1: Label, query field, search button, help, checkboxes -->
     <HBox alignment="CENTER_LEFT" spacing="6.0" AnchorPane.leftAnchor="9.0" AnchorPane.topAnchor="9.0">
@@ -61,6 +61,8 @@
             <HBox.margin>
                <Insets left="12.0" />
             </HBox.margin>
+        <CheckBox fx:id="chkSearchKey" mnemonicParsing="false" text="Record search key mode" />
+        <Button fx:id="btnSelectRecord" mnemonicParsing="false" prefHeight="28.0" text="Select record" />
       </HBox>
     </HBox>
     <HBox alignment="BASELINE_LEFT" spacing="12.0" AnchorPane.leftAnchor="9.0" AnchorPane.topAnchor="43.0">

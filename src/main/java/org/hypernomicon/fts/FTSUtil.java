@@ -22,11 +22,13 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.HitRange;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
+import org.hypernomicon.model.searchKeys.*;
 import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
@@ -432,6 +434,45 @@ public final class FTSUtil
     }
 
     return -1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Recomputes each page match's hit ranges by scanning its snippet for occurrences of the
+   * given search keys, replacing Lucene's per-term offsets with one span per keyword
+   * occurrence (so a multi-word key reads as a single highlight rather than a duplicated
+   * one). Scanning is separator-insensitive, so a key matches whichever way the text
+   * punctuates it. Passages with no occurrence are dropped; if that empties the whole file
+   * (a Lucene match the scanner can't pin down), the original matches are returned unchanged
+   * so the result is never blank.
+   *
+   * @param matches   the Lucene-highlighted page matches for one file
+   * @param keyLookup the ad-hoc keyword lookup (see {@code SearchKeys.buildAdHocLookup})
+   * @return rescanned matches, or {@code matches} unchanged when the scanner finds nothing
+   */
+  public static List<PageMatch> rescanHitRanges(List<PageMatch> matches, Function<String, Iterable<Keyword>> keyLookup)
+  {
+    if (collEmpty(matches) || (keyLookup == null)) return matches;
+
+    List<PageMatch> rescanned = new ArrayList<>();
+
+    for (PageMatch pm : matches)
+    {
+      String snippet = pm.snippet();
+      if (snippet == null) continue;
+
+      List<HitRange> ranges = new ArrayList<>();
+
+      for (KeywordLink link : KeywordLinkScanner.scan(snippet, keyLookup, true))
+        ranges.add(new HitRange(link.getOffset(), link.getOffset() + link.getLength()));
+
+      if (ranges.isEmpty() == false)
+        rescanned.add(new PageMatch(pm.pageNumber(), pm.startOffset(), pm.endOffset(), snippet, pm.score(), ranges));
+    }
+
+    return rescanned.isEmpty() ? matches : rescanned;
   }
 
 //---------------------------------------------------------------------------

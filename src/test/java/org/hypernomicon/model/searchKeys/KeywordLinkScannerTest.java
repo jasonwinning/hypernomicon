@@ -824,4 +824,36 @@ class KeywordLinkScannerTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Test
+  void testSeparatorSensitiveByDefault()
+  {
+    Keyword kw = createKeyword("dual-aspect", false, false);
+
+    assertEquals(1, KeywordLinkScanner.scan("a dual-aspect theory", mapOf(kw)).size(), "hyphenated form matches");
+    assertEquals(0, KeywordLinkScanner.scan("a dual aspect theory", mapOf(kw)).size(), "spaced form does not match without separator insensitivity");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testSeparatorInsensitiveBridgesSpaceDashSlash()
+  {
+    Keyword kw = createKeyword("dual-aspect", false, false);
+
+    for (String variant : List.of("dual-aspect", "dual aspect", "dual/aspect", "dual—aspect"))  // hyphen, space, slash, em-dash
+    {
+      String text = "a " + variant + " theory";
+
+      List<KeywordLink> links = KeywordLinkScanner.scan(text, mapOf(kw), true);
+
+      assertEquals(1, links.size(), "should match variant: " + variant);
+      assertEquals(2, links.getFirst().getOffset(), variant);
+      assertEquals(variant.length(), links.getFirst().getLength(), variant);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

@@ -22,6 +22,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.LinkedHashMap;
@@ -36,7 +37,10 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.SimpleSelector;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
 
 //---------------------------------------------------------------------------
 
@@ -49,17 +53,26 @@ public class SearchKeySelectDlgCtrlr extends ModalDialog
   @FXML private ComboBox<HyperTableCell> cbType, cbAuthor, cbRecord;
   @FXML private ComboBox<String> cbKey;
 
+  private final boolean recordOnly;
+  private final HyperCB hcbRecord;
+  private TextField tfSearchKeys;
+
 //---------------------------------------------------------------------------
 
-  public SearchKeySelectDlgCtrlr()
+  public SearchKeySelectDlgCtrlr() { this(false); }
+
+  public SearchKeySelectDlgCtrlr(boolean recordOnly)
   {
-    super("SearchKeySelectDlg", "Select Search Key", true);
+    super("SearchKeySelectDlg", recordOnly ? "Select Record" : "Select Search Key", true);
+
+    this.recordOnly = recordOnly;
 
     VariablePopulator recordPop = new VariablePopulator();
 
     HyperCB hcbType   = new HyperCB(cbType  , ctEditableLimitedDropDown, new RecordTypePopulator(hdtPerson, hdtInvestigation, hdtWork, hdtMiscFile, hdtDebate, hdtPosition, hdtArgument, hdtNote, hdtTerm)),
-            hcbAuthor = new HyperCB(cbAuthor, ctEditableLimitedDropDown, new StandardPopulator  (hdtPerson)),
-            hcbRecord = new HyperCB(cbRecord, ctEditableLimitedDropDown, recordPop);
+            hcbAuthor = new HyperCB(cbAuthor, ctEditableLimitedDropDown, new StandardPopulator  (hdtPerson));
+
+    hcbRecord = new HyperCB(cbRecord, ctEditableLimitedDropDown, recordPop);
 
 //---------------------------------------------------------------------------
 
@@ -115,7 +128,11 @@ public class SearchKeySelectDlgCtrlr extends ModalDialog
 
     hcbRecord.addListener((oldCell, newCell) ->
     {
-      if (HyperTableCell.getCellID(oldCell) != HyperTableCell.getCellID(newCell))
+      if (HyperTableCell.getCellID(oldCell) == HyperTableCell.getCellID(newCell)) return;
+
+      if (recordOnly)
+        updateSearchKeysField(HyperTableCell.getRecord(newCell));
+      else
         updateKeySelector(HyperTableCell.getRecord(newCell));
     });
 
@@ -123,7 +140,50 @@ public class SearchKeySelectDlgCtrlr extends ModalDialog
 
     hcbType.selectType(hdtWork);
 
-    updateKeySelector(null);
+    if (recordOnly)
+      replaceKeyRowWithTextField();
+    else
+      updateKeySelector(null);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void replaceKeyRowWithTextField()
+  {
+    GridPane grid = (GridPane) cbKey.getParent().getParent();
+
+    // Replace "Key:" label with "Search keys:"
+
+    for (Node child : grid.getChildren())
+    {
+      Integer rowNdx = GridPane.getRowIndex(child);
+      if ((rowNdx != null) && (rowNdx == 3) && ((GridPane.getColumnIndex(child) == null) || (GridPane.getColumnIndex(child) == 0)))
+        if (child instanceof AnchorPane ap)
+          for (Node labelNode : ap.getChildren())
+            if (labelNode instanceof Label lbl)
+              lbl.setText("Search keys:");
+    }
+
+    // Replace cbKey with a read-only TextField
+
+    AnchorPane keyPane = (AnchorPane) cbKey.getParent();
+    keyPane.getChildren().remove(cbKey);
+
+    tfSearchKeys = new TextField();
+    tfSearchKeys.setEditable(false);
+    setAnchors(tfSearchKeys, null, 3.0, 0.0, 6.0);
+
+    keyPane.getChildren().add(tfSearchKeys);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateSearchKeysField(HDT_Record record)
+  {
+    if (tfSearchKeys != null)
+      tfSearchKeys.setText(nullSwitch(record, "", HDT_Record::getSearchKey));
   }
 
 //---------------------------------------------------------------------------
@@ -148,7 +208,10 @@ public class SearchKeySelectDlgCtrlr extends ModalDialog
 
   public String getKeyword()
   {
-    return cbKey.getSelectionModel().getSelectedItem();
+    return recordOnly ?
+      nullSwitch(hcbRecord.selectedRecord(), null, HDT_Record::getSearchKey)
+    :
+      cbKey.getSelectionModel().getSelectedItem();
   }
 
 //---------------------------------------------------------------------------
@@ -156,7 +219,10 @@ public class SearchKeySelectDlgCtrlr extends ModalDialog
 
   @Override protected boolean isValid()
   {
-    return strNotNullOrBlank(getKeyword()) || falseWithErrorPopup("No search key is selected.");
+    return recordOnly ?
+      (hcbRecord.selectedRecord() != null) || falseWithErrorPopup("No record is selected.")
+    :
+      strNotNullOrBlank(getKeyword()) || falseWithErrorPopup("No search key is selected.");
   }
 
 //---------------------------------------------------------------------------

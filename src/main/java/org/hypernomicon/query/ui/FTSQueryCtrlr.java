@@ -41,15 +41,19 @@ import org.hypernomicon.App;
 import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.dialogs.SearchKeySelectDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.fts.FullTextIndexer.SearchBatch;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
+import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_WorkFile.WorkBoundary;
+import org.hypernomicon.model.searchKeys.Keyword;
+import org.hypernomicon.model.searchKeys.SearchKeys;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.util.file.FilePath;
@@ -95,8 +99,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private Button btnSearch, btnSearchHelp, btnChooseFolder, btnShowMore, btnShowAll, btnViewScope;
-  @FXML private CheckBox chkExactPhrase, chkIncludeUnassociated, chkIncludeEdited;
+  @FXML private Button btnSearch, btnSearchHelp, btnChooseFolder, btnShowMore, btnShowAll, btnViewScope, btnSelectRecord;
+  @FXML private CheckBox chkExactPhrase, chkIncludeUnassociated, chkIncludeEdited, chkSearchKey;
   @FXML private HBox hbFolderGroup;
   @FXML private Label lblStatus, lblRecordScope;
   @FXML private RadioButton rbFolderScope, rbRecordScope;
@@ -122,6 +126,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   private final FTSContextPaneRenderer contextPaneRenderer = new FTSContextPaneRenderer();
 
+  private Query lastSearchKeyQuery;
+  private Function<String, Iterable<Keyword>> lastSearchKeyLookup;
   private SearchResultFileList recordScopeList, lastScopeList;
   private ScoreDoc lastScoreDoc;
   private List<HDT_RecordWithPath> recordScopeRecords;
@@ -176,6 +182,10 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     setToolTip(chkIncludeUnassociated, "Include results from files that aren't associated with any database record");
 
+    chkSearchKey.selectedProperty().addListener((ob, ov, nv) -> chkExactPhrase.setDisable(nv));
+
+    setToolTip(chkSearchKey, "Interpret the query as a semicolon-delimited list of record search keys");
+
     initColumns();
     initContextMenu();
 
@@ -191,24 +201,25 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     if (db.isLoaded())
       tfFolder.setText(db.getRootPath().toString());
 
-    btnSearch.setOnAction (event -> executeSearch());
-    tfQuery.setOnAction   (event -> executeSearch());
+    btnSearch .setOnAction(event -> executeSearch());
+    tfQuery   .setOnAction(event -> executeSearch());
     tfFileMask.setOnAction(event -> executeSearch());
 
     setToolTip(tfFileMask, "Search only files whose names match these comma-separated patterns (e.g. *.pdf, *.docx); leave blank to search all files");
 
-    btnShowMore.setOnAction (event -> showMore());
-    btnShowAll .setOnAction (event -> showAll());
+    btnShowMore .setOnAction(event -> showMore());
+    btnShowAll  .setOnAction(event -> showAll());
     btnViewScope.setOnAction(event -> showRecordScopePopup());
 
     // Radio button scope switching
 
-    rbFolderScope.selectedProperty().addListener((ob, oldVal, newVal) -> disableAllIff(newVal == false, hbFolderGroup , btnChooseFolder));
-    rbRecordScope.selectedProperty().addListener((ob, oldVal, newVal) -> disableAllIff(newVal == false, lblRecordScope, chkIncludeEdited, btnViewScope));
+    rbFolderScope   .selectedProperty().addListener((ob, oldVal, newVal) -> disableAllIff(newVal == false, hbFolderGroup , btnChooseFolder));
+    rbRecordScope   .selectedProperty().addListener((ob, oldVal, newVal) -> disableAllIff(newVal == false, lblRecordScope, chkIncludeEdited, btnViewScope));
 
     chkIncludeEdited.selectedProperty().addListener((ob, oldVal, newVal) -> rebuildRecordScope());
 
-    // Initial state: record scope radio and its controls disabled (no snapshot yet)
+    // Initial state: record scope radio and its controls disabled (no snapshot yet);
+    // search key scope controls start disabled
 
     disableAll(rbRecordScope, lblRecordScope, chkIncludeEdited, btnViewScope);
 
@@ -235,6 +246,19 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       tfFolder.setText(filePath.toString());
     });
 
+    btnSelectRecord.setOnAction(event ->
+    {
+      SearchKeySelectDlgCtrlr dlg = new SearchKeySelectDlgCtrlr(true);
+
+      if (dlg.showModal())
+      {
+        tfQuery.setText(dlg.getKeyword());
+        chkSearchKey.setSelected(true);
+      }
+    });
+
+    setToolTip(btnSelectRecord, "Choose a record whose search key to search for");
+
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
     webView.setOnDragOver            (Event::consume);
     webView.setOnDragDropped         (Event::consume);
@@ -257,50 +281,74 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       <html lang="en">
       <head>
         <style>
-          h3 { color: #4682B4; margin-bottom: 4px; }
+          h3 { color: #4682B4; margin-bottom: 4px; margin-top: 0; }
+          h3.cont { margin-top: 12px; }
           code { font-weight: bold; color: orangered; }
           td { padding: 2px 8px 2px 0; vertical-align: text-top; }
+          td.col { padding-right: 28px; border-right: 1px solid #ddd; }
+          td.col + td.col { padding-left: 28px; border-right: none; }
         </style>
       </head>
       <body>
-        <h3>Basic Search</h3>
-        <p>All words must appear in the document (AND is the default operator).<br/>
-           Searches are case-insensitive and match whole words.</p>
-
-        <h3>Phrases</h3>
         <table>
-          <tr><td><code>"social epistemology"</code></td><td>Matches the exact phrase</td></tr>
-          <tr><td><code>"knowledge virtue"~3</code></td><td>Words within 3 positions of each other (proximity search)</td></tr>
-        </table>
-        <p>Tip: use the <strong>Exact phrase</strong> checkbox to automatically quote your query.</p>
+          <tr>
+            <td class="col">
+              <h3>Basic Search</h3>
+              <p>All words must appear in the document (AND is the default operator).<br/>
+                 Searches are case-insensitive and match whole words.</p>
 
-        <h3>Wildcards</h3>
-        <table>
-          <tr><td><code>cognit*</code></td><td>Matches <em>cognitive</em>, <em>cognition</em>, <em>cognitivism</em>, etc.</td></tr>
-          <tr><td><code>wom?n</code></td><td>Matches <em>woman</em> or <em>women</em> (single character)</td></tr>
-        </table>
+              <h3 class="cont">Phrases</h3>
+              <table>
+                <tr><td><code>"social epistemology"</code></td><td>Matches the exact phrase</td></tr>
+                <tr><td><code>"knowledge virtue"~3</code></td><td>Words within 3 positions of each other (proximity search)</td></tr>
+              </table>
+              <p>Tip: use the <strong>Exact phrase</strong> checkbox to automatically quote your query.</p>
 
-        <h3>Boolean Operators</h3>
-        <table>
-          <tr><td><code>virtue AND epistemology</code></td><td>Both words must appear (default behavior)</td></tr>
-          <tr><td><code>virtue OR knowledge</code></td><td>Either word may appear</td></tr>
-          <tr><td><code>epistemology NOT reliabilism</code></td><td>Excludes documents containing <em>reliabilism</em></td></tr>
-          <tr><td><code>+virtue -foundationalism</code></td><td>Must contain <em>virtue</em>, must not contain <em>foundationalism</em></td></tr>
-        </table>
+              <h3 class="cont">Wildcards</h3>
+              <table>
+                <tr><td><code>cognit*</code></td><td>Matches <em>cognitive</em>, <em>cognition</em>, <em>cognitivism</em>, etc.</td></tr>
+                <tr><td><code>wom?n</code></td><td>Matches <em>woman</em> or <em>women</em> (single character)</td></tr>
+              </table>
 
-        <h3>Grouping</h3>
-        <table>
-          <tr><td><code>(virtue OR credit) AND epistemology</code></td><td>Parentheses control evaluation order</td></tr>
-        </table>
+              <h3 class="cont">Boolean Operators</h3>
+              <table>
+                <tr><td><code>virtue AND epistemology</code></td><td>Both words must appear (default behavior)</td></tr>
+                <tr><td><code>virtue OR knowledge</code></td><td>Either word may appear</td></tr>
+                <tr><td><code>epistemology NOT reliabilism</code></td><td>Excludes documents containing <em>reliabilism</em></td></tr>
+                <tr><td><code>+virtue -foundationalism</code></td><td>Must contain <em>virtue</em>, must not contain <em>foundationalism</em></td></tr>
+              </table>
+            </td>
+            <td class="col">
+              <h3>Grouping</h3>
+              <table>
+                <tr><td><code>(virtue OR credit) AND epistemology</code></td><td>Parentheses control evaluation order</td></tr>
+              </table>
 
-        <h3>Regular Expressions</h3>
-        <table>
-          <tr><td><code>/cogniti.*/</code></td><td>Regex pattern matching against individual terms</td></tr>
-        </table>
+              <h3 class="cont">Regular Expressions</h3>
+              <table>
+                <tr><td><code>/cogniti.*/</code></td><td>Regex pattern matching against individual terms</td></tr>
+              </table>
 
-        <h3>Escaping Special Characters</h3>
-        <p>To search for characters that have special meaning, prefix them with a backslash:<br/>
-           <code>+ - &amp;&amp; || ! ( ) { } [ ] ^ " ~ * ? : \\ /</code></p>
+              <h3 class="cont">Escaping Special Characters</h3>
+              <p>To search for characters that have special meaning, prefix them with a backslash:<br/>
+                 <code>+ - &amp;&amp; || ! ( ) { } [ ] ^ " ~ * ? : \\ /</code></p>
+
+              <h3 class="cont">Record Search Key Mode</h3>
+              <p>Check the <strong>Record search key mode</strong> checkbox to interpret the query as a
+                 semicolon-delimited list of<br>record search keys. Use the
+                 <strong>Select record</strong> button to fill the field from an existing record's search keys.</p>
+              <table>
+                <tr><td><code>Parfit; Derek Parfit</code></td><td>Two keys, combined with OR</td></tr>
+                <tr><td><code>determinis</code></td><td>Last word is prefix-matched: matches <em>determinism</em>, <em>determinist</em>, etc.</td></tr>
+                <tr><td><code>isotropic</code></td><td>Without <code>^</code>, first word is suffix-matched: matches <em>anisotropic</em>, <em>isotropic</em>, etc.</td></tr>
+                <tr><td><code>^Freud</code></td><td><code>^</code> anchors the first word to an exact match (no suffix matching)</td></tr>
+                <tr><td><code>Kant$</code></td><td><code>$</code> anchors the last word to an exact match (no prefix matching)</td></tr>
+                <tr><td><code>^Wittgenstein$</code></td><td>Both ends anchored: exact whole-word match</td></tr>
+                <tr><td><code>social epistemology</code></td><td>Multi-word keys are matched as an exact phrase, in the order written</td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
       </body>
       </html>
       """));
@@ -660,6 +708,15 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     T run() throws ParseException, IndexSearcher.TooManyNestedClauses;
   }
 
+  @FunctionalInterface
+  private interface ProgressSearchCall<T>
+  {
+    T run(HyperTask task) throws ParseException, IndexSearcher.TooManyNestedClauses, CancelledTaskException;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /**
    * Runs a Lucene search inside a HyperTask configured for FTS:
    * interrupt-on-cancel, fire-and-forget cancel (Lucene isn't responsive to
@@ -672,17 +729,41 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
    */
   private static <T> T runSearchTask(String dialogMessage, SearchCall<T> call)
   {
+    return runSearchTaskImpl(dialogMessage, false, task -> call.run());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Variant of {@link #runSearchTask} that passes the underlying
+   * {@link HyperTask} into the lambda so it can drive a determinate progress
+   * bar via {@link HyperTask#updateProgress(double, double)}. Use this when
+   * the work is a known-size sequence of sub-tasks (e.g., paginated batch
+   * loading), so the user sees real progress instead of an indeterminate
+   * spinner.
+   */
+  private static <T> T runSearchTaskWithProgress(String dialogMessage, ProgressSearchCall<T> call)
+  {
+    return runSearchTaskImpl(dialogMessage, true, call);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static <T> T runSearchTaskImpl(String dialogMessage, boolean withProgressUpdates, ProgressSearchCall<T> call)
+  {
     final class SearchTask extends HyperTask
     {
       private volatile T result;
       private volatile ParseException parseError;
       private volatile IndexSearcher.TooManyNestedClauses tooManyError;
 
-      private SearchTask() { super("FTSSearch", dialogMessage, false); }
+      private SearchTask() { super("FTSSearch", dialogMessage, withProgressUpdates); }
 
-      @Override protected void call()
+      @Override protected void call() throws CancelledTaskException
       {
-        try { result = call.run(); }
+        try { result = call.run(this); }
         catch (ParseException e)                     { parseError = e; }
         catch (IndexSearcher.TooManyNestedClauses e) { tooManyError = e; }
       }
@@ -697,8 +778,9 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     if (task.tooManyError != null)
     {
-      errorPopup("Your search expanded to too many term variants. " +
-                 "Try using a longer or more specific word, or avoid broad prefix or wildcard terms.");
+      errorPopup("A search term expanded to too many variants. " +
+                 "Try adding ^ before the first word or $ after the last word (to match it exactly), " +
+                 "or use a longer or more specific word.");
 
       return null;
     }
@@ -731,8 +813,26 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     FullTextIndexer indexer = db.getFullTextIndexer();
     if (indexer == null) return;
 
-    if (chkExactPhrase.isSelected() && (queryStr.startsWith("\"") == false))
+    boolean useSearchKey = chkSearchKey.isSelected();
+
+    Query searchKeyQuery = null;
+    Function<String, Iterable<Keyword>> searchKeyLookup = null;
+
+    if (useSearchKey)
+    {
+      searchKeyQuery = FullTextIndexer.buildSearchKeyQuery(queryStr);
+      if (searchKeyQuery == null)
+      {
+        errorPopup("No valid search keys found in the query text.");
+        return;
+      }
+
+      searchKeyLookup = SearchKeys.buildAdHocLookup(queryStr);
+    }
+    else if (chkExactPhrase.isSelected() && (queryStr.startsWith("\"") == false))
+    {
       queryStr = '"' + queryStr + '"';
+    }
 
     boolean useRecordScope = rbRecordScope.isSelected() && (recordScopeList != null);
 
@@ -758,10 +858,14 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     String finalQueryStr = queryStr,
            finalFileMask = fileMask;
+    Query finalSearchKeyQuery = searchKeyQuery;
+    Function<String, Iterable<Keyword>> finalSearchKeyLookup = searchKeyLookup;
 
     SearchWithTotal result = runSearchTask("Searching...", () ->
     {
-      SearchBatch b = indexer.searchLight(finalQueryStr, PAGE_SIZE, finalFileMask, pathScope, folderPrefix);
+      SearchBatch b = useSearchKey
+        ? indexer.searchLight(finalSearchKeyQuery, PAGE_SIZE, finalFileMask, pathScope, folderPrefix)
+        : indexer.searchLight(finalQueryStr,       PAGE_SIZE, finalFileMask, pathScope, folderPrefix);
 
       int count = -1;
 
@@ -769,7 +873,9 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       {
         try
         {
-          count = indexer.countMatches(finalQueryStr);
+          count = useSearchKey
+            ? indexer.countMatches(finalSearchKeyQuery)
+            : indexer.countMatches(finalQueryStr);
         }
         catch (Exception e) { /* keep -1 */ }
       }
@@ -782,6 +888,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     SearchBatch batch = result.batch();
 
     lastQueryStr = queryStr;
+    lastSearchKeyQuery = searchKeyQuery;
+    lastSearchKeyLookup = searchKeyLookup;
     lastFileMask = fileMask;
     lastFolderPrefix = folderPrefix;
     lastScopeList = useRecordScope ? recordScopeList : null;
@@ -811,7 +919,9 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
         try
         {
-          List<SearchResult> highlighted = idx.highlightResults(finalQueryStr, lightResults, MAX_PASSAGES_PER_FILE);
+          List<SearchResult> highlighted = (finalSearchKeyQuery != null)
+            ? idx.highlightResults(finalSearchKeyQuery, finalSearchKeyLookup, lightResults, MAX_PASSAGES_PER_FILE)
+            : idx.highlightResults(finalQueryStr, lightResults, MAX_PASSAGES_PER_FILE);
 
           if (searchGeneration != gen) return;
 
@@ -885,20 +995,63 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Captures the query parameters and indexer reference needed to fetch
+   *  successive {@link SearchBatch}es after the initial search. Built once at
+   *  the start of {@link #showMore} / {@link #showAll} and reused for every
+   *  batch in the load. */
+  private record FetchContext(FullTextIndexer indexer, Query searchKeyQuery, String queryStr,
+                              String fileMask, String folderPrefix, Set<String> pathScope)
+  {
+    private SearchBatch fetch(ScoreDoc cursor) throws ParseException, IndexSearcher.TooManyNestedClauses
+    {
+      return (searchKeyQuery != null)
+        ? indexer.searchLightAfter(cursor, searchKeyQuery, PAGE_SIZE, fileMask, pathScope, folderPrefix)
+        : indexer.searchLightAfter(cursor, queryStr,       PAGE_SIZE, fileMask, pathScope, folderPrefix);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Builds a {@link FetchContext} from the controller's current last-search
+   *  state. Returns {@code null} if the indexer is unavailable. */
+  private FetchContext buildFetchContext()
+  {
+    FullTextIndexer indexer = db.getFullTextIndexer();
+    if (indexer == null) return null;
+
+    return new FetchContext(indexer, lastSearchKeyQuery, lastQueryStr,
+                            lastFileMask, lastFolderPrefix,
+                            (lastScopeList != null) ? lastScopeList.getPathScope() : null);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Appends each {@link SearchResult} as an {@link FTSResultRow} to
+   *  {@link #allRows}, resolving the associated record from the file path. */
+  private void appendBatchResults(List<SearchResult> results)
+  {
+    for (SearchResult sr : results)
+    {
+      FilePath filePath = db.getRootPath(sr.path());
+      allRows.add(new FTSResultRow(sr, HyperPath.resolveRecord(filePath, 0)));
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void showMore()
   {
     if ((lastScoreDoc == null) || (hasMore == false)) return;
 
-    FullTextIndexer indexer = db.getFullTextIndexer();
-    if (indexer == null) return;
-
-    Set<String> pathScope = nullSwitch(lastScopeList, null, SearchResultFileList::getPathScope);
+    FetchContext ctx = buildFetchContext();
+    if (ctx == null) return;
 
     ScoreDoc finalAfter = lastScoreDoc;
-    String finalQueryStr = lastQueryStr, finalFileMask = lastFileMask, finalFolderPrefix = lastFolderPrefix;
 
-    SearchBatch batch = runSearchTask("Loading more results...", () ->
-      indexer.searchLightAfter(finalAfter, finalQueryStr, PAGE_SIZE, finalFileMask, pathScope, finalFolderPrefix));
+    SearchBatch batch = runSearchTask("Loading more results...", () -> ctx.fetch(finalAfter));
 
     if (batch == null) return;
 
@@ -909,12 +1062,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     if (lightResults.isEmpty() == false)
     {
       lastScoreDoc = lightResults.getLast().scoreDoc();
-
-      for (SearchResult sr : lightResults)
-      {
-        FilePath filePath = db.getRootPath(sr.path());
-        allRows.add(new FTSResultRow(sr, HyperPath.resolveRecord(filePath, 0)));
-      }
+      appendBatchResults(lightResults);
     }
 
     updateStatusLabel();
@@ -923,10 +1071,57 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Carries the accumulated batches plus the final cursor/hasMore state
+   *  produced by {@link #showAll}'s background loop. */
+  private record ShowAllResult(List<SearchResult> results, ScoreDoc lastScoreDoc, boolean hasMore) {}
+
   private void showAll()
   {
-    while (hasMore)
-      showMore();
+    if ((lastScoreDoc == null) || (hasMore == false)) return;
+
+    FetchContext ctx = buildFetchContext();
+    if (ctx == null) return;
+
+    ScoreDoc startAfter = lastScoreDoc;
+
+    // Total work for the determinate progress bar = results still to load.
+    // totalMatchCount is set when the initial search runs; capped lazily by
+    // the loop's hasMore check if Lucene returns fewer than expected.
+
+    int totalToLoad = Math.max(1, totalMatchCount - allRows.size());
+
+    ShowAllResult outcome = runSearchTaskWithProgress("Loading all results...", task ->
+    {
+      List<SearchResult> accumulated = new ArrayList<>();
+      ScoreDoc cursor = startAfter;
+      boolean moreFlag = true;
+
+      while (moreFlag && (cursor != null))
+      {
+        SearchBatch batch = ctx.fetch(cursor);
+
+        moreFlag = batch.hasMore();
+        List<SearchResult> batchResults = batch.results();
+
+        if (batchResults.isEmpty()) break;
+
+        accumulated.addAll(batchResults);
+        cursor = batchResults.getLast().scoreDoc();
+
+        task.updateProgress(Math.min(accumulated.size(), totalToLoad), totalToLoad);
+      }
+
+      return new ShowAllResult(accumulated, cursor, moreFlag);
+    });
+
+    if (outcome == null) return;  // cancelled / parse error / too-many-clauses
+
+    appendBatchResults(outcome.results());
+
+    lastScoreDoc = outcome.lastScoreDoc();
+    hasMore = outcome.hasMore();
+
+    updateStatusLabel();
   }
 
 //---------------------------------------------------------------------------
@@ -937,8 +1132,11 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     if (highlightRequested.add(path) == false) return;
 
     String queryStr = lastQueryStr;
-    if (queryStr == null) return;
+    Query skQuery = lastSearchKeyQuery;
 
+    if ((queryStr == null) && (skQuery == null)) return;
+
+    Function<String, Iterable<Keyword>> skLookup = lastSearchKeyLookup;
     int gen = searchGeneration;
     SearchResultFileList scopeList = lastScopeList;
 
@@ -952,7 +1150,9 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       try
       {
         SearchResult light = new SearchResult(path, 0f, null, null);
-        List<SearchResult> results = indexer.highlightResults(queryStr, List.of(light), MAX_PASSAGES_PER_FILE);
+        List<SearchResult> results = (skQuery != null)
+          ? indexer.highlightResults(skQuery , skLookup, List.of(light), MAX_PASSAGES_PER_FILE)
+          : indexer.highlightResults(queryStr, List.of(light), MAX_PASSAGES_PER_FILE);
 
         if (searchGeneration != gen) return;
 
@@ -1143,6 +1343,17 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     tfFolder.setText(folderPath.toString());
     rbFolderScope.setSelected(true);
     Platform.runLater(tfQuery::requestFocus);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setQueryTextAndSearch(String text, boolean asSearchKey)
+  {
+    tfQuery.setText(text);
+    chkSearchKey.setSelected(asSearchKey);
+    rbFolderScope.setSelected(true);
+    executeSearch();
   }
 
 //---------------------------------------------------------------------------
@@ -1371,7 +1582,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       if (indexer == null) return;
 
       disposeCurrentCoordinator();
-      currentCoordinator = new ConvertedOfficeHitCoordinator(row, indexer, lastQueryStr, highlightExecutor);
+      currentCoordinator = new ConvertedOfficeHitCoordinator(row, indexer, lastQueryStr, lastSearchKeyQuery, lastSearchKeyLookup, highlightExecutor);
       currentCoordinator.start();
       return;
     }

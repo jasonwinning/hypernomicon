@@ -787,7 +787,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  FTSQueryCtrlr goToNewFTSTab()
+  public FTSQueryCtrlr goToNewFTSTab()
   {
     FTSQueryCtrlr ftsCtrlr = addFTSQueryCtrlr();
     tabPane.getSelectionModel().select(ftsCtrlr.getTab());

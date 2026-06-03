@@ -35,10 +35,9 @@
         <Image url="@../resources/images/star-empty.png" />
       </ImageView>
     </graphic></Button>
-  <Button fx:id="btnNewRecordsQuery" layoutX="198.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="133.0" text="+ Record Search" AnchorPane.leftAnchor="198.0" AnchorPane.topAnchor="9.0"/>
-  <Button fx:id="btnNewFTSSearch" layoutX="340.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="163.0" text="+ File Content Search" AnchorPane.leftAnchor="340.0" AnchorPane.topAnchor="9.0"/>
-  <Button fx:id="btnSearchWithinFiles" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false"
-          prefHeight="28.0" text="Search Within Result Files" AnchorPane.rightAnchor="208.0" AnchorPane.topAnchor="9.0">
+  <Button fx:id="btnNewRecordsQuery" layoutX="198.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="133.0" text="+ Record Search" AnchorPane.leftAnchor="198.0" AnchorPane.topAnchor="9.0" />
+  <Button fx:id="btnNewFTSSearch" layoutX="340.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="163.0" text="+ File Content Search" AnchorPane.leftAnchor="340.0" AnchorPane.topAnchor="9.0" />
+  <Button fx:id="btnSearchWithinFiles" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" text="Search Within Result Files" AnchorPane.rightAnchor="208.0" AnchorPane.topAnchor="9.0">
     <graphic>
       <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
         <Image url="@../resources/images/magnifier.png" />

@@ -30,6 +30,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -42,6 +43,7 @@ import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
+import org.apache.lucene.queries.spans.*;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
@@ -54,6 +56,7 @@ import org.apache.tika.Tika;
 import javafx.application.Platform;
 
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.model.searchKeys.Keyword;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.RegistryAccessor;
 import org.hypernomicon.util.file.deletion.FileDeletion;
@@ -508,6 +511,8 @@ public class FullTextIndexer
     writer = new IndexWriter(luceneDir, config);
 
     searcherMgr = new SearcherManager(writer, null);
+
+    IndexSearcher.setMaxClauseCount(8192);
 
     System.out.println("Full-text indexer: index directory = " + indexDir);
 
@@ -2247,9 +2252,7 @@ public class FullTextIndexer
   {
     if ((searcherMgr == null) || (analyzer == null)) return 0;
 
-    QueryParser parser = new QueryParser("content", analyzer);
-    parser.setDefaultOperator(QueryParser.Operator.AND);
-    return countMatches(parser.parse(queryStr.toLowerCase()));
+    return countMatches(createQueryParser(analyzer).parse(queryStr));
   }
 
 //---------------------------------------------------------------------------
@@ -2452,6 +2455,139 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
+   * Builds a Lucene query from a semicolon-delimited record search key string.
+   * Each key is parsed according to the KeywordBinding anchor conventions:
+   * <ul>
+   *   <li>{@code ^} prefix: first word is an exact term match</li>
+   *   <li>No {@code ^}: first word is a suffix wildcard match ({@code *word}), so
+   *       "isotropic" matches "anisotropic", "reductive" matches "nonreductive", etc.</li>
+   *   <li>{@code $} suffix: last word is an exact term match</li>
+   *   <li>No {@code $}: last word is a prefix match ({@code word*}), so "determinis"
+   *       matches "determinism", "determinist", etc.</li>
+   *   <li>All middle words are exact term matches</li>
+   *   <li>Multiple words: combined as an ordered adjacent phrase via {@link SpanNearQuery}</li>
+   *   <li>Multiple keys (separated by {@code ;}): combined as OR via {@link BooleanQuery}</li>
+   * </ul>
+   * <p>
+   * The suffix wildcard on the first word can cause a {@link IndexSearcher.TooManyNestedClauses}
+   * exception if the word is very short (e.g., a single letter matches thousands of terms).
+   * Callers should catch this and advise the user to add {@code ^} to anchor the first word.
+   *
+   * @param searchKeyStr the semicolon-delimited search key string (e.g., "Parfit; Derek Parfit")
+   * @return the built query, or null if no valid keys are found
+   */
+  public static Query buildSearchKeyQuery(String searchKeyStr)
+  {
+    if (strNullOrBlank(searchKeyStr)) return null;
+
+    String[] keys = searchKeyStr.split(";");
+    List<Query> clauses = new ArrayList<>();
+
+    for (String rawKey : keys)
+    {
+      rawKey = rawKey.strip().replace("*", "").replace("?", "");
+      if (rawKey.isEmpty()) continue;
+
+      boolean startAnchored = rawKey.startsWith("^");
+
+      if (startAnchored)
+        rawKey = rawKey.substring(1);
+
+      boolean endAnchored = rawKey.endsWith("$");
+
+      if (endAnchored)
+        rawKey = rawKey.substring(0, rawKey.length() - 1);
+
+      rawKey = rawKey.strip();
+      if (rawKey.isEmpty()) continue;
+
+      // Split on hyphens as well as whitespace: the indexer's analyzer
+      // tokenizes "self-maintenance" as ["self", "maintenance"], so a
+      // hyphenated query like "self-maint" only matches if we split it
+      // into the same word sequence the index will resolve against.
+
+      String[] words = rawKey.toLowerCase().split("[\\s\\-]+");
+
+      if (words.length == 0) continue;
+
+      if (words.length == 1)
+      {
+        clauses.add(buildWordQuery(words[0], startAnchored, endAnchored));
+      }
+      else
+      {
+        // Multi-word: SpanNearQuery with slop=0, inOrder=true
+
+        SpanQuery[] spanClauses = new SpanQuery[words.length];
+
+        for (int ndx = 0; ndx < words.length; ndx++)
+        {
+          boolean isFirst = ndx == 0,
+                  isLast  = ndx == words.length - 1;
+
+          Query wordQuery;
+
+          if (isFirst)
+            wordQuery = buildWordQuery(words[ndx], startAnchored, true);
+          else if (isLast)
+            wordQuery = buildWordQuery(words[ndx], true, endAnchored);
+          else
+            wordQuery = new TermQuery(new Term("content", words[ndx]));
+
+          if (wordQuery instanceof TermQuery tq)
+            spanClauses[ndx] = new SpanTermQuery(tq.getTerm());
+          else if (wordQuery instanceof SpanQuery sq)
+            spanClauses[ndx] = sq;
+          else
+            spanClauses[ndx] = new SpanMultiTermQueryWrapper<>((MultiTermQuery) wordQuery);
+        }
+
+        clauses.add(new SpanNearQuery(spanClauses, 0, true));
+      }
+    }
+
+    if (clauses.isEmpty()) return null;
+
+    if (clauses.size() == 1) return clauses.getFirst();
+
+    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+
+    for (Query clause : clauses)
+      builder.add(clause, BooleanClause.Occur.SHOULD);
+
+    return builder.build();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds a query for a single word based on its anchor constraints.
+   *
+   * @param word       the lowercase word
+   * @param exactStart true if the word must start the token ({@code ^} anchor or non-first position)
+   * @param exactEnd   true if the word must end the token ({@code $} anchor or non-last position)
+   * @return TermQuery (both exact), PrefixQuery (exact start), WildcardQuery (exact end or neither)
+   */
+  private static Query buildWordQuery(String word, boolean exactStart, boolean exactEnd)
+  {
+    if (exactStart && exactEnd)
+      return new TermQuery(new Term("content", word));
+
+    if (exactStart)  // prefix match: word*
+      return new PrefixQuery(new Term("content", word));
+
+    if (exactEnd)    // suffix match: *word
+      return new WildcardQuery(new Term("content", '*' + word));
+
+    // Both open: suffix + prefix: *word*
+    return new WildcardQuery(new Term("content", '*' + word + '*'));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Fast search without highlighting. Returns results with null {@code pageMatches},
    * suitable for immediate display while highlighting proceeds in the background.
    *
@@ -2465,7 +2601,20 @@ public class FullTextIndexer
   public SearchBatch searchLight(String queryStr, int maxResults, String fileMask,
                                  Set<String> pathScope, String folderPrefix) throws ParseException
   {
-    return doSearch(null, queryStr, maxResults, fileMask, pathScope, folderPrefix);
+    return doSearch(null, null, queryStr, maxResults, fileMask, pathScope, folderPrefix);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Fast search without highlighting, using a pre-built query (e.g., from search keys).
+   */
+  public SearchBatch searchLight(Query query, int maxResults, String fileMask,
+                                 Set<String> pathScope, String folderPrefix)
+  {
+    try { return doSearch(null, query, null, maxResults, fileMask, pathScope, folderPrefix); }
+    catch (ParseException e) { return new SearchBatch(List.of(), false); }  // cannot happen with pre-built query
   }
 
 //---------------------------------------------------------------------------
@@ -2485,7 +2634,20 @@ public class FullTextIndexer
   public SearchBatch searchLightAfter(ScoreDoc after, String queryStr, int maxResults, String fileMask,
                                       Set<String> pathScope, String folderPrefix) throws ParseException
   {
-    return doSearch(after, queryStr, maxResults, fileMask, pathScope, folderPrefix);
+    return doSearch(after, null, queryStr, maxResults, fileMask, pathScope, folderPrefix);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Continue a previous light search without highlighting, using a pre-built query.
+   */
+  public SearchBatch searchLightAfter(ScoreDoc after, Query query, int maxResults, String fileMask,
+                                      Set<String> pathScope, String folderPrefix)
+  {
+    try { return doSearch(after, query, null, maxResults, fileMask, pathScope, folderPrefix); }
+    catch (ParseException e) { return new SearchBatch(List.of(), false); }
   }
 
 //---------------------------------------------------------------------------
@@ -2575,6 +2737,50 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
+   * Builds the {@link QueryParser} used for all free-text FTS queries: the
+   * {@code content} field with AND as the default operator.
+   *
+   * <p>The caller must pass the query string through unchanged; it must NOT be
+   * lowercased first, because that would turn the boolean operators AND/OR/NOT
+   * (which Lucene only recognizes in upper case) into ordinary search terms.
+   * Case-insensitivity for ordinary words comes from the analyzer's
+   * {@link LowerCaseFilter}. The classic {@code QueryParser}, however, passes
+   * wildcard/prefix/fuzzy/regexp term strings through unanalyzed, so those are
+   * lower-cased here instead, to match the lower-cased index.
+   */
+  public static QueryParser createQueryParser(Analyzer analyzer)
+  {
+    QueryParser parser = new QueryParser("content", analyzer)
+    {
+      @Override protected Query getWildcardQuery(String field, String termStr) throws ParseException
+      {
+        return super.getWildcardQuery(field, termStr.toLowerCase(Locale.ROOT));
+      }
+
+      @Override protected Query getPrefixQuery(String field, String termStr) throws ParseException
+      {
+        return super.getPrefixQuery(field, termStr.toLowerCase(Locale.ROOT));
+      }
+
+      @Override protected Query getFuzzyQuery(String field, String termStr, float minSimilarity) throws ParseException
+      {
+        return super.getFuzzyQuery(field, termStr.toLowerCase(Locale.ROOT), minSimilarity);
+      }
+
+      @Override protected Query getRegexpQuery(String field, String termStr) throws ParseException
+      {
+        return super.getRegexpQuery(field, termStr.toLowerCase(Locale.ROOT));
+      }
+    };
+
+    parser.setDefaultOperator(QueryParser.Operator.AND);
+    return parser;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Highlights a batch of previously returned light search results. Re-looks up
    * each document by path to get a current doc ID, loads pageOffsets, and runs
    * the {@link UnifiedHighlighter} with the POSTINGS strategy.
@@ -2587,14 +2793,60 @@ public class FullTextIndexer
    */
   public List<SearchResult> highlightResults(String queryStr, List<SearchResult> lightResults, int maxPassages) throws ParseException
   {
+    return highlightResults(null, queryStr, lightResults, maxPassages);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Highlights a batch of previously returned light search results using a pre-built query.
+   * When {@code keyLookup} is non-null (search-key mode), each passage's hit ranges are
+   * recomputed from the search keys via {@link FTSUtil#rescanHitRanges} so multi-word keys
+   * read as a single highlight; otherwise Lucene's per-term offsets are kept.
+   */
+  public List<SearchResult> highlightResults(Query prebuiltQuery, Function<String, Iterable<Keyword>> keyLookup,
+                                             List<SearchResult> lightResults, int maxPassages)
+  {
+    List<SearchResult> results;
+
+    try { results = highlightResults(prebuiltQuery, (String) null, lightResults, maxPassages); }
+    catch (ParseException e) { return List.of(); }  // cannot happen with pre-built query
+
+    if (keyLookup == null) return results;
+
+    List<SearchResult> rescanned = new ArrayList<>(results.size());
+
+    for (SearchResult sr : results)
+    {
+      List<SearchResult.PageMatch> matches = sr.pageMatches();
+      rescanned.add(matches == null
+        ? sr
+        : new SearchResult(sr.path(), sr.score(), FTSUtil.rescanHitRanges(matches, keyLookup), sr.scoreDoc()));
+    }
+
+    return rescanned;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private List<SearchResult> highlightResults(Query prebuiltQuery, String queryStr,
+                                              List<SearchResult> lightResults, int maxPassages) throws ParseException
+  {
     List<SearchResult> highlighted = new ArrayList<>();
 
     if ((searcherMgr == null) || (analyzer == null) || lightResults.isEmpty())
       return highlighted;
 
-    QueryParser parser = new QueryParser("content", analyzer);
-    parser.setDefaultOperator(QueryParser.Operator.AND);
-    Query query = parser.parse(queryStr);
+    Query query;
+
+    if (prebuiltQuery != null)
+      query = prebuiltQuery;
+    else
+    {
+      query = createQueryParser(analyzer).parse(queryStr);
+    }
 
     try
     {
@@ -2636,16 +2888,23 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private SearchBatch doSearch(ScoreDoc after, String queryStr, int maxResults, String fileMask,
+  private SearchBatch doSearch(ScoreDoc after, Query prebuiltQuery, String queryStr, int maxResults, String fileMask,
                                Set<String> pathScope, String folderPrefix) throws ParseException
   {
     List<SearchResult> results = new ArrayList<>();
 
     if ((searcherMgr == null) || (analyzer == null)) return new SearchBatch(results, false);
 
-    QueryParser parser = new QueryParser("content", analyzer);
-    parser.setDefaultOperator(QueryParser.Operator.AND);
-    Query query = parser.parse(queryStr);
+    Query query;
+
+    if (prebuiltQuery != null)
+    {
+      query = prebuiltQuery;
+    }
+    else
+    {
+      query = createQueryParser(analyzer).parse(queryStr);
+    }
 
     if (query instanceof MatchNoDocsQuery)
       return new SearchBatch(results, false);

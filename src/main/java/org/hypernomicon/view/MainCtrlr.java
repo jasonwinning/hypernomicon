@@ -134,7 +134,7 @@ public final class MainCtrlr
 
   @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, midAnchorPane;
-  @FXML private Button btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow, btnSave,
+  @FXML private Button btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnPreviewWindow, btnSave,
                        btnDelete, btnRevert, btnBack, btnForward, btnSaveAll, btnPrevResult, btnNextResult;
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
@@ -153,7 +153,7 @@ public final class MainCtrlr
 
   @FXML private MenuButton mbCreateNew;
   @FXML private ProgressBar mentionsProgressBar;
-  @FXML private SplitMenuButton btnGoTo, btnCreateNew;
+  @FXML private SplitMenuButton btnGoTo, btnCreateNew, btnMentions;
   @FXML private StackPane spFTSStatus;
   @FXML private Tab tabViewSelector, tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
   @FXML private TabPane selectorTabPane, tabPane;
@@ -476,6 +476,14 @@ public final class MainCtrlr
     setToolTip(btnPointerPreview, "On right/secondary click on link to work record, show in preview window");
 
     setToolTip(btnMentions, "Show records whose description mentions this record");
+
+    MenuItem mnuMentionsInRecords = new MenuItem("Mentions within records"),
+             mnuMentionsInFiles   = new MenuItem("Mentions within files");
+
+    mnuMentionsInRecords.setOnAction(event -> { if (cantSaveRecord() == false) searchForMentions(false); });
+    mnuMentionsInFiles  .setOnAction(event -> { if (cantSaveRecord() == false) searchForMentionsInFiles(); });
+
+    btnMentions.getItems().setAll(mnuMentionsInRecords, mnuMentionsInFiles);
 
     btnIncrement.setOnAction(event -> incDecClick(true));
     btnDecrement.setOnAction(event -> incDecClick(false));
@@ -2439,6 +2447,33 @@ public final class MainCtrlr
     }
 
     discardLastQuery(backClick);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void searchForMentionsInFiles()
+  {
+    if (db.isOffline())
+    {
+      errorPopup("No database is currently loaded.");
+      return;
+    }
+
+    HDT_Record record = activeRecord();
+    if (record == null) return;
+
+    windows.focusStage(getStage());
+    viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(queryHyperTab().newView(queryHyperTab().activeRecord()));
+
+    String searchKey = record.getSearchKey();
+
+    FTSQueryCtrlr ftsCtrlr = queryHyperTab().goToNewFTSTab();
+
+    if (strNullOrEmpty(searchKey))
+      ftsCtrlr.setQueryTextAndSearch(record.name(), false);
+    else
+      ftsCtrlr.setQueryTextAndSearch(searchKey, true);
   }
 
 //---------------------------------------------------------------------------
