@@ -26,6 +26,7 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
 import java.util.*;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
@@ -417,8 +418,7 @@ public final class GeneralQueries
 
     allQueries.add(new RecordQuery(QUERY_MATCHING_STRING, "with any text that would link to a record having this search key")
     {
-      private final SearchKeys dummySearchKeys = new SearchKeys();
-      private HDT_Record searchDummy = null;
+      private Function<String, Iterable<Keyword>> keywordLookup = null;
 
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
@@ -428,31 +428,22 @@ public final class GeneralQueries
 
       @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) throws HyperDataException
       {
-        dummySearchKeys.removeAll();
-
-        searchDummy = db.createNewRecordFromState(new RecordState(hdtPerson, -1, "", "", "", true), true);
-
-        dummySearchKeys.setSearchKey(searchDummy, getCellText(op1), true, false, false);
+        keywordLookup = SearchKeys.buildAdHocLookup(getCellText(op1));
       }
 
       @Override public boolean evaluate(HDT_Record record, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        if (searchDummy == null) return false;
+        if (keywordLookup == null) return false;
 
         List<String> list = new ArrayList<>();
         record.getAllStrings(list, true, true, false);
 
-        return list.stream().anyMatch(str -> KeywordLinkScanner.scan(str, dummySearchKeys::getKeywordsByPrefix).size() > 0);
+        return list.stream().anyMatch(str -> KeywordLinkScanner.scan(str, keywordLookup).size() > 0);
       }
 
       @Override public void cleanup(State state)
       {
-        if (searchDummy != null)
-        {
-          db.deleteRecord(searchDummy);
-          searchDummy = null;
-          dummySearchKeys.removeAll();
-        }
+        keywordLookup = null;
       }
 
       @Override public boolean autoShowDescription() { return true; }

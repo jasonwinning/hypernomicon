@@ -21,6 +21,7 @@ import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.model.Exceptions.DuplicateSearchKeyException;
@@ -79,6 +80,48 @@ public final class SearchKeys
   public Iterable<Keyword> getKeywordsByPrefix(String prefix)
   {
     return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase()), Collections.emptyList(), map -> Collections.unmodifiableCollection(map.values()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds a record-less keyword lookup from a raw search-key string (the same
+   * semicolon-delimited format accepted by {@link #setSearchKey}), for ad-hoc scanning via
+   * {@link KeywordLinkScanner#scan(String, Function)} without creating, or otherwise
+   * touching, any database record. The returned function is backed by immutable data, so it
+   * is safe to reuse across threads. Substrings shorter than three characters are skipped: a
+   * keyword is bucketed by, and matched against, a three-character prefix, so a shorter key
+   * could never match.
+   *
+   * @param searchKeyStr the raw search-key string (may contain {@code ^}/{@code $} anchors)
+   * @return a prefix-to-keywords function; yields an empty iterable for every prefix when the
+   *         string contains no usable keys
+   */
+  public static Function<String, Iterable<Keyword>> buildAdHocLookup(String searchKeyStr)
+  {
+    Map<String, List<KeywordBinding>> bindingsByNormText = new LinkedHashMap<>();
+
+    if (strNullOrBlank(searchKeyStr) == false)
+      for (String subStr : new SplitString(prepSearchKey(searchKeyStr), ';'))
+      {
+        KeywordBinding binding = new KeywordBinding(subStr, null);
+
+        if (binding.getUserText().length() >= 3)
+          bindingsByNormText.computeIfAbsent(binding.getNormalizedText(), _ -> new ArrayList<>()).add(binding);
+      }
+
+    Map<String, List<Keyword>> prefixToKeywords = new HashMap<>();
+
+    for (Map.Entry<String, List<KeywordBinding>> entry : bindingsByNormText.entrySet())
+    {
+      List<KeywordBinding> keyBindings = entry.getValue();
+
+      prefixToKeywords.computeIfAbsent(keyBindings.getFirst().getPrefix(), _ -> new ArrayList<>())
+                      .add(new Keyword(entry.getKey(), keyBindings));
+    }
+
+    return prefix -> prefixToKeywords.getOrDefault(prefix.toLowerCase(), List.of());
   }
 
 //---------------------------------------------------------------------------

@@ -71,7 +71,6 @@ public interface HDT_Record
   boolean hasMainText(); // this means the record is associated with a specific MainText object (false for HDT_Term)
   void expire();
   boolean isExpired();
-  boolean isDummy();
   boolean updateObjectGroups(RelationType relType, List<ObjectGroup> newGroups, Collection<Tag> tags);
 
   /**

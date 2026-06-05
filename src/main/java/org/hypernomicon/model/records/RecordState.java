@@ -49,7 +49,6 @@ public class RecordState
   public final Map<Tag, HDI_OfflineBase> items;
   public final RecordType type;
   final String sortKeyAttr, searchKey;
-  final boolean dummyFlag;
 
   private static final char QUOTE = '"';
 
@@ -70,7 +69,7 @@ public class RecordState
 
   public RecordState(RecordType type)
   {
-    this(type, -1, "", "", "", false);
+    this(type, -1, "", "", "");
 
     nullSwitch(db.getMainTextTemplate(type), this::setMainText);
   }
@@ -79,15 +78,10 @@ public class RecordState
 
   public RecordState(RecordType type, int id)
   {
-    this(type, id, "", "", "", false);
+    this(type, id, "", "", "");
   }
 
   public RecordState(RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey)
-  {
-    this(type, id, sortKeyAttr, simpleName, searchKey, false);
-  }
-
-  public RecordState(RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey, boolean dummyFlag)
   {
     if (type.isSimple())
     {
@@ -100,7 +94,6 @@ public class RecordState
       this.searchKey = searchKey;
     }
 
-    this.dummyFlag = dummyFlag;
     this.id = id;
     this.type = type;
     this.sortKeyAttr = sortKeyAttr;

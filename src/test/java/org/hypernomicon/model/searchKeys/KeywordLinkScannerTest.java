@@ -669,4 +669,159 @@ class KeywordLinkScannerTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // The following tests exercise SearchKeys.buildAdHocLookup (the record-less keyword
+  // lookup built from a raw search-key string) end-to-end through scan().
+
+  @Test
+  void testAdHocMultiWordKey()
+  {
+    String text = "The philosopher Friedrich Nietzsche wrote this.";
+
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, SearchKeys.buildAdHocLookup("Friedrich Nietzsche"));
+
+    assertEquals(1, links.size(), "A multi-word key should match as a single span");
+
+    KeywordLink link = links.getFirst();
+
+    assertEquals(text.indexOf("Friedrich Nietzsche"), link.getOffset());
+    assertEquals("Friedrich Nietzsche".length(), link.getLength());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testAdHocPhraseDoesNotDoubleCountAnchoredWord()
+  {
+    // "Friedrich Nietzsche" (phrase) and "^Nietzsche" both appear in the key. The phrase
+    // occurrence must be one link (the longest match consumes the inner "Nietzsche"),
+    // and a standalone "Nietzsche" elsewhere is a second, separate link.
+
+    String text = "Friedrich Nietzsche argued; later Nietzsche recanted.";
+
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, SearchKeys.buildAdHocLookup("Friedrich Nietzsche; ^Nietzsche"));
+
+    assertEquals(2, links.size(), "Each occurrence yields one link; the phrase is not double-counted with ^Nietzsche");
+
+    KeywordLink first = links.getFirst();
+
+    assertEquals(text.indexOf("Friedrich Nietzsche"), first.getOffset());
+    assertEquals("Friedrich Nietzsche".length(), first.getLength());
+
+    KeywordLink second = links.get(1);
+
+    assertEquals(text.lastIndexOf("Nietzsche"), second.getOffset());
+    assertEquals("Nietzsche".length(), second.getLength());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testAdHocStartAnchor()
+  {
+    String text = "Freud and pseudoFreud differ.";
+
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, SearchKeys.buildAdHocLookup("^Freud"));
+
+    assertEquals(1, links.size(), "^ should match only where the word starts, not the 'Freud' inside 'pseudoFreud'");
+
+    KeywordLink link = links.getFirst();
+
+    assertEquals(0, link.getOffset());
+    assertEquals("Freud".length(), link.getLength());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testAdHocEndAnchor()
+  {
+    String text = "Kant and Kantian thought.";
+
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, SearchKeys.buildAdHocLookup("Kant$"));
+
+    assertEquals(1, links.size(), "$ should match only where the word ends, not the 'Kant' inside 'Kantian'");
+
+    KeywordLink link = links.getFirst();
+
+    assertEquals(0, link.getOffset());
+    assertEquals("Kant".length(), link.getLength());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testAdHocKeyWithPeriods()
+  {
+    // Periods in the key are normalized the same way the registry path normalizes them,
+    // so "J. R. Tolkien" still matches the spacing variant "J.R. Tolkien".
+
+    String text = "I love the works of J.R. Tolkien.";
+
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, SearchKeys.buildAdHocLookup("J. R. Tolkien"));
+
+    assertEquals(1, links.size(), "A key with periods should match across spacing variations");
+
+    KeywordLink link = links.getFirst();
+
+    assertEquals(text.indexOf("J.R. Tolkien"), link.getOffset());
+    assertEquals("J.R. Tolkien".length(), link.getLength());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testAdHocShortKeySkipped()
+  {
+    // The <3-char substring "ab" is skipped (it could never match a 3-char prefix bucket),
+    // and no exception is raised; only "Nietzsche" matches.
+
+    String text = "ab cd Nietzsche ef.";
+
+    List<KeywordLink> links = KeywordLinkScanner.scan(text, SearchKeys.buildAdHocLookup("ab; Nietzsche"));
+
+    assertEquals(1, links.size(), "The too-short key is skipped; only 'Nietzsche' matches");
+
+    KeywordLink link = links.getFirst();
+
+    assertEquals(text.indexOf("Nietzsche"), link.getOffset());
+    assertEquals("Nietzsche".length(), link.getLength());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testAdHocSameTextDifferentAnchorsKeepBothBindings()
+  {
+    // Two substrings normalizing to the same text but with different anchoring group into
+    // one keyword that retains both bindings (the shared dummy record previously dropped
+    // all but the last).
+
+    List<Keyword> keywords = new ArrayList<>();
+    SearchKeys.buildAdHocLookup("Nietzsche; ^Nietzsche").apply("nie").forEach(keywords::add);
+
+    assertEquals(1, keywords.size(), "Same normalized text groups into a single keyword");
+    assertEquals(2, keywords.getFirst().getAllBindings().size(), "Both the plain and ^-anchored bindings are retained");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testAdHocBlankAndNullInput()
+  {
+    assertFalse(SearchKeys.buildAdHocLookup("")  .apply("abc").iterator().hasNext(), "Blank query yields no keywords");
+    assertFalse(SearchKeys.buildAdHocLookup(null).apply("abc").iterator().hasNext(), "Null query yields no keywords");
+
+    assertEquals(0, KeywordLinkScanner.scan("Some text here.", SearchKeys.buildAdHocLookup("")).size(), "Scanning with an empty lookup finds nothing");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

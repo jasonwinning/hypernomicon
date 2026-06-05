@@ -1558,21 +1558,18 @@ public abstract class AbstractHyperDB
     if (recordDeletionTestInProgress)
       mentionsIndex.stopRebuild();
 
-    if (record.isDummy() == false)
+    if (strNotNullOrBlank(record.getSearchKey()))
+      startMentionsRebuildAfterDelete = true;
+
+    try { setSearchKey(record, "", false, false, false); } catch (SearchKeyException e) { throw newAssertionError(e); }
+
+    if (mentionsIndex.isRebuilding())
     {
-      if (strNotNullOrBlank(record.getSearchKey()))
-        startMentionsRebuildAfterDelete = true;
-
-      try { setSearchKey(record, "", false, false, false); } catch (SearchKeyException e) { throw newAssertionError(e); }
-
-      if (mentionsIndex.isRebuilding())
-      {
-        startMentionsRebuildAfterDelete = true;
-        mentionsIndex.stopRebuild();
-      }
-      else
-        mentionsIndex.removeRecord(record);
+      startMentionsRebuildAfterDelete = true;
+      mentionsIndex.stopRebuild();
     }
+    else
+      mentionsIndex.removeRecord(record);
 
     if (deletionInProgress || pointerResolutionInProgress)
     {

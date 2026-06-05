@@ -22,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hypernomicon.model.records.HDT_Record;
 
+import static org.hypernomicon.util.Util.*;
+
 //---------------------------------------------------------------------------
 
 public class Keyword
@@ -32,12 +34,18 @@ public class Keyword
 
   public final String normalizedText; // Will always be the same between bindings
 
+  // Record keywords key their bindings by owning record (supporting add/remove by
+  // record). Ad-hoc keywords, built from a query string with no owning record (see
+  // SearchKeys.buildAdHocLookup), leave this map null and hold their bindings in
+  // adHocBindings instead; for them only normalizedText and getAllBindings() are meaningful.
+
   private final Map<HDT_Record, KeywordBinding> bindings;
+  private final List<KeywordBinding> adHocBindings;
 
 //---------------------------------------------------------------------------
 
-  public Collection<KeywordBinding> getAllBindings() { return Collections.unmodifiableCollection(bindings.values()); }
-  public Collection<HDT_Record>     getAllRecords () { return Collections.unmodifiableCollection(bindings.keySet()); }
+  public Collection<KeywordBinding> getAllBindings() { return (adHocBindings != null) ? adHocBindings : Collections.unmodifiableCollection(bindings.values()); }
+  public Collection<HDT_Record>     getAllRecords () { return (adHocBindings != null) ? List.of()     : Collections.unmodifiableCollection(bindings.keySet()); }
 
 //---------------------------------------------------------------------------
 
@@ -49,6 +57,27 @@ public class Keyword
     this.normalizedText = binding.getNormalizedText();
     this.bindings = new ConcurrentHashMap<>();
     this.bindings.put(binding.getRecord(), binding);
+    this.adHocBindings = null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Constructs a record-less keyword for ad-hoc scanning, where the bindings are parsed
+   * from a query string rather than owned by a database record (see
+   * {@link SearchKeys#buildAdHocLookup}). Only {@link #normalizedText} and
+   * {@link #getAllBindings()} are meaningful; the record-keyed operations
+   * (addBinding/removeBinding/getAllRecords) are not supported.
+   */
+  Keyword(String normalizedText, List<KeywordBinding> adHocBindings)
+  {
+    if (collEmpty(adHocBindings))
+      throw new IllegalArgumentException("Ad-hoc keyword must be constructed with at least one binding");
+
+    this.normalizedText = normalizedText;
+    this.bindings = null;
+    this.adHocBindings = List.copyOf(adHocBindings);
   }
 
 //---------------------------------------------------------------------------

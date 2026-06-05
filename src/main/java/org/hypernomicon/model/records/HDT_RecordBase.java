@@ -52,7 +52,6 @@ public abstract class HDT_RecordBase implements HDT_Record
   private final DatasetAccessor<? extends HDT_Record> dataset;
   private final NameItem name;
   private final Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
-  private final boolean dummyFlag;
   private String sortKeyAttr;
   private final RecordType type;
 
@@ -66,7 +65,6 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   @Override public final Instant getViewDate()             { return type.getDisregardDates() ? null : viewDate; }
   @Override public final Instant getCreationDate()         { return type.getDisregardDates() ? null : creationDate; }
-  @Override public final boolean isDummy()                 { return dummyFlag; }
   @Override public final int getID()                       { return id; }
   @Override public final int keyNdx()                      { return dataset.getKeyNdxByID(id); }
   @Override public final void viewNow()                    { if (TestConfig.runRecordSaveCycleTest() == false) viewDate = Instant.now(); }
@@ -146,7 +144,6 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     this.xmlState = xmlState;
     id = xmlState.id;
-    dummyFlag = xmlState.dummyFlag;
     this.dataset = dataset;
     sortKeyAttr = safeStr(xmlState.sortKeyAttr);
 
@@ -259,7 +256,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     if (expired) return;
 
-    if ((dummyFlag == false) && db.hasRecordDeleteHandlers())
+    if (db.hasRecordDeleteHandlers())
       runInFXThread(() -> db.getRecordDeleteHandlers().forEach(handler -> handler.accept(this)));
 
     items.values().forEach(HDI_OnlineBase::expire);
