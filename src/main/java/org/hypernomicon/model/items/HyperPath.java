@@ -34,8 +34,7 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.util.file.FilePath;
-import org.hypernomicon.util.file.RegistryAccessor;
+import org.hypernomicon.util.file.*;
 
 //---------------------------------------------------------------------------
 
@@ -707,54 +706,153 @@ public class HyperPath
     {
       HyperPath hyperPath = folder.getPath();
       if (hyperPath.isNotEmpty())
-        registerAndDeduplicate(hyperPath);
+        hyperPath.registerAndDeduplicate();
     }
 
     for (HDT_WorkFile workFile : db.workFiles)
     {
       HyperPath hyperPath = workFile.getPath();
       if (hyperPath.isNotEmpty())
-        registerAndDeduplicate(hyperPath);
+        hyperPath.registerAndDeduplicate();
     }
 
     for (HDT_MiscFile miscFile : db.miscFiles)
     {
       HyperPath hyperPath = miscFile.getPath();
       if (hyperPath.isNotEmpty())
-        registerAndDeduplicate(hyperPath);
+        hyperPath.registerAndDeduplicate();
     }
 
     for (HDT_Person person : db.persons)
     {
       HyperPath hyperPath = person.getPath();
       if ((hyperPath != null) && hyperPath.isNotEmpty())
-        registerAndDeduplicate(hyperPath);
+        hyperPath.registerAndDeduplicate();
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-
-  private static void registerAndDeduplicate(HyperPath hyperPath)
+  private void registerAndDeduplicate()
   {
-    FilePath fullPath = hyperPath.filePath();
+    if (reconcileFilenameToDisk())
+      return;  // the correction already registered and deduplicated the path via assignNameInternal
+
+    FilePath fullPath = filePath();
     if (FilePath.isEmpty(fullPath)) return;
 
-    registryAccessor.addHyperPath(fullPath, hyperPath);
+    registryAccessor.addHyperPath(fullPath, this);
 
     // Remove duplicates: other HyperPaths in the same parent folder with the same full path
 
-    HDT_Folder parent = hyperPath.parentFolder();
+    HDT_Folder parent = parentFolder();
 
     registryAccessor.getHyperPaths(fullPath).forEach(other ->
     {
-      if ((other == hyperPath) || other.isEmpty()) return;
+      if ((other == this) || other.isEmpty()) return;
 
       HDT_Folder otherParent = other.parentFolder();
       if ((otherParent != null) && (parent == otherParent))
         registryAccessor.removeHyperPath(fullPath, other);
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * If this HyperPath's stored filename differs from the actual on-disk filename only by case or
+   * Unicode composition, correct the record's stored filename to match the file on disk and return
+   * {@code true}.
+   * <p>
+   * This repairs record-to-file associations that drift when a filename's case (or composition) is
+   * changed in a way a case-insensitive filesystem (e.g. Windows) silently tolerates: the stored name
+   * keeps resolving there, but once the database is opened on a case-sensitive filesystem (e.g. Linux)
+   * the mis-cased name resolves to nothing, so search hits show as unassociated and the file cannot be
+   * opened via the record. Correcting on every platform keeps the stored name matching disk, so a
+   * database synced across machines stays consistent.
+   * <p>
+   * The disk is the source of truth; the file is never renamed. Only genuine case/normalization
+   * drift is corrected; an exact match, an arbitrary resolution difference (8.3 short name, symlink
+   * target), an ambiguous parent folder, or a genuinely-missing file are all left untouched.
+   * Applies to work-file and misc-file records only.
+   *
+   * @return {@code true} if a correction was made, in which case {@link #assignNameInternal} has
+   *         already registered and deduplicated the corrected path
+   */
+  private boolean reconcileFilenameToDisk()
+  {
+    RecordType type = getRecordType();
+    if ((type != hdtWorkFile) && (type != hdtMiscFile)) return false;
+
+    if (record == null) return false;
+
+    FilePath storedName = getFileName();
+    if (FilePath.isEmpty(storedName)) return false;
+
+    FilePath fullPath = filePath();
+    if (FilePath.isEmpty(fullPath)) return false;
+
+    String storedStr = storedName.getNameOnly().toString(),
+           realStr   = actualOnDiskName(fullPath, storedStr);
+
+    if ((realStr == null) || realStr.equals(storedStr))
+      return false;  // could not determine the real name unambiguously, or it already matches disk
+
+    // Only repair case/normalization drift, never an arbitrary resolution difference (8.3 short
+    // names, symlink targets). The directory-scan branch of actualOnDiskName already guarantees a
+    // loose match; the resolves-directly branch needs this check.
+
+    if (FilenameRules.normalizeLoose(realStr).equals(FilenameRules.normalizeLoose(storedStr)) == false)
+      return false;
+
+    System.out.println("Filename reconciliation: corrected file name for record id " + record.getID()
+      + ": \"" + storedStr + "\" -> \"" + realStr + "\" (matched the actual file on disk)");
+
+    assignNameInternal(FilePath.of(realStr));
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The actual on-disk filename corresponding to this path, or {@code null} if it cannot be
+   * determined unambiguously. When the stored path resolves to a real file, the registry's
+   * canonical {@link FilePath} already carries the real on-disk case (this is how a case-insensitive
+   * filesystem exposes a mis-cased stored name). When it does not resolve, the parent folder is
+   * scanned for a single file matching {@code storedStr} case- and Unicode-composition-insensitively.
+   */
+  private String actualOnDiskName(FilePath fullPath, String storedStr)
+  {
+    if (fullPath.isFile())
+      return fullPath.getNameOnly().toString();
+
+    HDT_Folder parent = parentFolder();
+    FilePath folderPath = (parent == null) ? null : parent.filePath();
+    if (FilePath.isEmpty(folderPath) || (folderPath.isDirectory() == false)) return null;
+
+    String target = FilenameRules.normalizeLoose(storedStr),
+           match  = null;
+
+    try (var stream = Files.newDirectoryStream(folderPath.toPath()))
+    {
+      for (var child : stream)
+      {
+        String childName = child.getFileName().toString();
+
+        if (FilenameRules.normalizeLoose(childName).equals(target))
+        {
+          if (match != null) return null;  // ambiguous: more than one case/normalization variant on disk
+          match = childName;
+        }
+      }
+    }
+    catch (IOException e) { return null; }
+
+    return match;
   }
 
 //---------------------------------------------------------------------------

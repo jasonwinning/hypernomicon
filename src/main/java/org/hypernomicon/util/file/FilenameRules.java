@@ -446,6 +446,32 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
 //---------------------------------------------------------------------------
 
   /**
+   * Aggressively normalizes a filename for "same file apart from case and Unicode composition"
+   * comparison, unconditionally applying full Unicode case folding and NFC normalization
+   * regardless of the current filesystem's actual case or composition sensitivity.
+   * <p>
+   * Unlike {@link #normalize(String)}, which is faithful to the filesystem and therefore does
+   * NOT fold case on a case-sensitive filesystem, this deliberately matches names the filesystem
+   * treats as distinct. Use it only to detect and repair drift (e.g. reconciling a record's
+   * stored filename against the actual on-disk name on a case-sensitive filesystem), never for
+   * filesystem identity.
+   *
+   * @param filename the filename to normalize (may be null)
+   * @return the case-folded, NFC-normalized form, or {@code ""} if {@code filename} is null
+   */
+  public static String normalizeLoose(String filename)
+  {
+    if (filename == null) return "";
+
+    String s = UCharacter.foldCase(filename, true);
+
+    return NFC.isNormalized(s) ? s : NFC.normalize(s);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Normalizes a full absolute path by applying these rules to each name component via
    * {@link #normalize(String)}; the root component is kept as-is.
    *
