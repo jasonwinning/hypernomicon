@@ -75,44 +75,6 @@ class FilenameRulesTest
 //---------------------------------------------------------------------------
 
   @Test
-  void probe_detectsNormalization_matchesFilesystem() throws IOException
-  {
-    FilenameRules rules = FilenameRules.detect(tempDir);
-
-    // é as single codepoint (U+00E9); é as e + combining accent (U+0065 U+0301)
-    Path nfc = tempDir.resolve("caf\u00E9.txt"),
-         nfd = tempDir.resolve("cafe\u0301.txt");
-
-    try
-    {
-      Files.createFile(nfc);
-    }
-    catch (Exception e)
-    {
-      // Some filesystems may not support these characters: skip test
-      Assumptions.assumeTrue(false, "Filesystem doesn't support Unicode normalization test characters");
-      return;
-    }
-
-    try
-    {
-      boolean filesystemSaysEquivalent = Files.exists(nfd) && Files.isSameFile(nfc, nfd);
-
-      assertEquals(rules.unicodeCompInsensitive(), filesystemSaysEquivalent,
-          "Probed unicodeCompInsensitive=" + rules.unicodeCompInsensitive() +
-          " but filesystem says equivalent=" + filesystemSaysEquivalent);
-    }
-    finally
-    {
-      Files.deleteIfExists(nfc);
-      // nfd might be same file, try anyway
-      try { Files.deleteIfExists(nfd); } catch (Exception ignored) { }
-    }
-  }
-
-//---------------------------------------------------------------------------
-
-  @Test
   void probe_detectsTrailingDotTrimming_matchesFilesystem() throws IOException
   {
     FilenameRules rules = FilenameRules.detect(tempDir);
@@ -186,7 +148,7 @@ class FilenameRulesTest
 //---------------------------------------------------------------------------
 
   @Test
-  void normalizer_agreesWithFilesystem_forNormalizationVariants() throws IOException
+  void normalize_alwaysFoldsNormalizationVariants_regardlessOfFilesystem() throws IOException
   {
     FilenameRules rules = FilenameRules.detect(tempDir);
     Function<String, String> normalizer = rules::normalize;
@@ -209,16 +171,13 @@ class FilenameRulesTest
 
     try
     {
-      Path nfdVariant = tempDir.resolve(nfdName);
-      boolean filesystemSaysEquivalent = Files.exists(nfdVariant) && Files.isSameFile(file, nfdVariant);
-
+      // Composition is folded unconditionally, so the normalizer treats NFC and NFD as the same
+      // name even on a composition-sensitive filesystem (which reports them as distinct files).
       String key1 = normalizer.apply(nfcName),
              key2 = normalizer.apply(nfdName);
-      boolean normalizerSaysEquivalent = key1.equals(key2);
 
-      assertEquals(filesystemSaysEquivalent, normalizerSaysEquivalent,
-          "Filesystem says equivalent=" + filesystemSaysEquivalent +
-          " but normalizer produced different equality result");
+      assertEquals(key1, key2,
+          "normalizer must treat NFC and NFD as equivalent regardless of filesystem composition sensitivity");
     }
     finally
     {
@@ -287,7 +246,7 @@ class FilenameRulesTest
   @Test
   void rules_caseInsensitive_normalizerFoldsCaseForAscii()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertEquals(normalizer.apply("File.TXT"), normalizer.apply("file.txt"));
@@ -300,7 +259,7 @@ class FilenameRulesTest
   @Test
   void rules_caseSensitive_normalizerPreservesCase()
   {
-    FilenameRules rules = new FilenameRules(false, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(false, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertNotEquals(normalizer.apply("File.txt"), normalizer.apply("file.txt"));
@@ -312,7 +271,7 @@ class FilenameRulesTest
   @Test
   void rules_caseInsensitive_normalizerFoldsUnicode()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // Greek
@@ -325,9 +284,9 @@ class FilenameRulesTest
 //---------------------------------------------------------------------------
 
   @Test
-  void rules_unicodeCompInsensitive_normalizesToNFC()
+  void rules_normalize_foldsNFCvariants()
   {
-    FilenameRules rules = new FilenameRules(true, true, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // NFC: é as single codepoint; NFD: e + combining acute
@@ -340,17 +299,20 @@ class FilenameRulesTest
 //---------------------------------------------------------------------------
 
   @Test
-  void rules_unicodeCompSensitive_preservesNFCvsNFD()
+  void rules_normalize_alwaysFoldsNFCvsNFD_evenWhenCompSensitive()
   {
-    FilenameRules rules = new FilenameRules(false, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(false, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // NFC: é as single codepoint; NFD: e + combining acute
     String nfc = "caf\u00E9.txt",
            nfd = "cafe\u0301.txt";
 
-    // With unicodeCompInsensitive=false, NFC and NFD should remain distinct
-    assertNotEquals(normalizer.apply(nfc), normalizer.apply(nfd));
+    // Composition is always normalized to NFC, regardless of the filesystem's probed composition
+    // sensitivity. NFC vs NFD is never a meaningful distinction in a document library, and folding
+    // it keeps a synced database stable across machines whose OS reports different composition
+    // (macOS reports NFD on read, Windows/NTFS reports NFC). Contrast case, which stays faithful.
+    assertEquals(normalizer.apply(nfc), normalizer.apply(nfd));
   }
 
 //---------------------------------------------------------------------------
@@ -358,7 +320,7 @@ class FilenameRulesTest
   @Test
   void rules_trimsTrailingDotsAndSpaces()
   {
-    FilenameRules rules = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, true, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertEquals(normalizer.apply("file"), normalizer.apply("file."));
@@ -373,7 +335,7 @@ class FilenameRulesTest
   @Test
   void rules_preservesTrailingDotsAndSpaces_whenDisabled()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // With trimsTrailingDotsAndSpaces=false, trailing chars should be preserved
@@ -386,8 +348,8 @@ class FilenameRulesTest
   @Test
   void rules_fullCaseFolding_expandsEszett()
   {
-    FilenameRules rulesSimple = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE),
-                  rulesFull = new FilenameRules(true, false, false, false, CaseFoldingMode.FULL);
+    FilenameRules rulesSimple = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE),
+                  rulesFull = new FilenameRules(true, false, false, CaseFoldingMode.FULL);
 
     Function<String, String> simple = rulesSimple::normalize,
                              full = rulesFull::normalize;
@@ -404,8 +366,8 @@ class FilenameRulesTest
   @Test
   void rules_ignoresDefaultIgnorables_stripsZeroWidthCharacters()
   {
-    FilenameRules rulesIgnore = new FilenameRules(true, false, false, true, CaseFoldingMode.SIMPLE),
-                  rulesKeep = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rulesIgnore = new FilenameRules(true, false, true, CaseFoldingMode.SIMPLE),
+                  rulesKeep = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
 
     Function<String, String> ignore = rulesIgnore::normalize,
                              keep = rulesKeep::normalize;
@@ -424,7 +386,7 @@ class FilenameRulesTest
   @Test
   void rules_ignoresDefaultIgnorables_stripsVariationSelectors()
   {
-    FilenameRules rulesIgnore = new FilenameRules(true, false, false, true, CaseFoldingMode.SIMPLE);
+    FilenameRules rulesIgnore = new FilenameRules(true, false, true, CaseFoldingMode.SIMPLE);
     Function<String, String> ignore = rulesIgnore::normalize;
 
     // Variation selector (U+FE0F): commonly used with emoji
@@ -437,7 +399,7 @@ class FilenameRulesTest
   @Test
   void rules_ignoresDefaultIgnorables_stripsZeroWidthNonBreakingSpace()
   {
-    FilenameRules rulesIgnore = new FilenameRules(true, false, false, true, CaseFoldingMode.SIMPLE);
+    FilenameRules rulesIgnore = new FilenameRules(true, false, true, CaseFoldingMode.SIMPLE);
     Function<String, String> ignore = rulesIgnore::normalize;
 
     // Zero-width no-break space / BOM (U+FEFF)
@@ -455,7 +417,7 @@ class FilenameRulesTest
   @Test
   void combinedRules_caseAndNormalization_bothApply()
   {
-    FilenameRules rules = new FilenameRules(true, true, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // Uppercase É in NFC vs lowercase é in NFD
@@ -468,7 +430,7 @@ class FilenameRulesTest
   @Test
   void combinedRules_caseAndTrimming_bothApply()
   {
-    FilenameRules rules = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, true, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertEquals(normalizer.apply("FILE"), normalizer.apply("file."));
@@ -479,7 +441,7 @@ class FilenameRulesTest
   @Test
   void combinedRules_normalizationAndTrimming_bothApply()
   {
-    FilenameRules rules = new FilenameRules(true, true, true, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, true, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // NFC with trailing dot; NFD without trailing
@@ -492,7 +454,7 @@ class FilenameRulesTest
   @Test
   void combinedRules_allRulesEnabled_allApply()
   {
-    FilenameRules rules = new FilenameRules(true, true, true, true, CaseFoldingMode.FULL);
+    FilenameRules rules = new FilenameRules(true, true, true, CaseFoldingMode.FULL);
     Function<String, String> normalizer = rules::normalize;
 
     // Combine: uppercase, NFD, trailing dot, ZWJ, and ß
@@ -512,7 +474,7 @@ class FilenameRulesTest
   @Test
   void rules_trimsTrailing_multipleDotsAndSpaces()
   {
-    FilenameRules rules = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, true, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertEquals(normalizer.apply("file"), normalizer.apply("file..."));
@@ -524,7 +486,7 @@ class FilenameRulesTest
   @Test
   void rules_trimsTrailing_preservesMiddleDotsAndSpaces()
   {
-    FilenameRules rules = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, true, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // Dots and spaces in the middle should be preserved
@@ -535,7 +497,7 @@ class FilenameRulesTest
   @Test
   void rules_trimsTrailing_entirelyDotsAndSpaces_becomesEmpty()
   {
-    FilenameRules rules = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, true, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // Filenames that are entirely dots/spaces become empty after trimming
@@ -552,7 +514,7 @@ class FilenameRulesTest
   @Test
   void rules_caseInsensitive_handlesSurrogatePairs()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // Deseret alphabet has case pairs in the surrogate pair range
@@ -565,9 +527,9 @@ class FilenameRulesTest
   }
 
   @Test
-  void rules_unicodeCompInsensitive_handlesMultipleCombiningMarks()
+  void rules_normalize_handlesMultipleCombiningMarks()
   {
-    FilenameRules rules = new FilenameRules(true, true, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // á with two combining marks in NFD: a + acute + dot below
@@ -582,7 +544,7 @@ class FilenameRulesTest
   @Test
   void rules_caseInsensitive_greekFinalSigma()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // Greek has two lowercase sigmas: σ (medial) and ς (final)
@@ -605,7 +567,7 @@ class FilenameRulesTest
   @Test
   void normalizer_allowsEmptyString()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertDoesNotThrow(() -> normalizer.apply(""));
@@ -617,7 +579,7 @@ class FilenameRulesTest
   @Test
   void normalizer_rejectsDot()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertThrows(IllegalArgumentException.class, () -> normalizer.apply("."));
@@ -628,7 +590,7 @@ class FilenameRulesTest
   @Test
   void normalizer_rejectsDotDot()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertThrows(IllegalArgumentException.class, () -> normalizer.apply(".."));
@@ -639,7 +601,7 @@ class FilenameRulesTest
   @Test
   void normalizer_rejectsNulCharacter()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertThrows(IllegalArgumentException.class, () -> normalizer.apply("file\0.txt"));
@@ -650,7 +612,7 @@ class FilenameRulesTest
   @Test
   void normalizer_rejectsForwardSlash()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertThrows(IllegalArgumentException.class, () -> normalizer.apply("path/file.txt"));
@@ -664,7 +626,7 @@ class FilenameRulesTest
     String os = System.getProperty("os.name", "").toLowerCase();
     Assumptions.assumeTrue(os.contains("win"), "Backslash is only rejected on Windows");
 
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertThrows(IllegalArgumentException.class, () -> normalizer.apply("path\\file.txt"));
@@ -678,7 +640,7 @@ class FilenameRulesTest
     String os = System.getProperty("os.name", "").toLowerCase();
     Assumptions.assumeFalse(os.contains("win"), "Test only runs on non-Windows");
 
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     // Backslash is a valid filename character on Unix
@@ -690,7 +652,7 @@ class FilenameRulesTest
   @Test
   void normalizer_allowsNull_returnsNull()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
     Function<String, String> normalizer = rules::normalize;
 
     assertNull(normalizer.apply(null));
@@ -704,7 +666,7 @@ class FilenameRulesTest
   @Test
   void normalize_withCaseInsensitiveRules_matchesCaseVariants()
   {
-    FilenameRules rules = new FilenameRules(true, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
 
     String normalized = rules.normalize("File.txt");
 
@@ -717,7 +679,7 @@ class FilenameRulesTest
   @Test
   void normalize_withCaseSensitiveRules_distinguishesCaseVariants()
   {
-    FilenameRules rules = new FilenameRules(false, false, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(false, false, false, CaseFoldingMode.SIMPLE);
 
     assertNotEquals(rules.normalize("File.txt"), rules.normalize("FILE.TXT"));
   }
@@ -727,7 +689,7 @@ class FilenameRulesTest
   @Test
   void normalize_withNormalizationRules_matchesNormalizationVariants()
   {
-    FilenameRules rules = new FilenameRules(true, true, false, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, false, false, CaseFoldingMode.SIMPLE);
 
     // NFC form and NFD form should normalize to the same string
     assertEquals(rules.normalize("caf\u00E9.txt"), rules.normalize("cafe\u0301.txt"));
@@ -738,7 +700,7 @@ class FilenameRulesTest
   @Test
   void normalize_withTrimmingRules_matchesTrailingVariants()
   {
-    FilenameRules rules = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
+    FilenameRules rules = new FilenameRules(true, true, false, CaseFoldingMode.SIMPLE);
 
     String normalized = rules.normalize("file");
 
@@ -828,8 +790,46 @@ class FilenameRulesTest
     // Use FilenameRules.detect(path) for actual filesystem probing.
     assertTrue(rules.caseInsensitive(),
         "Heuristic should assume case-insensitivity as the common default on macOS");
-    assertTrue(rules.unicodeCompInsensitive(),
-        "Heuristic should assume normalization-insensitivity as APFS normalizes by default");
+  }
+//---------------------------------------------------------------------------
+//endregion
+//region toNFC: canonical composition, case preserved
+//---------------------------------------------------------------------------
+
+  @Test
+  void toNFC_collapsesDecomposedToComposed()
+  {
+    String nfc = "caf\u00E9",       // precomposed e-acute (U+00E9)
+           nfd = "cafe\u0301";      // e + combining acute (U+0065 U+0301)
+
+    assertNotEquals(nfc, nfd);                    // the inputs really do differ byte-for-byte
+    assertEquals(nfc, FilenameRules.toNFC(nfd));  // NFD collapses to NFC
+    assertEquals(nfc, FilenameRules.toNFC(nfc));  // idempotent on already-NFC input
+  }
+
+  @Test
+  void toNFC_preservesCase()
+  {
+    // Unlike normalizeLoose, toNFC must NOT fold case: composition only.
+    // Decomposed uppercase U-umlaut (U + combining diaeresis) recomposes but stays uppercase.
+    assertEquals("\u00DCRD", FilenameRules.toNFC("U\u0308RD"));
+    assertNotEquals(FilenameRules.toNFC("file"), FilenameRules.toNFC("FILE"));
+  }
+
+  @Test
+  void toNFC_handlesNullAndPlainAscii()
+  {
+    assertNull(FilenameRules.toNFC(null));
+    assertEquals("plain.pdf", FilenameRules.toNFC("plain.pdf"));
+  }
+
+  @Test
+  void toNFC_realWorldDecomposedNames_matchComposed()
+  {
+    // The accented names from the reconciliation churn: NFD on macOS disk vs NFC in the database.
+    assertEquals("G\u00E4rdenfors", FilenameRules.toNFC("Ga\u0308rdenfors"));  // a-umlaut
+    assertEquals("N\u00FA\u00F1ez", FilenameRules.toNFC("Nu\u0301n\u0303ez")); // u-acute, n-tilde
+    assertEquals("G\u00F6del"     , FilenameRules.toNFC("Go\u0308del"));       // o-umlaut
   }
 
 //---------------------------------------------------------------------------

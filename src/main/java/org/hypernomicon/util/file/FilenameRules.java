@@ -60,9 +60,6 @@ import com.ibm.icu.text.Normalizer2;
  *
  * @param caseInsensitive true if the filesystem treats {@code File.txt} and {@code FILE.TXT} as the same file
  *        (NTFS, APFS default). False for case-sensitive filesystems (ext4, case-sensitive APFS).
- * @param unicodeCompInsensitive true if the filesystem treats different Unicode composition forms as equivalent,
- *        so precomposed {@code é} (U+00E9, NFC) and decomposed {@code e} + combining accent (U+0065 U+0301, NFD)
- *        refer to the same file. True for APFS; false for NTFS and most Linux filesystems.
  * @param trimsTrailingDotsAndSpaces true if the filesystem strips trailing dots and spaces from filenames,
  *        making {@code file.txt.} equivalent to {@code file.txt}. True for Windows/NTFS.
  * @param ignoresDefaultIgnorables true if the filesystem ignores Unicode default ignorable code points
@@ -70,7 +67,7 @@ import com.ibm.icu.text.Normalizer2;
  * @param caseFoldingMode the Unicode case folding mode used for case-insensitive comparison.
  *        {@link CaseFoldingMode#SIMPLE} keeps ß distinct from ss; {@link CaseFoldingMode#FULL} treats them as equivalent.
  */
-public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensitive, boolean trimsTrailingDotsAndSpaces,
+public record FilenameRules(boolean caseInsensitive, boolean trimsTrailingDotsAndSpaces,
                             boolean ignoresDefaultIgnorables, CaseFoldingMode caseFoldingMode)
 {
 
@@ -99,13 +96,13 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
 //---------------------------------------------------------------------------
 
   /** Heuristic rules for Windows/NTFS: case-insensitive, trims trailing dots/spaces. */
-  private static final FilenameRules WINDOWS_HEURISTIC = new FilenameRules(true, false, true, false, CaseFoldingMode.SIMPLE);
+  private static final FilenameRules WINDOWS_HEURISTIC = new FilenameRules(true, true, false, CaseFoldingMode.SIMPLE);
 
   /** Heuristic rules for macOS/APFS: case-insensitive, Unicode composition insensitive, full case folding. */
-  private static final FilenameRules MAC_HEURISTIC = new FilenameRules(true, true, false, false, CaseFoldingMode.FULL);
+  private static final FilenameRules MAC_HEURISTIC = new FilenameRules(true, false, false, CaseFoldingMode.FULL);
 
   /** Heuristic rules for Linux/ext4: case-sensitive, no special handling. */
-  private static final FilenameRules LINUX_HEURISTIC = new FilenameRules(false, false, false, false, CaseFoldingMode.SIMPLE);
+  private static final FilenameRules LINUX_HEURISTIC = new FilenameRules(false, false, false, CaseFoldingMode.SIMPLE);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -274,8 +271,6 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
 
       boolean caseInsensitive = (fileSystemTreatsAsDistinct(sandbox, "case_" + token + "_abc", "CASE_" + token + "_ABC") == false),
 
-              unicodeCompInsensitive = (fileSystemTreatsAsDistinct(sandbox, "norm_" + token + "_\u00E9", "norm_" + token + "_e\u0301") == false),
-
               trimsTrailingDots   = (fileSystemTreatsAsDistinct(sandbox, "trim_" + token + "_a", "trim_" + token + "_a.") == false),
               trimsTrailingSpaces = (fileSystemTreatsAsDistinct(sandbox, "trim_" + token + "_b", "trim_" + token + "_b ") == false),
 
@@ -292,7 +287,7 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
       if (caseInsensitive && (fileSystemTreatsAsDistinct(sandbox, "fold_" + token + "_\u00DF", "fold_" + token + "_ss") == false))
         foldMode = CaseFoldingMode.FULL;
 
-      return new FilenameRules(caseInsensitive, unicodeCompInsensitive, trimsTrailing, ignoresIgnorables, foldMode);
+      return new FilenameRules(caseInsensitive, trimsTrailing, ignoresIgnorables, foldMode);
     }
     finally
     {
@@ -350,13 +345,12 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
   private static FilenameRules fromPrefs(Preferences prefs)
   {
     boolean caseInsensitive        = prefs.getBoolean(CASE_INSENSITIVE        , false),
-            unicodeCompInsensitive = prefs.getBoolean(UNICODE_COMP_INSENSITIVE, false),
             trimsTrailing          = prefs.getBoolean(TRIMS_TRAILING          , false),
             ignoresIgnorables      = prefs.getBoolean(IGNORES_IGNORABLES      , false);
 
     CaseFoldingMode foldMode = CaseFoldingMode.fromPrefVal(prefs.get(CASE_FOLDING_MODE, CaseFoldingMode.SIMPLE.prefVal));
 
-    return new FilenameRules(caseInsensitive, unicodeCompInsensitive, trimsTrailing, ignoresIgnorables, foldMode);
+    return new FilenameRules(caseInsensitive, trimsTrailing, ignoresIgnorables, foldMode);
   }
 
 //---------------------------------------------------------------------------
@@ -366,7 +360,6 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
   private void saveTo(Preferences prefs)
   {
     prefs.putBoolean(CASE_INSENSITIVE        , caseInsensitive);
-    prefs.putBoolean(UNICODE_COMP_INSENSITIVE, unicodeCompInsensitive);
     prefs.putBoolean(TRIMS_TRAILING          , trimsTrailingDotsAndSpaces);
     prefs.putBoolean(IGNORES_IGNORABLES      , ignoresDefaultIgnorables);
     prefs.put       (CASE_FOLDING_MODE       , caseFoldingMode.prefVal);
@@ -434,9 +427,14 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
       s = caseFoldingMode == CaseFoldingMode.FULL ? UCharacter.foldCase(s, true) : foldCaseSimple(s);
     }
 
-    // Single NFC normalization at end (handles both original non-NFC and any denormalization from case folding)
+    // Always normalize composition to NFC, regardless of the filesystem's own composition
+    // sensitivity. Unlike case (which genuinely differs across filesystems and which users rely
+    // on), Unicode composition (NFC vs NFD) is never a meaningful distinction in a document
+    // library; folding NFC and NFD to one form keeps a synced database stable across machines whose
+    // OS/filesystem reports a different composition for the same file (macOS reports NFD on read,
+    // Windows/NTFS reports NFC). This also handles any denormalization introduced by case folding.
 
-    if (unicodeCompInsensitive && (NFC.isNormalized(s) == false))
+    if (NFC.isNormalized(s) == false)
       s = NFC.normalize(s);
 
     return s;
@@ -466,6 +464,28 @@ public record FilenameRules(boolean caseInsensitive, boolean unicodeCompInsensit
     String s = UCharacter.foldCase(filename, true);
 
     return NFC.isNormalized(s) ? s : NFC.normalize(s);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns the canonical-composition (NFC) form of a filename, leaving case untouched.
+   * <p>
+   * Unlike {@link #normalizeLoose(String)} this does not fold case, so it preserves the
+   * filename's actual casing while collapsing the distinction between precomposed (NFC) and
+   * decomposed (NFD) Unicode. Used to keep a stored filename stable across synced machines
+   * whose filesystems report different composition forms for the same file (e.g. macOS APFS
+   * reports NFD, Windows/NTFS reports NFC).
+   *
+   * @param filename the filename to normalize (may be null)
+   * @return the NFC form, or {@code null} if {@code filename} is null
+   */
+  public static String toNFC(String filename)
+  {
+    if (filename == null) return null;
+
+    return NFC.isNormalized(filename) ? filename : NFC.normalize(filename);
   }
 
 //---------------------------------------------------------------------------

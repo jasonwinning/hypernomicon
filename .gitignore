@@ -4,6 +4,7 @@
 .claude
 CLAUDE.md
 hypernomicon.code-workspace
+.vscode/
 sh.exe.stackdump
 qodana.yaml
 .classpath

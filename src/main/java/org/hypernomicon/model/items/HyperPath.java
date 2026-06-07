@@ -513,7 +513,12 @@ public class HyperPath
       }
     }
 
-    fileName = FilePath.isEmpty(newFileName) ? null : newFileName.getNameOnly();
+    // Store filenames in canonical NFC form. Composition (NFC vs NFD) is an OS/filesystem
+    // presentation artifact (macOS reports NFD on read, Windows/NTFS reports NFC), never a
+    // meaningful distinction; canonicalizing here keeps the stored name stable across synced
+    // machines and lets a database polluted with NFD names converge to NFC on the next save.
+
+    fileName = FilePath.isEmpty(newFileName) ? null : FilePath.of(FilenameRules.toNFC(newFileName.getNameOnly().toString()));
 
     if (record != null)
       record.updateSortKey();
@@ -807,10 +812,24 @@ public class HyperPath
     if (FilenameRules.normalizeLoose(realStr).equals(FilenameRules.normalizeLoose(storedStr)) == false)
       return false;
 
-    System.out.println("Filename reconciliation: corrected file name for record id " + record.getID()
-      + ": \"" + storedStr + "\" -> \"" + realStr + "\" (matched the actual file on disk)");
+    // A pure Unicode-composition difference (NFC vs NFD) is never drift worth repairing: filenames
+    // are stored in canonical NFC form and identity comparison is composition-insensitive, so the
+    // file already resolves. macOS reports on-disk names in NFD while the database stores NFC, so
+    // "correcting" toward the on-disk form would just rewrite the name to a platform-specific
+    // composition and ping-pong NFC<->NFD across synced machines. Only a genuine case difference
+    // (which a case-sensitive filesystem really does distinguish) is worth correcting here.
 
-    assignNameInternal(FilePath.of(realStr));
+    if (FilenameRules.toNFC(realStr).equals(FilenameRules.toNFC(storedStr)))
+      return false;
+
+    // Adopt the disk's casing, kept in canonical NFC form (assignNameInternal also enforces NFC).
+
+    String correctedName = FilenameRules.toNFC(realStr);
+
+    System.out.println("Filename reconciliation: corrected file name for record id " + record.getID()
+      + ": \"" + storedStr + "\" -> \"" + correctedName + "\" (matched the actual file on disk)");
+
+    assignNameInternal(FilePath.of(correctedName));
 
     return true;
   }

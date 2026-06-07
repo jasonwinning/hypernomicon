@@ -234,7 +234,6 @@ public final class Const
     public static final String
 
       CASE_INSENSITIVE         = "filenameRulesCaseInsensitive",
-      UNICODE_COMP_INSENSITIVE = "filenameRulesUnicodeCompInsensitive",
       TRIMS_TRAILING           = "filenameRulesTrimsTrailing",
       IGNORES_IGNORABLES       = "filenameRulesIgnoresIgnorables",
       CASE_FOLDING_MODE        = "filenameRulesCaseFoldingMode",
