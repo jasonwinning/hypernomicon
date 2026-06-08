@@ -36,6 +36,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.CellSortMethod.*;
 
 import org.hypernomicon.App;
+import org.hypernomicon.ExitWatchdog;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager;
@@ -994,7 +995,11 @@ public final class MainCtrlr
 
     // User-defined shortcuts
 
-    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.PreviewRecord, () -> { if (btnPreviewWindow.isDisabled() == false) btnPreviewWindow.fire(); });
+    assignShortcut(ShortcutContext.AllWindows, ShortcutAction.PreviewRecord, () ->
+    {
+      if (btnPreviewWindow.isDisabled() == false)
+        btnPreviewWindow.fire();
+    });
 
     assignShortcut(ShortcutContext.MainWindow, ShortcutAction.ShowMentions, () -> { if (btnMentions.isDisabled() == false) btnMentions.fire(); });
 
@@ -1455,13 +1460,15 @@ public final class MainCtrlr
     InterProcClient.removeThisInstanceFromInstancesTempFile();
 
     if (jxBrowserInitialized)
-      Platform.runLater(PreviewWindow::cleanup); // This eventually closes the application main window
+      Platform.runLater(PreviewWindow::cleanup); // This eventually closes the application main window and arms the ExitWatchdog
     else
     {
       stage.close();
 
       if (Environment.isMac())
         Platform.exit();
+
+      ExitWatchdog.arm();  // Teardown is complete; anything still running after the grace period gets logged, then the process exits
     }
   }
 

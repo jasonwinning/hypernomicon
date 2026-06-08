@@ -28,8 +28,10 @@ import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 
 import java.util.*;
 
+import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.BrowserCore;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
+import com.teamdev.jxbrowser.chromium.internal.ipc.IPC;
 import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
 
 import org.hypernomicon.Const.PrefKey;
@@ -754,6 +756,8 @@ public final class PreviewWindow extends NonmodalWindow
         }
       }
 
+      disposeStragglerBrowsers();
+
       try
       {
         BrowserCore.shutdown();
@@ -771,6 +775,48 @@ public final class PreviewWindow extends NonmodalWindow
           Platform.exit();
       });
     };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Disposes any Browser still registered with JxBrowser's IPC layer after the per-wrapper cleanup
+   * chain has run, logging where each was created. This is leak hygiene and diagnostics: it catches
+   * a Browser that was genuinely never disposed, frees its native channel, and names its origin via
+   * {@link BrowserTracker}.
+   * <p>
+   * It is NOT what guarantees the process exits. The primary exit hang comes from channel threads
+   * that stay wedged after their Browser has already disposed and deregistered (see
+   * {@link org.hypernomicon.ExitWatchdog}); such browsers are absent from the IPC registry, so this
+   * sweep never sees them, and disposing here can even provoke that wedge. {@code ExitWatchdog} is
+   * the backstop that guarantees exit regardless.
+   */
+  private static void disposeStragglerBrowsers()
+  {
+    List<Browser> stragglers;
+
+    try { stragglers = List.copyOf(IPC.getBrowsers()); }
+    catch (RuntimeException e)
+    {
+      System.out.println("Shutdown: unable to check for undisposed browser instances: " + getThrowableMessage(e));
+      return;
+    }
+
+    if (stragglers.isEmpty())
+    {
+      System.out.println("Shutdown: all browser instances were disposed");
+      return;
+    }
+
+    System.out.println("Shutdown: " + stragglers.size() + " undisposed browser instance(s) remain; disposing now:");
+
+    for (Browser browser : stragglers)
+    {
+      System.out.println("  " + BrowserTracker.describe(browser));
+
+      PDFJSWrapper.dispose(browser, true);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -796,8 +842,11 @@ public final class PreviewWindow extends NonmodalWindow
 
   public static void cleanup()
   {
-    if (jxBrowserInitialized)
-      getDisposeHandler(tabToWrapper.values().iterator()).run();
+    if (jxBrowserInitialized == false) return;
+
+    System.out.println("Shutdown: disposing browser instances...");
+
+    getDisposeHandler(tabToWrapper.values().iterator()).run();
   }
 
 //---------------------------------------------------------------------------

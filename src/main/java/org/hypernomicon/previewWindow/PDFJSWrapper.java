@@ -345,6 +345,8 @@ public class PDFJSWrapper
 
         if (browser == null)
           browser = new Browser(browserContext);
+
+        BrowserTracker.register(browser, "PDFJSWrapper");
       }
       else
         BrowserCore.initialize();
@@ -406,6 +408,13 @@ public class PDFJSWrapper
     if (browser != null)
     {
       removeFromParent(browserView);
+
+      // Dispose any prior reload's browser that hasn't been cleaned up yet, so this overwrite doesn't
+      // orphan it. A never-disposed Browser leaks its native channel and non-daemon IPC threads, so
+      // disposing it here is leak hygiene. (This is not what guarantees process exit; the primary
+      // hang is a post-dispose channel wedge, backstopped by ExitWatchdog.)
+
+      dispose(oldBrowser, false);
       oldBrowser = browser;
     }
 
@@ -549,8 +558,9 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 
   /** Disposes a browser and waits for disposal to complete. Uses the correct
-   *  threading (off FX thread on Windows, on FX thread elsewhere). */
-  private static void dispose(Browser browser, boolean wait)
+   *  threading (off FX thread on Windows, on FX thread elsewhere). Also used by
+   *  PreviewWindow's shutdown sweep of undisposed Browser instances. */
+  static void dispose(Browser browser, boolean wait)
   {
     if ((browser == null) || browser.isDisposed()) return;
 
@@ -579,7 +589,11 @@ public class PDFJSWrapper
 
     if (wait)
     {
-      try { latch.await(10, TimeUnit.SECONDS); }
+      try
+      {
+        if (latch.await(10, TimeUnit.SECONDS) == false)
+          System.out.println("PDFJSWrapper.dispose: timed out after 10s waiting for browser disposal to complete.");
+      }
       catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
   }
@@ -916,6 +930,7 @@ public class PDFJSWrapper
   {
     cleanupPdfHtml();
 
+    dispose(oldBrowser, false);  // see cleanup(Runnable): a deferred reload disposal may not have run yet
     dispose(browser, false);
   }
 
@@ -927,6 +942,12 @@ public class PDFJSWrapper
   {
     cleanupPdfHtml();
 
+    // reloadBrowser() disposes the prior browser only via a deferred callback once the replacement
+    // finishes loading. If the app is closed before that runs, oldBrowser is still alive; dispose it
+    // here too so it doesn't leak (a never-disposed Browser holds its native channel and non-daemon
+    // IPC threads). ExitWatchdog is the backstop that guarantees exit if a channel wedges regardless.
+
+    dispose(oldBrowser, true);
     dispose(browser, true);
 
     disposeHndlr.run();
