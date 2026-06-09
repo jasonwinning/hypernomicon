@@ -195,7 +195,15 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     rbNew.setSelected(true);
 
-    rbExisting.getToggleGroup().selectedToggleProperty().addListener((ob, ov, nv) -> reviseSuggestions(cbArgOrStance.getValue()));
+    rbExisting.getToggleGroup().selectedToggleProperty().addListener((ob, ov, nv) ->
+    {
+      // The Work selection only affects the name suggestions when "Existing" is chosen, because that
+      // is the only case where author names are pulled from the work instead of the Person field.
+      // Switching between "New" and "None" leaves the suggestions identical, so skip regenerating them
+
+      if ((ov == rbExisting) || (nv == rbExisting))
+        reviseSuggestions(cbArgOrStance.getValue());
+    });
 
     alreadyChangingTitle.setTrue();
     tfTitle.setText(target.name() + (target.getType() == hdtPosition ? " Argument/Stance Stem" : " Counterargument Stem"));
@@ -376,8 +384,13 @@ public class NewArgDlgCtrlr extends ModalDialog
   {
     String str = peoplePart + (strNullOrBlank(peoplePart) ? desc : desc.toLowerCase()) + targetName;
 
+    // Don't clobber a name the user has typed: only push the recommendation into the field when the field
+    // still holds the previously generated suggestion, or when the user has cleared it.
+
+    if (tf.getText().isBlank() || tf.getText().equals(textFieldToLastGen.get(tf)))
+      tf.setText(str);
+
     textFieldToLastGen.put(tf, str);
-    tf.setText(str);
   }
 
 //---------------------------------------------------------------------------
@@ -441,7 +454,17 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     if (work.getAuthors().isEmpty()) return "";
 
-    return settings.format(work.getAuthors().stream().filter(Author::getIsAuthor).map(Author::singleName).toList()) + "'s ";
+    String authorNames = settings.format(work.getAuthors().stream().filter(Author::getIsAuthor).map(Author::singleName).toList());
+
+    if (strNullOrBlank(authorNames))
+    {
+      authorNames = settings.format(work.getAuthors().stream().filter(Author::getIsEditor).map(Author::singleName).toList());
+
+      if (strNullOrBlank(authorNames))
+        authorNames = settings.format(work.getAuthors().stream().map(Author::singleName).toList());
+    }
+
+    return strNullOrBlank(authorNames) ? "" : (authorNames + "'s ");
   }
 
 //---------------------------------------------------------------------------
