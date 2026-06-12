@@ -1292,6 +1292,25 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       return;
     }
 
+    if (PreviewWindow.isSourceActiveAndShowing(pvsQueriesTab) == false)
+    {
+      disposeCurrentCoordinator();                          // also cancels any prior deferred load
+      PreviewWindow.clearPreview(pvsQueriesTab);
+
+      // The replay verifies its context is still current before firing: pvsQueriesTab is shared with
+      // the non-FTS QueryCtrlr (which knows nothing about this deferral), so a stale replay would
+      // otherwise load this row over a preview the user requested from a different queries sub-tab.
+      // The tab.isSelected() check also covers this sub-tab having been closed in the meantime.
+
+      PreviewWindow.runWhenSourceActivates(pvsQueriesTab, () ->
+      {
+        if (tab.isSelected() && (tvResults.getSelectionModel().getSelectedItem() == row))
+          setPreview(row);
+      });
+
+      return;
+    }
+
     FilePath filePath = db.getRootPath(row.path());
 
     // Same file: user is navigating within it (passage click, Record-column
@@ -1383,11 +1402,17 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 
   /**
-   * Disposes the current coordinator (if any) and nulls the reference. Safe
-   * to call when no coordinator is active.
+   * Disposes the current coordinator (if any), nulls the reference, and cancels any
+   * preview load deferred until the Queries tab next activates. Safe to call when no
+   * coordinator is active.
    */
   private void disposeCurrentCoordinator()
   {
+    // Drop any preview load deferred until pvsQueriesTab next activates; the selection it was tied to is
+    // no longer current (new selection, re-query, or this controller going away), so it must not fire.
+
+    PreviewWindow.runWhenSourceActivates(pvsQueriesTab, null);
+
     if (currentCoordinator != null)
     {
       currentCoordinator.dispose();

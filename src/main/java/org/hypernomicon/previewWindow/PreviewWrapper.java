@@ -704,6 +704,13 @@ public class PreviewWrapper
     if ((jsWrapper != null) && jsWrapper.isShowingAlt())
     {
       btn.setSelected(true);
+
+      // Still honor deferred preview work on this early return; otherwise replaying it would depend
+      // on the alt display always having been cleared at deferral-registration time, a non-local
+      // invariant. In the common case here (a conversion this source already kicked off is still
+      // generating) no deferral is pending and this is a no-op.
+
+      PreviewWindow.fireActivation(getSource());
       return;
     }
 
@@ -718,6 +725,12 @@ public class PreviewWrapper
     }
 
     btn.setSelected(true);
+
+    // This source is now active and showing, so any preview work a caller deferred while it was not
+    // (the FTS hit pipeline) can now run. Fired after the wrapper's own refresh so the deferred caller,
+    // which drives the viewer itself, has the last word on what is displayed.
+
+    PreviewWindow.fireActivation(getSource());
   }
 
   //---------------------------------------------------------------------------

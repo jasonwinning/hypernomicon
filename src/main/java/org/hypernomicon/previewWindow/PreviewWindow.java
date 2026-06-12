@@ -86,11 +86,17 @@ public final class PreviewWindow extends NonmodalWindow
   private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new EnumMap<>(PreviewSource.class);
   private final Map<PreviewSource, PreviewSetting> srcToSetting = new EnumMap<>(PreviewSource.class);
 
+  // Work deferred by a caller that declined to generate a preview while its source was not the active,
+  // showing one (see isSourceActiveAndShowing / runWhenSourceActivates). Keyed by source, at most one
+  // entry each; fired and removed by fireActivation when that source next activates. Static so it can be
+  // registered before the window instance exists (the preview window may never have been opened).
+
+  private static final Map<PreviewSource, Runnable> pendingActivation = new EnumMap<>(PreviewSource.class);
+
   public static boolean disablePreviewUpdating = false;
 
 //---------------------------------------------------------------------------
 
-  public static void clearAll()                  { tabToWrapper.values().forEach(PreviewWrapper::reset); instance().clearControls(); }
   public FilePath getFilePath(PreviewSource src) { return srcToWrapper.get(src).getFilePath(); }
   private PreviewWrapper curWrapper()            { return tabToWrapper.get(tpPreview.getSelectionModel().getSelectedItem()); }
   PreviewSource curSource()                      { return curWrapper().getSource(); }
@@ -508,6 +514,49 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /**
+   * Whether a preview set for {@code src} would be shown immediately rather than deferred: the preview
+   * window is open and {@code src} is its active tab. Mirrors the visibility/active-source guard inside
+   * {@link PreviewWrapper}'s setPreview, exposed so callers that drive the viewer outside that path (the
+   * FTS hit pipeline) can match the File Manager's laziness, avoiding expensive work (LibreOffice
+   * conversion, pdf.js extraction) for a preview no one is looking at.
+   */
+  public static boolean isSourceActiveAndShowing(PreviewSource src)
+  {
+    return (instance != null) && instance.isShowing() && (instance.curSource() == src);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Schedules {@code action} to run the next time {@code src} becomes the active, showing preview source
+   * (the window is opened on that tab, or that tab is selected while the window is showing). Replaces any
+   * previously-scheduled action for {@code src}; pass {@code null} to cancel. Lets a caller that declined
+   * to generate a preview while it was not visible (see {@link #isSourceActiveAndShowing}) kick off the
+   * work once it will actually be seen, rather than eagerly on every row selection.
+   */
+  public static void runWhenSourceActivates(PreviewSource src, Runnable action)
+  {
+    if (action == null)
+      pendingActivation.remove(src);
+    else
+      pendingActivation.put(src, action);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Runs and clears the action deferred for {@code src} via {@link #runWhenSourceActivates}, if any.
+   *  Called from {@link PreviewWrapper#activate()} once {@code src} is the active, showing source. */
+  static void fireActivation(PreviewSource src)
+  {
+    nullSwitch(pendingActivation.remove(src), Runnable::run);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Send all hit data for the current file. Highlights are applied lazily as
    * each page's text layer finishes rendering in pdf.js.
    *
@@ -698,6 +747,16 @@ public final class PreviewWindow extends NonmodalWindow
     if (curSource() == src) return;
 
     tpPreview.getSelectionModel().select(srcToWrapper.get(src).getTab());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void clearAll()
+  {
+    pendingActivation.clear();
+    tabToWrapper.values().forEach(PreviewWrapper::reset);
+    instance().clearControls();
   }
 
 //---------------------------------------------------------------------------
