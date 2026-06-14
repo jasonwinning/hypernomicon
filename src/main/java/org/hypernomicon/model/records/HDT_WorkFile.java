@@ -104,6 +104,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static String makeFileName(List<FileNameAuthor> authors, HDT_WorkType workType, String year, String title, String container, String publisher, CharSequence ext)
   {
@@ -134,19 +135,26 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
     if (db.prefs.getBoolean(FileNamePrefKey.POSIX, false))
     {
       fileName = convertToEnglishChars(fileName);
-      while (fileName.startsWith("-"))
-        fileName = fileName.substring(1);
 
       String newName = "";
-      for (int pos = 0; pos < fileName.length(); pos++)
+      for (int ndx = 0; ndx < fileName.length(); ndx++)
       {
-        if (((fileName.charAt(pos) >= 'A') && (fileName.charAt(pos) <= 'Z')) ||
-            ((fileName.charAt(pos) >= 'a') && (fileName.charAt(pos) <= 'z')) ||
-            ((fileName.charAt(pos) >= '0') && (fileName.charAt(pos) <= '9')) ||
-            (fileName.charAt(pos) == '-') ||
-            (fileName.charAt(pos) == '_'))
-          newName = newName + fileName.charAt(pos);
+        char ch = fileName.charAt(ndx);
+
+        if (((ch >= 'A') && (ch <= 'Z')) ||
+            ((ch >= 'a') && (ch <= 'z')) ||
+            ((ch >= '0') && (ch <= '9')) ||
+            (ch == '-') ||
+            (ch == '_'))
+          newName = newName + ch;
       }
+
+      // Strip leading dashes after filtering: removing other characters can expose a dash that
+      // was not at the start before, and a leading '-' is treated as an option flag by many
+      // command-line tools.
+
+      while (newName.startsWith("-"))
+        newName = newName.substring(1);
 
       fileName = newName;
     }
@@ -161,14 +169,15 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
     if (ext.length() > 0)
     {
       int extLen = ext.length() + FilenameUtils.EXTENSION_SEPARATOR_STR.length();
+
       if ((fileName.length() + extLen) > maxLen)
-        fileName = fileName.substring(0, (maxLen - extLen));
+        fileName = safeSubstring(fileName, 0, maxLen - extLen);
 
       return fileName.strip() + FilenameUtils.EXTENSION_SEPARATOR_STR + ext;
     }
 
     if (fileName.length() > maxLen)
-      fileName = fileName.substring(0, maxLen);
+      fileName = safeSubstring(fileName, 0, maxLen);
 
     return fileName.strip();
   }
@@ -205,7 +214,6 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
   private static String getFNComponent(WorkFileNameComponent component,  WorkFileNameComponent authComponent, List<FileNameAuthor> authors, String year, String title, String container, String publisher)
   {
     String compStr = "";
-    int pos;
 
     switch (component.type)
     {
@@ -228,24 +236,14 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
         compStr = getAuthorStr(authors, false, true);
         break;
 
-      case fncTitleNoSub : // similar to fncContainerNoSub case
+      case fncTitleNoSub :
 
-        compStr = title;
-        pos = StringUtils.indexOfAny(compStr, ":?*|\"<>/\\");
-
-        if (pos >= 0)
-          compStr = compStr.substring(0, pos);
-
+        compStr = stripSubtitle(title);
         break;
 
-      case fncContainerNoSub: // similar to fncTitleNoSub case
+      case fncContainerNoSub :
 
-        compStr = container;
-        pos = StringUtils.indexOfAny(compStr, ":?*|\"<>/\\");
-
-        if (pos >= 0)
-          compStr = compStr.substring(0, pos);
-
+        compStr = stripSubtitle(container);
         break;
 
       case fncYear :
@@ -269,6 +267,25 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
       compStr = component.beforeSep + compStr + component.afterSep;
 
     return compStr;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Derives the file-name form of a work title or container title by dropping any subtitle. A slash
+   * is meaningful punctuation and is converted to a hyphen; the first subtitle or separator
+   * delimiter (a colon, question mark, or vertical bar) marks the start of the subtitle, and
+   * everything from there on is dropped. Other characters that are illegal in file names are left in
+   * place to be removed afterward by {@link FilePath#removeInvalidFileNameChars(CharSequence)}. The
+   * result is stripped of surrounding whitespace.
+   */
+  public static String stripSubtitle(String title)
+  {
+    String str = safeStr(title).replace('/', '-');
+    int ndx = StringUtils.indexOfAny(str, ":?|");
+
+    return ((ndx >= 0) ? str.substring(0, ndx) : str).strip();
   }
 
 //---------------------------------------------------------------------------

@@ -474,17 +474,9 @@ public class WorkDlgCtrlr extends ModalDialog
 
     tfTitle.textProperty().addListener((ob, oldValue, newValue) ->
     {
-      String fileTitle = newValue;
+      String fileTitle = FilePath.removeInvalidFileNameChars(HDT_WorkFile.stripSubtitle(newValue)).strip();
 
-      fileTitle = fileTitle.replace('?', ':')
-                           .replace('/', '-');
-
-      int pos = fileTitle.indexOf(':');
-      if (pos >= 0) fileTitle = fileTitle.substring(0, pos);
-
-      fileTitle = FilePath.removeInvalidFileNameChars(fileTitle);
-
-      tfFileTitle.setText(fileTitle.strip());
+      tfFileTitle.setText(fileTitle);
     });
 
     tfFileTitle.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
