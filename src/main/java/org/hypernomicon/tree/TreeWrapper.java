@@ -208,9 +208,12 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   {
     if (initializeTTV)
     {
-      clear();
-
       this.ttv = ttv;
+
+      // Use a skin whose VirtualFlow keeps a stable row breadth; works around a JavaFX bug that otherwise pegs the
+      // FX thread with a perpetual layout loop when the columns are wider than the viewport (see the skin's Javadoc).
+
+      ttv.setSkin(new StableBreadthTreeTableViewSkin<>(ttv));
 
     //---------------------------------------------------------------------------
 
@@ -238,7 +241,11 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
           {
             nullSwitch(nv.treeItem, treeItem ->
             {
-              treeItem.expandedProperty().addListener((ob1, ov1, nv1) -> ttv.refresh());
+              if (nv.expandRefreshListenerAdded == false)
+              {
+                treeItem.expandedProperty().addListener((ob1, ov1, nv1) -> ttv.refresh());
+                nv.expandRefreshListenerAdded = true;
+              }
 
               HDT_Record parentRecord = nullSwitch(treeItem.getParent(), null, parent ->
                                         nullSwitch(parent  .getValue (), null, TreeRow::getRecord));
@@ -313,7 +320,11 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   public void selectNextInstance(boolean increment)
   {
-    TreeRow row = selectedItem().getValue();
+    TreeItem<TreeRow> selItem = selectedItem();
+    if (selItem == null) return;
+
+    TreeRow row = selItem.getValue();
+    if (row == null) return;
 
     List<TreeRow> list = getRowsForRecord(row.getRecord());
     int ndx = list.indexOf(row);
@@ -364,14 +375,19 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     TreeItem<TreeRow> firstItem = nullSwitch(selectedItem(), ttv.getSelectionModel().getModelItem(0)),
                       item = firstItem;
 
+    if (firstItem == null) return;  // empty tree; nothing to search
+
     do
     {
       item = forward ? nullSwitch(getNext(item, false), getNext(ttv.getRoot(), false)) : getPrevious(item);
 
+      if (item == null) return;
+
       TreeRow row = item.getValue();
 
-      if (row.getName().toLowerCase().contains(text) ||
-          ((searchingNameOnly == false) && row.getDescString().toLowerCase().contains(text)))
+      if ((row != null) &&
+          (row.getName().toLowerCase().contains(text) ||
+           ((searchingNameOnly == false) && row.getDescString().toLowerCase().contains(text))))
       {
         ui.treeHyperTab().textToHilite = text;
         selectRow(row, true);

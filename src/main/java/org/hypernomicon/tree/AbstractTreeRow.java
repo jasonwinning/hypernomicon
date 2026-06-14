@@ -35,6 +35,7 @@ public abstract class AbstractTreeRow<HDT_T extends HDT_Record, RowType extends 
 
   protected TreeItem<RowType> treeItem = null;
   protected ImageView graphic = null;
+  protected boolean expandRefreshListenerAdded = false;  // guards the once-per-row attachment of the expand listener (see TreeWrapper row factory)
   private final TreeModel<RowType> treeModel;
 
 //---------------------------------------------------------------------------

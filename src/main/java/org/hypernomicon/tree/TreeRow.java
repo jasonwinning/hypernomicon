@@ -95,7 +95,8 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 
     if (record == null) return null;
 
-    return imgViewForRecord(record, record.getType(), parentRecord);
+    graphic = imgViewForRecord(record, record.getType(), parentRecord);  // a TreeRow has a fixed tree position, so
+    return graphic;                                                      // parentRecord (and thus the graphic) is stable
   }
 
 //---------------------------------------------------------------------------
@@ -129,6 +130,12 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
         }
 
         HDT_Record rowRecord = treeRow.getRecord();
+
+        if (rowRecord == null)
+        {
+          setGraphic(null);
+          return;
+        }
 
         if ((rowRecord.getType() == hdtWork) || (rowRecord.getType() == hdtMiscFile))
         {

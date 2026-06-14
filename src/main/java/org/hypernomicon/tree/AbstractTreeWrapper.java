@@ -39,6 +39,8 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 
   boolean selectingFromCB = false;
 
+  private static final int MAX_SELECT_ATTEMPTS = 100;  // safety cap so the showItem/select retry loop in selectRecord can never hang the FX thread
+
   protected abstract RowType newRow(HDT_Record rootRecord, TreeModel<RowType> treeModel);
   protected abstract TreeItem<RowType> getRoot();
   protected abstract SelectionModel<TreeItem<RowType>> getSelectionModel();
@@ -82,28 +84,40 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
     if (fromCB)
       selectingFromCB = true;
 
-    TreeItem<RowType> item = getTreeItem(list.get(ndx));
-
-    showItem(item);
-
-    if (getSelectionModel().getSelectedItem() != item)
+    try
     {
-      getSelectionModel().clearSelection();
+      TreeItem<RowType> item = getTreeItem(list.get(ndx));
 
-      while (getSelectionModel().getSelectedItem() != item) // It takes a while for the "showItem" operation to work. Before it's done,
-        getSelectionModel().select(item);                   // "select(item)" will instead select a *different* item (?!?!)
+      showItem(item);
+
+      if (getSelectionModel().getSelectedItem() != item)
+      {
+        getSelectionModel().clearSelection();
+
+        // It takes a while for the "showItem" operation to work. Before it's done, "select(item)" will instead
+        // select a *different* item (?!?!), so we retry. The attempt cap ensures this can never become an
+        // infinite loop that freezes the FX thread (e.g. if the item never becomes selectable).
+
+        for (int attempt = 0; (getSelectionModel().getSelectedItem() != item) && (attempt < MAX_SELECT_ATTEMPTS); attempt++)
+          getSelectionModel().select(item);
+      }
+
+      getControl().layout();
+
+      Platform.runLater(() ->
+      {
+        scrollToNdx(getSelectionModel().getSelectedIndex());
+
+        safeFocus(getControl());
+
+        selectingFromCB = false;
+      });
     }
-
-    getControl().layout();
-
-    Platform.runLater(() ->
+    catch (RuntimeException e)
     {
-      scrollToNdx(getSelectionModel().getSelectedIndex());
-
-      safeFocus(getControl());
-
-      selectingFromCB = false;
-    });
+      selectingFromCB = false;  // make sure the flag is cleared even if selection fails; otherwise rowSelectionChanged
+      throw e;                  // would stop syncing the combo box to the tree selection for the rest of the session
+    }
   }
 
 //---------------------------------------------------------------------------
