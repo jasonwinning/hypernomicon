@@ -586,7 +586,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     if ((record != null) && HDT_Record.isEmpty(record, false)) return; // Record was probably just deleted; go with whatever is currently selected
 
-    tree.selectRecord(record, record == null ? 0 : record.keyNdx(), false);
+    tree.selectRecord(record, record == null ? 0 : tree.recentNdxForRecord(record), false);
   }
 
 //---------------------------------------------------------------------------

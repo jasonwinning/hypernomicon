@@ -66,6 +66,21 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   private String lastSearchTerm = "";
   final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
 
+  // Remembers, per record, the ancestor record-chain (selected node up to the root) of the most
+  // recent tree node at which the user viewed that record. Used to send "Go to this record in Tree
+  // tab" back to the same node when a record appears under more than one parent. Bounded LRU in
+  // access order, since the semantics are inherently "most recent."
+
+  private static final int RECENT_ANCESTRY_CAP = 100;
+
+  private final Map<HDT_Record, List<HDT_Record>> recentAncestryByRecord = new LinkedHashMap<>(16, 0.75f, true)
+  {
+    @Override protected boolean removeEldestEntry(Map.Entry<HDT_Record, List<HDT_Record>> eldest)
+    {
+      return size() > RECENT_ANCESTRY_CAP;
+    }
+  };
+
 //---------------------------------------------------------------------------
 
   TreeWrapper(BreadCrumbBar<TreeRow> bcbPath, boolean hasTerms, ComboBox<TreeRow> comboBox)
@@ -177,6 +192,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     }
 
     if (tcb != null) tcb.clear();
+
+    recentAncestryByRecord.clear();
 
     debateTree.clear();
     noteTree  .clear();
@@ -601,10 +618,15 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     TreeRow lastRow = null;
     breadCrumbRowToRecordNdx.clear();
 
+    List<HDT_Record> ancestry = new ArrayList<>();
+
     while ((curItem != null) && (curItem.getValue() != null) && (curItem.getValue().getRecord() != null))
     {
-      TreeRow newRow = new TreeRow(curItem.getValue().getRecord(), null);
-      breadCrumbRowToRecordNdx.put(newRow, getRowsForRecord(newRow.getRecord()).indexOf(curItem.getValue()));
+      HDT_Record curRecord = curItem.getValue().getRecord();
+      ancestry.add(curRecord);
+
+      TreeRow newRow = new TreeRow(curRecord, null);
+      breadCrumbRowToRecordNdx.put(newRow, getRowsForRecord(curRecord).indexOf(curItem.getValue()));
       if (lastRow != null)
         newRow.treeItem.getChildren().add(lastRow.treeItem);
 
@@ -614,7 +636,104 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       curItem = curItem.getParent();
     }
 
+    // Record where this record was most recently seen in the tree, keyed by the selected (head)
+    // record, so the "Go to this record in Tree tab" button can return to this exact node.
+
+    if (ancestry.isEmpty() == false)
+      recentAncestryByRecord.put(ancestry.get(0), ancestry);
+
     bcbPath.setSelectedCrumb(head);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns the occurrence index (into {@link #getRowsForRecord(HDT_Record)}) of the tree node where
+   * the record was most recently viewed, or 0 if there is no remembered node or it no longer
+   * resolves to a live node.
+   */
+  int recentNdxForRecord(HDT_Record record)
+  {
+    List<HDT_Record> ancestry = recentAncestryByRecord.get(record);
+    if (ancestry == null) return 0;
+
+    List<TreeRow> rows = getRowsForRecord(record);
+
+    for (int ndx = 0; ndx < rows.size(); ndx++)
+      if (ancestryMatches(rows.get(ndx), ancestry))
+        return ndx;
+
+    return 0;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * True if walking from the given row's tree node up to the root yields exactly the given record
+   * chain (same records, same length).
+   */
+  private static boolean ancestryMatches(TreeRow row, List<HDT_Record> ancestry)
+  {
+    TreeItem<TreeRow> curItem = row.getTreeItem();
+
+    for (HDT_Record record : ancestry)
+    {
+      if ((curItem == null) || (curItem.getValue() == null) || (curItem.getValue().getRecord() != record))
+        return false;
+
+      curItem = curItem.getParent();
+    }
+
+    // The chain must be the complete path: the next node up is the rootless top (no record).
+
+    return (curItem == null) || (curItem.getValue() == null) || (curItem.getValue().getRecord() == null);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Purges the recent-ancestry cache of any entry keyed by, or containing, the given record. Called
+   * from the database delete handler.
+   */
+  public void removeRecordFromRecentAncestry(HDT_Record record)
+  {
+    recentAncestryByRecord.entrySet().removeIf(entry -> (entry.getKey() == record) || entry.getValue().contains(record));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Refreshes the record pointers in the recent-ancestry cache after a save/reload re-instantiates
+   * records, dropping any entry that no longer fully resolves.
+   */
+  public void refreshRecentAncestryPtrs()
+  {
+    Map<HDT_Record, List<HDT_Record>> refreshed = new LinkedHashMap<>();
+
+    recentAncestryByRecord.forEach((key, ancestry) ->
+    {
+      HDT_Record newKey = HDT_Record.getCurrentInstance(key);
+      if (newKey == null) return;
+
+      List<HDT_Record> newAncestry = new ArrayList<>(ancestry.size());
+
+      for (HDT_Record record : ancestry)
+      {
+        HDT_Record curRecord = HDT_Record.getCurrentInstance(record);
+        if (curRecord == null) return;
+
+        newAncestry.add(curRecord);
+      }
+
+      refreshed.put(newKey, newAncestry);
+    });
+
+    recentAncestryByRecord.clear();
+    recentAncestryByRecord.putAll(refreshed);
   }
 
 //---------------------------------------------------------------------------

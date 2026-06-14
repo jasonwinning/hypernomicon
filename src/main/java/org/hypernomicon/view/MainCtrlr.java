@@ -789,6 +789,7 @@ public final class MainCtrlr
 
       htFind.removeRowsIf(row -> row.getRecord() == record);
       viewSequence.removeRecord(record);
+      tree().removeRecordFromRecentAncestry(record);
     });
 
 //---------------------------------------------------------------------------
@@ -1695,6 +1696,7 @@ public final class MainCtrlr
     {
       PreviewWindow.clearAll();
       viewSequence.refreshRecordPtrs();
+      tree().refreshRecentAncestryPtrs();
       FileManager.clearHistory();
       FileManager.pruneAndRefresh(true);
 
