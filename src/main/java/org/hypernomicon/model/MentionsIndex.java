@@ -162,6 +162,27 @@ class MentionsIndex
       });
     });
 
+    // An argument's "where made" works and a misc file's associated work are the structural
+    // equivalent of key works for those record types, which are themselves excluded from having
+    // key works (see MainText.typeHasKeyWorks). Register them as mentions so they surface in a
+    // mentions search, just as key works do for the record types that support them.
+
+    switch (mentioner.getType())
+    {
+      case hdtArgument :
+
+        ((HDT_Argument) mentioner).works.forEach(work -> addMentionEverywhere(work, mentioner));
+        break;
+
+      case hdtMiscFile :
+
+        nullSwitch(((HDT_MiscFile) mentioner).work.get(), work -> addMentionEverywhere(work, mentioner));
+        break;
+
+      default :
+        break;
+    }
+
     if (mentioner.hasMainText())
     {
       MainText mainText = ((HDT_RecordWithMainText) mentioner).getMainText();
@@ -169,10 +190,7 @@ class MentionsIndex
       for (MainTextUtil.EmbeddedFileTag tag : MainTextUtil.findEmbeddedFileTags(mainText.getHtml()))
       {
         if (tag.miscFile() != null)
-        {
-          mentionedAnywhereToMentioners.addForward(tag.miscFile(), mentioner);
-          mentionedInDescToMentioners  .addForward(tag.miscFile(), mentioner);
-        }
+          addMentionEverywhere(tag.miscFile(), mentioner);
       }
 
       String plainText = mainText.getPlain();
@@ -186,37 +204,29 @@ class MentionsIndex
         linkList.forEach(link ->
         {
           if (link.isSingle())
-          {
-            HDT_Record mentioned = link.getRecord();
-
-            mentionedAnywhereToMentioners.addForward(mentioned, mentioner);
-            mentionedInDescToMentioners  .addForward(mentioned, mentioner);
-          }
-          else link.recordStream().forEach(mentioned ->
-          {
-            mentionedAnywhereToMentioners.addForward(mentioned, mentioner);
-            mentionedInDescToMentioners  .addForward(mentioned, mentioner);
-          });
+            addMentionEverywhere(link.getRecord(), mentioner);
+          else
+            link.recordStream().forEach(mentioned -> addMentionEverywhere(mentioned, mentioner));
         });
       }
 
       mainText.displayItemsStream().forEach(displayItem ->
       {
         if (displayItem.type == diRecord)
-        {
-          mentionedAnywhereToMentioners.addForward(displayItem.record, mentioner);
-          mentionedInDescToMentioners  .addForward(displayItem.record, mentioner);
-        }
+          addMentionEverywhere(displayItem.record, mentioner);
         else if (displayItem.type == diKeyWorks)
-        {
-          mainText.keyWorksStream().map(KeyWork::getRecord).forEach(keyWorkRecord ->
-          {
-            mentionedAnywhereToMentioners.addForward(keyWorkRecord, mentioner);
-            mentionedInDescToMentioners  .addForward(keyWorkRecord, mentioner);
-          });
-        }
+          mainText.keyWorksStream().map(KeyWork::getRecord).forEach(keyWorkRecord -> addMentionEverywhere(keyWorkRecord, mentioner));
       });
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addMentionEverywhere(HDT_Record mentioned, HDT_Record mentioner)
+  {
+    mentionedAnywhereToMentioners.addForward(mentioned, mentioner);
+    mentionedInDescToMentioners  .addForward(mentioned, mentioner);
   }
 
 //---------------------------------------------------------------------------
