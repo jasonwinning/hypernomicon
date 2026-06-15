@@ -291,6 +291,13 @@ public class FilePath implements Comparable<FilePath>
    * calls should go through this method. Handles watcher stop/restart (if paths are under the
    * DB root) and registry eviction (for files only; directory moves rely on the caller's
    * {@code path.assign()} -> {@code onSubtreeMoved()} for registry re-keying).
+   * <p>
+   * This is the low-level primitive. It is intentionally public so that callers that manage
+   * their own validation, overwrite policy, and record re-keying (e.g. directory operations
+   * like {@link #renameDirectory} and {@code HDT_Folder.moveToNewParent}) can invoke it
+   * directly, bypassing {@link #moveTo}. Do not route those through {@code moveTo}: that goes
+   * through {@code moveOrCopy}, whose overwrite handling ({@code FileDeletion.ofFile}) and
+   * import notification ({@code isFile}) are file-oriented and wrong for directory moves.
    */
   public static void filesMove(FilePath src, FilePath dest) throws IOException
   {
@@ -320,6 +327,10 @@ public class FilePath implements Comparable<FilePath>
   /**
    * Central function for copying files. All database-relevant {@code Files.copy} calls should
    * go through this method. Handles watcher stop/restart (if paths are under the DB root).
+   * <p>
+   * This is the low-level primitive, intentionally public so that callers managing their own
+   * validation and overwrite policy can invoke it directly, bypassing the file-oriented
+   * {@link #copyTo} / {@code moveOrCopy} layer.
    */
   public static void filesCopy(FilePath src, FilePath dest) throws IOException
   {
@@ -341,6 +352,7 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Returns true if this path is under the currently loaded database's root folder. */
   public boolean isUnderDbRoot()
   {
     FilePath rootPath = ((db == null) || db.isOffline()) ? null : db.getRootPath();
@@ -485,9 +497,7 @@ public class FilePath implements Comparable<FilePath>
     if (WINDOWS_RESERVED_DEVICE_NAMES.contains(base.toUpperCase(Locale.ROOT))) return false;
 
     char last = fileName.charAt(fileName.length() - 1);
-    if ((last == '.') || (last == ' ')) return false;
-
-    return true;
+    return (last != '.') && (last != ' ');
   }
 
 //---------------------------------------------------------------------------

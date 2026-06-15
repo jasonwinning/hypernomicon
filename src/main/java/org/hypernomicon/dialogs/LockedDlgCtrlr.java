@@ -166,7 +166,7 @@ public class LockedDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML @Override protected void btnCancelClick()
+  @Override protected void btnCancelClick()
   {
     if (btnStop.isDisabled() == false)
       btnStopClick();

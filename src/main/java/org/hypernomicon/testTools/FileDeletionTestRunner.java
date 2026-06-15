@@ -612,7 +612,7 @@ public final class FileDeletionTestRunner
         }
         catch (IOException | UnsupportedOperationException | SecurityException e)
         {
-          System.out.println("Step 23 SKIPPED (symlink creation not supported: " + e.getMessage() + ')');
+          System.out.println("Step 23 SKIPPED (symlink creation not supported: " + getThrowableMessage(e) + ')');
           FileDeletion.ofFile(target).nonInteractiveFailureOK().execute();
           return;
         }

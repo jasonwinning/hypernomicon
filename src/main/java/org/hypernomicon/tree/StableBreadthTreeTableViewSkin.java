@@ -27,8 +27,8 @@ import javafx.scene.control.skin.VirtualFlow;
 
 /**
  * A {@link TreeTableViewSkin} whose {@link VirtualFlow} sizes each row to a STABLE breadth, working around a JavaFX
- * {@code VirtualFlow} bug (the same family as https://bugs.openjdk.org/browse/JDK-8255436 and
- * https://bugs.openjdk.org/browse/JDK-8282091) that pins the JavaFX application thread at a steady, indefinite CPU load
+ * {@code VirtualFlow} bug (the same family as <a href="https://bugs.openjdk.org/browse/JDK-8255436">JDK-8255436</a> and
+ * <a href="https://bugs.openjdk.org/browse/JDK-8282091">JDK-8282091</a>) that pins the JavaFX application thread at a steady, indefinite CPU load
  * whenever the columns' total width exceeds the viewport, even when the control is idle.
  *
  * <p>The stock {@code VirtualFlow.resizeCell} sizes each row to {@code max(getMaxPrefBreadth(), getViewportBreadth())}.
@@ -65,12 +65,7 @@ class StableBreadthTreeTableViewSkin<S> extends TreeTableViewSkin<S>
 
   private static double visibleLeafColumnWidthSum(TreeTableView<?> treeTableView)
   {
-    double total = 0;
-
-    for (var column : treeTableView.getVisibleLeafColumns())
-      total += column.getWidth();
-
-    return total;
+    return treeTableView.getVisibleLeafColumns().stream().mapToDouble(TableColumnBase::getWidth).sum();
   }
 
 //---------------------------------------------------------------------------

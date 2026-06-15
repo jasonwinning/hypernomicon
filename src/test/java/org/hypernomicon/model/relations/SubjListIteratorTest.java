@@ -170,7 +170,7 @@ class SubjListIteratorTest
     subjIterator.next();
     subjIterator.next();
     subjIterator.next();
-    assertThrows(NoSuchElementException.class, () -> subjIterator.next());
+    assertThrows(NoSuchElementException.class, subjIterator::next);
   }
 
 //---------------------------------------------------------------------------
@@ -184,7 +184,7 @@ class SubjListIteratorTest
     subjListIterator.next();
     subjListIterator.next();
     subjListIterator.next();
-    assertThrows(NoSuchElementException.class, () -> subjListIterator.next());
+    assertThrows(NoSuchElementException.class, subjListIterator::next);
   }
 
 //---------------------------------------------------------------------------
@@ -269,11 +269,11 @@ class SubjListIteratorTest
 
     assertThrows(NoSuchElementException.class, () -> newPosition.largerDebates.add(debate));
 
-    assertThrows(NoSuchElementException.class, () -> subjIterator.next());
+    assertThrows(NoSuchElementException.class, subjIterator::next);
 
-    assertThrows(NoSuchElementException.class, () -> subjListIterator.next());
+    assertThrows(NoSuchElementException.class, subjListIterator::next);
 
-    assertThrows(ConcurrentModificationException.class, () -> subjListIterator.previous());
+    assertThrows(ConcurrentModificationException.class, subjListIterator::previous);
   }
 
 //---------------------------------------------------------------------------

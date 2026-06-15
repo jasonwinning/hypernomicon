@@ -583,6 +583,24 @@ public final class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns the configured office (LibreOffice/OpenOffice) home directory from preferences,
+   * with the macOS convenience of appending "/Contents" when the user selected the ".app"
+   * bundle itself. Empty string if no office installation is configured.
+   */
+  public static String getOfficeHome()
+  {
+    String officePath = app.prefs.get(PrefKey.OFFICE_PATH, "");
+
+    if (IS_OS_MAC && officePath.toLowerCase().endsWith(".app"))  // Allow user to just select the app file
+      officePath = officePath + "/Contents";
+
+    return officePath;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static String computerName = null;
 
   private static String formatName(String name)

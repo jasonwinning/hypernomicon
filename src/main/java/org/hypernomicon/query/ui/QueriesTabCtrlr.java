@@ -56,8 +56,8 @@ import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.*;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
@@ -199,14 +199,14 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     mnuClear            .setOnAction(event -> mnuClearSearchFolderClick());
     mnuClearAndAdd      .setOnAction(event -> mnuCopyAllClick          ());
-    
+
     mnuAddSelected      .setOnAction(event -> copyFilesToFolder        (true ));
     mnuShowInSysExplorer.setOnAction(event -> mnuShowSearchFolderClick (false));
     mnuShowInFileMgr    .setOnAction(event -> mnuShowSearchFolderClick (true ));
 
-    mnuIncludeEdited = new CheckBoxMenuItem("Include edited works"          , btnFileActions.showingProperty());
-    mnuExcludeAnnots = new CheckBoxMenuItem("Copy files without annotations", btnFileActions.showingProperty());
-    mnuEntirePDF     = new CheckBoxMenuItem("Always copy entire PDF file"   , btnFileActions.showingProperty());
+    mnuIncludeEdited = new CheckBoxMenuItem("Include edited works"               , btnFileActions.showingProperty());
+    mnuExcludeAnnots = new CheckBoxMenuItem("Strip annotations from PDFs on copy", btnFileActions.showingProperty());
+    mnuEntirePDF     = new CheckBoxMenuItem("Always copy entire PDF file"        , btnFileActions.showingProperty());
 
     btnFileActions.getItems().addAll(List.of(mnuIncludeEdited, mnuExcludeAnnots, mnuEntirePDF));
 
@@ -243,8 +243,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         <ul>
           <li><strong>Include Edited Works:</strong> By default, files associated with edited works are not copied. Check<br/>
                       this option to include them in the copying process.</li>
-          <li><strong>Copy Files Without Annotations:</strong> Select this option if you want to copy PDF files without<br/>
-                      any annotations or highlights, useful for sharing clean versions of the documents.</li>
+          <li><strong>Strip Annotations from PDFs on Copy:</strong> Removes annotations and highlights from PDF copies in<br/>
+                      the destination folder; non-PDF files are copied as-is. The original files are not modified.<br/>
+                      Useful for sharing clean versions of documents.</li>
           <li><strong>Always Copy Entire PDF File:</strong> Check this option to ensure the entire PDF file is copied. By<br/>
                       default, only the specific pages related to the query result are copied.</li>
         </ul>
@@ -260,7 +261,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void mnuShowSearchFolderClick(boolean inFileMgr)
+  private static void mnuShowSearchFolderClick(boolean inFileMgr)
   {
     if (db.isOffline()) return;
 
@@ -461,7 +462,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void mnuClearSearchFolderClick()
+  private static void mnuClearSearchFolderClick()
   {
     if (db.isOffline()) return;
 

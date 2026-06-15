@@ -137,6 +137,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
       fileName = convertToEnglishChars(fileName);
 
       String newName = "";
+
       for (int ndx = 0; ndx < fileName.length(); ndx++)
       {
         char ch = fileName.charAt(ndx);

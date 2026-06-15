@@ -670,7 +670,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       {
         rtp = (RecordTypePopulator) pop;
 
-        rtp.getTypes().forEach(objType -> ui.treeSelector.addTargetType(objType));
+        rtp.getTypes().forEach(ui.treeSelector::addTargetType);
       }
     }
 

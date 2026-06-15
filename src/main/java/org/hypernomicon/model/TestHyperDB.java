@@ -103,6 +103,8 @@ public final class TestHyperDB extends AbstractHyperDB
 
   public static TestHyperDB instance()
   {
+    PopupRobot.setActive(true);
+
     if (HyperDB.db != null)
     {
       if ((HyperDB.db instanceof TestHyperDB) == false)
@@ -110,8 +112,6 @@ public final class TestHyperDB extends AbstractHyperDB
 
       return (TestHyperDB) HyperDB.db;
     }
-
-    PopupRobot.setActive(true);
 
     TestHyperDB db = new TestHyperDB();
 

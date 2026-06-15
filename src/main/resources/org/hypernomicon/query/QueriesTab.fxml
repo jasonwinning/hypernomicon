@@ -16,16 +16,9 @@
    limitations under the License.
 -->
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.MenuButton?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
 
 <AnchorPane prefHeight="677.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.query.ui.QueriesTabCtrlr">
@@ -39,7 +32,7 @@
   <Button fx:id="btnToggleFavorite" layoutX="161.0" layoutY="9.0" maxHeight="28.0" maxWidth="28.0" minHeight="28.0" minWidth="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" AnchorPane.leftAnchor="161.0" AnchorPane.topAnchor="9.0">
     <graphic>
       <ImageView fitHeight="19.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-        <Image url="@../resources/images/star-empty.png"/>
+        <Image url="@../resources/images/star-empty.png" />
       </ImageView>
     </graphic></Button>
    <MenuButton fx:id="btnFileActions" layoutX="914.0" layoutY="9.0" maxHeight="28.0" minHeight="28.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="157.0" text="File Actions" AnchorPane.rightAnchor="42.0" AnchorPane.topAnchor="9.0">
@@ -52,7 +45,7 @@
      </items>
       <graphic>
         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-          <Image url="@../resources/images/documents-stack.png"/>
+          <Image url="@../resources/images/documents-stack.png" />
         </ImageView>
       </graphic>
    </MenuButton>

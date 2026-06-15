@@ -97,7 +97,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     tree.addContextMenuItem("Select", HDT_Record.class,
       record -> (ui.treeSelector.getBase() != null) && (record != null) && db.isOnline(),
-      record -> ui.treeSelector.select(record));
+      ui.treeSelector::select);
 
     tree.addContextMenuItem("Go to this record", HDT_Record.class,
       record -> (record != null) && db.isOnline(),

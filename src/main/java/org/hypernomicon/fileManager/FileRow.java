@@ -25,6 +25,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.mime.MediaType;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
@@ -187,12 +188,9 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
       try                   { size = filePath.size(); }
       catch (IOException e) { return new ObjectCellValue<>("", (long) -1); }
-
-      if (size >= 1000L)
-        return new ObjectCellValue<>(numberFormat.format(size / 1000L) + " KB", size);
     }
 
-    return new ObjectCellValue<>(size + " bytes", size);
+    return new ObjectCellValue<>(formatFileSize(size, false, 0), size);
   }
 
 //---------------------------------------------------------------------------

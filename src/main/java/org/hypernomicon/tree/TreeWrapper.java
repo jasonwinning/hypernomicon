@@ -656,7 +656,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     // record, so the "Go to this record in Tree tab" button can return to this exact node.
 
     if (ancestry.isEmpty() == false)
-      recentAncestryByRecord.put(ancestry.get(0), ancestry);
+      recentAncestryByRecord.put(ancestry.getFirst(), ancestry);
 
     bcbPath.setSelectedCrumb(head);
   }

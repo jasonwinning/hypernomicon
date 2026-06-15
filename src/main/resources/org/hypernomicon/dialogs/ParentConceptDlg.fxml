@@ -63,27 +63,21 @@
             <Button fx:id="btnMoveUp" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0">
               <graphic>
                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                  <image>
-                    <Image url="@../resources/images/triangle-up.png"/>
-                  </image>
+                  <Image url="@../resources/images/triangle-up.png"/>
                 </ImageView>
               </graphic>
             </Button>
             <Button fx:id="btnMoveDown" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0">
               <graphic>
                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                  <image>
-                    <Image url="@../resources/images/triangle-down.png"/>
-                  </image>
+                  <Image url="@../resources/images/triangle-down.png"/>
                 </ImageView>
               </graphic>
             </Button>
             <Button fx:id="btnRemove" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0">
               <graphic>
                 <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                  <image>
-                    <Image url="@../resources/images/deletered.png"/>
-                  </image>
+                  <Image url="@../resources/images/deletered.png"/>
                 </ImageView>
               </graphic>
             </Button>

@@ -300,17 +300,12 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveAllToPersistentStorage()
-  {
-    saveAllToPersistentStorage(null);
-  }
-
   /**
-   * Same as {@link #saveAllToPersistentStorage()}, but accepts a callback that
-   * is invoked the first time the bibliographic data write triggers a retry
-   * due to an {@link AccessDeniedException}. The callback receives a status
-   * message that the caller can surface in a progress dialog while the rename
-   * waits out a cloud-sync conflict.
+   * Saves all bibliographic data to persistent storage. Accepts a callback that
+   * is invoked the first time the write triggers a retry due to an
+   * {@link AccessDeniedException}; the callback receives a status message that the
+   * caller can surface in a progress dialog while the rename waits out a cloud-sync
+   * conflict. Pass {@code null} if no retry notification is needed.
    *
    * @param onRetry callback invoked once when retry begins, or {@code null}
    */

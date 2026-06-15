@@ -244,10 +244,12 @@ public final class App extends Application
       return;
     }
 
-    // Create TeeOutputStream to write both to console and file
+    // Create TeeOutputStream to write both to console and file. Autoflush on newline:
+    // without it, PrintStream buffers up to 8KB, so the log's tail (including shutdown
+    // diagnostics) is lost whenever the process is killed rather than exiting normally.
 
-    teeOut = new PrintStream(new TeeOutputStream(origOut, logFileOut));
-    teeErr = new PrintStream(new TeeOutputStream(origErr, logFileOut));
+    teeOut = new PrintStream(new TeeOutputStream(origOut, logFileOut), true);
+    teeErr = new PrintStream(new TeeOutputStream(origErr, logFileOut), true);
 
     logFilePath = newLogFilePath;
 
@@ -542,7 +544,7 @@ public final class App extends Application
     }
     catch (IOException e)
     {
-      System.out.println("Hypernomicon manifest: WARNING: primary path failed reading \"" + key + "\": " + e.getMessage());
+      System.out.println("Hypernomicon manifest: WARNING: primary path failed reading \"" + key + "\": " + getThrowableMessage(e));
     }
 
     // Security exception likely happened so try less reliable method
@@ -562,7 +564,7 @@ public final class App extends Application
     }
     catch (IOException e)
     {
-      System.out.println("Hypernomicon manifest: WARNING: fallback path failed reading \"" + key + "\": " + e.getMessage());
+      System.out.println("Hypernomicon manifest: WARNING: fallback path failed reading \"" + key + "\": " + getThrowableMessage(e));
     }
 
     return "";

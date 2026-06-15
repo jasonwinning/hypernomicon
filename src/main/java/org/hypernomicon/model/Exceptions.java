@@ -20,8 +20,7 @@ package org.hypernomicon.model;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hypernomicon.model.records.*;
@@ -59,7 +58,7 @@ public final class Exceptions
 
   private static HDB_InternalError getInternalError(Throwable e)
   {
-    Set<Throwable> seen = new HashSet<>();
+    Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
 
     while (e != null)
     {

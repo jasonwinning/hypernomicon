@@ -189,7 +189,7 @@ public final class QueryCtrlr
 
     // Query type column with change handler
 
-    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, queryTypePopulator, (row, _, cellVal, nextColNdx, nextPopulator) ->
+    htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableLimitedDropDown, queryTypePopulator, (row, oldCellVal, newCellVal, nextColNdx, nextPopulator) ->
     {
       int rowNdx = tvFields.getItems().indexOf(row);
 
@@ -199,7 +199,7 @@ public final class QueryCtrlr
       disableAutoShowDropdownList = true;
 
       int queryID = row.getID(QUERY_COL_NDX);
-      QueryType queryType = QueryType.codeToVal(getCellID(cellVal));
+      QueryType queryType = QueryType.codeToVal(getCellID(newCellVal));
 
       if (queryType != null)
       {
@@ -851,6 +851,8 @@ public final class QueryCtrlr
 
       QueryType type = getQueryType(row);
       Query<?> query = getQuery(row);
+
+      if (query == null) continue;
 
       if (query.needsMentionsIndex() && (db.waitUntilRebuildIsDone() == false))
         return false;

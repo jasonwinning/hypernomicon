@@ -156,7 +156,7 @@ class SearchResultFileList
         {
           filePath.copyTo(destFilePath, false);
         }
-        else if ((startPage == 1) && (endPage == Integer.MAX_VALUE) && !excludeAnnots)
+        else if ((startPage == 1) && (endPage == Integer.MAX_VALUE) && (excludeAnnots == false))
         {
           filePath.copyTo(destFilePath, false);
         }

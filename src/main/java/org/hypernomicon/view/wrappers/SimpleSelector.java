@@ -222,7 +222,7 @@ public final class SimpleSelector<T>
 
   private void scrollToNdx(int ndx)
   {
-    if (cb.getItems().size() < 1)
+    if (cb.getItems().isEmpty())
       return;
 
     ListView<T> lv = getCBListView(cb);

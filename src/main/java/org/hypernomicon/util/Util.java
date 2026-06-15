@@ -109,7 +109,12 @@ public final class Util
     String text = safeStr((String) Clipboard.getSystemClipboard().getContent(DataFormat.PLAIN_TEXT));
     if (text.isEmpty()) return "";
 
-    text = text.replace("\ufffd", ""); // I don't know what this is but it is usually appended at the end when copying text from Acrobat
+    // Strip stray U+FFFD (the Unicode replacement char) from pasted text. JavaFX produced a trailing one
+    // when decoding Acrobat's odd-byte-length UTF-16 clipboard buffer (https://bugs.openjdk.org/browse/JDK-8156091); that no longer
+    // reproduces as of JavaFX 26 (likely the https://bugs.openjdk.org/browse/JDK-8281384 null-terminator fix in JavaFX 25), but U+FFFD is
+    // never legitimate pasted content, so this stays as cheap, harmless sanitization.
+
+    text = text.replace("\ufffd", "");
 
     if (noCarriageReturns)
       text = convertToSingleLine(text);
@@ -1453,20 +1458,32 @@ public final class Util
 //---------------------------------------------------------------------------
 
   /**
-   * Returns a user-friendly message for the given throwable.
-   * Handles specific exceptions with tailored messages and generic exceptions with class names.
+   * Returns a user-friendly message for the given throwable, walking the
+   * cause chain to the root before formatting. Handles specific exceptions
+   * with tailored messages and generic exceptions with class names.
    *
    * @param e the throwable for which to get the message
-   * @return a user-friendly message for the throwable
+   * @return a user-friendly message for the root cause of the throwable
    */
   public static String getThrowableMessage(Throwable e)
   {
-    String msg = e.getMessage();
+    Throwable cause = e;
+    Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+    seen.add(cause);
+
+    while (true)
+    {
+      Throwable next = cause.getCause();
+      if ((next == null) || (seen.add(next) == false)) break;
+      cause = next;
+    }
+
+    String msg = cause.getMessage();
 
     if (strNullOrBlank(msg) || "null".equals(msg))
       msg = "";
 
-    return switch (e)
+    return switch (cause)
     {
       case UnknownHostException _ -> "Host not found" + (msg.isEmpty() ? "" : ": ") + msg;
 
@@ -1496,7 +1513,7 @@ public final class Util
         yield userFriendlyThrowableName(ioException) + (msg.isEmpty() ? "" : ": ") + msg;
       }
 
-      default -> msg.isEmpty() ? userFriendlyThrowableName(e) : msg;
+      default -> msg.isEmpty() ? userFriendlyThrowableName(cause) : msg;
     };
   }
 

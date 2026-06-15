@@ -86,7 +86,7 @@ public class PDFJSWrapper
   private Runnable postBrowserLoadCode = null;
 
   private int numPages = -1;
-  private boolean ready = false, pdfjsMode = true, hiding = false, showingAlt = false;
+  private boolean ready = false, pdfjsViewerLoaded = true, hiding = false, showingAlt = false;
 
   private volatile boolean opened = false;
 
@@ -94,17 +94,16 @@ public class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  enum PDFJSCommand
+  enum PDFJSOperation
   {
     pjsOpen,
-    pjsClose,
-    pjsNumPages
+    pjsClose
   }
 
 //---------------------------------------------------------------------------
 
   @FunctionalInterface interface PDFJSDoneHandler {
-    void handle(PDFJSCommand cmd, boolean success, String errMessage);
+    void handle(PDFJSOperation operation, boolean success, String errMessage);
   }
 
 //---------------------------------------------------------------------------
@@ -202,7 +201,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
+  void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
   {
     runInFXThread(() ->
     {
@@ -214,7 +213,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setStartingConverter()
+  void setStartingConverter()
   {
     runInFXThread(() ->
     {
@@ -247,7 +246,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setNoOfficeInstallation()
+  void setNoOfficeInstallation()
   {
     runInFXThread(() ->
     {
@@ -263,7 +262,7 @@ public class PDFJSWrapper
   {
     switchToPreviewDisplay();
 
-    if (pdfjsMode)
+    if (pdfjsViewerLoaded)
     {
       if (opened)
         close();
@@ -388,7 +387,7 @@ public class PDFJSWrapper
 
   boolean zoom(boolean zoomingIn)
   {
-    if (pdfjsMode) return false;
+    if (pdfjsViewerLoaded) return false;
 
     if (zoomingIn)
       browser.zoomIn();
@@ -532,7 +531,7 @@ public class PDFJSWrapper
         noOp();
       }
 
-      pdfjsMode = browser.executeJavaScriptAndReturnValue("'PDFViewerApplication' in window").getBooleanValue();
+      pdfjsViewerLoaded = browser.executeJavaScriptAndReturnValue("'PDFViewerApplication' in window").getBooleanValue();
 
       if (postBrowserLoadCode == null) return;
 
@@ -548,7 +547,7 @@ public class PDFJSWrapper
         stuffToDoAfterLoadingViewerHtml.run();
     };
 
-    if (pdfjsMode)
+    if (pdfjsViewerLoaded)
       loadViewerHtml(runnable);
     else
       runnable.run();
@@ -603,13 +602,13 @@ public class PDFJSWrapper
 
   private void cleanupPdfHtml()
   {
-    if (pdfjsMode)
+    if (pdfjsViewerLoaded)
     {
       browser.executeJavaScript("if ('PDFViewerApplication' in window) PDFViewerApplication.cleanup();");
       sleepForMillis(200);
     }
 
-    pdfjsMode = false;
+    pdfjsViewerLoaded = false;
   }
 
 //---------------------------------------------------------------------------
@@ -784,7 +783,7 @@ public class PDFJSWrapper
       }
 
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSCommand.pjsOpen, success, "");
+        doneHndlr.handle(PDFJSOperation.pjsOpen, success, "");
     }
 
 //---------------------------------------------------------------------------
@@ -804,7 +803,7 @@ public class PDFJSWrapper
       }
 
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSCommand.pjsClose, success, "");
+        doneHndlr.handle(PDFJSOperation.pjsClose, success, "");
     }
   }
 
@@ -815,7 +814,7 @@ public class PDFJSWrapper
   {
     if (opened == false)
     {
-      if (doneHndlr != null) doneHndlr.handle(PDFJSCommand.pjsClose, false, "Unable to close because the viewer is already closed.");
+      if (doneHndlr != null) doneHndlr.handle(PDFJSOperation.pjsClose, false, "Unable to close because the viewer is already closed.");
       return;
     }
 
@@ -855,7 +854,7 @@ public class PDFJSWrapper
 
       doc.getElementsByTag("meta").forEach(meta ->
       {
-        if (meta.hasAttr("charset") || meta.attr("http-equiv").equalsIgnoreCase("Content-Type"))
+        if (meta.hasAttr("charset") || "Content-Type".equalsIgnoreCase(meta.attr("http-equiv")))
           meta.remove();
       });
 
@@ -875,13 +874,13 @@ public class PDFJSWrapper
 
   void loadPdf(FilePath file, int initialPage)
   {
-    final boolean wasPdfjsMode = pdfjsMode;
+    final boolean wasPdfjsViewerLoaded = pdfjsViewerLoaded;
 
     Runnable runnable = () ->
     {
       opened = false;
 
-      if (wasPdfjsMode == false)
+      if (wasPdfjsViewerLoaded == false)
       {
         boolean readyToOpen = false;
 
@@ -907,7 +906,7 @@ public class PDFJSWrapper
 
     switchToPreviewDisplay();
 
-    if (pdfjsMode == false)
+    if (pdfjsViewerLoaded == false)
       loadViewerHtml(runnable);
     else
       Platform.runLater(runnable);  // This helps to prevent JxBrowser from crashing when quickly removing and re-adding it to the scene graph, then executing a script

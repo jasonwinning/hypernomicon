@@ -453,7 +453,8 @@ public class HyperPath
     if (FilePath.isEmpty(fileName) && FilePath.isEmpty(nameOnly)) return;
 
     if ((FilePath.isEmpty(fileName) == false) && (FilePath.isEmpty(nameOnly) == false))
-      if ((parentFolder() == parentFolder) && fileName.getNameOnly().equals(nameOnly.getNameOnly())) return;
+      if ((parentFolder() == parentFolder) && fileName.getNameOnly().equals(nameOnly.getNameOnly()))
+        return;
 
     FilePath oldFilePath = filePath();
 

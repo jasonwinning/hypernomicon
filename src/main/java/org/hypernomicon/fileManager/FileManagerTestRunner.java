@@ -4237,7 +4237,7 @@ public final class FileManagerTestRunner
     }
     catch (IOException e)
     {
-      throw new AssertionError(label + " failed to read: " + e.getMessage());
+      throw new AssertionError(label + " failed to read: " + getThrowableMessage(e));
     }
   }
 

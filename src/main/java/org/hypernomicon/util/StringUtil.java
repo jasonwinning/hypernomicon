@@ -169,8 +169,8 @@ public final class StringUtil
 
   /**
    * Converts multiline text into a single line by replacing various newline and vertical
-   * whitespace characters with spaces. This method also removes a specific Unicode character
-   * (\ufffd) that is often appended when copying text from Acrobat.
+   * whitespace characters with spaces. It also removes stray U+FFFD (the Unicode replacement
+   * char that Acrobat-pasted text can carry; see {@link Util#getClipboardText}).
    * <p>
    * The function performs the following transformations:
    * <ul>
@@ -186,7 +186,7 @@ public final class StringUtil
    */
   public static String convertToSingleLine(String text)
   {
-    return text.replace("\ufffd", "")  // I don't know what this is but it is usually appended at the end when copying text from Acrobat
+    return text.replace("\ufffd", "")  // strip stray U+FFFD (replacement char, never legitimate); see Util.getClipboardText for the JDK-8156091 origin
 
       .replaceAll("\\R+(\\R)", "$1")
       .replaceAll("(\\R)\\R+", "$1")
@@ -225,7 +225,7 @@ public final class StringUtil
    */
   public static String trimLines(String input)
   {
-    input = safeStr(input).replace("\ufffd", "");  // I don't know what this is but it is usually appended at the end when copying text from Acrobat
+    input = safeStr(input).replace("\ufffd", "");  // strip stray U+FFFD (replacement char, never legitimate); see Util.getClipboardText for the JDK-8156091 origin
 
     if (convertToSingleLine(input).isBlank()) return "";
 
@@ -423,6 +423,31 @@ public final class StringUtil
     if ((end < start) || (str == null) || (start >= str.length())) return "";
 
     return end > str.length() ? str.substring(start) : str.substring(start, end);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Formats a byte count as a human-readable string with locale-aware digit grouping.
+   * <p>
+   * Sizes below 1 KB are shown in whole bytes. Larger sizes are scaled to KB, or to MB
+   * when {@code allowMB} is true and the size reaches 1 MB. Units are binary
+   * (1 KB = 1024 bytes, 1 MB = 1024 KB).
+   *
+   * @param bytes the size in bytes
+   * @param allowMB whether MB may be used as the largest unit; when false, KB is the largest
+   * @param decimals the number of decimal places for KB and MB values (byte values are always whole)
+   * @return e.g. {@code "847 bytes"}, {@code "12.3 KB"}, {@code "1,234 KB"}, {@code "5.8 MB"}
+   */
+  public static String formatFileSize(long bytes, boolean allowMB, int decimals)
+  {
+    if (bytes < 1024L)
+      return bytes + " bytes";
+
+    return allowMB && (bytes >= (1024L * 1024L))
+      ? String.format("%,." + decimals + "f MB", bytes / (1024.0 * 1024.0))
+      : String.format("%,." + decimals + "f KB", bytes / 1024.0);
   }
 
 //---------------------------------------------------------------------------
@@ -672,11 +697,6 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 
   public static void assignSB(StringBuilder sb, String s)
-  {
-    sb.replace(0, sb.length(), s);
-  }
-
-  public static void assignSB(StringBuffer sb, String s)
   {
     sb.replace(0, sb.length(), s);
   }

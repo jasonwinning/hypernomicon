@@ -499,9 +499,7 @@ public class FolderTreeWatcher
 
             // Evict the deleted path from the registry so stale entries don't linger
 
-            Consumer<FilePath> hook = evictionHook;
-            if (hook != null)
-              hook.accept(oldPathInfo.getFilePath());
+            nullSwitch(evictionHook, hook -> hook.accept(oldPathInfo.getFilePath()));
 
             // There is no need to stop the watcher because nothing else should need to be deleted.
             // Also, if it is restarted, state information about the inter-computer request and
@@ -526,9 +524,7 @@ public class FolderTreeWatcher
           {
             // Evict old path from registry; new path will be interned via FilePath.of() as needed
 
-            Consumer<FilePath> hook = evictionHook;
-            if (hook != null)
-              hook.accept(oldPathInfo.getFilePath());
+            nullSwitch(evictionHook, hook -> hook.accept(oldPathInfo.getFilePath()));
 
             HyperPath hyperPath = oldPathInfo.getHyperPath();
             boolean untrackedFile = ((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&

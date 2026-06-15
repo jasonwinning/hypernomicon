@@ -99,7 +99,7 @@ class KeywordLinkScannerTest
 
   private static void assertSameBindings(Collection<KeywordBinding> expected, Collection<KeywordBinding> actual)
   {
-    assertSameBindings(expected, actual, (String) null);
+    assertSameBindings(expected, actual, null);
   }
 
   private static void assertSameBindings(Collection<KeywordBinding> expected, Collection<KeywordBinding> actual, String message)

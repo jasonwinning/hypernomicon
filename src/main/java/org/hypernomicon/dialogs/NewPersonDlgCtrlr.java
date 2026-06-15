@@ -412,7 +412,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML @Override protected void btnCancelClick()
+  @Override protected void btnCancelClick()
   {
     stopDupThread();
     super.btnCancelClick();

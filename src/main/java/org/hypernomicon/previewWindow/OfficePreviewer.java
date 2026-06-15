@@ -17,8 +17,6 @@
 
 package org.hypernomicon.previewWindow;
 
-import static org.hypernomicon.App.app;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 
@@ -66,7 +64,7 @@ final class OfficePreviewer
 
     synchronized(LOCK)
     {
-      String officePath = app.prefs.get(PrefKey.OFFICE_PATH, "");
+      String officePath = getOfficeHome();
 
       if (officePath.isBlank())
       {
@@ -278,9 +276,6 @@ final class OfficePreviewer
 
           List<Integer> ports = new ArrayList<>();
           findAvailablePorts(1, ports);
-
-          if (IS_OS_MAC && officePath.toLowerCase().endsWith(".app"))  // Allow user to just select the app file
-            officePath = officePath + "/Contents";
 
           officeManager = LocalOfficeManager.builder().portNumbers(ports.getFirst())
                                                       .officeHome(officePath)

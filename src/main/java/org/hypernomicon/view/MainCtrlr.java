@@ -18,8 +18,8 @@
 package org.hypernomicon.view;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.query.GeneralQueries.*;
@@ -99,8 +99,6 @@ import org.jbibtex.TokenMgrException;
 
 import com.google.common.collect.EnumHashBiMap;
 
-import javafx.scene.input.*;
-
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.animation.FadeTransition;
@@ -118,6 +116,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.*;
@@ -132,7 +131,6 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML Tab tabOmniSelector;
   @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, midAnchorPane;
   @FXML private Button btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow, btnSave,
@@ -160,6 +158,8 @@ public final class MainCtrlr
   @FXML private TextField tfID, tfOmniGoTo, tfRecord;
   @FXML private ToggleButton btnPointerPreview, btnTextSearch;
   @FXML private ToolBar topToolBar;
+
+  @FXML Tab tabOmniSelector;
 
   @FXML public Label lblStatus;
   @FXML public Menu mnuFavorites, mnuQueries;
@@ -711,7 +711,7 @@ public final class MainCtrlr
       if ((record.getID() != newRecordID) && (newRecordID > 0) && (db.records(activeType()).getIDNdxByID(newRecordID) > -1))
         goToRecord(db.records(activeType()).getByID(newRecordID), true);
       else
-        tfID.setText(String.valueOf(activeRecord().getID()));
+        tfID.setText(String.valueOf(record.getID()));
     });
 
 //---------------------------------------------------------------------------
@@ -1782,9 +1782,11 @@ public final class MainCtrlr
       return;
     }
 
-    if (rootPath.toFile().list().length != 0)
+    String[] dirEntries = rootPath.toFile().list();
+
+    if ((dirEntries == null) || (dirEntries.length != 0))
     {
-      errorPopup("The selected folder is not empty.");
+      errorPopup(dirEntries == null ? "Unable to read the contents of the selected folder." : "The selected folder is not empty.");
       return;
     }
 
@@ -1888,6 +1890,13 @@ public final class MainCtrlr
       catch (IOException e)
       {
         errorPopup("Unable to create new database: " + getThrowableMessage(e));
+        close(false);
+        return false;
+      }
+
+      if (FilePath.isEmpty(srcFilePath))
+      {
+        errorPopup("Unable to create new database: the database template is missing its main file.");
         close(false);
         return false;
       }
@@ -2386,7 +2395,9 @@ public final class MainCtrlr
       return;
     }
 
-    if (queryHyperTab().getCurQueryCtrlr().inReportMode())
+    QueryCtrlr curQueryCtrlr = queryHyperTab().getCurQueryCtrlr();
+
+    if (curQueryCtrlr.inReportMode())
     {
       infoPopup("That menu option cannot be used to add a record to a report.");
       return;
@@ -2396,8 +2407,6 @@ public final class MainCtrlr
 
     if (record == null)
       return;
-
-    QueryCtrlr curQueryCtrlr = queryHyperTab().getCurQueryCtrlr();
 
     for (ResultRow row : curQueryCtrlr.results())
       if (row.getRecord() == record) return;
@@ -3255,9 +3264,12 @@ public final class MainCtrlr
       return;
     }
 
+    HDT_Record record = activeRecord();
+    if (record == null) return;
+
     DatasetAccessor<? extends HDT_Record> records = db.records(activeType());
 
-    int ndx = activeRecord().keyNdx() + (increment ? 1 : -1);
+    int ndx = record.keyNdx() + (increment ? 1 : -1);
     if ((ndx >= 0) && (ndx < records.size()))
       goToRecord(records.getByKeyNdx(ndx), true);
   }
@@ -3916,7 +3928,7 @@ public final class MainCtrlr
   private FadeTransition findToastFadeIn, findToastFadeOut;
   private PauseTransition findToastPause;
 
-  public void showToast(String message)
+  private void showToast(String message)
   {
     lblFindToast.setText(message);
     lblFindToast.setVisible(true);

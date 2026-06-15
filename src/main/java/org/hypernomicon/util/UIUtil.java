@@ -174,7 +174,7 @@ public final class UIUtil
     if (strNullOrBlank(str))
       return null;
 
-    Tooltip tooltip = new Tooltip(str); // Font size is set in css file
+    Tooltip tooltip = new Tooltip(str); // Font size is set in CSS file
 
     tooltip.setWrapText(true);
     tooltip.setMaxWidth(MAX_TOOLTIP_WIDTH);

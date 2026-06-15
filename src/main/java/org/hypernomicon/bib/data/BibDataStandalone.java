@@ -74,7 +74,6 @@ public abstract class BibDataStandalone extends BibData
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   @Override public final HDT_Work getWork()                                    { return null; }
   @Override public final BibAuthors getAuthors()                               { return authors; }

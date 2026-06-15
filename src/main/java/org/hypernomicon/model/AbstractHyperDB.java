@@ -228,7 +228,7 @@ public abstract class AbstractHyperDB
 
   public boolean runningConversion            = false,  // suppresses "modified date" updating
                  recordDeletionTestInProgress = false,  // suppresses file deletion prompts and mentions index building
-                 folderDeletionBypassEnabled  = true;   // skip resolvePointers/cleanupRelations for folder deletions
+                 folderDeletionBypassEnabled  = true;   // skip resolvePointers/cleanupRelations for folder deletions; should be true unless testing
 
 //---------------------------------------------------------------------------
   @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Record subject, HDT_Record object, boolean affirm); }
@@ -2796,7 +2796,7 @@ public abstract class AbstractHyperDB
 
 //---------------------------------------------------------------------------
 
-  public static Stream<String> recordXMLFileNames()
+  protected static Stream<String> recordXMLFileNames()
   {
     return Stream.of(OTHER_FILE_NAME,  PERSON_FILE_NAME,   INSTITUTION_FILE_NAME, INVESTIGATION_FILE_NAME,
                      DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,

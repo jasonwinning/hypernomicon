@@ -119,6 +119,7 @@ public final class PreviewWindow extends NonmodalWindow
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private PreviewWindow()
   {
@@ -440,6 +441,7 @@ public final class PreviewWindow extends NonmodalWindow
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static void setPreview(PreviewSource src, HDT_WorkFile workFile, HDT_Work work)
   {
@@ -447,12 +449,14 @@ public final class PreviewWindow extends NonmodalWindow
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static void setPreview(PreviewSource src, FilePath filePath)
   {
     setPreview(src, filePath, null);
   }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static void setPreview(PreviewSource src, FilePath filePath, HDT_Record record)
@@ -464,6 +468,7 @@ public final class PreviewWindow extends NonmodalWindow
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static void show(PreviewSource src, HDT_RecordWithPath record)
   {
@@ -471,6 +476,7 @@ public final class PreviewWindow extends NonmodalWindow
     show(src);
   }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static void setPreview(PreviewSource src, HDT_RecordWithPath record)
@@ -482,12 +488,14 @@ public final class PreviewWindow extends NonmodalWindow
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private static void setPreview(PreviewSource src, PreviewSetting setting)
   {
     setPreview(src, setting.filePath, setting.startPageNum, setting.endPageNum, setting.record);
   }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)

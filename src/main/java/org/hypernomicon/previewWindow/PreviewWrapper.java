@@ -29,7 +29,7 @@ import java.util.*;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSCommand;
+import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSOperation;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.util.file.FilePath;
 
@@ -122,9 +122,9 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
-  private void doneHndlr(PDFJSCommand cmd, boolean success, String errMessage)
+  private void doneHndlr(PDFJSOperation operation, boolean success, String errMessage)
   {
-    switch (cmd)
+    switch (operation)
     {
       case pjsOpen:
 
