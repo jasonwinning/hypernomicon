@@ -17,9 +17,12 @@
 
 package org.hypernomicon.previewWindow;
 
+import static org.hypernomicon.util.UIUtil.*;
+
 import org.hypernomicon.util.file.FilePath;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 
@@ -92,15 +95,7 @@ public class PreviewAltDisplayCtrlr
 
   private void setInfoIconVisible(boolean visible)
   {
-    if (visible)
-    {
-      if (lblMessage.getStyleClass().contains("dialog-pane") == false)
-        lblMessage.getStyleClass().add("dialog-pane");
-    }
-    else
-    {
-      lblMessage.getStyleClass().remove("dialog-pane");
-    }
+    setAlertIcon(lblMessage, visible ? AlertType.INFORMATION : null);
 
     progressBar.setVisible(visible == false);
   }

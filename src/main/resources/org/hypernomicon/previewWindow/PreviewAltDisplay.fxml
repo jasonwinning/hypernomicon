@@ -57,11 +57,6 @@
       <font>
         <Font size="14.0"/>
       </font>
-      <styleClass>
-        <String fx:value="alert"/>
-        <String fx:value="information"/>
-        <String fx:value="dialog-pane"/>
-      </styleClass>
     </Label>
     <ProgressBar fx:id="progressBar" layoutX="53.0" layoutY="126.0" prefHeight="25.0" prefWidth="469.0"
                  AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="51.0"/>

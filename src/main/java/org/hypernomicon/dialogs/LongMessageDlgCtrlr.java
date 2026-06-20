@@ -17,6 +17,8 @@
 
 package org.hypernomicon.dialogs;
 
+import static org.hypernomicon.util.UIUtil.*;
+
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -68,7 +70,7 @@ public class LongMessageDlgCtrlr extends ModalDialog
 
     if ((alertType != null) && (headerText != null))
     {
-      // Get the standard icon from a temporary Alert (icon goes on the right, like real Alerts)
+      // Standard alert icon, on the right like real Alerts
       Node graphic = getAlertGraphic(alertType);
       if (graphic != null)
         hboxHeader.getChildren().add(graphic);
@@ -82,18 +84,6 @@ public class LongMessageDlgCtrlr extends ModalDialog
     }
 
     taMessage.setText(text);
-  }
-
-//---------------------------------------------------------------------------
-
-  /**
-   * Extracts the standard graphic/icon from a JavaFX Alert of the given type.
-   */
-  private static Node getAlertGraphic(AlertType alertType)
-  {
-    Alert tempAlert = new Alert(alertType);
-    tempAlert.getDialogPane().applyCss();
-    return tempAlert.getDialogPane().getGraphic();
   }
 
 //---------------------------------------------------------------------------

@@ -777,6 +777,46 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns the standard JavaFX alert icon for {@code alertType} as a {@link Node}, extracted
+   * from a throwaway {@link Alert} after its CSS is applied. Use this when you need a portable
+   * icon node to drop into your layout (e.g. a custom dialog header).
+   * <p>
+   * To instead style an existing {@link Labeled} in place, see {@link #setAlertIcon(Labeled, AlertType)}.
+   * Both rely on the same modena.css alert-icon rules ({@code -fx-graphic} on
+   * {@code .alert.<type>.dialog-pane}), so a JavaFX upgrade that changes those selectors affects both.
+   */
+  public static Node getAlertGraphic(AlertType alertType)
+  {
+    Alert tempAlert = new Alert(alertType);
+    tempAlert.getDialogPane().applyCss();
+    return tempAlert.getDialogPane().getGraphic();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Renders the standard JavaFX alert icon for {@code alertType} directly on {@code node}, in
+   * place, by applying the {@code alert}, type-specific (e.g. {@code information}), and
+   * {@code dialog-pane} style classes that modena.css paints via {@code -fx-graphic}. Pass
+   * {@code null} to remove those classes (hiding the icon).
+   * <p>
+   * Because the icon comes from the {@code -fx-graphic} CSS property, this only works on nodes
+   * that support it ({@link Labeled} and DialogPane); a plain Region would get the classes but no
+   * icon. For a portable icon node instead, see {@link #getAlertGraphic(AlertType)}.
+   */
+  public static void setAlertIcon(Labeled node, AlertType alertType)
+  {
+    node.getStyleClass().removeAll("alert", "confirmation", "information", "warning", "error", "dialog-pane");
+
+    if (alertType != null)
+      node.getStyleClass().addAll("alert", alertType.name().toLowerCase(), "dialog-pane");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static FilePath   showDirDialog         (DirectoryChooser chooser) { return ui.windows.showDirDialog         (chooser); }
   public static FilePath   showOpenDialog        (FileChooser      chooser) { return ui.windows.showOpenDialog        (chooser); }
   public static FilePath   showSaveDialog        (FileChooser      chooser) { return ui.windows.showSaveDialog        (chooser); }
