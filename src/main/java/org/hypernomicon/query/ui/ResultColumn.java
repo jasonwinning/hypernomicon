@@ -151,7 +151,7 @@ class ResultColumn extends TableColumn<ResultRow, ResultCellValue>
 
   static class DateColumn extends ResultColumn { DateColumn(String caption, Function<HDT_Record, Instant> instantFunction)
   {
-    super(caption, cell -> cell.record == null ? Instant.MIN : nullSwitch(instantFunction.apply(cell.record), Instant.MIN));
+    super(caption, cell -> cell.record == null ? NO_DATE : nullSwitch(instantFunction.apply(cell.record), NO_DATE));
 
     Function<HDT_Record, Instant> getInstant = record -> (record == null) || (record.getType() == hdtNone) ? null : instantFunction.apply(record);
 

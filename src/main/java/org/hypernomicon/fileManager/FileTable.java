@@ -101,7 +101,11 @@ class FileTable extends DragNDropContainer<FileRow>
     nameCol.setComparator(FileRow::compareTo);
 
     modDateCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getModifiedDateCellValue()));
-    setTooltipCellFactory(modDateCol, item -> dateTimeToUserReadableStr((Instant) item.getValue(), true));
+    setTooltipCellFactory(modDateCol, item ->
+    {
+      Instant inst = (Instant) item.getValue();
+      return inst.equals(NO_DATE) ? "" : dateTimeToUserReadableStr(inst, true);
+    });
 
     typeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTypeString()));
     sizeCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getSizeCellValue()));

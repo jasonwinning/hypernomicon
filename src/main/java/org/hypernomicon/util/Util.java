@@ -280,6 +280,12 @@ public final class Util
 
   public static final Instant APP_GENESIS_INSTANT = parseIso8601("2012-08-03T06:00:00Z");
 
+  /** Sentinel {@link Instant} for an absent/unknown date: {@code Instant.MIN}, so missing values
+   *  sort as earliest. Producers return it when there is no real date (e.g. an unreadable file
+   *  mtime); consumers must treat it as "no date" and NOT format it for display, since applying a
+   *  time zone to a near-MIN instant overflows LocalDate and throws DateTimeException. */
+  public static final Instant NO_DATE = Instant.MIN;
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
