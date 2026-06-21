@@ -219,6 +219,34 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 
   /**
+   * Binds each node's {@code managed} property to its {@code visible} property, so hiding the node
+   * also drops it from the parent's layout (the gap collapses) and showing it restores the slot.
+   * Re-binding a node that is already bound to its own {@code visibleProperty} is a no-op, so this
+   * is safe to call repeatedly (e.g. from a method that runs on every refresh).
+   */
+  public static void bindManagedToVisible(Node... nodes)
+  {
+    bindManagedToVisible(Arrays.asList(nodes));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Binds every node in the given collection, for binding all children of a parent without enumerating them,
+   * e.g. {@code pane.getChildren()} or {@code toolBar.getItems()}. See {@link #bindManagedToVisible(Node...)}
+   * for the binding semantics.
+   */
+  public static void bindManagedToVisible(Iterable<? extends Node> nodes)
+  {
+    for (Node node : nodes)
+      node.managedProperty().bind(node.visibleProperty());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Deletes a specific row from the given {@link GridPane}, shifting all rows
    * below it up by one index and removing any nodes that were in the deleted row.
    * <p>

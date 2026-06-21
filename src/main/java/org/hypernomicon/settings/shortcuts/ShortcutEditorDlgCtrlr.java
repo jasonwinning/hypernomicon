@@ -63,6 +63,8 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
     this.existingShortcutsForConflictCheck = existingShortcutsForConflictCheck;
 
+    bindManagedToVisible(secondaryCheck, superCheck);  // platform-specific checkboxes collapse when hidden
+
     configurePlatformModifiers();
 
     SimpleSelector.init(cbKey, populateKeyChoices());
@@ -101,10 +103,8 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
         secondaryCheck.setText("⌃ Control");
         secondaryCheck.setVisible(true);
-        secondaryCheck.setManaged(true);
 
         superCheck.setVisible(false);
-        superCheck.setManaged(false);
         break;
 
       case LINUX:
@@ -114,11 +114,9 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
         shiftCheck.setText("Shift");
 
         secondaryCheck.setVisible(false);
-        secondaryCheck.setManaged(false);
 
         superCheck.setText("Super");
         superCheck.setVisible(true);
-        superCheck.setManaged(true);
         break;
 
       case WINDOWS:  // fall through
@@ -129,9 +127,7 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
         shiftCheck.setText("Shift");
 
         secondaryCheck.setVisible(false);
-        secondaryCheck.setManaged(false);
         superCheck.setVisible(false);
-        superCheck.setManaged(false);
         break;
     }
   }

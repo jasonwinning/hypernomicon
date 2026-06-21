@@ -63,9 +63,6 @@ public class NewQueryFavDlgCtrlr extends ModalDialog
     removeFromParent(btnRemove);
     removeFromParent(lblInfo);
 
-    btnRemove.setManaged(false);
-    lblInfo  .setManaged(false);
-
     onShown = this::sizeAndFocus;
   }
 

@@ -350,7 +350,7 @@
         <Label fx:id="lblStatus" prefHeight="17.0" prefWidth="423.0" text="No database is currently loaded." AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="4.0">
         </Label>
         <Label fx:id="lblFindToast" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" style="-fx-padding: 0em 1em 0em 1em;" styleClass="tooltip" text="Find within all fields" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-        <HBox alignment="CENTER" layoutX="1227.0" layoutY="27.0" prefHeight="22.0" spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="6.0">
+        <HBox fx:id="indexingStatusBox" alignment="CENTER" layoutX="1227.0" layoutY="27.0" prefHeight="22.0" spacing="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="6.0">
           <Label fx:id="lblProgress" alignment="CENTER_RIGHT" contentDisplay="RIGHT" nodeOrientation="LEFT_TO_RIGHT" text="Indexing:" textAlignment="RIGHT" />
           <ProgressBar fx:id="progressBar" prefHeight="17.0" prefWidth="77.0" progress="0.0" />
           <ImageView fx:id="ivDates" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">

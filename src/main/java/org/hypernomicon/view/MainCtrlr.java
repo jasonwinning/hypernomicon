@@ -139,7 +139,7 @@ public final class MainCtrlr
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpFindTable;
-  @FXML private HBox topHBox, bottomToolBar;
+  @FXML private HBox topHBox, bottomToolBar, indexingStatusBox;
   @FXML private ImageView ivDates;
   @FXML private Label lblProgress, lblFindToast;
   @FXML private Menu mnuFolders, mnuOpenRecent;
@@ -830,7 +830,8 @@ public final class MainCtrlr
     ctfOmniGoTo.widthProperty().addListener((obs, ov, nv) ->
       AnchorPane.setRightAnchor(gpFindTable, apFindBackground.getWidth() - (selectorTabPane.getLayoutX() + nv.doubleValue())));
 
-    noOp(SequentialLayoutWrapper.forPane(bottomToolBar));
+    bindManagedToVisible(bottomToolBar    .getChildren());
+    bindManagedToVisible(indexingStatusBox.getChildren());
 
     selectorTabPane.layoutXProperty().addListener((obs, ov, nv) -> AnchorPane.setLeftAnchor(lblFindToast, nv.doubleValue()));
     btnTextSearch  .layoutXProperty().addListener((obs, ov, nv) -> AnchorPane.setLeftAnchor(gpFindTable , nv.doubleValue()));

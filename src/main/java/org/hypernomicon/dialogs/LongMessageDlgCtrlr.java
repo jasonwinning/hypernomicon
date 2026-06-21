@@ -68,6 +68,8 @@ public class LongMessageDlgCtrlr extends ModalDialog
   {
     super("LongMessageDlg", title, true);
 
+    bindManagedToVisible(hboxHeader);
+
     if ((alertType != null) && (headerText != null))
     {
       // Standard alert icon, on the right like real Alerts
@@ -78,10 +80,7 @@ public class LongMessageDlgCtrlr extends ModalDialog
       lblHeaderText.setText(headerText);
     }
     else
-    {
       hboxHeader.setVisible(false);
-      hboxHeader.setManaged(false);
-    }
 
     taMessage.setText(text);
   }

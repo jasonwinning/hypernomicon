@@ -18,6 +18,7 @@
 package org.hypernomicon.tree;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
 
@@ -50,6 +51,8 @@ public class ChangeParentDlgCtrlr extends ModalDialog
   {
     super("tree/ChangeParentDlg", "Attach Record to New Parent", true, true);
 
+    bindManagedToVisible(vbMustDetach, vbOptionDetach, btnOnlyAttach, btnDetachAlso);
+
     String childTypeName     = getTypeName(dragTargetEdge.child .getType()),
            newParentTypeName = getTypeName(dragTargetEdge.parent.getType()),
            srcParentTypeName = getTypeName(dragSourceEdge.parent.getType());
@@ -67,7 +70,6 @@ public class ChangeParentDlgCtrlr extends ModalDialog
     if (otherEdgeToDetach == null)
     {
       vbMustDetach.setVisible(false);
-      vbMustDetach.setManaged(false);
     }
     else
     {
@@ -88,7 +90,6 @@ public class ChangeParentDlgCtrlr extends ModalDialog
       lblOptionDetach.setText("And will be detached from " + srcParentTypeName + " record:");
       tfOptionDetach.setText(dragSourceEdge.parent.name());
       btnOnlyAttach.setVisible(false);
-      btnOnlyAttach.setManaged(false);
       btnDetachAlso.setText("OK");
     }
     else if (canDetach == false)
@@ -96,9 +97,7 @@ public class ChangeParentDlgCtrlr extends ModalDialog
       // Cannot detach - hide the entire option section and "Yes, Detach Also" button
 
       vbOptionDetach.setVisible(false);
-      vbOptionDetach.setManaged(false);
       btnDetachAlso.setVisible(false);
-      btnDetachAlso.setManaged(false);
       btnOnlyAttach.setText("OK");
     }
     else

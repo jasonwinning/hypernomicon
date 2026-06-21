@@ -103,7 +103,7 @@ public final class BibManager extends NonmodalWindow
   @FXML private TableView<HyperTableRow> tvRelatives;
   @FXML private TextField tfSearch;
   @FXML private TitledPane tpRelated;
-  @FXML private ToolBar toolBar, toolBar2;
+  @FXML private ToolBar mainToolBar, searchToolBar;
   @FXML private TreeView<BibCollectionRow> treeView;
   @FXML private WebView webView;
 
@@ -116,7 +116,6 @@ public final class BibManager extends NonmodalWindow
   private final BibEntryTable entryTable;
   private final CollectionTree collTree;
   private final CustomTextField searchField;
-  private final SequentialLayoutWrapper toolBarWrapper;
 
   public static final Property<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
 
@@ -154,8 +153,8 @@ public final class BibManager extends NonmodalWindow
 
     searchField = setupSearchField();
 
-    toolBarWrapper = SequentialLayoutWrapper.forToolBar(toolBar);
-    toolBarWrapper.setVisible(false, btnUnassign, progressBar, btnDelete, btnPreviewWindow); // Latter 2 are not yet supported. (Not sure if the preview button is needed?)
+    bindManagedToVisible(mainToolBar.getItems());
+    setAllVisible(false, btnUnassign, progressBar, btnDelete, btnPreviewWindow); // Latter 2 are not yet supported. (Not sure if the preview button is needed?)
 
     btnAssign      .setOnAction(event -> assign  (tableView.getSelectionModel().getSelectedItem()));
     btnUnassign    .setOnAction(event -> unassign(tableView.getSelectionModel().getSelectedItem()));
@@ -327,8 +326,8 @@ public final class BibManager extends NonmodalWindow
 
     copyRegionLayout(tfSearch, ctf);
 
-    toolBar2.getItems().remove(tfSearch);
-    toolBar2.getItems().add(ctf);
+    searchToolBar.getItems().remove(tfSearch);
+    searchToolBar.getItems().add(ctf);
 
     ctf.textProperty().addListener((obs, ov, nv) -> entryTable.filter(nv, chkRequireByDefault.isSelected()));
 
@@ -507,7 +506,7 @@ public final class BibManager extends NonmodalWindow
     if (bibDataRetriever != null)
       bibDataRetriever.stop();
 
-    toolBarWrapper.setVisible(false, progressBar);
+    progressBar.setVisible(false);
 
     btnStop.setDisable(true);
     btnSync.setDisable(false);
@@ -527,7 +526,7 @@ public final class BibManager extends NonmodalWindow
 
     btnStop.setDisable(false);
     btnSync.setDisable(true);
-    toolBarWrapper.setVisible(true, progressBar);
+    progressBar.setVisible(true);
 
     BibEntry<?, ?> entry = tableView.getSelectionModel().getSelectedItem().getEntry();
 
@@ -873,11 +872,9 @@ public final class BibManager extends NonmodalWindow
     btnAutofill    .setDisable (row == null);
     btnViewInRefMgr.setDisable((row == null) || row.getURLtoViewEntryInRefMgr().isBlank());
 
-    toolBarWrapper.setVisibleNoUpdate((libraryWrapper != null) && (libraryWrapper.type() != LibraryType.ltMendeley), btnViewInRefMgr);
-    toolBarWrapper.setVisibleNoUpdate((row == null) || (row.getWork() == null), btnAssign  );
-    toolBarWrapper.setVisibleNoUpdate((row != null) && (row.getWork() != null), btnUnassign);
-
-    toolBarWrapper.update();
+    btnViewInRefMgr.setVisible((libraryWrapper != null) && (libraryWrapper.type() != LibraryType.ltMendeley));
+    btnAssign      .setVisible((row == null) || (row.getWork() == null));
+    btnUnassign    .setVisible((row != null) && (row.getWork() != null));
   }
 
 //---------------------------------------------------------------------------

@@ -184,6 +184,8 @@ public class MergeWorksDlgCtrlr extends ModalDialog
     addRow(bfDate);
     addRow(bfAuthors, destWork);
 
+    bindManagedToVisible(chkNewEntry);  // collapse its slot in hBox when hidden, instead of leaving a gap
+
     if ((db.bibLibraryIsLinked() == false) || (showNewEntry == false) || ((destWork != null) && (destWork.getBibEntryKey().isBlank() == false)) || HDT_Work.isUnenteredSet(destWork))
       chkNewEntry.setVisible(false);
     else

@@ -295,6 +295,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   static void updateWebButtons(Preferences node, String prefKey, int numDef, Button btn, SplitMenuButton smb, Function<String, EventHandler<ActionEvent>> eventHndlr)
   {
+    bindManagedToVisible(btn, smb);  // idempotent re-bind; collapses whichever of the pair is hidden instead of leaving a toolbar gap
+
     int count = node.getInt(prefKey + "Count", numDef);
 
     if (count > numDef)
