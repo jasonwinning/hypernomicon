@@ -37,8 +37,7 @@ import org.hypernomicon.util.StringUtil;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
-import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.*;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -175,7 +174,8 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
   @FXML private Button btnRevert;
   @FXML private CheckBox chkAddInitial, chkLowercase, chkPosix, chkTreatEdAsAuthor, chkYearLetter;
   @FXML private Label lblExample;
-  @FXML private TextField tfExample, tfMaxChar;
+  @FXML private Spinner<Integer> spnMaxChar;
+  @FXML private TextField tfExample;
   @FXML private VBox vbox;
   @FXML private TableView<HyperTableRow> tv;
 
@@ -224,7 +224,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     initCheckBox(db.prefs, chkPosix          , FileNamePrefKey.POSIX             , false, nv -> refreshExample());
     initCheckBox(db.prefs, chkLowercase      , FileNamePrefKey.LOWERCASE         , false, nv -> refreshExample());
 
-    initMaxChar(tfMaxChar, FileNamePrefKey.MAX_CHAR);
+    initMaxChar(spnMaxChar, FileNamePrefKey.MAX_CHAR);
 
     if (app.debugging == false)
       vbox.getChildren().remove(1, 3);
@@ -304,37 +304,12 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initMaxChar(TextField tf, String prefKey)
+  private void initMaxChar(Spinner<Integer> spinner, String prefKey)
   {
-    tf.setText(String.valueOf(db.prefs.getInt(prefKey, 255)));
-
-    tf.setTextFormatter(new TextFormatter<>(change ->
+    IntSpinnerWrapper.of(spinner, 14, 255, db.prefs.getInt(prefKey, 255), () ->
     {
-      if (change.getText().matches(".*[^0-9].*") && change.isAdded())
-        change.setText("");
-
-      return change;
-    }));
-
-    tf.textProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null) return;
-
-      int intVal = parseInt(newValue, -1);
-      if (intVal < 1)
-        intVal = 255;
-
-      if (intVal < 14)
-        intVal = 14;
-
-      db.prefs.putInt(prefKey, intVal);
+      db.prefs.putInt(prefKey, spinner.getValue());
       refreshExample();
-    });
-
-    tf.focusedProperty().addListener((obs, ov, nv) ->
-    {
-      if (Boolean.FALSE.equals(nv))
-        tf.setText(String.valueOf(db.prefs.getInt(prefKey, 255)));
     });
   }
 

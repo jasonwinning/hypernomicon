@@ -21,17 +21,11 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
 
-import org.hypernomicon.settings.WorkSearchKeySettings.CitationParenthesesOption;
-import org.hypernomicon.settings.WorkSearchKeySettings.FinalConjunctionSymbol;
-import org.hypernomicon.settings.WorkSearchKeySettings.WorkSearchKeyConfig;
+import org.hypernomicon.settings.WorkSearchKeySettings.*;
+import org.hypernomicon.view.wrappers.IntSpinnerWrapper;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 
 //---------------------------------------------------------------------------
 
@@ -41,12 +35,14 @@ public class WorkSearchKeyCtrlr extends Tab
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private CheckBox chkMultipleAuthors, chkSepAfterPenultimate;
+  @FXML private CheckBox chkMultipleAuthors, chkSepAfterPenultimate, chkNeverTruncate;
   @FXML TextArea taExamples;
-  @FXML private TextField tfBeforeYearSep, tfAfterNameSep, tfTruncateNum, tfTruncationIndicator, tfNumToShowWhenTruncating;
+  @FXML private Spinner<Integer> spnTruncateNum, spnNumToShowWhenTruncating;
+  @FXML private TextField tfBeforeYearSep, tfAfterNameSep, tfTruncationIndicator;
   @FXML private ToggleButton btnAroundAll, btnAroundYear, btnAnd, btnAmpersand;
   @FXML private ToggleGroup grpParen, grpConj;
 
+  private IntSpinnerWrapper truncateNumWrapper, numToShowWrapper;
   private WorkSearchKeysCtrlr settingsPage;
 
 //---------------------------------------------------------------------------
@@ -76,8 +72,8 @@ public class WorkSearchKeyCtrlr extends Tab
     grpConj .selectedToggleProperty().addListener((ob, ov, nv) -> refreshExamples());
     grpParen.selectedToggleProperty().addListener((ob, ov, nv) -> refreshExamples());
 
-    ArgumentNamingCtrlr.initTruncateNum  (tfTruncateNum            , keyConfig.authorNumToTruncate        , this::refreshExamples);
-    ArgumentNamingCtrlr.initAuthorsToShow(tfNumToShowWhenTruncating, keyConfig.authorsToShowWhenTruncating, this::refreshExamples);
+    truncateNumWrapper = ArgumentNamingCtrlr.initTruncateNum  (spnTruncateNum            , chkNeverTruncate, keyConfig.authorNumToTruncate        , this::refreshExamples);
+    numToShowWrapper   = ArgumentNamingCtrlr.initAuthorsToShow(spnNumToShowWhenTruncating,                   keyConfig.authorsToShowWhenTruncating, this::refreshExamples);
   }
 
 //---------------------------------------------------------------------------
@@ -85,8 +81,8 @@ public class WorkSearchKeyCtrlr extends Tab
 
   public WorkSearchKeyConfig save()
   {
-    String beforeYearSep = tfBeforeYearSep.getText(),
-           afterNameSep = tfAfterNameSep.getText(),
+    String beforeYearSep       = tfBeforeYearSep      .getText(),
+           afterNameSep        = tfAfterNameSep       .getText(),
            truncationIndicator = tfTruncationIndicator.getText();
 
     FinalConjunctionSymbol    finalConjSymbol = nullSwitch(grpConj .getSelectedToggle(), FinalConjunctionSymbol   .none, Map.of(btnAnd      , FinalConjunctionSymbol   .and      , btnAmpersand , FinalConjunctionSymbol   .ampersand )::get);
@@ -95,13 +91,8 @@ public class WorkSearchKeyCtrlr extends Tab
     boolean multipleAuthors = chkMultipleAuthors    .isSelected(),
             oxfordSeparator = chkSepAfterPenultimate.isSelected();
 
-    int authorNumToTruncate = parseInt(tfTruncateNum.getText(), -1);
-    if (authorNumToTruncate < 2)
-      authorNumToTruncate = -1;
-
-    int authorsToShowWhenTruncating = parseInt(tfNumToShowWhenTruncating.getText(), -1);
-    if (authorsToShowWhenTruncating < 1)
-      authorsToShowWhenTruncating = 2;
+    int authorNumToTruncate         = truncateNumWrapper.getValue(),
+        authorsToShowWhenTruncating = numToShowWrapper  .getValue();
 
     return new WorkSearchKeyConfig(beforeYearSep, afterNameSep, truncationIndicator, multipleAuthors, oxfordSeparator, finalConjSymbol, parentheses, authorNumToTruncate, authorsToShowWhenTruncating);
   }

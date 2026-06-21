@@ -24,6 +24,7 @@ import java.util.*;
 
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsControl;
 import org.hypernomicon.settings.WorkSearchKeySettings.FinalConjunctionSymbol;
+import org.hypernomicon.view.wrappers.IntSpinnerWrapper;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -37,11 +38,14 @@ public class ArgumentNamingCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private CheckBox chkLowerCaseTargetNames, chkMultipleAuthors, chkOxfordComma;
+  @FXML private CheckBox chkLowerCaseTargetNames, chkMultipleAuthors, chkOxfordComma, chkNeverTruncate;
+  @FXML private Spinner<Integer> spnTruncateNum, spnNumToShowWhenTruncating;
   @FXML private TextArea taExamples;
-  @FXML private TextField tfTruncateNum, tfTruncationIndicator, tfNumToShowWhenTruncating;
+  @FXML private TextField tfTruncationIndicator;
   @FXML private ToggleButton btnAnd, btnAmpersand;
   @FXML private ToggleGroup grpConj;
+
+  private IntSpinnerWrapper truncateNumWrapper, numToShowWrapper;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -64,8 +68,8 @@ public class ArgumentNamingCtrlr implements SettingsControl
 
     tfTruncationIndicator.textProperty().addListener((ob, ov, nv) -> refreshExamples());
 
-    initTruncateNum  (tfTruncateNum            , settings.authorNumToTruncate        , this::refreshExamples);
-    initAuthorsToShow(tfNumToShowWhenTruncating, settings.authorsToShowWhenTruncating, this::refreshExamples);
+    truncateNumWrapper = initTruncateNum  (spnTruncateNum            , chkNeverTruncate, settings.authorNumToTruncate        , this::refreshExamples);
+    numToShowWrapper   = initAuthorsToShow(spnNumToShowWhenTruncating,                   settings.authorsToShowWhenTruncating, this::refreshExamples);
 
     grpConj.selectToggle(Map.of(FinalConjunctionSymbol.and, btnAnd, FinalConjunctionSymbol.ampersand, btnAmpersand).getOrDefault(settings.finalConjSymbol, null));
 
@@ -92,18 +96,13 @@ public class ArgumentNamingCtrlr implements SettingsControl
     String truncationIndicator = tfTruncationIndicator.getText();
 
     boolean lowerCaseTargetNames = chkLowerCaseTargetNames.isSelected(),
-            multipleAuthors = chkMultipleAuthors.isSelected(),
-            oxfordSeparator = chkOxfordComma.isSelected();
+            multipleAuthors      = chkMultipleAuthors     .isSelected(),
+            oxfordSeparator      = chkOxfordComma         .isSelected();
 
     FinalConjunctionSymbol finalConjSymbol = nullSwitch(grpConj.getSelectedToggle(), FinalConjunctionSymbol.none, Map.of(btnAnd, FinalConjunctionSymbol.and, btnAmpersand, FinalConjunctionSymbol.ampersand )::get);
 
-    int authorNumToTruncate = parseInt(tfTruncateNum.getText(), -1);
-    if (authorNumToTruncate < 2)
-      authorNumToTruncate = -1;
-
-    int authorsToShowWhenTruncating = parseInt(tfNumToShowWhenTruncating.getText(), -1);
-    if (authorsToShowWhenTruncating < 1)
-      authorsToShowWhenTruncating = 2;
+    int authorNumToTruncate         = truncateNumWrapper.getValue(),
+        authorsToShowWhenTruncating = numToShowWrapper  .getValue();
 
     return new ArgumentNamingSettings(truncationIndicator, lowerCaseTargetNames, multipleAuthors, oxfordSeparator, finalConjSymbol, authorNumToTruncate, authorsToShowWhenTruncating);
   }
@@ -137,70 +136,22 @@ public class ArgumentNamingCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void initAuthorsToShow(TextField tf, int startVal, Runnable refreshHandler)
+  static IntSpinnerWrapper initAuthorsToShow(Spinner<Integer> spinner, int startVal, Runnable refreshHandler)
   {
-    if (startVal < 1) startVal = 1;
-    tf.setText(String.valueOf(startVal));
-
-    tf.setTextFormatter(new TextFormatter<>(change ->
-    {
-      if (change.getText().matches(".*[^0-9].*") && change.isAdded())
-        change.setText("");
-
-      return change;
-    }));
-
-    tf.textProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null) return;
-
-      refreshHandler.run();
-    });
-
-    tf.focusedProperty().addListener((obs, ov, nv) ->
-    {
-      if (Boolean.FALSE.equals(nv))
-      {
-        int intVal = parseInt(tf.getText(), 2);
-        if (intVal < 1)
-          intVal = 2;
-
-        tf.setText(String.valueOf(intVal));
-      }
-    });
+    return IntSpinnerWrapper.of(spinner, 1, 99, startVal < 1 ? 2 : startVal, refreshHandler);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void initTruncateNum(TextField tf, int startVal, Runnable refreshHandler)
+  /**
+   * Wires the author-truncation threshold to a spinner paired with a "Never" checkbox: checking the box
+   * disables the spinner and represents the "never truncate" state (the {@code -1} sentinel). The spinner
+   * retains its last numeric value while disabled, so unchecking the box restores a sensible threshold.
+   */
+  static IntSpinnerWrapper initTruncateNum(Spinner<Integer> spinner, CheckBox chkNever, int startVal, Runnable refreshHandler)
   {
-    tf.setText(startVal > 1 ? String.valueOf(startVal) : "");
-
-    tf.setTextFormatter(new TextFormatter<>(change ->
-    {
-      if (change.getText().matches(".*[^0-9].*") && change.isAdded())
-        change.setText("");
-
-      return change;
-    }));
-
-    tf.textProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null) return;
-
-      refreshHandler.run();
-    });
-
-    tf.focusedProperty().addListener((obs, ov, nv) ->
-    {
-      if (Boolean.FALSE.equals(nv))
-      {
-        int intVal = parseInt(tf.getText(), -1);
-        if (intVal < 2)
-          tf.setText("");
-      }
-    });
+    return IntSpinnerWrapper.withNone(spinner, 2, 99, startVal < 2 ? 3 : startVal, chkNever, -1, startVal < 2, refreshHandler);
   }
 
 //---------------------------------------------------------------------------
