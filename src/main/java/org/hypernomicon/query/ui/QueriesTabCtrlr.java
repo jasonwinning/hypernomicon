@@ -20,6 +20,7 @@ package org.hypernomicon.query.ui;
 import java.io.IOException;
 import java.util.*;
 
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
@@ -318,20 +319,95 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         sourceRecords.add(recordWithPath);
     }
 
-    // Include edited works: the user explicitly selected these records
+    // Default to excluding edited works (the checkbox starts unchecked); the user can opt in.
+    // If excluding leaves nothing to search but the records do have edited-work files, fall
+    // back to including them (and start the checkbox checked) rather than blocking the search.
 
-    SearchResultFileList scopeList = new SearchResultFileList(false, true);
-    sourceRecords.forEach(scopeList::addRecord);
+    boolean includeEdited = false;
+    SearchResultFileList scopeList = buildScopeList(sourceRecords, false);
 
     if (scopeList.getPathScope().isEmpty())
     {
-      errorPopup("No indexable files found in the query results.");
-      return;
+      SearchResultFileList withEdited = buildScopeList(sourceRecords, true);
+
+      if (withEdited.getPathScope().isEmpty())
+      {
+        errorPopup("No indexable files found in the query results.");
+        return;
+      }
+
+      scopeList = withEdited;
+      includeEdited = true;
     }
 
-    goToNewFTSTab().setRecordScope(scopeList, sourceRecords);
+    goToNewFTSTab().setRecordScope(scopeList, sourceRecords, null, includeEdited);
 
     scopeList.showErrors();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void searchWithinFolder(FilePath folderPath)
+  {
+    goToNewFTSTab().setFolderScope(folderPath);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void searchWithinFile(FilePath filePath)
+  {
+    goToNewFTSTab().setFileScope(filePath);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether the record maps to at least one existing, indexable file; this is the
+   * same file set that {@link #searchWithinRecordFiles(HDT_RecordWithPath)} would
+   * scope the search to. Lets callers validate before navigating to this tab.
+   */
+  public static boolean recordHasIndexableFiles(HDT_RecordWithPath record)
+  {
+    return scopeListForRecord(record).getPathScope().isEmpty() == false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Opens a new FTS tab scoped to the files associated with the given record,
+   * the same way searchWithinFiles scopes to the records in the query results.
+   */
+  public void searchWithinRecordFiles(HDT_RecordWithPath record)
+  {
+    // Include edited works: the user explicitly selected this record
+
+    SearchResultFileList scopeList = scopeListForRecord(record);
+
+    goToNewFTSTab().setRecordScope(scopeList, List.of(record), "By selected record", true);
+
+    scopeList.showErrors();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static SearchResultFileList scopeListForRecord(HDT_RecordWithPath record)
+  {
+    return buildScopeList(List.of(record), true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static SearchResultFileList buildScopeList(List<HDT_RecordWithPath> records, boolean includeEdited)
+  {
+    SearchResultFileList scopeList = new SearchResultFileList(false, includeEdited);
+    records.forEach(scopeList::addRecord);
+    return scopeList;
   }
 
 //---------------------------------------------------------------------------

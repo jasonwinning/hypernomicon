@@ -278,6 +278,21 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
+   * Whether the given file has been successfully indexed and has searchable content.
+   * Returns false for files the indexer tracks but has no content for (extraction
+   * failed, was abandoned, or yielded no text) and whenever the index is not queryable.
+   */
+  public boolean isFileIndexed(FilePath filePath)
+  {
+    if ((isQueryable() == false) || (dbRoot == null)) return false;
+
+    return nullSwitch(metadataMap.get(relativePath(filePath)), false, entry -> entry.status() == INDEXED);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Returns a formatted string of index statistics for display.
    */
   public String getStatistics()

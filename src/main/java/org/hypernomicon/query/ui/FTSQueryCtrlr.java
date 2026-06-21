@@ -1393,16 +1393,62 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setRecordScope(SearchResultFileList scopeList, List<HDT_RecordWithPath> sourceRecords)
+  /**
+   * @param radioCaption replacement caption for the scope radio button, describing where
+   * the scope came from; null keeps the default ("By record query results")
+   * @param includeEdited initial state of the "Include edited works" checkbox; must match
+   * the includeEdited value the caller built {@code scopeList} with so the checkbox and the
+   * displayed file set agree
+   */
+  void setRecordScope(SearchResultFileList scopeList, List<HDT_RecordWithPath> sourceRecords, String radioCaption, boolean includeEdited)
   {
-    recordScopeList = scopeList;
     recordScopeRecords = sourceRecords;
 
+    // Reflect how the caller built the scope list so the checkbox and the displayed file set
+    // agree. Setting this may fire the listener (rebuildRecordScope); assigning recordScopeList
+    // afterward keeps the caller's list authoritative.
+
+    chkIncludeEdited.setSelected(includeEdited);
+
+    recordScopeList = scopeList;
+
     lblRecordScope.setText(scopeList.getSummary());
+
+    if (radioCaption != null)
+      rbRecordScope.setText(radioCaption);
 
     disableAllIff(false, rbRecordScope, chkIncludeEdited);
     setAllVisible(true , rbRecordScope, btnViewScope);
     rbRecordScope.setSelected(true);
+
+    Platform.runLater(tfQuery::requestFocus);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Scopes the search to a single file. Reuses the record-scope path filtering
+   * mechanism with a one-file scope list; "Include edited works" is hidden because
+   * it only applies when the scope came from record query results.
+   */
+  void setFileScope(FilePath filePath)
+  {
+    SearchResultFileList scopeList = new SearchResultFileList(false, true);
+    scopeList.addFilePath(filePath);
+
+    recordScopeList = scopeList;
+    recordScopeRecords = null;
+
+    FilePath relPath = db.getRootPath().relativize(filePath);
+    lblRecordScope.setText((relPath != null ? relPath : filePath).toString());
+
+    rbRecordScope.setText("Single file");
+    rbRecordScope.setDisable(false);
+    setAllVisible(false, chkIncludeEdited);
+    rbRecordScope.setSelected(true);
+
+    Platform.runLater(tfQuery::requestFocus);
   }
 
 //---------------------------------------------------------------------------

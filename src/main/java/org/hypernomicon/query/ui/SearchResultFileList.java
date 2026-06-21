@@ -292,9 +292,9 @@ class SearchResultFileList
 //---------------------------------------------------------------------------
 
   /**
-   * Adds a single file with no page bounds. Used for FTS result rows and for
-   * single-file record types (misc files, work files), each of which maps to
-   * exactly one file.
+   * Adds a single file with no page bounds (page range spanning the whole file).
+   * For callers that already have one specific file to add, as opposed to a
+   * record that may resolve to several files or page ranges (contrast {@link #addRecord}).
    */
   void addFilePath(FilePath filePath)
   {

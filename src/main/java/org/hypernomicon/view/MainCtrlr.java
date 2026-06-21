@@ -150,7 +150,7 @@ public final class MainCtrlr
   @FXML private MenuItem mnuAddToQueryResults, mnuChangeID, mnuCloseDatabase, mnuExitNoSave, mnuFindNextAll, mnuFindNextInName,
                          mnuFindPreviousAll, mnuFindPreviousInName, mnuFindWithinAnyField, mnuFindWithinName, mnuImportBibClipboard,
                          mnuImportBibFile, mnuNewRank, mnuVideos, mnuRecordSelect, mnuRevertToXmlVersion, mnuSaveReloadAll,
-                         mnuToggleFavorite, mnuImportWork, mnuImportFile, mnuChangeFieldOrder, mnuChangeRankOrder,
+                         mnuSearchWithinRecordFiles, mnuToggleFavorite, mnuImportWork, mnuImportFile, mnuChangeFieldOrder, mnuChangeRankOrder,
                          mnuChangeCountryOrder, mnuChangePersonStatusOrder, mnuChangeFileTypeOrder, mnuChangeWorkTypeOrder,
                          mnuChangeArgVerdictOrder, mnuChangePosVerdictOrder, mnuChangeInstitutionTypeOrder, mnuTestConsole;
 
@@ -1556,7 +1556,8 @@ public final class MainCtrlr
 
     enableAllIff(enabled, mnuCloseDatabase,      mnuImportWork,     mnuImportFile,         mnuExitNoSave, mnuChangeID,      mnuChangeFieldOrder.getParentMenu(),
                           mnuImportBibClipboard, mnuImportBibFile,  mnuRevertToXmlVersion, btnFileMgr,    btnBibMgr,        mnuNewRank.getParentMenu(),
-                          btnPreviewWindow,      btnMentions,       btnMentionsPlain,      btnSaveAll,    mnuSaveReloadAll, mnuAddToQueryResults);
+                          btnPreviewWindow,      btnMentions,       btnMentionsPlain,      btnSaveAll,    mnuSaveReloadAll, mnuSearchWithinRecordFiles,
+                          mnuAddToQueryResults);
     if (disabled)
       tree().clear();
 
@@ -2351,6 +2352,8 @@ public final class MainCtrlr
     btnMentions     .setVisible(ftsEnabled);
     btnMentionsPlain.setVisible(ftsEnabled == false);
 
+    mnuSearchWithinRecordFiles.setVisible(ftsEnabled);
+
     queryHyperTab().updateFtsToolbar();
     updateFTSIndicator();
   }
@@ -2513,8 +2516,6 @@ public final class MainCtrlr
     HDT_Record record = activeRecord();
     if (record == null) return;
 
-    windows.focusStage(getStage());
-
     if (prepareToShowQuery() == false) return;
 
     String searchKey = record.getSearchKey();
@@ -2614,6 +2615,39 @@ public final class MainCtrlr
       if (row.getRecord() == record) return;
 
     curQueryCtrlr.addRecord(record, true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void mnuSearchWithinRecordFilesClick()
+  {
+    if (db.isOffline())
+    {
+      errorPopup("No database is currently loaded.");
+      return;
+    }
+
+    HDT_Record record = getSelectedRecordAskIfNeeded();
+
+    if (record == null)
+      return;
+
+    if (record instanceof HDT_RecordWithPath recordWithPath)
+    {
+      if (recordHasIndexableFiles(recordWithPath) == false)
+      {
+        errorPopup("No indexable files are associated with this record.");
+        return;
+      }
+
+      if (prepareToShowQuery())
+        queryHyperTab().searchWithinRecordFiles(recordWithPath);
+    }
+    else
+    {
+      errorPopup("Records of type \"" + getTypeName(record.getType()) + "\" do not have files associated with them.");
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -3472,19 +3506,47 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private boolean prepareToShowQuery()
+  {
+    return prepareToShowQuery(false);
+  }
+
   /**
    * Saves the current record (if any) and advances to a fresh query view, so a new
    * record search or full-text search can be shown in the Queries tab.
    *
+   * @param focusWindow if true, brings the main window to the front (for searches
+   *                    initiated from another window, e.g. the File Manager)
    * @return false if the active record could not be saved (the query tab should not open)
    */
-  private boolean prepareToShowQuery()
+  private boolean prepareToShowQuery(boolean focusWindow)
   {
     if (cantSaveRecord()) return false;
+
+    if (focusWindow)
+      windows.focusStage(getStage());
 
     viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(queryHyperTab().newView(queryHyperTab().activeRecord()));
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void showFTSForFolder(FilePath folderPath)
+  {
+    if (prepareToShowQuery(true))
+      queryHyperTab().searchWithinFolder(folderPath);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void showFTSForFile(FilePath filePath)
+  {
+    if (prepareToShowQuery(true))
+      queryHyperTab().searchWithinFile(filePath);
   }
 
 //---------------------------------------------------------------------------

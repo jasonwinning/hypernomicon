@@ -147,6 +147,15 @@ public final class FileManager extends NonmodalWindow
     fileTable.addContextMenuItem("Launch", Predicate.not(FileRow::isDirectory), fileRow -> launchFile(fileRow.getFilePath()));
     fileTable.addContextMenuItem("Show in system explorer", fileRow -> highlightFileInExplorer(fileRow.getFilePath()));
     fileTable.addContextMenuItem("Copy path to clipboard", fileRow -> copyToClipboard(fileRow.getFilePath().toString()));
+
+    fileTable.addContextMenuItem("Search file contents...", FileManager::canSearchFileContents, fileRow ->
+    {
+      if (fileRow.isDirectory())
+        ui.showFTSForFolder(fileRow.getFilePath());
+      else
+        ui.showFTSForFile(fileRow.getFilePath());
+    });
+
     fileTable.addContextMenuItem("Rename", this::rename);
 
     fileTable.addContextMenuItem("Assign to new Misc. File record", fileRow -> fileRow.getRecord() == null, fileRow ->
@@ -227,6 +236,21 @@ public final class FileManager extends NonmodalWindow
     setToolTip(btnRefresh      , "Refresh");
     setToolTip(btnMainWindow   , "Return to main application window");
     setToolTip(btnPreviewWindow, "View selected record/file in Preview Window");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether the "Search file contents..." context menu item should be shown for this row.
+   * Folders qualify whenever FTS is enabled; files qualify only if they have actually
+   * been indexed with searchable content.
+   */
+  private static boolean canSearchFileContents(FileRow fileRow)
+  {
+    return fileRow.isDirectory()
+      ? db.ftsEnabledOnThisComputer()
+      : nullSwitch(db.getFullTextIndexer(), false, indexer -> indexer.isFileIndexed(fileRow.getFilePath()));
   }
 
 //---------------------------------------------------------------------------
