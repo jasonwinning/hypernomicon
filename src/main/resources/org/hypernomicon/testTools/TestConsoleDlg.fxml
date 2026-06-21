@@ -159,6 +159,57 @@
                 AnchorPane.topAnchor="37.0"/>
       </AnchorPane>
     </Tab>
+    <Tab closable="false" text="FTS Diagnostics">
+      <AnchorPane>
+        <Label text="Source file:" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="10.0"/>
+        <TextField fx:id="tfFtsDiagPath" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
+                   AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="270.0" AnchorPane.topAnchor="7.0"/>
+        <Button mnemonicParsing="false" onAction="#btnFtsDiagBrowseClick"
+                prefHeight="25.0" text="..." AnchorPane.rightAnchor="235.0" AnchorPane.topAnchor="7.0"/>
+        <Button mnemonicParsing="false" onAction="#btnFtsDiagConvertClick"
+                prefHeight="25.0" text="Convert" AnchorPane.rightAnchor="165.0" AnchorPane.topAnchor="7.0"/>
+        <Button mnemonicParsing="false" onAction="#btnFtsDiagShowConvertedClick"
+                prefHeight="25.0" text="Show Converted" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="7.0"/>
+        <Label fx:id="lblFtsDiagConvertedPath" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="35.0"
+               AnchorPane.rightAnchor="14.0"/>
+        <Label text="Query:" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="58.0"/>
+        <TextField fx:id="tfFtsDiagQuery" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
+                   prefWidth="300.0" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="55.0"/>
+        <Button mnemonicParsing="false" onAction="#btnFtsDiagExtractClick"
+                prefHeight="25.0" text="Extract &amp; Search" AnchorPane.leftAnchor="400.0" AnchorPane.topAnchor="55.0"/>
+        <Button mnemonicParsing="false" onAction="#btnFtsDiagExportClick"
+                prefHeight="25.0" text="Export" AnchorPane.leftAnchor="530.0" AnchorPane.topAnchor="55.0"/>
+        <Label fx:id="lblFtsDiagStatus" AnchorPane.leftAnchor="590.0" AnchorPane.topAnchor="58.0"
+               AnchorPane.rightAnchor="14.0"/>
+        <SplitPane orientation="VERTICAL" dividerPositions="0.6"
+                   AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0"
+                   AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="85.0">
+          <SplitPane dividerPositions="0.5">
+            <VBox>
+              <Label text="Tika extraction (normalized)" style="-fx-font-weight: bold;"/>
+              <TextArea fx:id="taFtsDiagTika" editable="false" wrapText="true" VBox.vgrow="ALWAYS"
+                        style="-fx-font-family: monospace;"/>
+            </VBox>
+            <VBox>
+              <Label text="pdf.js extraction (normalized)" style="-fx-font-weight: bold;"/>
+              <TextArea fx:id="taFtsDiagPdfJS" editable="false" wrapText="true" VBox.vgrow="ALWAYS"
+                        style="-fx-font-family: monospace;"/>
+            </VBox>
+          </SplitPane>
+          <TableView fx:id="tvFtsDiagMatches" prefHeight="150.0">
+            <columns>
+              <TableColumn fx:id="colFtsDiagNdx" prefWidth="40.0" text="#"/>
+              <TableColumn fx:id="colFtsDiagTikaOffset" text="Tika Offset"/>
+              <TableColumn fx:id="colFtsDiagTikaNormOffset" prefWidth="90.0" text="Tika Norm Pos"/>
+              <TableColumn fx:id="colFtsDiagTikaSnippet" prefWidth="180.0" text="Tika Snippet"/>
+              <TableColumn fx:id="colFtsDiagPdfPage" prefWidth="60.0" text="PDF Page"/>
+              <TableColumn fx:id="colFtsDiagPdfNormOffset" prefWidth="90.0" text="PDF Norm Pos"/>
+              <TableColumn fx:id="colFtsDiagPdfSnippet" prefWidth="180.0" text="PDF Snippet"/>
+            </columns>
+          </TableView>
+        </SplitPane>
+      </AnchorPane>
+    </Tab>
     <Tab closable="false" text="PDF Extraction">
       <AnchorPane>
         <Label text="File 1" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="7.0"/>

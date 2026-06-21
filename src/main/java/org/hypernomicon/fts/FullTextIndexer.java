@@ -2654,16 +2654,18 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
-   * Searches extracted text from a converted PDF using a temporary in-memory Lucene index.
-   * This ensures identical search semantics to the main index. The text and page offsets
-   * come from pdf.js extraction of the converted PDF (not Tika extraction of the original).
+   * Searches extracted text using a temporary in-memory Lucene index, which guarantees
+   * identical search semantics to the main index. Used for pdf.js-extracted converted-PDF
+   * text (with page offsets, so hits carry page numbers) and, by the FTS diagnostics tab,
+   * for raw Tika text (pass null pageOffsets when the text has no page structure).
    *
-   * @param extractedText the full text extracted from the converted PDF
-   * @param pageOffsets   page boundary offsets (same format as the main index)
+   * @param extractedText the full text to search
+   * @param pageOffsets   page boundary offsets (same format as the main index), or null if
+   *                      the text has no page structure (matches then carry no page number)
    * @param query         the query to run (same query used for the main search)
-   * @return list of PageMatch results with offsets aligned to the converted PDF, or empty list on error
+   * @return list of PageMatch results with offsets aligned to extractedText, or empty list on error
    */
-  public static List<SearchResult.PageMatch> searchConvertedPdf(String extractedText, int[] pageOffsets, Query query)
+  public static List<SearchResult.PageMatch> searchExtractedText(String extractedText, int[] pageOffsets, Query query)
   {
     if ((extractedText == null) || (query == null)) return List.of();
 

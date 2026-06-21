@@ -328,7 +328,7 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
 
     // Search the converted PDF's text using a temporary in-memory Lucene index
 
-    List<PageMatch> convertedMatches = FullTextIndexer.searchConvertedPdf(extraction.text(), extraction.pageOffsets(), query);
+    List<PageMatch> convertedMatches = FullTextIndexer.searchExtractedText(extraction.text(), extraction.pageOffsets(), query);
 
     if (keyLookup != null)
       convertedMatches = rescanHitRanges(convertedMatches, keyLookup);
@@ -353,7 +353,7 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
     // converted PDF as-is, including LibreOffice's per-page header text, so
     // its textDivs concatenate to the raw extraction text. The match offsets
     // in convertedMatches are also in raw-text coordinates (we passed
-    // extraction.text()/extraction.pageOffsets() to searchConvertedPdf above).
+    // extraction.text()/extraction.pageOffsets() to searchExtractedText above).
     // Using adjustedPageOffsets here would introduce a per-page drift equal
     // to the cumulative header strip, eventually exceeding page-text length
     // and causing applyHitsToPage to drop hits silently.

@@ -368,12 +368,35 @@ public final class FTSUtil
     int tikaNormPos = tikaReverseMap[tikaAbsOffset];
     if (tikaNormPos < 0) return -1;
 
-    // Try progressively shorter context windows. The full 80-char window can span
-    // footnote boundaries or injected page numbers where Tika and pdf.js text diverge.
-    // Shorter windows are more likely to match while still being unique enough.
+    int normHitPos = findPdfNormPos(tikaNormPos, tikaNormText, convertedPdfNormText, convertedPdfPosMap.size());
 
+    if (normHitPos >= 0)
+      return pageForPdfNormPos(normHitPos, convertedPdfPosMap, convertedPdfPageOffsets);
+
+    // Last resort: estimate the page from the proportional position in the document
+
+    int estimatedNormPos = (int) (((double) tikaNormPos / tikaNormText.length()) * convertedPdfPosMap.size());
+
+    return ((estimatedNormPos >= 0) && (estimatedNormPos < convertedPdfPosMap.size()))
+      ? pageForPdfNormPos(estimatedNormPos, convertedPdfPosMap, convertedPdfPageOffsets)
+      : -1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Finds the normalized-PDF position best matching a normalized-Tika position. Tries
+   * progressively shorter context windows around {@code tikaNormPos} (the widest can span
+   * footnote boundaries or injected page numbers where the two extractions diverge) and,
+   * among multiple occurrences, picks the one closest to the proportional position in the
+   * document. Returns a position in {@code [0, posMapSize)} (so it maps to a page via
+   * {@link #pageForPdfNormPos}), or -1 if no mappable match is found.
+   */
+  public static int findPdfNormPos(int tikaNormPos, String tikaNormText, String pdfNormText, int posMapSize)
+  {
     double proportionalPos = (double) tikaNormPos / tikaNormText.length();
-    int expectedPdfNormPos = (int) (proportionalPos * convertedPdfNormText.length());
+    int expectedPdfNormPos = (int) (proportionalPos * pdfNormText.length());
 
     for (int halfWidth : new int[] { 40, 20, 10 })
     {
@@ -383,15 +406,14 @@ public final class FTSUtil
 
       if (context.length() < 5) continue;
 
-      // Search for context; if multiple occurrences, pick the one closest to
-      // the proportional position in the document
+      // Among multiple occurrences, pick the one closest to the proportional position
 
       int bestPos = -1, bestDist = Integer.MAX_VALUE,
           searchFrom = 0;
 
       while (true)
       {
-        int pos = convertedPdfNormText.indexOf(context, searchFrom);
+        int pos = pdfNormText.indexOf(context, searchFrom);
         if (pos < 0) break;
 
         int dist = Math.abs(pos - expectedPdfNormPos);
@@ -406,34 +428,30 @@ public final class FTSUtil
 
       if (bestPos < 0) continue;
 
-      // Map normalized PDF position back to original PDF text position
-
       int normHitPos = bestPos + (tikaNormPos - ctxStart);
 
-      if ((normHitPos < 0) || (normHitPos >= convertedPdfPosMap.size())) continue;
-
-      int origPdfPos = convertedPdfPosMap.get(normHitPos);
-
-      for (int pageNdx = convertedPdfPageOffsets.length - 1; pageNdx >= 0; pageNdx--)
-        if (origPdfPos >= convertedPdfPageOffsets[pageNdx])
-          return pageNdx + 1;  // 1-based page number
-
-      return 1;
-    }
-
-    // Last resort: estimate page from proportional position
-
-    int estimatedOrigPos = (int) (proportionalPos * convertedPdfPosMap.size());
-    if ((estimatedOrigPos >= 0) && (estimatedOrigPos < convertedPdfPosMap.size()))
-    {
-      int origPos = convertedPdfPosMap.get(estimatedOrigPos);
-
-      for (int pageNdx = convertedPdfPageOffsets.length - 1; pageNdx >= 0; pageNdx--)
-        if (origPos >= convertedPdfPageOffsets[pageNdx])
-          return pageNdx + 1;
+      if ((normHitPos >= 0) && (normHitPos < posMapSize)) return normHitPos;
     }
 
     return -1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Maps a normalized-PDF position to a 1-based converted-PDF page via the normalized-to-original
+   * position map and the page-boundary offsets.
+   */
+  public static int pageForPdfNormPos(int pdfNormPos, ArrayList<Integer> pdfPosMap, int[] pdfPageOffsets)
+  {
+    int origPdfPos = pdfPosMap.get(pdfNormPos);
+
+    for (int pageNdx = pdfPageOffsets.length - 1; pageNdx >= 0; pageNdx--)
+      if (origPdfPos >= pdfPageOffsets[pageNdx])
+        return pageNdx + 1;  // 1-based page number
+
+    return 1;
   }
 
 //---------------------------------------------------------------------------

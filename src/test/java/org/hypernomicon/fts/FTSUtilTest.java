@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -40,6 +41,9 @@ import java.util.function.Function;
  *       Lucene's per-term offsets with one separator-insensitive span per keyword occurrence.</li>
  *   <li>{@link FTSUtil#stripConvertedPdfHeaders}: removal of LibreOffice page-header metadata
  *       (source path + date/time) from converted-PDF text, with page-offset adjustment.</li>
+ *   <li>{@link FTSUtil#findPdfNormPos}: locating a normalized-Tika position in the normalized
+ *       pdf.js text via proportional, progressively-shorter context-window search.</li>
+ *   <li>{@link FTSUtil#pageForPdfNormPos}: mapping a normalized-PDF position to a 1-based page.</li>
  * </ul>
  */
 class FTSUtilTest
@@ -57,6 +61,13 @@ class FTSUtilTest
   {
     HitRange hr = pm.hitRanges().get(rangeNdx);
     return pm.snippet().substring(hr.start(), hr.end());
+  }
+
+  private static ArrayList<Integer> posMap(int... values)
+  {
+    ArrayList<Integer> list = new ArrayList<>(values.length);
+    for (int value : values) list.add(value);
+    return list;
   }
 
 //---------------------------------------------------------------------------
@@ -262,6 +273,216 @@ class FTSUtilTest
            text = "Page1. " + h1 + " Page2. " + h2 + " Page3.";
 
     assertEquals("Page1.  Page2.  Page3.", stripConvertedPdfHeaders(text, "C:\\DB", null));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosIdenticalTextReturnsSamePosition()
+  {
+    String text = "the quick brown fox jumps over the lazy dog and then runs off";
+
+    assertEquals(20, findPdfNormPos(20, text, text, text.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosAtStartOfText()
+  {
+    String text = "alphabet soup is quite delicious today indeed yes";
+
+    assertEquals(0, findPdfNormPos(0, text, text, text.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosNearEndOfText()
+  {
+    String text = "alphabet soup is quite delicious today indeed yes really";
+    int pos = text.length() - 3;
+
+    assertEquals(pos, findPdfNormPos(pos, text, text, text.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosShiftedByPrefix()
+  {
+    // A pure prefix shifts every logical position by the prefix length.
+
+    String tika   = "the quick brown fox jumps over the lazy dog",
+           prefix = "PAGE 1 OF 3   ",
+           pdf    = prefix + tika;
+
+    int tikaPos = 16;  // start of "fox"
+
+    assertEquals(tikaPos + prefix.length(), findPdfNormPos(tikaPos, tika, pdf, pdf.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosPicksNearOccurrenceForEarlyPosition()
+  {
+    // The context appears twice in the pdf text; an early Tika position resolves to the
+    // occurrence closest to the proportional (early) expected position.
+
+    String phrase = "the quick brown",
+           filler = "0123456789012345678901234567890123456789012345678",  // 49 chars, no match
+           pdf    = phrase + filler + phrase;
+
+    assertEquals(pdf.indexOf(phrase) + 2, findPdfNormPos(2, phrase, pdf, pdf.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosPicksFarOccurrenceForLatePosition()
+  {
+    // Same two occurrences, but a late Tika position resolves to the later occurrence.
+
+    String phrase = "the quick brown",
+           filler = "0123456789012345678901234567890123456789012345678",
+           pdf    = phrase + filler + phrase;
+
+    assertEquals(pdf.lastIndexOf(phrase) + 12, findPdfNormPos(12, phrase, pdf, pdf.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosFallsBackToShorterWindow()
+  {
+    // Tika and pdf share only the immediate neighborhood (within 10 chars) around the unique
+    // '@' marker; their wider surroundings differ, so the 40-char and 20-char context windows
+    // fail to match and the search must fall through to the 10-char window.
+
+    String core = "LLLLLLLLLL@RRRRRRRRRR",
+           tika = "aaaaaaaaaaaaaaa" + core + "bbbbbbbbbbbbbbb",
+           pdf  = "ppppppppppppppp" + core + "qqqqqqqqqqqqqqq";
+
+    assertEquals(pdf.indexOf('@'), findPdfNormPos(tika.indexOf('@'), tika, pdf, pdf.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosReturnsMinusOneWhenNoMatch()
+  {
+    String tika = "aaaaa bbbbb ccccc ddddd eeeee",
+           pdf  = "11111 22222 33333 44444 55555";  // disjoint alphabet, no shared context
+
+    assertEquals(-1, findPdfNormPos(10, tika, pdf, pdf.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosReturnsMinusOneWhenContextTooShort()
+  {
+    // Whole text is under 5 chars, so every window yields a sub-5 context and is skipped.
+
+    String text = "abcd";
+
+    assertEquals(-1, findPdfNormPos(2, text, text, text.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testFindPdfNormPosReturnsMinusOneWhenPositionUnmappable()
+  {
+    // A match is found, but the resulting position is past posMapSize, so it is rejected.
+
+    String text = "the quick brown fox jumps over the lazy dog";
+
+    assertEquals(-1, findPdfNormPos(40, text, text, 5));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testPageForPdfNormPosFirstPage()
+  {
+    ArrayList<Integer> map = posMap(0, 50, 99);
+    int[] pageOffsets = { 0, 100, 200 };
+
+    assertEquals(1, pageForPdfNormPos(0, map, pageOffsets));  // original pos 0
+    assertEquals(1, pageForPdfNormPos(1, map, pageOffsets));  // original pos 50
+    assertEquals(1, pageForPdfNormPos(2, map, pageOffsets));  // original pos 99
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testPageForPdfNormPosBoundariesAndLaterPages()
+  {
+    ArrayList<Integer> map = posMap(100, 150, 199, 200, 350);
+    int[] pageOffsets = { 0, 100, 200 };
+
+    assertEquals(2, pageForPdfNormPos(0, map, pageOffsets));  // 100, on the page-2 boundary
+    assertEquals(2, pageForPdfNormPos(1, map, pageOffsets));  // 150
+    assertEquals(2, pageForPdfNormPos(2, map, pageOffsets));  // 199
+    assertEquals(3, pageForPdfNormPos(3, map, pageOffsets));  // 200, on the page-3 boundary
+    assertEquals(3, pageForPdfNormPos(4, map, pageOffsets));  // 350
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testPageForPdfNormPosSinglePage()
+  {
+    ArrayList<Integer> map = posMap(0, 5000);
+    int[] pageOffsets = { 0 };
+
+    assertEquals(1, pageForPdfNormPos(0, map, pageOffsets));
+    assertEquals(1, pageForPdfNormPos(1, map, pageOffsets));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testPageForPdfNormPosUsesPosMapIndirection()
+  {
+    // The page is determined by the ORIGINAL position from the map, not the normalized index.
+
+    ArrayList<Integer> map = posMap(250, 50);  // index 0 maps to orig 250 (page 3); index 1 to orig 50 (page 1)
+    int[] pageOffsets = { 0, 100, 200 };
+
+    assertEquals(3, pageForPdfNormPos(0, map, pageOffsets));
+    assertEquals(1, pageForPdfNormPos(1, map, pageOffsets));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testPageForPdfNormPosFallsBackToOneBelowFirstOffset()
+  {
+    // Degenerate: the original position precedes the first page offset, so the backward scan
+    // matches no page and it falls back to page 1.
+
+    ArrayList<Integer> map = posMap(2);
+    int[] pageOffsets = { 5, 10 };
+
+    assertEquals(1, pageForPdfNormPos(0, map, pageOffsets));
   }
 
 //---------------------------------------------------------------------------

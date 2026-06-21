@@ -553,8 +553,8 @@ public final class DesktopUtil
 
   /**
    * Root directory for scratch and diagnostic files written by the developer-only
-   * Test Console tools (for example, the mentions-index before/after logs and the
-   * PDF-metadata dump). A subfolder of {@link #appDataDir()}.
+   * Test Console tools (for example, the mentions-index before/after logs, the
+   * PDF-metadata dump, and the FTS diagnostics export). A subfolder of {@link #appDataDir()}.
    */
   public static FilePath testDir()
   {
