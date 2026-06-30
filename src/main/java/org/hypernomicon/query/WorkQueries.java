@@ -110,10 +110,11 @@ public final class WorkQueries
     if (app.debugging) allQueries.add(new WorkQuery(QUERY_ANALYZE_METADATA, "analyze pdf metadata")
     {
       private List<List<String>> csvFile;
+      private final FilePath csvFilePath = testDir().resolve("work-metadata").resolve("data.csv");
 
       @Override public void init(HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {
-        FileDeletion.ofFile(homeDir().resolve("data.csv")).nonInteractiveLogErrors().execute();
+        FileDeletion.ofFile(csvFilePath).nonInteractiveLogErrors().execute();
 
         csvFile = new ArrayList<>();
       }
@@ -142,11 +143,10 @@ public final class WorkQueries
       {
         if (state != State.SUCCEEDED) return;
 
-        FilePath filePath = homeDir().resolve("data.csv");
-
         try
         {
-          writeCsvFile(filePath, csvFile.stream().distinct());
+          csvFilePath.getParent().createDirectories();
+          writeCsvFile(csvFilePath, csvFile.stream().distinct());
         }
         catch (IOException e)
         {

@@ -28,7 +28,6 @@ import javafx.application.Platform;
 import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.*;
@@ -39,9 +38,11 @@ import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.mainText.MainTextUtil;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.unities.MainText.DisplayItemType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -426,25 +427,12 @@ class MentionsIndex
 
   private void writeLogFile(String logFileName)
   {
-    String parentPathStr = app.prefs.get(PrefKey.LINK_GENERATION_LOG_FOLDER, "");
-
-    if (strNullOrBlank(parentPathStr))
-    {
-      System.out.println("Unable to write log file: Log folder path not set.");
-      return;
-    }
-
-    FilePath filePath = FilePath.of(parentPathStr);
-
-    if (filePath.exists() == false)
-    {
-      System.out.println("Unable to write log file: Log folder path does not exist.");
-      return;
-    }
+    FilePath dirPath = testDir().resolve(LINK_GEN_FOLDER_NAME);
 
     try
     {
-      writeCsvFile(filePath.resolve(logFileName), logRows.stream().distinct());
+      dirPath.createDirectories();
+      writeCsvFile(dirPath.resolve(logFileName), logRows.stream().distinct());
     }
     catch (IOException e)
     {

@@ -107,7 +107,8 @@ public final class Const
     HDB_DEFAULT_FILENAME = "database.hdb",
     BLANK_DB_RESOURCE_NAME = "resources/blank_db.zip",
     EXT_1 = "ext1://",
-    LOCK_PROBE_SUFFIX = ".hntmp_";
+    LOCK_PROBE_SUFFIX = ".hntmp_",
+    LINK_GEN_FOLDER_NAME = "link-gen";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -124,7 +125,6 @@ public final class Const
       SOURCE_FILENAME = "sourceFile",
       TRANSIENT_TEST_PARENT_PATH = "transientTestParentPath",
       TRANSIENT_TEST_FOLDER_NAME = "transientTestFolderName",
-      LINK_GENERATION_LOG_FOLDER = "linkGenLogFolderPath",
       LOG_PATH = "logPath",
       HDB_MRU = "hbdMru",
       AUTO_IMPORT = "autoImport",

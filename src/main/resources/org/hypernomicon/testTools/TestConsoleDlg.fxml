@@ -134,11 +134,8 @@
     </Tab>
     <Tab fx:id="tabLinkGen" closable="false" text="Link Generation">
       <AnchorPane>
-        <TextField fx:id="tfLinkGenParent" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="506.0"
-                   AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="131.0" AnchorPane.topAnchor="60.0"/>
-        <Label text="Parent Folder of Log Files" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0"/>
-        <Button maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" onAction="#btnLinkGenBrowseClick"
-                prefHeight="25.0" text="..." AnchorPane.rightAnchor="63.0" AnchorPane.topAnchor="60.0"/>
+        <Label text="Before.csv / After.csv are written to the &quot;test/link-gen&quot; folder under the app data directory. Click the rocket to open it." wrapText="true"
+               AnchorPane.leftAnchor="52.0" AnchorPane.rightAnchor="131.0" AnchorPane.topAnchor="60.0"/>
         <Button fx:id="btnLinkGenBefore" layoutX="52.0" layoutY="95.0" mnemonicParsing="false"
                 text="Rebuild mentions index with logging saved to Before.csv" AnchorPane.leftAnchor="52.0"
                 AnchorPane.topAnchor="95.0"/>

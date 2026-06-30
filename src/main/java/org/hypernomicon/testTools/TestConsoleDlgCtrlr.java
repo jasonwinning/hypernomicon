@@ -71,7 +71,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   @FXML private CheckBox chkFolderBypass, chkWatcherEvents;
   @FXML private RadioButton rbZotero, rbMendeley;
   @FXML private Tab tabLinkGen;
-  @FXML private TextField tfParent, tfLinkGenParent, tfFolderName, tfRefMgrUserID;
+  @FXML private TextField tfParent, tfFolderName, tfRefMgrUserID;
   @FXML private ToggleGroup tgLink;
 
   private final Map<Toggle, LibraryType> toggleToLibraryType;
@@ -83,9 +83,8 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   {
     super("testTools/TestConsoleDlg", appTitle + " Test Console", true, true);
 
-    initTextField(app.prefs, tfParent       , PrefKey.TRANSIENT_TEST_PARENT_PATH, "", null);
-    initTextField(app.prefs, tfFolderName   , PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
-    initTextField(app.prefs, tfLinkGenParent, PrefKey.LINK_GENERATION_LOG_FOLDER, "", null);
+    initTextField(app.prefs, tfParent    , PrefKey.TRANSIENT_TEST_PARENT_PATH, "", null);
+    initTextField(app.prefs, tfFolderName, PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
 
     enableAllIff(db.isOnline(), btnFromExisting, btnCloseDB, btnZoteroItemTemplates, btnZoteroCreatorTypes, btnNukeTest, btnTermsTabTests, btnFolderBypassTest, tabLinkGen);
 
@@ -222,11 +221,15 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   @FXML private void btnLinkGenLaunchClick()
   {
-    FilePath filePath = FilePath.of(tfLinkGenParent.getText());
+    FilePath dirPath = testDir().resolve(LINK_GEN_FOLDER_NAME);
 
-    if (FilePath.isEmpty(filePath)) return;
+    if (dirPath.exists() == false)
+    {
+      infoPopup("No mentions-index log files have been written yet. Run a Before or After rebuild first.");
+      return;
+    }
 
-    launchFile(filePath);
+    launchFile(dirPath);
   }
 
 //---------------------------------------------------------------------------
@@ -880,36 +883,6 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   @FXML private void btnAdHocTestClick()
   {
 
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnLinkGenBrowseClick()
-  {
-    DirectoryChooser dirChooser = new DirectoryChooser();
-
-    FilePath folderPath = FilePath.of(tfLinkGenParent.getText());
-
-    if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
-    {
-      if (db.isOnline())
-        folderPath = db.getRootPath().getParent();
-
-      if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
-        folderPath = FilePath.of(userWorkingDir());
-    }
-
-    dirChooser.setInitialDirectory(folderPath.toFile());
-
-    dirChooser.setTitle("Select folder where log files will be saved");
-
-    FilePath filePath = showDirDialog(dirChooser);
-
-    if (FilePath.isEmpty(filePath))
-      return;
-
-    tfLinkGenParent.setText(filePath.toString());
   }
 
 //---------------------------------------------------------------------------
