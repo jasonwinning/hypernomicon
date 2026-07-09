@@ -64,17 +64,15 @@ class ZoteroMetadataTest
 
     for (JsonObj jServerTemplateObj : jServerTemplatesArr.getObjs())
     {
+      // The itemType here is always the canonical name from the /itemTypes enumeration;
+      // getTemplates normalizes away the response body's drifting spellings (webpage vs.
+      // webPage, preprint vs. Preprint), so no special-casing of those variants is needed.
+
       String entryTypeStr = jServerTemplateObj.getStrSafe("itemType");
 
-      EntryType entryType = switch (entryTypeStr)
-      {
-        case "webpage"  -> etWebPage;  // is supposed to be webPage, but server is inconsistent
-        case "Preprint" -> etPreprint; // is supposed to be preprint, but server is inconsistent
+      EntryType entryType = zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(entryTypeStr, etOther);
 
-        default         -> zoteroWrapper.getEntryTypeMap().inverse().getOrDefault(entryTypeStr, etOther);
-      };
-
-      assertNotEquals(etOther, entryType, "Unrecognized Zotero item type found in templates JSON from server: " + jServerTemplateObj.getStrSafe("itemType"));
+      assertNotEquals(etOther, entryType, "Unrecognized Zotero item type found in templates JSON from server: " + entryTypeStr);
 
       unusedTypes.remove(entryType);
 
@@ -82,10 +80,7 @@ class ZoteroMetadataTest
       {
         JsonObj jLocalObj = ZoteroWrapper.getTemplateInitIfNecessary(entryType);
 
-        String serverStr = jServerTemplateObj.toString().replace("\"webPage\"", "\"webpage\"")
-                                                        .replace("\"Preprint\"", "\"preprint\"");
-
-        assertEquals(jLocalObj.toString(), serverStr, "Zotero entry templates should be the same as the ones from the server");
+        assertEquals(jLocalObj.toString(), jServerTemplateObj.toString(), "Zotero entry templates should be the same as the ones from the server");
       }
       catch (IOException | ParseException | HDB_InternalError e)
       {

@@ -409,7 +409,16 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
     for (String zType : streamToIterable(typesStream.sorted()))
     {
-      jTemplatesArr.add(doHttpRequest("https://api.zotero.org/items/new?itemType=" + zType, HttpRequestType.get, null).getObj(0));
+      JsonObj jTemplateObj = doHttpRequest("https://api.zotero.org/items/new?itemType=" + zType, HttpRequestType.get, null).getObj(0);
+
+      // The itemType spelling inside the response body has drifted over time (webpage vs.
+      // webPage, preprint vs. Preprint) and can disagree with the /itemTypes enumeration
+      // the request was built from; the requested name is the canonical one, so make the
+      // template consistent with it.
+
+      jTemplateObj.put("itemType", zType);
+
+      jTemplatesArr.add(jTemplateObj);
     }
 
     return jTemplatesArr;
@@ -424,10 +433,29 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
     {
       ZoteroWrapper zoteroWrapper = createForTesting();
 
-      StringBuilder json = new StringBuilder(getCreatorsNotTemplates ?
-        zoteroWrapper.getCreatorTypes().toString()
-      :
-        zoteroWrapper.getTemplates(true).toString());
+      StringBuilder json;
+
+      if (getCreatorsNotTemplates)
+        json = new StringBuilder(zoteroWrapper.getCreatorTypes().toString());
+      else
+      {
+        JsonArray jTemplatesArr = zoteroWrapper.getTemplates(true);
+
+        // Refuse to save a template file that initTemplates would reject at every
+        // subsequent startup (HDB_InternalError 77654). An unmapped item type here
+        // means Zotero added or renamed an item type; the correct response is a
+        // deliberate entryTypeMap update, not a file refresh.
+
+        for (JsonObj jTemplateObj : jTemplatesArr.getObjs())
+        {
+          String itemTypeStr = jTemplateObj.getStrSafe("itemType");
+
+          if (entryTypeMap.inverse().containsKey(itemTypeStr) == false)
+            throw new HyperDataException("Not saving template file: item type \"" + itemTypeStr + "\" is not present in the entry type map.");
+        }
+
+        json = new StringBuilder(jTemplatesArr.toString());
+      }
 
       FilePath filePath = db.xmlPath(getCreatorsNotTemplates ?
         ZOTERO_CREATOR_TYPES_FILE_NAME
