@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hypernomicon.HyperTask.HyperThread;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -118,9 +119,11 @@ public final class ExitWatchdog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Logs every non-daemon thread still alive, with its stack, so the forced exit never hides
-   *  which threads leaked. Known JxBrowser wedge threads are identified as such; anything else is
-   *  flagged as a potential genuine leak. */
+  /** Logs the non-daemon threads still alive, so the forced exit never hides what it absorbed.
+   *  Known JxBrowser wedge threads are expected and non-actionable (see class javadoc), so
+   *  outside of debugging they get a single summary line; printing their stacks would only
+   *  prompt spurious bug reports. Anything else is a potential genuine leak and always gets
+   *  full per-thread detail with stacks. */
   private static void logSurvivors()
   {
     List<Map.Entry<Thread, StackTraceElement[]>> survivors = Thread.getAllStackTraces().entrySet().stream()
@@ -129,10 +132,25 @@ public final class ExitWatchdog
       .filter(entry -> "DestroyJavaVM".equals(entry.getKey().getName()) == false)
       .toList();
 
-    System.out.println("Shutdown: " + survivors.size() + " non-daemon thread(s) still running "
+    List<Map.Entry<Thread, StackTraceElement[]>> detailed = survivors;
+
+    if (app.debugging == false)
+    {
+      detailed = survivors.stream().filter(entry -> isKnownJxBrowserWedgeThread(entry.getKey().getName()) == false).toList();
+
+      int knownCount = survivors.size() - detailed.size();
+
+      if (knownCount > 0)
+        System.out.println("Shutdown: " + knownCount + " known JxBrowser 6 shared-memory wedge thread(s) still running "
+          + (GRACE_PERIOD_MS / 1000) + "s after teardown completed (non-actionable; see ExitWatchdog javadoc)");
+    }
+
+    if (detailed.isEmpty()) return;
+
+    System.out.println("Shutdown: " + detailed.size() + " non-daemon thread(s) still running "
       + (GRACE_PERIOD_MS / 1000) + "s after teardown completed:");
 
-    for (Map.Entry<Thread, StackTraceElement[]> entry : survivors)
+    for (Map.Entry<Thread, StackTraceElement[]> entry : detailed)
     {
       Thread survivor = entry.getKey();
 

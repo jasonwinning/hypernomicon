@@ -146,6 +146,13 @@ public final class App extends Application
 
     FolderTreeWatcher.consoleLogging = debugging;
 
+    // Apache POI logs an ERROR ("Skipped invalid entry") for every dangling relationship
+    // inside a malformed .docx while Tika parses it during full-text indexing. POI skips
+    // the entry and extraction proceeds, so keep the noise out of users' consoles and logs.
+
+    if (debugging == false)
+      Configurator.setLevel("org.apache.poi", Level.FATAL);
+
     BrowserPreferences.setChromiumSwitches(Environment.isLinux()
       ? new String[] { "--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses", "--disable-gpu" }
       : new String[] { "--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses" });

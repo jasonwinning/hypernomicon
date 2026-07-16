@@ -536,7 +536,13 @@ public class PDFJSWrapper
 
       if (level == Level.LOG)
       {
-        if (msg.toLowerCase().contains("unrecognized link type"))
+        // pdf.js emits its warnings via console.log with a "Warning:" prefix, so they arrive
+        // at LOG level. parseDestDictionary fires per malformed outline/link entry and can
+        // dominate a debug log (observed at ~95% of the log during a large indexing run).
+
+        String msgLower = msg.toLowerCase();
+
+        if (msgLower.contains("unrecognized link type") || msgLower.contains("parsedestdictionary"))
           return;
       }
 

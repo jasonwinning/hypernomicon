@@ -956,7 +956,8 @@ public final class PreviewWindow extends NonmodalWindow
 
       Platform.runLater(() ->
       {
-        System.out.println("Shutdown: closing main window");
+        if (app.debugging)
+          System.out.println("Shutdown: closing main window");
 
         ui.getStage().close();
 
@@ -1006,7 +1007,9 @@ public final class PreviewWindow extends NonmodalWindow
 
     if (stragglers.isEmpty())
     {
-      System.out.println("Shutdown: all browser instances were disposed");
+      if (app.debugging)
+        System.out.println("Shutdown: all browser instances were disposed");
+
       return;
     }
 
@@ -1045,7 +1048,8 @@ public final class PreviewWindow extends NonmodalWindow
   {
     if (jxBrowserInitialized == false) return;
 
-    System.out.println("Shutdown: disposing browser instances...");
+    if (app.debugging)
+      System.out.println("Shutdown: disposing browser instances...");
 
     getDisposeHandler(tabToWrapper.values().iterator()).run();
   }
