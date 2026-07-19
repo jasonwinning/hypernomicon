@@ -13,6 +13,7 @@ qodana.yaml
 target
 bin
 pom2*.xml
+local-resources/
 *.py
 *.bak
 *.log
