@@ -66,7 +66,13 @@ On the project's root, run:
 
 It will create an executable jar under `target/hypernomicon-$version.jar`.
 
-If you have trouble downloading the JxBrowser jar files to your local Maven repository, you can download them [from here](https://sourceforge.net/projects/hypernomicon/files/misc/jxbrowser-6.24.3.zip/download).
+Hypernomicon uses [JxBrowser](https://www.teamdev.com/jxbrowser), which is proprietary software.
+The JxBrowser jar files download automatically from TeamDev's public Maven repository, but no
+JxBrowser license key is included in this repository. Your build will run without one, but
+functionality that depends on JxBrowser (file previews and PDF full-text indexing) will be
+disabled. To enable it, obtain a license key from
+[TeamDev](https://www.teamdev.com/jxbrowser) and place it in a file named
+`local-resources/jxbrowser.key` (the `local-resources` directory is gitignored).
 
 ## Change Log/Release Notes
 
@@ -81,11 +87,11 @@ See also the list of [contributors](https://github.com/jasonwinning/hypernomicon
 
 ## License
 
-This project is licensed under the Apache 2.0 License + Commons Clause 1.0 - see the [LICENSE](https://jasonwinning.github.io/hypernomicon/LICENSE.html) file for details.
+This project is licensed under the Apache 2.0 License - see the [LICENSE](https://jasonwinning.github.io/hypernomicon/LICENSE.html) file for details.
 
 Hypernomicon is a non-commercial product and will always be free to use.
 
-Hypernomicon uses [JxBrowser](https://www.teamdev.com/jxbrowser). You may not use JxBrowser separately from Hypernomicon without a separate license from TeamDev Ltd. Use of JxBrowser as part of Hypernomicon in any commercial software requires a commercial license from TeamDev Ltd.
+Hypernomicon uses [JxBrowser](https://www.teamdev.com/jxbrowser). You may not use JxBrowser separately from Hypernomicon without a separate license from TeamDev Ltd.
 
 ## Acknowledgements
 
@@ -97,8 +103,9 @@ Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testin
   * [Fugue Icons](http://p.yusukekamiyamane.com/)
 
 * Additional third-party libraries used:
-  * Apache [Commons Lang](https://commons.apache.org/proper/commons-lang/), [Commons Text](https://commons.apache.org/proper/commons-text/), [Commons IO](https://commons.apache.org/proper/commons-io/), [PDFBox](https://pdfbox.apache.org/), [Tika](https://tika.apache.org/), [Log4j](https://logging.apache.org/log4j/2.x/index.html)
+  * Apache [Commons Lang](https://commons.apache.org/proper/commons-lang/), [Commons Text](https://commons.apache.org/proper/commons-text/), [Commons IO](https://commons.apache.org/proper/commons-io/), [PDFBox](https://pdfbox.apache.org/), [Tika](https://tika.apache.org/), [Lucene](https://lucene.apache.org/), [Log4j](https://logging.apache.org/log4j/2.x/index.html)
   * [Guava](https://github.com/google/guava)
+  * [Jackson](https://github.com/FasterXML/jackson)
   * [PDF.js](https://mozilla.github.io/pdf.js/)
   * [jsoup](https://jsoup.org/)
   * [ICU4J](https://icu.unicode.org/home)
@@ -106,7 +113,7 @@ Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testin
   * [JSON.simple](https://code.google.com/archive/p/json-simple/)
   * [ScribeJava](https://github.com/scribejava/scribejava)
   * [XMP Toolkit for Java](https://www.adobe.com/devnet/xmp.html)
-  * [JODConverter](https://github.com/jodconverter/jodconverter)
+  * [JODConverter](https://jodconverter.github.io/jodconverter/latest/)
   * [NetBeans Keyring](https://netbeans.apache.org/front/main/index.html)
   * [JUnit Jupiter](https://junit.org/junit5/)
   * [SLF4J Simple](http://www.slf4j.org)

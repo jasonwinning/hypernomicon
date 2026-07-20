@@ -121,8 +121,10 @@ public class AboutDlgCtrlr extends ModalDialog
       anchorTag("Commons IO", "https://commons.apache.org/proper/commons-io/") + ", " +
       anchorTag("PDFBox", "https://pdfbox.apache.org/") + ", " +
       anchorTag("Tika", "https://tika.apache.org/") + ", " +
+      anchorTag("Lucene", "https://lucene.apache.org/") + ", " +
       anchorTag("Log4j", "https://logging.apache.org/log4j/2.x/index.html") + "</li>" +
       "<li>" + anchorTag("Guava", "https://github.com/google/guava") + "</li>" +
+      "<li>" + anchorTag("Jackson", "https://github.com/FasterXML/jackson") + "</li>" +
       "<li>" + anchorTag("JxBrowser", "https://www.teamdev.com/jxbrowser") + "</li>" +
       "<li>" + anchorTag("PDF.js", "https://mozilla.github.io/pdf.js/") + "</li>" +
       "<li>" + anchorTag("jsoup", "https://jsoup.org/") + "</li>" +
@@ -131,7 +133,7 @@ public class AboutDlgCtrlr extends ModalDialog
       "<li>" + anchorTag("JSON.simple", "https://code.google.com/archive/p/json-simple/") + "</li>" +
       "<li>" + anchorTag("ScribeJava", "https://github.com/scribejava/scribejava") + "</li>" +
       "<li>" + anchorTag("XMP Toolkit for Java", "https://www.adobe.com/devnet/xmp.html") + "</li>" +
-      "<li>" + anchorTag("JODConverter", "https://github.com/jodconverter/jodconverter") + "</li>" +
+      "<li>" + anchorTag("JODConverter", "https://jodconverter.github.io/jodconverter/latest/") + "</li>" +
       "<li>" + anchorTag("NetBeans Keyring", "https://netbeans.apache.org/front/main/index.html") + "</li>" +
       "<li>" + anchorTag("JUnit Jupiter", "https://junit.org/junit5/") + "</li>" +
       "<li>" + anchorTag("SLF4J Simple", "https://www.slf4j.org") + "</li>" +

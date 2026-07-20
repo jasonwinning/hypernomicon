@@ -40,6 +40,13 @@
           <include>NOTICE.html</include>
         </includes>
       </resource>
+      <!-- Untracked (gitignored): holds jxbrowser.key, the JxBrowser license key,
+           which is confidential under the license agreement and must never be
+           committed. -->
+      <resource>
+        <directory>local-resources</directory>
+        <filtering>false</filtering>
+      </resource>
     </resources>
 
     <plugins>
