@@ -306,7 +306,11 @@ class SearchResultFileList
 
   private void addFile(FilePath filePath, int startPage, int endPage)
   {
-    if (filePath.exists() == false) return;
+    if (filePath.exists() == false)
+    {
+      errList.add("Warning: File does not exist: " + filePath);
+      return;
+    }
 
     SearchResultFile otherFile = new SearchResultFile(filePath, startPage, endPage);
 
@@ -324,6 +328,21 @@ class SearchResultFileList
     }
 
     list.add(otherFile);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether any file in this list is located inside the given folder. Used to
+   * guard the File Actions copy operations against results that are themselves
+   * files in the search results folder (e.g. from a folder-scoped search of that
+   * folder): clearing the folder first would delete the sources, and copying
+   * them into it would create duplicates.
+   */
+  boolean anyFileUnder(FilePath folder)
+  {
+    return list.stream().anyMatch(resultFile -> folder.contains(resultFile.filePath));
   }
 
 //---------------------------------------------------------------------------

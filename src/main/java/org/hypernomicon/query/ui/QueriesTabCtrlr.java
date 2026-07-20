@@ -230,7 +230,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     mnuClear            .setOnAction(event -> mnuClearSearchFolderClick());
     mnuClearAndAdd      .setOnAction(event -> mnuCopyAllClick          ());
 
-    mnuAddSelected      .setOnAction(event -> copyFilesToFolder        (true ));
+    mnuAddSelected      .setOnAction(event -> mnuAddSelectedClick      ());
     mnuShowInSysExplorer.setOnAction(event -> mnuShowSearchFolderClick (false));
     mnuShowInFileMgr    .setOnAction(event -> mnuShowSearchFolderClick (true ));
 
@@ -626,11 +626,25 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void mnuCopyAllClick()
   {
+    // The file list is built BEFORE the folder is cleared: if any result is
+    // itself a file in the search results folder (e.g. from a folder-scoped
+    // search of that folder), clearing first would delete the sources and the
+    // copy would then silently skip them.
+
+    SearchResultFileList fileList = buildFileList(false);
+    if (fileList == null) return;
+
+    if (fileList.anyFileUnder(db.resultsPath()))
+    {
+      errorPopup("One or more of the results are files located in the search results folder itself; clearing the folder would delete them. Nothing was deleted or copied.");
+      return;
+    }
+
     boolean startWatcher = folderTreeWatcher.stop();
 
     mnuClearSearchFolderClick();
 
-    if (copyFilesToFolder(false))
+    if (copyFilesToFolder(fileList))
       mnuShowSearchFolderClick(false);
 
     if (startWatcher)
@@ -640,14 +654,35 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean copyFilesToFolder(boolean onlySelected)
+  private void mnuAddSelectedClick()
   {
-    if (db.isOffline()) return false;
+    SearchResultFileList fileList = buildFileList(true);
+    if (fileList == null) return;
+
+    if (fileList.anyFileUnder(db.resultsPath()))
+    {
+      errorPopup("One or more of the selected results are files located in the search results folder itself.");
+      return;
+    }
+
+    copyFilesToFolder(fileList);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds the list of result files for the File Actions copy operations.
+   * @return the list, or null if there is nothing to copy or the user cancelled
+   */
+  private SearchResultFileList buildFileList(boolean onlySelected)
+  {
+    if (db.isOffline()) return null;
 
     boolean fts = isFTSTabActive();
     FTSQueryCtrlr ftsCtrlr = fts ? (FTSQueryCtrlr) curSubCtrlr : null;
 
-    if (fts ? (ftsCtrlr.hasResults() == false) : results().isEmpty()) return false;
+    if (fts ? (ftsCtrlr.hasResults() == false) : results().isEmpty()) return null;
 
     // FTS rows always represent a single file with no page bounds; the
     // entire-PDF and include-edited options are record-query concepts,
@@ -682,8 +717,16 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         }
       }
 
-    }}.runWithProgressDialog() != State.SUCCEEDED) return false;
+    }}.runWithProgressDialog() != State.SUCCEEDED) return null;
 
+    return fileList;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean copyFilesToFolder(SearchResultFileList fileList)
+  {
     boolean startWatcher = folderTreeWatcher.stop();
 
     fileList.newCopyAllTask(mnuExcludeAnnots.isSelected()).runWithProgressDialog();
