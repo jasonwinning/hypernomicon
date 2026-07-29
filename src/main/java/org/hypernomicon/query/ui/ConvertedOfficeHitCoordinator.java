@@ -17,23 +17,19 @@
 
 package org.hypernomicon.query.ui;
 
-import static org.hypernomicon.fts.FTSUtil.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.function.Function;
-
-import org.apache.lucene.search.Query;
 
 import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
-import org.hypernomicon.model.searchKeys.Keyword;
+import org.hypernomicon.fts.HitSetService;
+import org.hypernomicon.fts.HitSetService.ConvertedPdfAlignment;
+import org.hypernomicon.fts.HitSetService.PagedHits;
 import org.hypernomicon.previewWindow.ConversionSession;
 import org.hypernomicon.previewWindow.ConversionSession.NoOfficeInstallationException;
 import org.hypernomicon.previewWindow.PreviewWindow;
@@ -47,15 +43,14 @@ import javafx.application.Platform;
 /**
  * Highlight coordinator for office documents (docx, doc, rtf, ppt, odt, etc.)
  * that need LibreOffice conversion to PDF before they can be previewed.
- * Owns the {@link ConversionSession} extraction subscription, the background
- * extract-and-search pipeline, and the Tika↔pdf.js coordinate-translation
- * state used by passage-click navigation.
+ * Owns the {@link ConversionSession} extraction subscription and the
+ * await/error/delivery policy around the hit pipeline; the pipeline's
+ * computation itself (extraction, header stripping, alignment, matching, hit
+ * JSON) lives in {@link HitSetService#computeConvertedPdfHits}.
  * <p>
  * The conversion and viewer load are deliberately ordered so the first page
- * shown to the user is already the first-match page: extract, strip LibreOffice
- * headers, normalize, run the query against the converted PDF text, determine
- * first-match page, <em>then</em> call {@link PreviewWindow#loadConvertedPDF}
- * and apply hits.
+ * shown to the user is already the first-match page: compute first, <em>then</em>
+ * call {@link PreviewWindow#loadConvertedPDF} and apply hits.
  */
 final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
 {
@@ -63,21 +58,16 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final String queryStr;
-  private final Query searchKeyQuery;
-  private final Function<String, Iterable<Keyword>> keyLookup;
-  private final ExecutorService executor;
+  private final HitSetService hitService;
+  private final HitSetService.QueryDescriptor query;
 
   private CompletableFuture<FilePath> extractionFuture;
 
-  // Coordinate-translation state; populated by the background task on success,
-  // consumed by pageForPassage() on the FX thread for passage-click navigation.
-  // Reads/writes cross threads but the state is only read after the runLater
-  // that writes it; no additional synchronization needed beyond that ordering.
+  // Tika-to-pdf.js coordinate alignment; written on the FX thread when the
+  // pipeline delivers (whether or not hits were applied), consumed by
+  // pageForPassage() on the FX thread for passage-click navigation.
 
-  private String convertedPdfNormText, tikaNormText;
-  private ArrayList<Integer> convertedPdfPosMap;
-  private int[] convertedPdfPageOffsets, tikaReverseMap;
+  private ConvertedPdfAlignment alignment;
 
   // Pipeline-outcome signals consumed by FTSQueryCtrlr.setPreview's same-file
   // branch (see viewerLoaded/failedBeforeViewerLoad in the base class).
@@ -89,22 +79,17 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
 //---------------------------------------------------------------------------
 
   /**
-   * @param row            the currently-selected FTS result row (converted office file)
-   * @param indexer        the live {@link FullTextIndexer}
-   * @param queryStr       the original Lucene query string (ignored if {@code searchKeyQuery} is non-null)
-   * @param searchKeyQuery a prebuilt search-key query, or {@code null} to re-parse {@code queryStr}
-   * @param keyLookup      the ad-hoc keyword lookup for search-key mode, or {@code null} for a plain query
-   * @param executor       the executor to run the conversion/extraction pipeline on
+   * @param row        the currently-selected FTS result row (converted office file)
+   * @param indexer    the live {@link FullTextIndexer}
+   * @param hitService the hit-set service whose worker thread runs the pipeline;
+   *                   its active query descriptor is captured at construction
    */
-  ConvertedOfficeHitCoordinator(FTSResultRow row, FullTextIndexer indexer, String queryStr, Query searchKeyQuery,
-                                Function<String, Iterable<Keyword>> keyLookup, ExecutorService executor)
+  ConvertedOfficeHitCoordinator(FTSResultRow row, FullTextIndexer indexer, HitSetService hitService)
   {
     super(row, indexer);
 
-    this.queryStr = queryStr;
-    this.searchKeyQuery = searchKeyQuery;
-    this.keyLookup = keyLookup;
-    this.executor = executor;
+    this.hitService = hitService;
+    this.query = hitService.query();
   }
 
 //---------------------------------------------------------------------------
@@ -128,7 +113,7 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
     extractionFuture = session.subscribeExtraction();
     PreviewWindow.enqueueForConversion(pvsQueriesTab, session);
 
-    executor.submit(this::runExtractAndHighlight);
+    hitService.execute(this::runExtractAndHighlight);
   }
 
 //---------------------------------------------------------------------------
@@ -151,9 +136,9 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
   /**
    * Maps a passage index (over the Tika-extracted matches shown in the context
    * pane) to a 1-based page number in the converted PDF that the viewer
-   * displays. Returns -1 if the alignment state hasn't been populated yet
-   * (the background extraction+normalization task hasn't run or was
-   * cancelled), or if the inputs are out of range.
+   * displays. Returns -1 if the alignment hasn't been delivered yet (the
+   * background pipeline hasn't run or was cancelled), or if the inputs are out
+   * of range.
    *
    * @param passageNdx zero-based index into {@code matches}
    * @param matches    Tika-coordinate {@link PageMatch} list for the file
@@ -162,23 +147,23 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
    */
   @Override int pageForPassage(int passageNdx, List<PageMatch> matches)
   {
-    if ((convertedPdfNormText == null) || (tikaNormText == null) ||
-        (matches == null) || (passageNdx < 0) || (passageNdx >= matches.size())) return -1;
+    if ((alignment == null) || (matches == null) || (passageNdx < 0) || (passageNdx >= matches.size())) return -1;
 
-    return findConvertedPdfPage(matches.get(passageNdx), tikaReverseMap, tikaNormText,
-      convertedPdfNormText, convertedPdfPosMap, convertedPdfPageOffsets);
+    return alignment.pageForPassage(matches.get(passageNdx));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * Runs on {@code executor}. Waits for LibreOffice conversion, then delegates
-   * to {@link #extractAndApplyHits}. Conversion failures show the
+   * Runs on the hit service's worker thread. Waits for LibreOffice conversion,
+   * computes the hit set via {@link HitSetService#computeConvertedPdfHits},
+   * then (on the FX thread) loads the converted PDF at the first-match page,
+   * applies hits, and publishes the alignment. Conversion failures show the
    * unable-to-preview indicator (this pipeline has no display subscriber, so
    * nothing else would ever report them), except for the no-office-installation
-   * failure, which OfficePreviewer already reported via the wrapper's alt
-   * display at enqueue time; failures in the hit pipeline fall back to
+   * failure, which the office-preview display path already reported via the
+   * wrapper's alt display; failures in the hit pipeline fall back to
    * displaying the converted PDF at page 1 with no highlights.
    */
   private void runExtractAndHighlight()
@@ -197,8 +182,8 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
       // Cancellation means this coordinator was disposed or the session was superseded,
       // and interruption means the executor is shutting down; in both cases the UI has
       // already moved on (or is tearing down), so stay quiet. The no-office failure is
-      // a settings condition, not an error: OfficePreviewer already drove the wrapper's
-      // no-office alt display before failing the session, so showing the generic
+      // a settings condition, not an error: the display path already drove the wrapper's
+      // no-office alt display before the session failed, so showing the generic
       // indicator here would overwrite the more specific message. Anything else is a
       // real conversion failure the user would otherwise never see.
 
@@ -225,147 +210,36 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
 
     if (isDisposed()) return;
 
+    PagedHits hits;
+
     try
     {
-      extractAndApplyHits(convertedPath);
+      String dbRootPathStr = db.isLoaded() ? db.getRootPath().toString().replace('/', '\\') : null;
+
+      hits = HitSetService.computeConvertedPdfHits(HitSetService.TextSource.of(indexer), query, row.path(), convertedPath, dbRootPathStr);
     }
     catch (Throwable e)
     {
       // The hit pipeline failed but the converted PDF itself is fine; fall back to
       // displaying it at page 1 with no highlights. Without this catch the failure
-      // would be invisible: executor.submit captures unchecked exceptions in a
-      // Future that nothing reads.
+      // would be invisible: the worker thread's submit captures unchecked exceptions
+      // in a Future that nothing reads.
 
       logThrowable(e);
 
-      Platform.runLater(() ->
-      {
-        if (isDisposed()) return;
-
-        viewerLoaded = true;
-        PreviewWindow.loadConvertedPDF(pvsQueriesTab, db.getRootPath(row.path()), convertedPath, 1, row.resolvedRecord());
-      });
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Extracts the converted PDF's text via pdf.js, strips LibreOffice
-   * page-header metadata, normalizes both the converted-PDF text and the
-   * Tika-indexed text for passage-click alignment, searches the converted PDF
-   * for matches, builds per-page hit JSON, and finally (on the FX thread)
-   * loads the converted PDF at the first-match page and applies hits.
-   */
-  private void extractAndApplyHits(FilePath convertedPath)
-  {
-    // Extract text from the converted PDF via the pdf.js extractor pool
-
-    FullTextIndexer.ExtractionResult extraction = indexer.extractPdfText(convertedPath);
-
-    if ((extraction == null) || strNullOrBlank(extraction.text()))
-    {
-      Platform.runLater(() ->
-      {
-        if (isDisposed()) return;
-
-        viewerLoaded = true;
-        PreviewWindow.loadConvertedPDF(pvsQueriesTab, db.getRootPath(row.path()), convertedPath, 1, row.resolvedRecord());
-      });
+      loadWithoutHits(convertedPath);
       return;
     }
 
     if (isDisposed()) return;
 
-    // Strip LibreOffice header/footer metadata from the converted PDF text.
-    // LibreOffice inserts the source file path, page number, and save date at each page.
-    // The page offsets must be adjusted in tandem since stripping changes character positions.
-
-    String pdfRawText = extraction.text();
-    int[] adjustedPageOffsets = extraction.pageOffsets().clone();
-
-    if (db.isLoaded())
+    if (hits == null)  // text extraction came up empty; no hits or alignment possible
     {
-      String dbRoot = db.getRootPath().toString().replace('/', '\\');
-      pdfRawText = stripConvertedPdfHeaders(pdfRawText, dbRoot, adjustedPageOffsets);
-    }
-
-    // Normalize both texts for passage-click navigation:
-    // 1. convertToEnglishCharsWithMap: Unicode to ASCII with position tracking
-    // 2. toLowerCase
-    // 3. collapseWhitespace: all whitespace runs to single space, with position tracking
-    // Position maps chain: normalized output pos to original text pos
-
-    ArrayList<Integer> pdfPosMap = new ArrayList<>();
-    String normPdfText = normalizeForMatching(pdfRawText, pdfPosMap);
-
-    String tikaText = indexer.getStoredContent(row.path());
-    ArrayList<Integer> tikaPosMapFwd = new ArrayList<>();
-    String normTikaTextLocal = (tikaText != null) ? normalizeForMatching(tikaText, tikaPosMapFwd) : "";
-    int[] tikaRevMap = (tikaText != null) ? buildReversePositionMap(tikaPosMapFwd, tikaText.length()) : new int[0];
-
-    // Build the query
-
-    Query query = searchKeyQuery;
-
-    if (query == null)
-    {
-      try
-      {
-        @SuppressWarnings("resource")
-        var parser = FullTextIndexer.createQueryParser(indexer.getAnalyzer());
-        query = parser.parse(queryStr);
-      }
-      catch (Exception e)
-      {
-        // The query parsed when the search ran, so this is unexpected; propagate so
-        // runExtractAndHighlight logs it and falls back to a highlight-free load.
-
-        throw new RuntimeException("Unable to re-parse FTS query for converted-PDF search", e);
-      }
-    }
-
-    // Search the converted PDF's text using a temporary in-memory Lucene index
-
-    List<PageMatch> convertedMatches = FullTextIndexer.searchExtractedText(extraction.text(), extraction.pageOffsets(), query);
-
-    if (keyLookup != null)
-      convertedMatches = rescanHitRanges(convertedMatches, keyLookup);
-
-    if (isDisposed()) return;
-
-    if (convertedMatches.isEmpty())
-    {
-      Platform.runLater(() ->
-      {
-        if (isDisposed()) return;
-
-        viewerLoaded = true;
-        PreviewWindow.loadConvertedPDF(pvsQueriesTab, db.getRootPath(row.path()), convertedPath, 1, row.resolvedRecord());
-      });
-
+      loadWithoutHits(convertedPath);
       return;
     }
 
-    // Build per-page hit JSON using the RAW page offsets (not the
-    // header-stripped adjustedPageOffsets). The viewer's pdf.js renders the
-    // converted PDF as-is, including LibreOffice's per-page header text, so
-    // its textDivs concatenate to the raw extraction text. The match offsets
-    // in convertedMatches are also in raw-text coordinates (we passed
-    // extraction.text()/extraction.pageOffsets() to searchExtractedText above).
-    // Using adjustedPageOffsets here would introduce a per-page drift equal
-    // to the cumulative header strip, eventually exceeding page-text length
-    // and causing applyHitsToPage to drop hits silently.
-
-    String allHitsJson = buildAllHitsJson(convertedMatches, extraction.pageOffsets());
-
-    // Determine the first page with a match; this is where the viewer will open
-
-    int firstMatchPage = convertedMatches.stream()
-      .mapToInt(PageMatch::pageNumber)
-      .filter(p -> p > 0)
-      .min().orElse(1);
+    PagedHits finalHits = hits;
 
     Platform.runLater(() ->
     {
@@ -375,18 +249,28 @@ final class ConvertedOfficeHitCoordinator extends FileHighlightCoordinator
       // All page determination happened above; no rendering was involved.
 
       viewerLoaded = true;
-      PreviewWindow.loadConvertedPDF(pvsQueriesTab, db.getRootPath(row.path()), convertedPath, firstMatchPage, row.resolvedRecord());
+      PreviewWindow.loadConvertedPDF(pvsQueriesTab, db.getRootPath(row.path()), convertedPath, finalHits.firstMatchPage(), row.resolvedRecord());
 
-      boolean hitsApplied = (allHitsJson != null) && PreviewWindow.setAllHits(pvsQueriesTab, allHitsJson);
+      if (finalHits.hitsJson() != null)
+        PreviewWindow.setAllHits(pvsQueriesTab, finalHits.hitsJson());
 
-      if (hitsApplied)
-      {
-        convertedPdfNormText = normPdfText;
-        convertedPdfPosMap = pdfPosMap;
-        convertedPdfPageOffsets = adjustedPageOffsets;
-        tikaNormText = normTikaTextLocal;
-        tikaReverseMap = tikaRevMap;
-      }
+      // The alignment is published whether or not hits were applied: passage-click
+      // navigation works from the alignment alone and must not depend on delivery.
+
+      alignment = finalHits.alignment();
+    });
+  }
+
+//---------------------------------------------------------------------------
+
+  private void loadWithoutHits(FilePath convertedPath)
+  {
+    Platform.runLater(() ->
+    {
+      if (isDisposed()) return;
+
+      viewerLoaded = true;
+      PreviewWindow.loadConvertedPDF(pvsQueriesTab, db.getRootPath(row.path()), convertedPath, 1, row.resolvedRecord());
     });
   }
 

@@ -17,20 +17,21 @@
 
 package org.hypernomicon.query.ui;
 
-import static org.hypernomicon.fts.FTSUtil.*;
-
 import java.util.List;
 
 import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
+import org.hypernomicon.fts.HitSetService;
+import org.hypernomicon.fts.HitSetService.PagedHits;
 import org.hypernomicon.query.ui.FTSQueryCtrlr.FTSResultRow;
 
 //---------------------------------------------------------------------------
 
 /**
  * Highlight coordinator for native PDF files. Loads the PDF at the specified
- * start page, then pushes per-page hit data to the viewer; pdf.js applies
- * highlights lazily per page via its {@code _finishRendering} hook.
+ * start page, then pushes per-page hit data to the viewer; pdf.js applies the
+ * highlights per page as each text layer renders, so pages scrolled to later
+ * light up without another push.
  */
 final class PdfHitCoordinator extends PreloadedHitCoordinator
 {
@@ -48,9 +49,9 @@ final class PdfHitCoordinator extends PreloadedHitCoordinator
 
   @Override String buildHitsJson()
   {
-    int[] pageOffsets = indexer.getPageOffsets(path());
+    PagedHits hits = HitSetService.pdfHits(HitSetService.TextSource.of(indexer), path(), matches);
 
-    return pageOffsets == null ? null : buildAllHitsJson(matches, pageOffsets);
+    return hits == null ? null : hits.hitsJson();
   }
 
 //---------------------------------------------------------------------------

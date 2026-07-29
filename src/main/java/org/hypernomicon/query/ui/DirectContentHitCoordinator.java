@@ -17,13 +17,12 @@
 
 package org.hypernomicon.query.ui;
 
-import static org.hypernomicon.fts.FTSUtil.*;
-import static org.hypernomicon.util.Util.*;
-
 import java.util.List;
 
 import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
+import org.hypernomicon.fts.HitSetService;
+import org.hypernomicon.fts.HitSetService.DirectHits;
 import org.hypernomicon.query.ui.FTSQueryCtrlr.FTSResultRow;
 
 //---------------------------------------------------------------------------
@@ -50,7 +49,9 @@ final class DirectContentHitCoordinator extends PreloadedHitCoordinator
 
   @Override String buildHitsJson()
   {
-    return nullSwitch(indexer.getStoredContent(path()), null, storedContent -> buildDirectContentHitsJson(matches, storedContent));
+    DirectHits hits = HitSetService.directContentHits(HitSetService.TextSource.of(indexer), path(), matches);
+
+    return hits == null ? null : hits.hitsJson();
   }
 
 //---------------------------------------------------------------------------

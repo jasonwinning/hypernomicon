@@ -30,7 +30,6 @@ import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -40,13 +39,13 @@ import org.apache.lucene.search.*;
 import org.hypernomicon.App;
 import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.dialogs.SearchKeySelectDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.fts.FullTextIndexer.SearchBatch;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
+import org.hypernomicon.fts.HitSetService;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.HyperPath;
@@ -113,21 +112,17 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   private final ObservableList<FTSResultRow> allRows = FXCollections.observableArrayList();
   private final FilteredList<FTSResultRow> filteredRows = new FilteredList<>(allRows);
-  private final Map<String, List<PageMatch>> highlightCache = new ConcurrentHashMap<>();
-  private final Set<String> highlightRequested = ConcurrentHashMap.newKeySet();
-  private final ExecutorService highlightExecutor = Executors.newSingleThreadExecutor(runnable ->
-  {
-    HyperThread hyperThread = new HyperThread("FTS-highlight", runnable);
-    hyperThread.setDaemon(true);
-    return hyperThread;
-  });
 
-  private static final int PAGE_SIZE = 200, MAX_PASSAGES_PER_FILE = 10_000;
+  /** Owns match computation and caching for this controller's searches: the
+   *  per-file match cache, request deduplication, search-generation staleness,
+   *  and the "FTS-highlight" worker thread. */
+  private final HitSetService hitSetService = new HitSetService();
+
+  private static final int PAGE_SIZE = 200;
 
   private final FTSContextPaneRenderer contextPaneRenderer = new FTSContextPaneRenderer();
 
   private Query lastSearchKeyQuery;
-  private Function<String, Iterable<Keyword>> lastSearchKeyLookup;
   private SearchResultFileList recordScopeList, lastScopeList;
   private ScoreDoc lastScoreDoc;
   private List<HDT_RecordWithPath> recordScopeRecords;
@@ -141,16 +136,6 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   private int currentPreviewPage = 1, totalMatchCount = -1;
   private boolean hasMore;
-
-  // searchGeneration: incremented only on the JavaFX Application Thread (in executeSearch),
-  // read on the FX thread and on highlightExecutor worker threads to detect and abort
-  // stale per-row highlight work when a new query replaces the current results.
-  // Single-writer model; volatile provides the required visibility.
-  //
-  // Per-file highlight cancellation (previously the job of a sibling highlightGeneration
-  // counter) is now handled by FileHighlightCoordinator.dispose().
-
-  private volatile int searchGeneration;
 
 //---------------------------------------------------------------------------
 
@@ -446,7 +431,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     colMatches.setCellValueFactory(cellData ->
     {
       String path = cellData.getValue().path();
-      List<PageMatch> matches = highlightCache.get(path);
+      List<PageMatch> matches = hitSetService.cachedMatches(path);
 
       if (matches == null)
       {
@@ -463,7 +448,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     colExcerpt.setCellValueFactory(cellData ->
     {
       String path = cellData.getValue().path();
-      List<PageMatch> matches = highlightCache.get(path);
+      List<PageMatch> matches = hitSetService.cachedMatches(path);
 
       if (matches == null)
       {
@@ -514,7 +499,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
           return;
         }
 
-        List<PageMatch> matches = highlightCache.get(item.path());
+        List<PageMatch> matches = hitSetService.cachedMatches(item.path());
 
         if (collEmpty(matches))
         {
@@ -846,11 +831,11 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     String folderPrefix = useRecordScope ? null : computeFolderPrefix();
 
-    // Clear previous state
+    // Clear previous state and begin a new hit-set generation for this query
 
-    ++searchGeneration;
-    highlightCache.clear();
-    highlightRequested.clear();
+    hitSetService.beginGeneration(new HitSetService.QueryDescriptor(queryStr, searchKeyQuery, searchKeyLookup,
+      useRecordScope ? recordScopeList::filterResults : null));
+
     currentPreviewPage = 1;
     disposeCurrentCoordinator();
 
@@ -861,7 +846,6 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     String finalQueryStr = queryStr,
            finalFileMask = fileMask;
     Query finalSearchKeyQuery = searchKeyQuery;
-    Function<String, Iterable<Keyword>> finalSearchKeyLookup = searchKeyLookup;
 
     SearchWithTotal result = runSearchTask("Searching...", () ->
     {
@@ -891,7 +875,6 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     lastQueryStr = queryStr;
     lastSearchKeyQuery = searchKeyQuery;
-    lastSearchKeyLookup = searchKeyLookup;
     lastFileMask = fileMask;
     lastFolderPrefix = folderPrefix;
     lastScopeList = useRecordScope ? recordScopeList : null;
@@ -909,58 +892,20 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       // For record-scoped searches, highlight and filter up front so rows with
       // no in-range matches never appear in the table.
 
-      int gen = searchGeneration;
-      SearchResultFileList scopeList = lastScopeList;
-
-      highlightExecutor.submit(() ->
+      hitSetService.computeMatchesForBatch(lightResults, highlighted ->
       {
-        if (searchGeneration != gen) return;
+        List<FTSResultRow> rows = new ArrayList<>();
 
-        FullTextIndexer idx = db.getFullTextIndexer();
-        if (idx == null) return;
-
-        try
+        for (SearchResult sr : highlighted)
         {
-          List<SearchResult> highlighted = (finalSearchKeyQuery != null)
-            ? idx.highlightResults(finalSearchKeyQuery, finalSearchKeyLookup, lightResults, MAX_PASSAGES_PER_FILE)
-            : idx.highlightResults(finalQueryStr, lightResults, MAX_PASSAGES_PER_FILE);
-
-          if (searchGeneration != gen) return;
-
-          if (scopeList != null)
-            highlighted = scopeList.filterResults(highlighted);
-
-          List<SearchResult> finalHighlighted = highlighted;
-
-          for (SearchResult sr : finalHighlighted)
-          {
-            List<PageMatch> matches = sr.pageMatches();
-            if (matches != null)
-            {
-              highlightCache.put(sr.path(), matches);
-              highlightRequested.add(sr.path());
-            }
-          }
-
-          Platform.runLater(() ->
-          {
-            if (searchGeneration != gen) return;
-
-            List<FTSResultRow> rows = new ArrayList<>();
-
-            for (SearchResult sr : finalHighlighted)
-            {
-              FilePath filePath = db.getRootPath(sr.path());
-              List<PageMatch> matches = sr.pageMatches();
-              IntStream pages = (matches != null) ? matches.stream().mapToInt(PageMatch::pageNumber) : IntStream.empty();
-              HDT_RecordWithPath record = HDT_WorkFile.resolveRecordForPages(filePath, pages, HyperPath.resolveRecord(filePath, 0));
-              rows.add(new FTSResultRow(sr, record));
-            }
-
-            showResults(rows);
-          });
+          FilePath filePath = db.getRootPath(sr.path());
+          List<PageMatch> matches = sr.pageMatches();
+          IntStream pages = (matches != null) ? matches.stream().mapToInt(PageMatch::pageNumber) : IntStream.empty();
+          HDT_RecordWithPath record = HDT_WorkFile.resolveRecordForPages(filePath, pages, HyperPath.resolveRecord(filePath, 0));
+          rows.add(new FTSResultRow(sr, record));
         }
-        catch (ParseException e) { /* query was valid when search ran */ }
+
+        showResults(rows);
       });
     }
     else
@@ -1163,90 +1108,49 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   private void requestHighlight(String path)
   {
-    if (highlightRequested.add(path) == false) return;
-
-    String queryStr = lastQueryStr;
-    Query skQuery = lastSearchKeyQuery;
-
-    if ((queryStr == null) && (skQuery == null)) return;
-
-    Function<String, Iterable<Keyword>> skLookup = lastSearchKeyLookup;
-    int gen = searchGeneration;
-    SearchResultFileList scopeList = lastScopeList;
-
-    highlightExecutor.submit(() ->
+    hitSetService.requestMatches(path, matches ->
     {
-      if (searchGeneration != gen) return;
+      // If page-range filtering removed all matches, remove the row entirely
 
-      FullTextIndexer indexer = db.getFullTextIndexer();
-      if (indexer == null) return;
-
-      try
+      if ((lastScopeList != null) && matches.isEmpty())
       {
-        SearchResult light = new SearchResult(path, 0f, null, null);
-        List<SearchResult> results = (skQuery != null)
-          ? indexer.highlightResults(skQuery , skLookup, List.of(light), MAX_PASSAGES_PER_FILE)
-          : indexer.highlightResults(queryStr, List.of(light), MAX_PASSAGES_PER_FILE);
-
-        if (searchGeneration != gen) return;
-
-        if (scopeList != null)
-          results = scopeList.filterResults(results);
-
-        List<PageMatch> matches = results.isEmpty()
-          ? List.of()
-          : nullSwitch(results.getFirst().pageMatches(), List.of());
-
-        highlightCache.put(path, matches);
-
-        Platform.runLater(() ->
-        {
-          if (searchGeneration != gen) return;
-
-          // If page-range filtering removed all matches, remove the row entirely
-
-          if ((scopeList != null) && matches.isEmpty())
-          {
-            allRows.removeIf(row -> row.path().equals(path));
-          }
-          else
-          {
-            // Update the Record column with the most specific work covering all match pages
-
-            for (int ndx = 0; ndx < allRows.size(); ndx++)
-            {
-              FTSResultRow row = allRows.get(ndx);
-
-              if (row.path().equals(path))
-              {
-                FilePath filePath = db.getRootPath(path);
-                IntStream pages = matches.stream().mapToInt(PageMatch::pageNumber);
-                HDT_RecordWithPath newRecord = HDT_WorkFile.resolveRecordForPages(filePath, pages, row.resolvedRecord());
-
-                if (newRecord != row.resolvedRecord())
-                  allRows.set(ndx, new FTSResultRow(row.result(), newRecord));
-
-                break;
-              }
-            }
-          }
-
-          tvResults.refresh();
-          updateStatusLabel();
-
-          FTSResultRow selected = tvResults.getSelectionModel().getSelectedItem();
-          if ((selected != null) && selected.path().equals(path))
-          {
-            updateContextView(selected);
-
-            // Force re-send of hits now that we have match data
-
-            disposeCurrentCoordinator();
-            setPreview(selected);
-          }
-        });
+        allRows.removeIf(row -> row.path().equals(path));
       }
-      catch (ParseException e) { /* query was valid when search ran */ }
+      else
+      {
+        // Update the Record column with the most specific work covering all match pages
+
+        for (int ndx = 0; ndx < allRows.size(); ndx++)
+        {
+          FTSResultRow row = allRows.get(ndx);
+
+          if (row.path().equals(path))
+          {
+            FilePath filePath = db.getRootPath(path);
+            IntStream pages = matches.stream().mapToInt(PageMatch::pageNumber);
+            HDT_RecordWithPath newRecord = HDT_WorkFile.resolveRecordForPages(filePath, pages, row.resolvedRecord());
+
+            if (newRecord != row.resolvedRecord())
+              allRows.set(ndx, new FTSResultRow(row.result(), newRecord));
+
+            break;
+          }
+        }
+      }
+
+      tvResults.refresh();
+      updateStatusLabel();
+
+      FTSResultRow selected = tvResults.getSelectionModel().getSelectedItem();
+      if ((selected != null) && selected.path().equals(path))
+      {
+        updateContextView(selected);
+
+        // Force re-send of hits now that we have match data
+
+        disposeCurrentCoordinator();
+        setPreview(selected);
+      }
     });
   }
 
@@ -1256,7 +1160,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   private void updateContextView(FTSResultRow selectedRow)
   {
     String path = selectedRow.path();
-    List<PageMatch> matches = highlightCache.get(path);
+    List<PageMatch> matches = hitSetService.cachedMatches(path);
 
     if (matches == null)
     {
@@ -1286,7 +1190,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     FTSResultRow selected = tvResults.getSelectionModel().getSelectedItem();
     if (selected == null) return;
 
-    List<PageMatch> matches = highlightCache.get(selected.path());
+    List<PageMatch> matches = hitSetService.cachedMatches(selected.path());
     if (nullSwitch(matches, false, contextPaneRenderer::hasMore) == false) return;
 
     String escapedHtml = contextPaneRenderer.renderNextBatch(matches)
@@ -1508,7 +1412,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
           if ((currentCoordinator != null) && (passageNdx >= 0))
           {
-            List<PageMatch> tikaMatches = highlightCache.get(selected.path());
+            List<PageMatch> tikaMatches = hitSetService.cachedMatches(selected.path());
             if (tikaMatches == null) tikaMatches = selected.result().pageMatches();
 
             int targetPage = currentCoordinator.pageForPassage(passageNdx, tikaMatches);
@@ -1530,7 +1434,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
           if (passageNdx >= 0)
           {
-            List<PageMatch> matches = nullSwitch(highlightCache.get(selected.path()), selected.result().pageMatches());
+            List<PageMatch> matches = nullSwitch(hitSetService.cachedMatches(selected.path()), selected.result().pageMatches());
 
             int matchNdx = 0, pageNum = -1, ndxOnPage = 0;
 
@@ -1644,7 +1548,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
         return;
     }
 
-    List<PageMatch> matches = nullSwitch(row.result().pageMatches(), highlightCache.get(row.path()));
+    List<PageMatch> matches = nullSwitch(row.result().pageMatches(), hitSetService.cachedMatches(row.path()));
 
     // For new files, navigate to the first page with a match (if known)
 
@@ -1674,7 +1578,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       if (indexer == null) return;
 
       disposeCurrentCoordinator();
-      currentCoordinator = new ConvertedOfficeHitCoordinator(row, indexer, lastQueryStr, lastSearchKeyQuery, lastSearchKeyLookup, highlightExecutor);
+      currentCoordinator = new ConvertedOfficeHitCoordinator(row, indexer, hitSetService);
       currentCoordinator.start();
       return;
     }
