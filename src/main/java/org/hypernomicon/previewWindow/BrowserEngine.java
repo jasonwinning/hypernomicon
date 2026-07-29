@@ -61,6 +61,9 @@ import javafx.stage.*;
  * thread on every platform, so the engine is ready before the UI shows. It is
  * idempotent and thread-safe. On success it sets {@code jxBrowserInitialized};
  * on failure it sets {@code jxBrowserDisabled} and closes the preview windows.
+ * A missing license key disables silently (an expected condition for builds
+ * made without one; {@link App#start} explains it once the UI is up); any
+ * other failure also shows an error popup.
  * <p>
  * The custom {@code hnres:} resource scheme ({@link ResourceServer}) is
  * registered here because JxBrowser only accepts scheme registrations at
@@ -82,21 +85,26 @@ public final class BrowserEngine
   private static final String LICENSE_KEY_RESOURCE = "/jxbrowser.key",
                               USER_DATA_DIR_PREFIX = "hnChromiumData-";
 
+  private static boolean licenseKeyMissing = false;
+
 //---------------------------------------------------------------------------
 
   /** Whether the engine exists and has not crashed or failed to start. */
   public static synchronized boolean isInitialized() { return (engine != null) && (jxBrowserDisabled == false); }
+
+  /** Whether {@link #initialize()} skipped engine creation because no usable license key was found. */
+  public static synchronized boolean licenseKeyIsMissing() { return licenseKeyMissing; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
    * Creates the engine if it does not already exist. Blocking; call off the
-   * FX thread. On failure (missing license key, engine startup error), shows
-   * an error popup once and disables browser functionality; subsequent calls
-   * return without retrying. An environment that cannot support the Chromium
-   * sandbox is not treated as a failure: the engine is recreated with the
-   * sandbox disabled.
+   * FX thread. On failure, disables browser functionality; subsequent calls
+   * return without retrying. A missing license key disables silently; any
+   * other failure (engine startup error) also shows an error popup once.
+   * An environment that cannot support the Chromium sandbox is not treated
+   * as a failure: the engine is recreated with the sandbox disabled.
    */
   public static synchronized void initialize()
   {
@@ -115,10 +123,27 @@ public final class BrowserEngine
     if (IS_OS_MAC)
       System.setProperty("jxbrowser.javafx.jni.embedding.disabled", "true");
 
+    String licenseKey;
+
     try
     {
-      String licenseKey = loadLicenseKey();
+      licenseKey = loadLicenseKey();
+    }
+    catch (IOException e)
+    {
+      // A missing key is an expected condition for builds made without one (the key file is
+      // untracked), not an error worth a popup: previews degrade through the jxBrowserDisabled
+      // guards, and App.start offers to turn off full-text indexing if it is enabled.
 
+      System.out.println("Browser engine unavailable: " + getThrowableMessage(e));
+
+      licenseKeyMissing = true;
+      disable();
+      return;
+    }
+
+    try
+    {
       try
       {
         engine = createEngine(licenseKey, false);
@@ -156,10 +181,10 @@ public final class BrowserEngine
 
       jxBrowserInitialized = true;
     }
-    catch (IOException | RuntimeException | LinkageError e)
+    catch (RuntimeException | LinkageError e)
     {
       engine = null;
-      errorPopup("Unable to initialize preview window: " + getThrowableMessage(e));
+      errorPopup("Unable to initialize the browser engine; previews and full-text indexing will be unavailable.\n\nDetails: " + getThrowableMessage(e));
       disable();
       return;
     }

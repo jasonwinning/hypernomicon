@@ -3654,7 +3654,7 @@ public final class MainCtrlr
 
     FullTextIndexer indexer = db.getFullTextIndexer();
 
-    if ((indexer == null) || (indexer.isIndexingEnabled() == false))
+    if ((indexer == null) || (indexer.isQueryable() == false))
     {
       hideFTSCountLabel();
       return;

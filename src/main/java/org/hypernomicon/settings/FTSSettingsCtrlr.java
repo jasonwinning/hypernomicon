@@ -33,6 +33,7 @@ import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.fts.PDFJSTextExtractor;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
+import org.hypernomicon.previewWindow.BrowserEngine;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.tableCells.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.*;
@@ -115,10 +116,22 @@ public class FTSSettingsCtrlr implements SettingsControl
 
       int count = indexer.retryFailed();
 
-      infoPopup(count == 0 ?
-        "There are no failed or abandoned entries to retry."
+      if (count == 0)
+      {
+        infoPopup("There are no failed or abandoned entries to retry.");
+        return;
+      }
+
+      // The retry runs on the background indexing thread and is deferred until the
+      // initial build is complete, so tell the user which of the two is happening
+
+      String entriesStr = count + " failed or abandoned entr" + (count == 1 ? "y" : "ies");
+
+      infoPopup((indexer.getState() == FullTextIndexer.IndexerState.BUILDING ?
+        "An index build is currently in progress; it re-attempts previously failed entries as it goes. " +
+        "Once it completes, indexing will be retried for whichever of the " + entriesStr + " still failed."
       :
-        "Retrying full-text indexing for " + count + " failed or abandoned entr" + (count == 1 ? "y" : "ies") + ".\n\n" +
+        "Retrying full-text indexing for " + entriesStr + '.') + "\n\n" +
         "Tip: if a file failed because it took too long to index, raising the maximum time (or choosing No limit) may help it succeed.");
     });
 
@@ -167,10 +180,27 @@ public class FTSSettingsCtrlr implements SettingsControl
     chkFTSIndexingEnabled .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
     spnThreadCount        .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
     btnIndexStats         .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
-    btnRetryFailed        .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
-    btnRebuildIndex       .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
     chkNoExtractionTimeout.disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
     spnExtractionTimeout  .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty().or(chkNoExtractionTimeout.selectedProperty()));
+
+    if (jxBrowserDisabled)
+    {
+      // Without the browser engine (missing license key or startup failure), indexing cannot
+      // run at all: retrying or rebuilding would only record every PDF as a failed entry.
+      // The explanatory tooltip goes on the still-enabled checkbox because JavaFX does not
+      // show tooltips on disabled controls.
+
+      disableAll(btnRetryFailed, btnRebuildIndex);
+
+      setToolTip(chkFTSIndexingEnabled, BrowserEngine.licenseKeyIsMissing()
+        ? "The JxBrowser license key is not present, so the browser engine is unavailable and indexing cannot run regardless of this setting."
+        : "The browser engine failed to initialize, so indexing cannot run this session regardless of this setting.");
+    }
+    else
+    {
+      btnRetryFailed .disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
+      btnRebuildIndex.disableProperty().bind(chkFTSDisabledForThisDb.selectedProperty());
+    }
 
     if (noDB)
     {

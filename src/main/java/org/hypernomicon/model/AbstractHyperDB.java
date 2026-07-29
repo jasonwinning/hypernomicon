@@ -2730,7 +2730,11 @@ public abstract class AbstractHyperDB
 
           if (indexDir != null)
           {
-            boolean ftsIndexingEnabled = app.prefs.getBoolean(PrefKey.FTS_INDEXING_ENABLED, true);
+            // Without the browser engine (missing license key or startup failure), PDF text
+            // extraction is impossible and every PDF would be recorded as a failed index entry,
+            // so treat indexing as off; the existing index stays online and searchable.
+
+            boolean ftsIndexingEnabled = app.prefs.getBoolean(PrefKey.FTS_INDEXING_ENABLED, true) && (jxBrowserDisabled == false);
             int ftsThreadCount = app.prefs.getInt(PrefKey.FTS_THREAD_COUNT, -1);
 
             indexer.bringOnline(rootFilePath, indexDir, registryAccessor);

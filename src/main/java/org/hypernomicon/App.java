@@ -332,6 +332,8 @@ public final class App extends Application
       return;
     }
 
+    promptToDisableIndexingIfLicenseMissing();
+
     boolean hdbExists = false;
     String srcName = prefs.get(PrefKey.SOURCE_FILENAME, "");
     if (srcName.isBlank() == false)
@@ -378,6 +380,30 @@ public final class App extends Application
 
     if (TestConfig.runRecordSaveCycleTest() && db.isOnline())
       testUpdatingAllRecords(1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * If engine initialization was skipped because no JxBrowser license key is present and
+   * full-text indexing is turned on, explain the situation and offer to turn the setting
+   * off so the explanation stops appearing at every startup. A genuine engine failure with
+   * a key present already showed an error popup and is not re-reported here; it also does
+   * not warrant changing a setting that could work again next launch.
+   */
+  private void promptToDisableIndexingIfLicenseMissing()
+  {
+    if ((BrowserEngine.licenseKeyIsMissing() == false) || (prefs.getBoolean(PrefKey.FTS_INDEXING_ENABLED, true) == false))
+      return;
+
+    if (confirmDialog("""
+        The JxBrowser license key was not found, so the embedded browser engine is unavailable.
+        File previews are disabled, and full-text search indexing cannot run.
+
+        Turn off the "Enable full-text search indexing" setting so that this message no longer appears at startup?
+        Any existing full-text index remains searchable either way, and the setting can be turned back on later in the Settings dialog.""", false))
+      prefs.putBoolean(PrefKey.FTS_INDEXING_ENABLED, false);
   }
 
 //---------------------------------------------------------------------------

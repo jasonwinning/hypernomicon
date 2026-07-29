@@ -166,7 +166,7 @@
                    AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="270.0" AnchorPane.topAnchor="7.0"/>
         <Button mnemonicParsing="false" onAction="#btnFtsDiagBrowseClick"
                 prefHeight="25.0" text="..." AnchorPane.rightAnchor="235.0" AnchorPane.topAnchor="7.0"/>
-        <Button mnemonicParsing="false" onAction="#btnFtsDiagConvertClick"
+        <Button fx:id="btnFtsDiagConvert" mnemonicParsing="false" onAction="#btnFtsDiagConvertClick"
                 prefHeight="25.0" text="Convert" AnchorPane.rightAnchor="165.0" AnchorPane.topAnchor="7.0"/>
         <Button mnemonicParsing="false" onAction="#btnFtsDiagShowConvertedClick"
                 prefHeight="25.0" text="Show Converted" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="7.0"/>
@@ -175,7 +175,7 @@
         <Label text="Query:" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="58.0"/>
         <TextField fx:id="tfFtsDiagQuery" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
                    prefWidth="300.0" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="55.0"/>
-        <Button mnemonicParsing="false" onAction="#btnFtsDiagExtractClick"
+        <Button fx:id="btnFtsDiagExtract" mnemonicParsing="false" onAction="#btnFtsDiagExtractClick"
                 prefHeight="25.0" text="Extract &amp; Search" AnchorPane.leftAnchor="400.0" AnchorPane.topAnchor="55.0"/>
         <Button mnemonicParsing="false" onAction="#btnFtsDiagExportClick"
                 prefHeight="25.0" text="Export" AnchorPane.leftAnchor="530.0" AnchorPane.topAnchor="55.0"/>
@@ -251,7 +251,7 @@
             <ToggleGroup fx:id="tgPdfExtractor"/>
           </toggleGroup>
         </RadioButton>
-        <RadioButton mnemonicParsing="false" text="PDFBox" toggleGroup="$tgPdfExtractor"
+        <RadioButton fx:id="rbPDFBox" mnemonicParsing="false" text="PDFBox" toggleGroup="$tgPdfExtractor"
                      AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="96.0"/>
         <CheckBox fx:id="chkPdfDebug" text="Debug items" AnchorPane.leftAnchor="290.0" AnchorPane.topAnchor="96.0"/>
         <Label fx:id="lblPdfTime" AnchorPane.leftAnchor="400.0" AnchorPane.topAnchor="96.0"/>

@@ -58,6 +58,8 @@ import org.hypernomicon.fileManager.FileManagerTestRunner;
 import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.fts.PDFJSTextExtractor;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.previewWindow.BrowserEngine;
+import org.hypernomicon.util.StopWatch;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
@@ -83,10 +85,10 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest,
                        btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter, btnTermsTabTests, btnFolderBypassTest,
-                       btnSetupFMTest, btnRunFMTest, btnPdfExtract, btnPdfExtract2, btnPdfExtract3;
+                       btnSetupFMTest, btnRunFMTest, btnPdfExtract, btnPdfExtract2, btnPdfExtract3, btnFtsDiagConvert, btnFtsDiagExtract;
   @FXML private CheckBox chkFolderBypass, chkPdfDebug, chkWatcherEvents;
   @FXML private Label lblPdfTime, lblFtsDiagConvertedPath, lblFtsDiagStatus;
-  @FXML private RadioButton rbZotero, rbMendeley, rbPdfJS;
+  @FXML private RadioButton rbZotero, rbMendeley, rbPdfJS, rbPDFBox;
   @FXML private Tab tabLinkGen;
   @FXML private TableColumn<FtsDiagMatch, String> colFtsDiagNdx, colFtsDiagTikaOffset, colFtsDiagTikaNormOffset, colFtsDiagTikaSnippet,
                                                   colFtsDiagPdfPage, colFtsDiagPdfNormOffset, colFtsDiagPdfSnippet;
@@ -107,6 +109,11 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   // Tracks number of concurrent extractions; overall stopwatch runs while > 0
   private int activeExtractions = 0;
+
+  // Times the overall extraction shown in lblPdfTime. Deliberately not one of Util's
+  // shared stopWatch1-6, which are reserved for temporary debugging; a lasting use of
+  // one would collide with whatever a debugging session assigns it to.
+  private final StopWatch extractionStopWatch = new StopWatch();
 
 //---------------------------------------------------------------------------
 
@@ -150,6 +157,21 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     if (db.bibLibraryIsLinked())
       tfRefMgrUserID.setText(db.getBibLibrary().getUserID());
+
+    if (jxBrowserDisabled)
+    {
+      // pdf.js extraction runs in the browser engine; without it (missing JxBrowser license
+      // key or engine startup failure), these controls could only produce null results, and
+      // the FTS Diagnostics extraction would stall waiting for an extractor pool that can
+      // never be populated. The PDFBox and Tika sides need no engine and stay usable.
+
+      disableAll(rbPdfJS, btnPdfExtract2, btnPdfExtract3, btnFtsDiagConvert, btnFtsDiagExtract);
+
+      rbPDFBox.setSelected(true);
+
+      lblFtsDiagStatus.setText("Extraction unavailable: browser engine not initialized" +
+        (BrowserEngine.licenseKeyIsMissing() ? " (no JxBrowser license key)" : "") + '.');
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1244,7 +1266,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     if (activeExtractions == 1)
     {
-      stopWatch1.resetAndStart();
+      extractionStopWatch.resetAndStart();
       lblPdfTime.setText("...");
     }
   }
@@ -1258,8 +1280,8 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     if (activeExtractions == 0)
     {
-      stopWatch1.stop();
-      lblPdfTime.setText("Overall: " + stopWatch1.elapsedStr());
+      extractionStopWatch.stop();
+      lblPdfTime.setText("Overall: " + extractionStopWatch.elapsedStr());
     }
   }
 
@@ -1288,7 +1310,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     }
     else
     {
-      lblPdfTime.setText(timePrefix + stopWatch1.elapsedStr());
+      lblPdfTime.setText(timePrefix + extractionStopWatch.elapsedStr());
       taPdfResult.setText(pages.get(page - 1));
     }
 
