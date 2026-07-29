@@ -424,6 +424,19 @@ public final class BrowserEngine
     {
       noOp();
     }
+
+    // Office-preview artifact caches from previous runs (both the legacy flat
+    // hnTempOfficePreview dir and the instance-scoped hnTempOfficePreview-* dirs)
+
+    try (var stream = Files.newDirectoryStream(tempFilePath.toPath(), "hnTempOfficePreview*"))
+    {
+      for (Path artifactDirPath : stream)
+        FileDeletion.ofDirWithContents(FilePath.of(artifactDirPath)).nonInteractiveFailureOK().execute();
+    }
+    catch (IOException e)
+    {
+      noOp();
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
  * plumbing. These tests drive transitions directly (calling the package-private
  * {@code markConverting}/{@code complete}/{@code fail}/{@code cancel} methods)
  * so that the state machine can be validated in isolation from the actual
- * {@code OfficePreviewThread} and JodConverter.
+ * conversion worker and JodConverter.
  *
  * <p>All tests run on the JavaFX application thread via
  * {@link FxTestUtil#runFxAndWait} so that display callbacks dispatched via
@@ -63,7 +63,7 @@ class ConversionSessionTest
 
   private static ConversionSession newSession()
   {
-    return new ConversionSession(FilePath.of("test.docx"), null,
+    return new ConversionSession(FilePath.of("test.docx"),
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document", null);
   }
 
@@ -109,7 +109,7 @@ class ConversionSessionTest
       ConversionSession session = newSession();
       DisplayRecorder recorder = new DisplayRecorder();
 
-      session.subscribeDisplay(null, 1, recorder);
+      session.subscribeDisplay(null, recorder);
       assertEquals(1, recorder.events.size());
       assertEquals(ConversionState.PENDING, recorder.events.getFirst().state());
 
@@ -137,7 +137,7 @@ class ConversionSessionTest
     {
       ConversionSession session  = newSession();
       DisplayRecorder recorder = new DisplayRecorder();
-      session.subscribeDisplay(null, 1, recorder);
+      session.subscribeDisplay(null, recorder);
 
       RuntimeException cause = new RuntimeException("conversion broke");
       session.fail(cause);
@@ -270,13 +270,13 @@ class ConversionSessionTest
       DisplayRecorder a = new DisplayRecorder();
       DisplayRecorder b = new DisplayRecorder();
 
-      session.subscribeDisplay(null, 1, a);
-      session.subscribeDisplay(null, 2, b);
+      session.subscribeDisplay(null, a);
+      session.subscribeDisplay(null, b);
 
       // A should have seen just PENDING (its subscribe-time snapshot).
       // Displacement is silent: A receives no further notifications.
-      // This prevents spurious setUnable calls when callers re-subscribe
-      // for the same (file, wrapper), e.g., showFile called twice.
+      // This prevents spurious setUnable calls when a consumer re-subscribes
+      // under the same key, e.g., a pane re-previewing the same document.
 
       assertEquals(1, a.events.size());
       assertEquals(ConversionState.PENDING, a.events.getFirst().state());
@@ -304,7 +304,7 @@ class ConversionSessionTest
     FxTestUtil.runFxAndWait(() ->
     {
       ConversionSession session = newSession();
-      Subscription sub = session.subscribeDisplay(null, 1, new DisplayRecorder());
+      Subscription sub = session.subscribeDisplay(null, new DisplayRecorder());
 
       assertEquals(ConversionState.PENDING, session.state());
 
@@ -323,7 +323,7 @@ class ConversionSessionTest
     {
       ConversionSession session = newSession();
       CompletableFuture<FilePath> extractionFuture = session.subscribeExtraction();
-      Subscription displaySub = session.subscribeDisplay(null, 1, new DisplayRecorder());
+      Subscription displaySub = session.subscribeDisplay(null, new DisplayRecorder());
 
       displaySub.unsubscribe();
 
@@ -343,11 +343,11 @@ class ConversionSessionTest
     {
       AtomicInteger abandonedCount = new AtomicInteger();
 
-      ConversionSession session = new ConversionSession(FilePath.of("test.docx"), null,
+      ConversionSession session = new ConversionSession(FilePath.of("test.docx"),
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         _ -> abandonedCount.incrementAndGet());
 
-      Subscription sub = session.subscribeDisplay(null, 1, new DisplayRecorder());
+      Subscription sub = session.subscribeDisplay(null, new DisplayRecorder());
 
       assertEquals(0, abandonedCount.get());
 
@@ -383,7 +383,7 @@ class ConversionSessionTest
     FxTestUtil.runFxAndWait(() ->
     {
       ConversionSession session = newSession();
-      Subscription sub = session.subscribeDisplay(null, 1, new DisplayRecorder());
+      Subscription sub = session.subscribeDisplay(null, new DisplayRecorder());
 
       sub.unsubscribe();
       sub.unsubscribe();  // must not throw or double-fire abandonment

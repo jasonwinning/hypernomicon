@@ -406,7 +406,7 @@ public class PDFJSWrapper
   {
     if (pdfjsViewerLoaded)
     {
-      if (opened == false) return false;  // no document (empty viewer or status overlay); nothing to zoom
+      if (opened == false) return false;  // the viewer page is up but holds no document; nothing to zoom
 
       execJS("PDFViewerApplication." + (zoomingIn ? "zoomIn" : "zoomOut") + "();");
       return true;
@@ -1437,11 +1437,39 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private ConversionSession leasedArtifactSession = null;
+
+  /**
+   * Records that this viewer is displaying the given session's artifact,
+   * leasing it against cache eviction and releasing the lease on whatever
+   * artifact it displayed before. Called on the FX thread (display callbacks);
+   * used by dialog-hosted previews, which have no PreviewWrapper.
+   */
+  void leaseArtifact(ConversionSession session)
+  {
+    if (leasedArtifactSession == session) return;
+
+    if (leasedArtifactSession != null)
+      leasedArtifactSession.release();
+
+    leasedArtifactSession = session;
+    session.lease();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /** Closes this wrapper's browser and then runs the handler. Blocking; must be
    *  called OFF the FX thread (the shutdown dispose chain runs on a background
    *  thread; see {@link PreviewWindow#cleanup()}). */
   void cleanup(Runnable disposeHndlr)
   {
+    if (leasedArtifactSession != null)
+    {
+      leasedArtifactSession.release();
+      leasedArtifactSession = null;
+    }
+
     // No cleanupPdfHtml() here: the browser close below tears down the pdf.js
     // app regardless, and firing PDFViewerApplication.close() (which returns a
     // Promise) immediately before that close races JxBrowser's RPC thread as it

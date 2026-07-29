@@ -613,7 +613,7 @@ public final class PreviewWindow extends NonmodalWindow
 
     if (wrapper.ensureInitialized() == false) return null;
 
-    return OfficePreviewer.getOrCreateSession(filePath, wrapper, mimetypeStr);
+    return OfficePreviewer.getOrCreateSession(filePath, mimetypeStr);
   }
 
 //---------------------------------------------------------------------------
@@ -629,8 +629,8 @@ public final class PreviewWindow extends NonmodalWindow
   {
     if ((instance == null) || (session == null)) return;
 
-    nullSwitch(instance.srcToWrapper.get(src), wrapper ->
-      OfficePreviewer.enqueueForConversion(session, wrapper, null));  // null jsWrapper: the fallback only applies to dialog-hosted (wrapper-less) sessions
+    nullSwitch(instance.srcToWrapper.get(src), _ ->
+      OfficePreviewer.enqueueForConversion(session));
   }
 
 //---------------------------------------------------------------------------

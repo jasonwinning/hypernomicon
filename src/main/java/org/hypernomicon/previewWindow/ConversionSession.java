@@ -32,10 +32,10 @@ import javafx.application.Platform;
 //---------------------------------------------------------------------------
 
 /**
- * Represents one office-to-PDF conversion of a specific file targeted at a
- * specific {@link PDFJSWrapper}. Coordinates zero-or-one display consumer
- * (the Preview Window wrapper that will load the resulting PDF) and any
- * number of extraction consumers (e.g., FTS text extraction).
+ * Represents one office-to-PDF conversion of a specific document (content-keyed:
+ * all panes and dialogs requesting the same unmodified file share one session).
+ * Coordinates one display consumer per wrapper (each will load the resulting
+ * PDF) and any number of extraction consumers (e.g., FTS text extraction).
  *
  * <p>Consumers attach via {@link #subscribeDisplay} or {@link #subscribeExtraction}
  * and are notified when the session transitions between states. A session stays
@@ -46,8 +46,8 @@ import javafx.application.Platform;
  * <p>State transitions from {@link ConversionState#PENDING}/{@link ConversionState#CONVERTING} to
  * a terminal state are performed by package-private methods
  * ({@link #markConverting}, {@link #complete}, {@link #fail}, {@link #cancel}).
- * In production the {@code OfficePreviewThread} drives these; tests call them
- * directly.
+ * In production {@code DocumentArtifactService}'s conversion worker drives
+ * these; tests call them directly.
  *
  * <p>Thread safety: all state mutations are synchronized on an internal lock.
  * DisplayCallbacks are always dispatched on the JavaFX application thread
@@ -128,7 +128,7 @@ public final class ConversionSession
 
 //---------------------------------------------------------------------------
 
-  private record DisplaySub(PreviewWrapper previewWrapper, int pageNum, DisplayCallback callback) { }
+  private record DisplaySub(Object consumerKey, DisplayCallback callback) { }
 
   private record ExtractionSub(CompletableFuture<FilePath> future) { }
 
@@ -138,45 +138,46 @@ public final class ConversionSession
   private final Object lock = new Object();
 
   private final FilePath source;
-  private final PreviewWrapper previewWrapper;
   private final boolean convertToHtml;
   private final Consumer<ConversionSession> onAbandoned;
   private final Set<ExtractionSub> extractionSubs = new LinkedHashSet<>();
 
+  /** One display slot per consumer (panes key by their wrapper, dialogs by
+   *  their host): content-keyed sessions can serve several consumers at once,
+   *  and re-subscribing under the same key displaces only that consumer's
+   *  previous subscription. */
+  private final Map<Object, DisplaySub> displaySubs = new HashMap<>();
+
   private ConversionState state = ConversionState.PENDING;
   private FilePath convertedPath;
   private Throwable failure;
-  private DisplaySub displaySub;
+  private int leaseCount = 0;
+
+  private DocumentArtifactService.ArtifactKey artifactKey;
 
 //---------------------------------------------------------------------------
 
   /**
    * Package-private constructor; sessions are created via
-   * {@code OfficePreviewer.getOrCreateSession}.
+   * {@code DocumentArtifactService.getOrCreateSession}.
    *
    * @param source         the office document to convert
-   * @param previewWrapper the viewer wrapper the result is destined for (may be
-   *                       {@code null} in tests; UI-facing calls on the wrapper
-   *                       will be skipped)
    * @param mimetypeStr    MIME type of the source (used to decide between
    *                       PDF and HTML output)
    * @param onAbandoned    invoked once when the session loses its last subscriber;
    *                       the owner typically uses this to remove the session from
    *                       its registry. May be {@code null} in tests.
    */
-  ConversionSession(FilePath source, PreviewWrapper previewWrapper, String mimetypeStr,
-                    Consumer<ConversionSession> onAbandoned)
+  ConversionSession(FilePath source, String mimetypeStr, Consumer<ConversionSession> onAbandoned)
   {
-    this.source         = Objects.requireNonNull(source, "source");
-    this.previewWrapper = previewWrapper;
-    this.convertToHtml  = determineConvertToHtml(Objects.requireNonNull(mimetypeStr, "mimetypeStr"));
-    this.onAbandoned    = onAbandoned;
+    this.source        = Objects.requireNonNull(source, "source");
+    this.convertToHtml = determineConvertToHtml(Objects.requireNonNull(mimetypeStr, "mimetypeStr"));
+    this.onAbandoned   = onAbandoned;
   }
 
 //---------------------------------------------------------------------------
 
-  public FilePath       source()         { return source; }
-  public PreviewWrapper previewWrapper() { return previewWrapper; }
+  public FilePath source() { return source; }
 
   public ConversionState state()   { synchronized (lock) { return state; } }
   public Throwable       failure() { synchronized (lock) { return failure; } }
@@ -184,6 +185,27 @@ public final class ConversionSession
   FilePath convertedPath() { synchronized (lock) { return convertedPath; } }
 
   boolean convertToHtml()  { return convertToHtml; }
+
+  DocumentArtifactService.ArtifactKey artifactKey() { return artifactKey; }
+
+  void setArtifactKey(DocumentArtifactService.ArtifactKey key) { artifactKey = key; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Takes out a lease on this session's artifact, preventing cache eviction
+   * from deleting the artifact file while a viewer is displaying it. Balanced
+   * by {@link #release()}.
+   */
+  public void lease() { synchronized (lock) { leaseCount++; } }
+
+  /** Releases a lease taken by {@link #lease()}. */
+  public void release() { synchronized (lock) { if (leaseCount > 0) leaseCount--; } }
+
+  /** Whether the artifact cache may evict this session and delete its artifact:
+   *  no leases and no subscribers of either kind. */
+  boolean isEvictable() { synchronized (lock) { return (leaseCount == 0) && displaySubs.isEmpty() && extractionSubs.isEmpty(); } }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -209,12 +231,14 @@ public final class ConversionSession
 //---------------------------------------------------------------------------
 
   /**
-   * Attach a display consumer. At most one display subscription exists at a
-   * time; subscribing a second one silently displaces the first (the
-   * previous subscriber receives no further notifications but is not told
-   * anything; displacement is an internal housekeeping event, not a
-   * session-level cancellation, so subscribers that would otherwise call
-   * {@code setUnable} on CANCELLED don't fire spuriously).
+   * Attach a display consumer. Each consumer key (a pane host's wrapper, a
+   * dialog host) holds one display slot; subscribing again under the same key
+   * silently displaces that consumer's previous subscription (the displaced
+   * subscriber receives no further notifications but is not told anything;
+   * displacement is an internal housekeeping event, not a session-level
+   * cancellation, so subscribers that would otherwise call {@code setUnable}
+   * on CANCELLED don't fire spuriously). Different consumers' subscriptions
+   * coexist: a content-keyed session can serve several panes.
    *
    * <p>If the session is already in a terminal state, the callback is fired
    * immediately on the FX thread (directly if already on it, otherwise via
@@ -223,13 +247,13 @@ public final class ConversionSession
    *
    * <p>Callers are responsible for any UI side effects (showing altDisplay,
    * loading the PDF, etc.) via their {@link DisplayCallback}. The session
-   * itself performs no UI-facing calls on the wrapper.
+   * itself performs no UI-facing calls on the consumer.
    */
-  public Subscription subscribeDisplay(PreviewWrapper previewWrapper, int pageNum, DisplayCallback callback)
+  public Subscription subscribeDisplay(Object consumerKey, DisplayCallback callback)
   {
     Objects.requireNonNull(callback, "callback");
 
-    DisplaySub newSub = new DisplaySub(previewWrapper, pageNum, callback);
+    DisplaySub newSub = new DisplaySub(consumerKey, callback);
 
     ConversionState snapState;
     FilePath        snapPath;
@@ -237,14 +261,14 @@ public final class ConversionSession
 
     synchronized (lock)
     {
-      displaySub  = newSub;
+      displaySubs.put(consumerKey, newSub);
       snapState   = state;
       snapPath    = convertedPath;
       snapFailure = failure;
     }
 
     // Notify the newcomer of the current state (or an immediate terminal).
-    // The previous subscriber, if any, is silently displaced.
+    // The consumer's previous subscriber, if any, is silently displaced.
 
     fireDisplay(newSub, snapState, snapPath, snapFailure);
 
@@ -260,10 +284,10 @@ public final class ConversionSession
 
     synchronized (lock)
     {
-      if (displaySub == sub)
+      if (displaySubs.get(sub.consumerKey()) == sub)
       {
-        displaySub = null;
-        abandoned  = extractionSubs.isEmpty();
+        displaySubs.remove(sub.consumerKey());
+        abandoned = displaySubs.isEmpty() && extractionSubs.isEmpty();
       }
     }
 
@@ -319,7 +343,7 @@ public final class ConversionSession
       synchronized (lock)
       {
         extractionSubs.remove(sub);
-        abandoned = (displaySub == null) && extractionSubs.isEmpty();
+        abandoned = displaySubs.isEmpty() && extractionSubs.isEmpty();
       }
 
       if (abandoned)
@@ -332,7 +356,7 @@ public final class ConversionSession
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-// Package-private transition methods. Called by OfficePreviewThread (in
+// Package-private transition methods. Called by the conversion worker (in
 // production) and by unit tests directly.
 
   /**
@@ -341,8 +365,8 @@ public final class ConversionSession
    */
   void markConverting()
   {
-    DisplaySub snapDisplay;
-    boolean    changed = false;
+    DisplaySub[] snapDisplays;
+    boolean      changed = false;
 
     synchronized (lock)
     {
@@ -352,11 +376,12 @@ public final class ConversionSession
         changed = true;
       }
 
-      snapDisplay = displaySub;
+      snapDisplays = displaySubs.values().toArray(DisplaySub[]::new);
     }
 
-    if (changed && (snapDisplay != null))
-      fireDisplay(snapDisplay, ConversionState.CONVERTING, null, null);
+    if (changed)
+      for (DisplaySub sub : snapDisplays)
+        fireDisplay(sub, ConversionState.CONVERTING, null, null);
   }
 
 //---------------------------------------------------------------------------
@@ -370,7 +395,7 @@ public final class ConversionSession
   {
     Objects.requireNonNull(path, "path");
 
-    DisplaySub snapDisplay;
+    DisplaySub[] snapDisplays;
     ExtractionSub[] snapExtractions;
     boolean changed = false;
 
@@ -383,14 +408,14 @@ public final class ConversionSession
         changed       = true;
       }
 
-      snapDisplay     = displaySub;
+      snapDisplays    = displaySubs.values().toArray(DisplaySub[]::new);
       snapExtractions = extractionSubs.toArray(ExtractionSub[]::new);
     }
 
     if (changed == false) return;
 
-    if (snapDisplay != null)
-      fireDisplay(snapDisplay, ConversionState.COMPLETED, path, null);
+    for (DisplaySub sub : snapDisplays)
+      fireDisplay(sub, ConversionState.COMPLETED, path, null);
 
     for (ExtractionSub sub : snapExtractions)
       fireExtraction(sub, ConversionState.COMPLETED, path, null);
@@ -406,7 +431,7 @@ public final class ConversionSession
   {
     Objects.requireNonNull(cause, "cause");
 
-    DisplaySub snapDisplay;
+    DisplaySub[] snapDisplays;
     ExtractionSub[] snapExtractions;
     boolean changed = false;
 
@@ -419,14 +444,14 @@ public final class ConversionSession
         changed = true;
       }
 
-      snapDisplay     = displaySub;
+      snapDisplays    = displaySubs.values().toArray(DisplaySub[]::new);
       snapExtractions = extractionSubs.toArray(ExtractionSub[]::new);
     }
 
     if (changed == false) return;
 
-    if (snapDisplay != null)
-      fireDisplay(snapDisplay, ConversionState.FAILED, null, cause);
+    for (DisplaySub sub : snapDisplays)
+      fireDisplay(sub, ConversionState.FAILED, null, cause);
 
     for (ExtractionSub sub : snapExtractions)
       fireExtraction(sub, ConversionState.FAILED, null, cause);
@@ -450,7 +475,7 @@ public final class ConversionSession
   {
     Objects.requireNonNull(cause, "cause");
 
-    DisplaySub snapDisplay;
+    DisplaySub[] snapDisplays;
     ExtractionSub[] snapExtractions;
     boolean changed = false;
 
@@ -463,14 +488,14 @@ public final class ConversionSession
         changed = true;
       }
 
-      snapDisplay     = displaySub;
+      snapDisplays    = displaySubs.values().toArray(DisplaySub[]::new);
       snapExtractions = extractionSubs.toArray(ExtractionSub[]::new);
     }
 
     if (changed == false) return;
 
-    if (snapDisplay != null)
-      fireDisplay(snapDisplay, ConversionState.CANCELLED, null, cause);
+    for (DisplaySub sub : snapDisplays)
+      fireDisplay(sub, ConversionState.CANCELLED, null, cause);
 
     for (ExtractionSub sub : snapExtractions)
       fireExtraction(sub, ConversionState.CANCELLED, null, cause);
@@ -489,7 +514,7 @@ public final class ConversionSession
 
     synchronized (lock)
     {
-      shouldCancel = state.isNonTerminal() && (displaySub == null) && extractionSubs.isEmpty();
+      shouldCancel = state.isNonTerminal() && displaySubs.isEmpty() && extractionSubs.isEmpty();
     }
 
     if (shouldCancel)

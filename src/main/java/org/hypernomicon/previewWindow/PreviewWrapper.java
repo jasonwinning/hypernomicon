@@ -805,15 +805,15 @@ public class PreviewWrapper
         // so silent displacement + session lifecycle handle cleanup when the
         // dialog closes and the session's subscribers drop away.
 
-        ConversionSession session = OfficePreviewer.getOrCreateSession(filePath, previewWrapper, mimetypeStr);
-        ConversionSession.DisplayCallback callback = OfficePreviewer.displayCallbackForPreview(filePath, previewWrapper, jsWrapper, session.convertToHtml(), pageNum);
+        ConversionSession session = OfficePreviewer.getOrCreateSession(filePath, mimetypeStr);
+        ConversionSession.DisplayCallback callback = OfficePreviewer.displayCallbackForPreview(session, filePath, previewWrapper, jsWrapper, session.convertToHtml(), pageNum);
 
         if (previewWrapper != null)
-          previewWrapper.displaySubscription = session.subscribeDisplay(previewWrapper, pageNum, callback);
+          previewWrapper.displaySubscription = session.subscribeDisplay(previewWrapper, callback);
         else
-          session.subscribeDisplay(null, pageNum, callback);  // intentionally untracked; see comment above
+          session.subscribeDisplay(null, callback);  // intentionally untracked; see comment above
 
-        OfficePreviewer.enqueueForConversion(session, previewWrapper, jsWrapper);
+        OfficePreviewer.enqueueForConversion(session);
       }
 
       // Treat as an HTML file (removing scripts and making links external) if it appears to be HTML and load directly into browser.
@@ -993,8 +993,35 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private ConversionSession leasedArtifactSession = null;
+
+  /**
+   * Records that this pane is displaying the given session's artifact, leasing
+   * it against cache eviction and releasing the lease on whatever artifact this
+   * pane displayed before. Called on the FX thread (display callbacks).
+   */
+  void leaseArtifact(ConversionSession session)
+  {
+    if (leasedArtifactSession == session) return;
+
+    if (leasedArtifactSession != null)
+      leasedArtifactSession.release();
+
+    leasedArtifactSession = session;
+    session.lease();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   void cleanup(Runnable disposeHndlr)
   {
+    if (leasedArtifactSession != null)
+    {
+      leasedArtifactSession.release();
+      leasedArtifactSession = null;
+    }
+
     OfficePreviewer.cleanup();
 
     if (initialized)
