@@ -17,25 +17,21 @@
 
 package org.hypernomicon.previewWindow;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.teamdev.jxbrowser.chromium.*;
-import com.teamdev.jxbrowser.chromium.LoadParams.LoadType;
-import com.teamdev.jxbrowser.chromium.events.ConsoleEvent.Level;
-import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
-import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
-import com.teamdev.jxbrowser.chromium.internal.Environment;
-import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
-import com.teamdev.jxbrowser.chromium.javafx.BrowserView;
-import com.teamdev.jxbrowser.chromium.javafx.DefaultDialogHandler;
-import com.teamdev.jxbrowser.chromium.javafx.internal.dialogs.MessageDialog;
+import com.teamdev.jxbrowser.browser.Browser;
+import com.teamdev.jxbrowser.browser.callback.*;
+import com.teamdev.jxbrowser.browser.callback.input.MoveMouseWheelCallback;
+import com.teamdev.jxbrowser.browser.event.ConsoleMessageReceived;
+import com.teamdev.jxbrowser.js.JsAccessible;
+import com.teamdev.jxbrowser.js.JsObject;
+import com.teamdev.jxbrowser.navigation.callback.StartNavigationCallback;
+import com.teamdev.jxbrowser.navigation.event.FrameLoadFinished;
+import com.teamdev.jxbrowser.ui.event.MouseWheel;
+import com.teamdev.jxbrowser.view.javafx.BrowserView;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -44,12 +40,12 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import static java.util.logging.Level.*;
-
 import org.hypernomicon.App;
-import org.hypernomicon.InterProcClient;
 import org.hypernomicon.util.file.FilePath;
-import org.hypernomicon.util.file.deletion.FileDeletion;
+import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.util.json.JsonObj;
+
+import org.json.simple.parser.ParseException;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -93,19 +89,22 @@ public class PDFJSWrapper
   private final PDFJSDoneHandler doneHndlr;
   private final PDFJSRetrievedDataHandler retrievedDataHndlr;
 
-  private static final String basePlaceholder = "<!-- base placeholder -->";
+  private static String directContentHighlightJS = null;
 
-  private static BrowserContext browserContext = null;
-  private static String viewerHTMLStr = null, directContentHighlightJS = null;
-
-  private Browser browser = null, oldBrowser = null;
+  private Browser browser = null;
   private BrowserView browserView = null;
   private PreviewAltDisplayCtrlr altDisplay = null;
   private Runnable postBrowserLoadCode = null;
 
+  /** Guards the {@link #viewerHtmlLoadInFlight}/{@link #postBrowserLoadCode} pair:
+   *  chaining work onto an in-flight viewer load (FX thread) and the load-finished
+   *  event consuming that work (JxBrowser thread) must be atomic, or a runnable
+   *  chained in the gap is never triggered. */
+  private final Object loadLock = new Object();
+
   /**
    * Whether the content slated for the viewer is direct browser content (HTML, plain text, XML,
-   * media loaded straight into the WebView). <b>Declared</b> by the load path as intent for what we
+   * media loaded straight into the browser). <b>Declared</b> by the load path as intent for what we
    * are about to show; not read back from the browser. Used to route pending FTS hits to the
    * direct-content highlighter rather than the pdf.js one.
    * <p>
@@ -118,26 +117,69 @@ public class PDFJSWrapper
   private boolean contentToShowIsDirect = false;
 
   /**
-   * Whether the pdf.js viewer ({@code PDFViewerApplication}) is actually live in the browser right
-   * now. <b>Discovered</b>, not declared: read back from the DOM after each load, and used to gate
-   * calls into the pdf.js JS API, which exist only while the viewer is present.
-   * <p>
-   * <i>Not</i> the complement of {@link #contentToShowIsDirect}; see that field for why the two can
-   * disagree.
+   * Whether the pdf.js viewer page is the browser's current document. Under JxBrowser 6 this was
+   * discovered by probing the DOM after each load; now the main-frame load-finished event commits
+   * it from the finished navigation's URL (attribution by evidence: two navigations can be in
+   * flight at once and commit in either order, so the load paths' intent cannot be trusted here).
    */
-  private boolean pdfjsViewerLoaded = true;
+  private volatile boolean pdfjsViewerLoaded = true;
+
+  /** True from the moment loadViewerHtml starts the navigation until the viewer page's
+   *  load-finished event; anything wanting to run JS against the viewer page in that
+   *  window must chain onto {@link #postBrowserLoadCode} instead of executing
+   *  immediately (the script would run in the old or half-loaded document). Cleared
+   *  by the navigations that supersede a pending viewer load (loadFile, reloadBrowser).
+   */
+  private volatile boolean viewerHtmlLoadInFlight = false;
 
   private String pendingDirectContentHits = null, pendingPdfHits = null;
+  private FilePath lastDirectFilePath = null;
   private int numPages = -1;
   private boolean ready = false, hiding = false, showingAlt = false;
 
   private volatile boolean opened = false;
 
+  /**
+   * Open coordination (writes are FX-confined; the first two fields are
+   * volatile because the hit-buffering guards read them from other threads): at
+   * most one {@code openPdfFile} call is in flight at a time. A request made
+   * while one is loading replaces any previously waiting request (latest wins,
+   * never a queue) and is issued when the in-flight open reports
+   * {@code openDone}, success or failure. Concurrent {@code openPdfFile} calls
+   * race inside pdf.js (null-document errors, a nondeterministic final
+   * document) and under rapid selection can destabilize the engine.
+   */
+  private volatile boolean openInFlight = false;
+  private volatile FilePath pendingOpenFile = null;
+  private int pendingOpenPage = 1;
+
+  /** Page correction that arrived while an open was in flight (see
+   *  {@link #goToPage(int)}); applied by the coordinator's release, cleared by
+   *  each new load. Volatile: written from viewer-driving threads, drained on FX. */
+  private volatile int pendingGoToPage = -1;
+
+  /** Identifies the newest issued open (FX-confined); a deferred open dispatch
+   *  (see {@link #issueOpen}) fires only if it is still the newest and nothing
+   *  navigated away during its deferral. */
+  private long issueSeq = 0;
+
+  /** Render pulses between issuing an open and dispatching it to the viewer:
+   *  a document open dispatched in the same pulse that re-shows the
+   *  hardware-accelerated surface (alt display clearing, e.g.) can leave the
+   *  surface blank while the document renders in Chromium; giving the show a
+   *  couple of presented frames first avoids that window. */
+  private static final int OPEN_DEFER_PULSES = 2;
+
 //---------------------------------------------------------------------------
 
+  /** Creates a viewer for a preview hosted in a modal dialog. The dialog attach itself
+   *  satisfies the macOS modal-first-attach rule, so priming is recorded as unnecessary;
+   *  see {@link BrowserEngine#primeModalAttach()}. */
   public PDFJSWrapper(AnchorPane apBrowser)
   {
     this(apBrowser, null, null, null);
+
+    BrowserEngine.noteModalAttach();
   }
 
   PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, Consumer<Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
@@ -152,6 +194,13 @@ public class PDFJSWrapper
     try { tempGridPane = loader.load(); } catch (IOException e) { noOp(); }
     gpAltDisplay = tempGridPane;
     altDisplay = loader.getController();
+
+    // The alt display overlays the always-attached browser view (see
+    // switchToAltDisplay), so its root needs an opaque background; in the FXML
+    // only the centered message box has one.
+
+    if (gpAltDisplay != null)
+      gpAltDisplay.setStyle("-fx-background-color: -fx-background;");
 
     javascriptToJava = new JavascriptToJava();
 
@@ -172,7 +221,11 @@ public class PDFJSWrapper
 
   void prepareToHide()
   {
-    removeFromParent(showingAlt ? gpAltDisplay : browserView);
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.prepareToHide: showingAlt=" + showingAlt);
+
+    removeFromParent(browserView);
+    removeFromParent(gpAltDisplay);
 
     hiding = true;
   }
@@ -182,9 +235,16 @@ public class PDFJSWrapper
 
   void prepareToShow()
   {
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.prepareToShow: hiding=" + hiding + " showingAlt=" + showingAlt);
+
     if (hiding == false) return;
 
-    addToParent(showingAlt ? gpAltDisplay : browserView, apBrowser);
+    addToParent(browserView, apBrowser);
+    browserView.setVisible(showingAlt == false);
+
+    if (showingAlt)
+      addToParent(gpAltDisplay, apBrowser);  // back on top of the (hidden) browser view
 
     hiding = false;
   }
@@ -192,16 +252,29 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // The browser view stays attached while the alt display shows; it is hidden
+  // via setVisible(false) instead. Two constraints force this design: detaching
+  // the view mid-flow (the original design) could leave JxBrowser 9 not
+  // painting after the re-attach (a document would open and render in Chromium
+  // while the re-attached view stayed blank until the next open), and the
+  // hardware-accelerated view is a native surface that paints over sibling
+  // JavaFX nodes regardless of z-order, so an overlay alone never shows. With
+  // the surface hidden, the alt display (attached on top, opaque root) renders.
+  // The view is detached only in prepareToHide (tab-level hide, long-proven).
+
   private void switchToAltDisplay()
   {
     runInFXThread(() ->
     {
+      if (app.debugging)
+        System.out.println("PDFJSWrapper.switchToAltDisplay: browserView=" + (browserView != null) + " hiding=" + hiding);
+
       if (browserView == null) return;
 
       if (hiding == false)
       {
-        removeFromParent(browserView);
         addToParent(gpAltDisplay, apBrowser);
+        browserView.setVisible(false);
       }
 
       showingAlt = true;
@@ -215,12 +288,15 @@ public class PDFJSWrapper
   {
     runInFXThread(() ->
     {
+      if (app.debugging)
+        System.out.println("PDFJSWrapper.switchToPreviewDisplay: browserView=" + (browserView != null) + " hiding=" + hiding);
+
       if (browserView == null) return;
 
       if (hiding == false)
       {
         removeFromParent(gpAltDisplay);
-        addToParent(browserView, apBrowser);
+        browserView.setVisible(true);  // attached all along; just unhide the surface
       }
 
       showingAlt = false;
@@ -291,6 +367,12 @@ public class PDFJSWrapper
   {
     switchToPreviewDisplay();
 
+    // Drop any open still waiting its turn; a reset means nothing should load.
+    // An in-flight open is left alone: its page survives, so its openDone still
+    // arrives and releases the coordinator normally.
+
+    runInFXThread(() -> pendingOpenFile = null);
+
     if (pdfjsViewerLoaded)
     {
       if (opened)
@@ -303,125 +385,37 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final String tempBrowserContextFolderName = "hnJxBrowserContext";
-
-  private static FilePath tempContextFolder()
-  {
-    FilePath filePath = null;
-
-    try { filePath = tempContextFolder(false); }
-    catch (IOException e) { noOp(); }
-
-    return filePath;
-  }
-
-  private static FilePath tempContextFolder(boolean create) throws IOException
-  {
-    FilePath filePath = tempDir().resolve(tempBrowserContextFolderName);
-
-    if (create && (filePath.exists() == false))
-      filePath.createDirectory();
-
-    return filePath;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void clearContextFolder()
-  {
-    FilePath filePath = tempContextFolder();
-    if (filePath.exists() == false) return;
-
-    FileDeletion.ofDirContentsOnly(filePath).nonInteractiveFailureOK().execute();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void init() { init(false); }
-
-  private static Browser init(boolean createBrowserInstance)
-  {
-    Browser browser = null;
-
-    try
-    {
-      if (createBrowserInstance)
-      {
-        if (browserContext == null)
-        {
-          browserContext = BrowserContext.defaultContext();
-          LoggerProvider.setLevel(OFF);
-
-          try
-          {
-            browser = new Browser(browserContext);
-          }
-          catch (BrowserException e) // Exception means the default Chrome data folder is already in use. See https://jxbrowser.support.teamdev.com/support/solutions/articles/9000012878-creating-browser
-          {
-            FilePath filePath = tempContextFolder(true).resolve(InterProcClient.getInstanceID());
-            filePath.createDirectory();
-
-            LoggerProvider.setLevel(SEVERE);
-
-            browserContext = new BrowserContext(new BrowserContextParams(filePath.toString()));
-          }
-
-          LoggerProvider.setLevel(SEVERE);
-        }
-
-        if (browser == null)
-          browser = new Browser(browserContext);
-
-        BrowserTracker.register(browser, "PDFJSWrapper");
-      }
-      else
-        BrowserCore.initialize();
-
-      jxBrowserInitialized  = true;
-    }
-    catch (ExceptionInInitializerError e)
-    {
-      errorPopup("Unable to initialize preview window: " + getThrowableMessage(e.getCause()));
-      disable();
-    }
-    catch (IOException | LinkageError e)
-    {
-      errorPopup("Unable to initialize preview window: " + getThrowableMessage(e));
-      disable();
-    }
-
-    return jxBrowserDisabled ? null : browser;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  // Similar to MainCtrlr.closeWindows
-
-  private static void disable()
-  {
-    Platform.runLater(() ->
-    {
-      PreviewWindow .close(false);
-      ContentsWindow.close(false);
-    });
-
-    jxBrowserDisabled = true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
+  /**
+   * Zooms whatever the viewer is showing, through the mechanism proper to it:
+   * document scale for a pdf.js document (the same path as the viewer's own
+   * toolbar buttons), Chromium page zoom for direct content (where scaling
+   * the page is scaling the content). Serves the gestures the browser surface
+   * never sees: wheel and key events over the Preview Window's own controls.
+   *
+   * <p>Known and deliberate: for a PDF, Ctrl+wheel here zooms in smaller
+   * increments than the same gesture over the document itself. Over the
+   * document, pdf.js's own wheel handler runs a different algorithm: it
+   * converts the wheel delta to zoom steps (roughly three 1.1x steps per
+   * wheel notch) and zooms toward the cursor position.
+   *
+   * @return whether a zoom was issued (false leaves the triggering event
+   *         unconsumed: no document is open, or the viewer page is up with
+   *         nothing to zoom)
+   */
   boolean zoom(boolean zoomingIn)
   {
-    if (pdfjsViewerLoaded) return false;
+    if (pdfjsViewerLoaded)
+    {
+      if (opened == false) return false;  // no document (empty viewer or status overlay); nothing to zoom
+
+      execJS("PDFViewerApplication." + (zoomingIn ? "zoomIn" : "zoomOut") + "();");
+      return true;
+    }
 
     if (zoomingIn)
-      browser.zoomIn();
+      browser.zoom().in();
     else
-      browser.zoomOut();
+      browser.zoom().out();
 
     return true;
   }
@@ -433,85 +427,262 @@ public class PDFJSWrapper
   {
     switchToPreviewDisplay();
 
+    // The browser (and with it any in-flight or waiting PDF open, and any
+    // viewer-page load) is being replaced; clear the open coordination and
+    // viewer-load state so neither can wedge on completions that never come.
+
+    pendingOpenFile = null;
+    openInFlight = false;
+    issueSeq++;
+
+    synchronized (loadLock)
+    {
+      viewerHtmlLoadInFlight = false;
+      postBrowserLoadCode = null;
+    }
+
     if (browser != null)
     {
       removeFromParent(browserView);
 
-      // Dispose any prior reload's browser that hasn't been cleaned up yet, so this overwrite doesn't
-      // orphan it. A never-disposed Browser leaks its native channel and non-daemon IPC threads, so
-      // disposing it here is leak hygiene. (This is not what guarantees process exit; the primary
-      // hang is a post-dispose channel wedge, backstopped by ExitWatchdog.)
+      Browser toClose = browser;
+      browser = null;
 
-      dispose(oldBrowser, false);
-      oldBrowser = browser;
+      // close() blocks and can need the FX thread (view detachment), so it must not
+      // run on it; reloadBrowser is called from FX-thread refresh flows.
+
+      runOutsideFXThread(() ->
+      {
+        try
+        {
+          if (toClose.isClosed() == false)
+            toClose.close();
+        }
+        catch (RuntimeException e)
+        {
+          System.out.println("PDFJSWrapper: error closing browser during reload: " + getThrowableMessage(e));
+        }
+      });
     }
 
-    browser = init(true);
+    browser = BrowserEngine.newBrowser();
     if (browser == null)
-    {
-      dispose(oldBrowser, false);
       return;
-    }
 
-    if (viewerHTMLStr == null)
+    // Inject the bridge before page scripts run, so javaApp already exists when the
+    // viewer page's scripts execute.
+
+    browser.set(InjectJsCallback.class, params ->
     {
-      try { initViewerHTML(); }
-      catch (IOException e)
-      {
-        errorPopup("Unable to initialize preview window: Unable to read HTML file");
-        dispose(oldBrowser, false);
-        disable();
-        return;
-      }
-    }
+      JsObject window = params.frame().executeJavaScript("window");
 
-    BrowserPreferences preferences = browser.getPreferences();
+      if (window != null)
+        window.putProperty("javaApp", javascriptToJava);
 
-    preferences.setAllowRunningInsecureContent(true);
-    preferences.setJavaScriptCanAccessClipboard(true);
-    preferences.setLocalStorageEnabled(true);
-    preferences.setAllowScriptsToCloseWindows(true);
-
-    browser.setPreferences(preferences);
-
-    browser.setDownloadHandler(downloadItem ->
-    {
-      try
-      {
-        setUnable(Paths.get(new URI(downloadItem.getURL())).toString());
-      }
-      catch (URISyntaxException e)
-      {
-        setUnable(downloadItem.getURL());
-      }
-
-      return false;
+      return InjectJsCallback.Response.proceed();
     });
 
-    browser.setLoadHandler(new DefaultLoadHandler()
-    {
-      @Override public boolean onLoad(LoadParams params)
-      {
-        if (params.isRedirect())
-          return true;
+    // Reject all downloads; the preview pane never saves files. A download here means
+    // Chromium could not display what the pane just navigated to (e.g. a .mov file):
+    // the navigation becomes a download instead of committing, so without intervention
+    // the previous content would silently stay up. Cancel it and show the unable
+    // display for the file the load path was attempting.
 
-        if (params.getType() == LoadType.LinkClicked)
+    browser.set(StartDownloadCallback.class, (params, tell) ->
+    {
+      tell.cancel();
+
+      FilePath filePath = lastDirectFilePath;
+
+      if (FilePath.isEmpty(filePath))
+        setUnable("");
+      else
+        setUnable(filePath);
+    });
+
+    // Navigation policy: the preview pane may only navigate to content this application
+    // serves; any attempted navigation to an external URL (link click, JS redirect, meta
+    // refresh) is cancelled and routed to the system browser instead.
+
+    browser.navigation().set(StartNavigationCallback.class, params ->
+    {
+      String url = params.url();
+
+      if (isInternalUrl(url))
+        return StartNavigationCallback.Response.start();
+
+      openWebLink(url);
+      return StartNavigationCallback.Response.ignore();
+    });
+
+    // PDF links open with target=_blank (a popup) in the stock viewer, and page JS can
+    // call window.open; both become system-browser opens.
+
+    browser.set(CreatePopupCallback.class, params ->
+    {
+      String url = params.targetUrl();
+
+      if (isInternalUrl(url) == false)
+        openWebLink(url);
+
+      return CreatePopupCallback.Response.suppress();
+    });
+
+    // External-protocol links (mailto: and the like). Since Chromium 151
+    // (JxBrowser 9.4.0 and later) these route through this callback instead of
+    // launching the external application directly, and with no callback
+    // registered the link does nothing at all. Approving restores the earlier
+    // direct-launch behavior: the content is the user's own document and the
+    // click is the user's own gesture, so the OS handoff (typically the mail
+    // client) is exactly what was asked for.
+
+    browser.set(OpenExternalAppCallback.class, (params, tell) -> tell.open());
+
+    // Zoom direct content on Ctrl+wheel (Cmd+wheel also accepted, matching the
+    // pdf.js viewer's own gesture). Under JxBrowser 6 the wheel event reached
+    // the JavaFX stage, so PreviewWindow's scroll filter implemented this; the
+    // version 9 hardware-accelerated surface takes wheel input natively, the
+    // event never becomes a JavaFX ScrollEvent over the preview, and embedded
+    // Chromium implements no zoom gesture of its own. The pdf.js viewer page
+    // is forwarded untouched: its own script scales the document on Ctrl+wheel.
+    // (The stage filter stays for wheel events over the window's own controls.)
+
+    browser.set(MoveMouseWheelCallback.class, params ->
+    {
+      MouseWheel event = params.event();
+
+      if ((event.keyModifiers().isControlDown() || event.keyModifiers().isMetaDown())
+          && (event.deltaY() != 0) && (pdfjsViewerLoaded == false))
+      {
+        boolean zoomingIn = event.deltaY() > 0;
+
+        runInFXThread(() -> zoom(zoomingIn));  // zoom() must not run on this callback thread
+
+        return MoveMouseWheelCallback.Response.suppress();
+      }
+
+      return MoveMouseWheelCallback.Response.proceed();
+    });
+
+    if (app.debugging) browser.on(ConsoleMessageReceived.class, event ->
+    {
+      var msg = event.consoleMessage();
+      String level = msg.level().toString(),
+             text  = msg.message();
+
+      if (level.contains("WARNING"))
+        return;
+
+      if (level.contains("LOG"))
+      {
+        // pdf.js emits its warnings via console.log with a "Warning:" prefix, so they arrive
+        // at LOG level. parseDestDictionary fires per malformed outline/link entry and can
+        // dominate a debug log (observed at ~95% of the log during a large indexing run).
+
+        String textLower = text.toLowerCase();
+
+        if (textLower.contains("unrecognized link type") || textLower.contains("parsedestdictionary"))
+          return;
+      }
+
+      System.out.println("JS " + level + ": " + text);
+    });
+
+    browser.navigation().on(FrameLoadFinished.class, event ->
+    {
+      if (event.frame().isMain() == false) return;
+
+      // Attribute this completion by what actually loaded, not by which load
+      // path ran last: two navigations can be in flight at once (a direct-
+      // content load superseded by a viewer-page load carrying a PDF open's
+      // dispatch), and Chromium can commit the superseded one first. Trusting
+      // the load-path flags here executed the open's dispatch in the dying
+      // direct-content page, and the open then wedged the coordinator forever
+      // (observed under rapid mixed-type selection).
+
+      @SuppressWarnings("resource")
+      Browser eventBrowser = event.frame().browser();  // the event's own browser, not ours to close
+
+      String url = eventBrowser.url();
+      boolean isViewerPage = url.regionMatches(true, 0, ResourceServer.viewerUrl(), 0, ResourceServer.viewerUrl().length());
+
+      ready = true;
+
+      pdfjsViewerLoaded = isViewerPage;
+
+      Runnable toRun = null;
+      boolean viewerLoadStillInFlight, hadPostLoadCode;
+
+      synchronized (loadLock)
+      {
+        // The post-load work belongs to the viewer-page load; a different
+        // navigation finishing must leave it (and the in-flight marker) for
+        // the viewer load still on its way.
+
+        hadPostLoadCode = postBrowserLoadCode != null;
+
+        if (isViewerPage)
         {
-          openWebLink(params.getURL());
-          return true;
+          viewerHtmlLoadInFlight = false;
+          toRun = postBrowserLoadCode;
+          postBrowserLoadCode = null;
         }
 
-        return false;
+        viewerLoadStillInFlight = viewerHtmlLoadInFlight;
       }
+
+      if (app.debugging)
+        System.out.println("PDFJSWrapper: main frame load finished; isViewerPage=" + isViewerPage +
+                           " hadPostLoadCode=" + hadPostLoadCode +
+                           " url=" + (url.length() <= 100 ? url : (url.substring(0, 100) + "...")));
+
+      if (contentToShowIsDirect && (pendingDirectContentHits != null))
+        applyDirectContentHits();
+
+      // PDF hits are NOT drained here, ever: at this moment no document is open
+      // yet (openPdfFile runs via toRun below), and the JS side drops setAllHits
+      // calls that arrive with no open document. The drain point for PDF hits is
+      // the open coordinator's release, once the document is actually open. (A
+      // guarded drain here once misfired on an "opened" flag left stale by a
+      // direct-content interlude, spending the buffered hits on a documentless
+      // viewer.)
+
+      // A finished navigation that neither carries the in-flight open's
+      // dispatch nor precedes a viewer load that will (reset's bare viewer
+      // reload, an external navigation) has replaced the page that open lived
+      // in, so its openDone can never arrive. Apply the supersession rule
+      // loadFile applies explicitly: release the coordinator, so the newest
+      // waiting open issues instead of every later open wedging behind a
+      // release that never comes.
+
+      if (openInFlight && (toRun == null) && (viewerLoadStillInFlight == false))
+      {
+        System.out.println("PDFJSWrapper: navigation superseded the in-flight open; releasing the coordinator");
+
+        Platform.runLater(() ->
+        {
+          openInFlight = false;
+          pumpOpenQueue();
+        });
+      }
+
+      if (toRun != null)
+        toRun.run();
     });
 
-    browserView = new BrowserView(browser);
+    browserView = BrowserView.newInstance(browser);
 
     setAnchors(browserView, 0.0, 0.0, 0.0, 0.0);
 
     addToParent(browserView, apBrowser);
 
-    addCustomProtocolHandler(browser, "jar");
+    if (showingAlt)
+    {
+      browserView.setVisible(false);         // the alt display is up; the new view starts hidden
+
+      addToParent(gpAltDisplay, apBrowser);  // no-op if attached; covers a reload while hidden
+      gpAltDisplay.toFront();                // the overlay must stay on top of the just-appended view
+    }
 
     apBrowser.setOnMouseEntered(event ->
     {
@@ -519,71 +690,8 @@ public class PDFJSWrapper
         safeFocus(browserView);
     });
 
-    browser.setPopupHandler(new com.teamdev.jxbrowser.chromium.javafx.DefaultPopupHandler());
-
-    browser.setDialogHandler(new DefaultDialogHandler(browserView)
-    {
-      @Override public void onAlert(DialogParams params) { MessageDialog.show(browserView, "Alert", params.getMessage()); }
-    });
-
-    if (app.debugging) browser.addConsoleListener(event ->
-    {
-      String msg = event.getMessage();
-      Level level = event.getLevel();
-
-      if (level == Level.WARNING)
-        return;
-
-      if (level == Level.LOG)
-      {
-        // pdf.js emits its warnings via console.log with a "Warning:" prefix, so they arrive
-        // at LOG level. parseDestDictionary fires per malformed outline/link entry and can
-        // dominate a debug log (observed at ~95% of the log during a large indexing run).
-
-        String msgLower = msg.toLowerCase();
-
-        if (msgLower.contains("unrecognized link type") || msgLower.contains("parsedestdictionary"))
-          return;
-      }
-
-      System.out.println("JS " + event.getLevel() + ": " + msg);
-    });
-
-    browser.addLoadListener(new LoadAdapter() { @Override public void onFinishLoadingFrame(FinishLoadingEvent event)
-    {
-      if (event.isMainFrame() == false) return;
-
-      ready = true;
-
-      JSValue window = browser.executeJavaScriptAndReturnValue("window");
-
-      try
-      {
-        window.asObject().setProperty("javaApp", javascriptToJava);
-      }
-      catch (IllegalStateException e)
-      {
-        noOp();
-      }
-
-      pdfjsViewerLoaded = browser.executeJavaScriptAndReturnValue("'PDFViewerApplication' in window").getBooleanValue();
-
-      if (contentToShowIsDirect && (pendingDirectContentHits != null))
-        applyDirectContentHits();
-
-      if (pdfjsViewerLoaded && (pendingPdfHits != null))
-        applyPdfHits();
-
-      if (postBrowserLoadCode == null) return;
-
-      postBrowserLoadCode.run();
-      postBrowserLoadCode = null;
-    }});
-
     Runnable runnable = () ->
     {
-      dispose(oldBrowser, false);
-
       if (stuffToDoAfterLoadingViewerHtml != null)
         stuffToDoAfterLoadingViewerHtml.run();
     };
@@ -597,45 +705,65 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Disposes a browser and waits for disposal to complete. Uses the correct
-   *  threading (off FX thread on Windows, on FX thread elsewhere). Also used by
-   *  PreviewWindow's shutdown sweep of undisposed Browser instances. */
-  static void dispose(Browser browser, boolean wait)
+  /** Whether the given URL is content this application serves to the preview pane
+   *  (as opposed to an external URL, which must open in the system browser). data:
+   *  covers loadHtml, which transmits its content as a data URL internally. */
+  private static boolean isInternalUrl(String url)
   {
-    if ((browser == null) || browser.isDisposed()) return;
+    if (url == null) return true;
 
-    CountDownLatch latch = wait ? new CountDownLatch(1) : null;
+    String urlLower = url.toLowerCase();
 
-    if (wait)
-      browser.addDisposeListener(event -> latch.countDown());
+    return urlLower.startsWith(ResourceServer.SCHEME_NAME + ':')
+      ||   urlLower.startsWith("file:")
+      ||   urlLower.startsWith("about:")
+      ||   urlLower.startsWith("data:")
+      ||   urlLower.startsWith("chrome");
+  }
 
-    Runnable runnable = () ->
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Runs a script in the browser's main frame, asynchronously; safe to call
+   * from any thread, including the FX thread. The empty result callback is
+   * what selects JxBrowser's asynchronous overload (the no-callback overload
+   * blocks on a full IPC round-trip into the renderer, which the FX thread
+   * must never wait on).
+   *
+   * <p>Discarding the result is by design, not neglect: this class talks to
+   * the viewer over two one-way channels. Commands go down through here as
+   * fire-and-forget strings; results and events come back through the injected
+   * {@code window.javaApp} bridge ({@link JavascriptToJava}), fired by the
+   * page when the outcome actually exists. A script statement's own completion
+   * value could not serve that purpose anyway: the interesting outcomes
+   * (a document open, a close) complete asynchronously in pdf.js, long after
+   * the statement evaluates to {@code undefined}. Script errors are not lost
+   * either; they surface through the {@code ConsoleMessageReceived} handler.
+   */
+  private void execJS(String script)
+  {
+    Browser curBrowser = browser;
+
+    if ((curBrowser == null) || curBrowser.isClosed())
     {
-      try
-      {
-        browser.dispose();
-      }
-      catch (IPCException e)
-      {
-        if (latch != null) latch.countDown();
-        errorPopup("An error occurred while disposing preview pane: " + getThrowableMessage(e));
-      }
-    };
+      if (app.debugging)
+        System.out.println("PDFJSWrapper.execJS dropped (browser closed): " + scriptHead(script));
 
-    if (Environment.isWindows())
-      runOutsideFXThread(runnable);
-    else
-      runInFXThread(runnable);
-
-    if (wait)
-    {
-      try
-      {
-        if (latch.await(10, TimeUnit.SECONDS) == false)
-          System.out.println("PDFJSWrapper.dispose: timed out after 10s waiting for browser disposal to complete.");
-      }
-      catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+      return;
     }
+
+    curBrowser.mainFrame().ifPresentOrElse(
+      frame -> frame.executeJavaScript(script, result -> {}),
+      ()    -> System.out.println("PDFJSWrapper.execJS dropped (no main frame): " + scriptHead(script)));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String scriptHead(String script)
+  {
+    return (script.length() <= 60) ? script : (script.substring(0, 60) + "...");
   }
 
 //---------------------------------------------------------------------------
@@ -644,12 +772,10 @@ public class PDFJSWrapper
   private void cleanupPdfHtml()
   {
     if (pdfjsViewerLoaded)
-    {
-      browser.executeJavaScript("if ('PDFViewerApplication' in window) PDFViewerApplication.cleanup();");
-      sleepForMillis(200);
-    }
+      execJS("if (typeof PDFViewerApplication !== 'undefined') PDFViewerApplication.close();");
 
     pdfjsViewerLoaded = false;
+    opened = false;  // the page's document goes with it; a stale true here misdirects the hit-drain guards
   }
 
 //---------------------------------------------------------------------------
@@ -659,34 +785,30 @@ public class PDFJSWrapper
   {
     switchToPreviewDisplay();
 
+    synchronized (loadLock)
+    {
+      postBrowserLoadCode = stuffToDoAfterLoading;
+
+      if (viewerHtmlLoadInFlight)
+      {
+        // A viewer-page load is already under way (e.g. the constructor's, when
+        // loadPdf arrives during window construction). Navigating again would wipe
+        // whatever the in-flight load's completion is about to do (observed: the
+        // second load blanking a just-opened PDF), so just replace the post-load
+        // work and let the in-flight load deliver it.
+
+        if (app.debugging)
+          System.out.println("PDFJSWrapper.loadViewerHtml: joining in-flight viewer load");
+
+        return;
+      }
+
+      viewerHtmlLoadInFlight = true;
+    }
+
     cleanupPdfHtml();
 
-    postBrowserLoadCode = stuffToDoAfterLoading;
-
-    browser.loadHTML(viewerHTMLStr);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void initViewerHTML() throws IOException
-  {
-    StringBuilder viewerHTMLSB = new StringBuilder();
-
-    readResourceTextFile("resources/pdfjs/web/viewer.html", viewerHTMLSB);
-
-    int ndx = viewerHTMLSB.indexOf(basePlaceholder);
-
-    String pathStr = App.class.getResource("resources/pdfjs/web").toExternalForm();
-
-    if (pathStr.contains("file:/") && (pathStr.contains("file:///") == false))
-      pathStr = pathStr.replace("file:/", "file:///");
-
-    String baseTag = "<base href=\"" + pathStr + "/\" />";
-
-    viewerHTMLSB.replace(ndx, ndx + basePlaceholder.length(), baseTag);
-
-    viewerHTMLStr = viewerHTMLSB.toString();
+    browser.navigation().loadUrl(ResourceServer.viewerUrl());
   }
 
 //---------------------------------------------------------------------------
@@ -702,115 +824,73 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("deprecation")
-  public static void addCustomProtocolHandler(Browser browser, String protocol)
-  {
-    ProtocolService protocolService = browser.getContext().getProtocolService();
-
-    protocolService.setProtocolHandler(protocol, request ->
-    {
-      URLResponse response = new URLResponse();
-      //response.getHeaders().setHeader("Access-Control-Allow-Origin", "*");
-      URL path;
-
-      try
-      {
-        String pathStr = request.getURL();
-
-        while (pathStr.matches(".*file:/[^/].*"))
-          pathStr = pathStr.replaceFirst("file:/", "file:///");
-
-        path = new URL(pathStr);
-      }
-      catch (MalformedURLException e) { return null; }
-
-      try (InputStream inputStream = path.openStream(); DataInputStream stream = new DataInputStream(inputStream))
-      {
-        byte[] data = new byte[stream.available()];
-        stream.readFully(data);
-        response.setData(data);
-        String mimeType = getMimeType(path.toString());
-        response.getHeaders().setHeader("Content-Type", mimeType);
-        return response;
-      }
-      catch (IOException e) { noOp(); }
-
-      return null;
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String getMimeType(String path)
-  {
-    if (path.endsWith(".html")) return "text/html";
-    if (path.endsWith(".css"))  return "text/css";
-    if (path.endsWith(".css1")) return "text/css";
-    if (path.endsWith(".js"))   return "text/javascript";
-    return "text/html";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
+  /**
+   * Bridge object exposed to viewer-page JavaScript as {@code window.javaApp}.
+   * JS numbers arrive as double per the JxBrowser type mapping; structured data
+   * arrives as JSON strings (walking live JS objects from Java is avoided).
+   */
+  @JsAccessible
   public class JavascriptToJava
   {
-    public void pageChange(int newPage)
+    public void pageChange(double newPage)
     {
       if (pageChangeHndlr != null)
-        pageChangeHndlr.accept(newPage);
+        pageChangeHndlr.accept((int) newPage);
     }
 
 //---------------------------------------------------------------------------
 
-    public void sidebarChange(int view)
+    public void sidebarChange(double view)
     {
-      app.prefs.putInt(PrefKey.PDFJS_SIDEBAR_VIEW, view);
+      app.prefs.putInt(PrefKey.PDFJS_SIDEBAR_VIEW, (int) view);
     }
 
 //---------------------------------------------------------------------------
 
-    public void printVal(JSValue val)
-    {
-      printJSValue(val, 0);
-    }
-
-//---------------------------------------------------------------------------
-
-    public void setData(JSObject obj)
+    /**
+     * Receives page labels and annotation pages after a document opens.
+     * @param json {@code {"annotPages":["3","7",...], "pageLabels":["i","ii","1",...] or null}}
+     *             (annotation pages as strings for uniform array handling)
+     */
+    public void setData(String json)
     {
       if (retrievedDataHndlr == null) return;
 
       List<Integer> hilitePages = new ArrayList<>();
 
-      JSArray annotPages = obj.getProperty("annotPages").asArray();
-
-      for (int ndx = 0; ndx < annotPages.length(); ndx++)
-      {
-        int pageNum = annotPages.get(ndx).asNumber().getInteger();
-
-        if (hilitePages.contains(pageNum) == false)
-          addToSortedList(hilitePages, pageNum);
-      }
-
-      JSValue val = obj.getProperty("pageLabels");
       Map<String, Integer> labelToPage = new HashMap<>();
       Map<Integer, String> pageToLabel = new HashMap<>();
 
-      if (val.isArray())
+      try
       {
-        JSArray pageLabels = val.asArray();
+        JsonObj obj = JsonObj.parseJsonObj(json);
 
-        if (pageLabels.isNull() == false)
+        JsonArray annotPages = obj.getArraySafe("annotPages");
+
+        for (int ndx = 0; ndx < annotPages.size(); ndx++)
         {
-          for (int page = 1; page <= pageLabels.length(); page++)
+          int pageNum = Integer.parseInt(annotPages.getStr(ndx));
+
+          if (hilitePages.contains(pageNum) == false)
+            addToSortedList(hilitePages, pageNum);
+        }
+
+        JsonArray pageLabels = obj.getArray("pageLabels");
+
+        if (pageLabels != null)
+        {
+          for (int page = 1; page <= pageLabels.size(); page++)
           {
-            String label = pageLabels.get(page - 1).getStringValue();
+            String label = pageLabels.getStr(page - 1);
             labelToPage.put(label, page);
             pageToLabel.put(page, label);
           }
         }
+      }
+      catch (ParseException | NumberFormatException e)
+      {
+        System.out.println("PDFJSWrapper.setData: malformed data from viewer: " + getThrowableMessage(e));
+        return;
       }
 
       retrievedDataHndlr.handle(labelToPage, pageToLabel, hilitePages);
@@ -818,36 +898,70 @@ public class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-    public void openDone(Boolean success, JSObject errMessage)
+    public void openDone(boolean success, double pagesCount, String errMessage)
     {
       ready = true;
 
+      if (app.debugging)
+        System.out.println("PDFJSWrapper.openDone: success=" + success + " pendingPdfHits=" + (pendingPdfHits != null));
+
       if (success)
       {
-        numPages = browser.executeJavaScriptAndReturnValue("PDFViewerApplication.pagesCount").asNumber().getInteger();
-        browser.executeJavaScript("getPdfData();");
+        numPages = (int) pagesCount;
+        execJS("getPdfData();");
         opened = true;
 
-        // Drain any setAllHits queued during the PDF swap. In the PDF->PDF
-        // case there's no browser navigation, so onFinishLoadingFrame doesn't
-        // fire; this is the only point where we know the new PDF is ready
-        // for the viewer's setAllHits JS to be called.
-
-        if (pendingPdfHits != null)
-          applyPdfHits();
+        // Any setAllHits queued during the PDF swap is drained in the runLater
+        // below, on the FX thread: this callback arrives on a JxBrowser bridge
+        // thread, and applyPdfHits consumes the buffer before its execJS, so a
+        // dispatch problem in callback context would lose the hits with no
+        // fallback. The FX drain also runs only when this open is still the
+        // latest intent (buffered hits always belong to the newest request;
+        // every loadPdf resets the buffer), so a superseded document can never
+        // spend the newer document's hits.
       }
       else
       {
-        printVal(errMessage);
+        System.out.println("PDFJSWrapper: open failed: " + errMessage);
       }
 
       if (doneHndlr != null)
         doneHndlr.handle(PDFJSOperation.pjsOpen, success, "");
+
+      // This open is finished (success or failure); release the coordinator and
+      // issue the latest request that arrived while it was loading, if any. The
+      // coordination state is FX-confined; this callback arrives on a JxBrowser
+      // thread.
+
+      Platform.runLater(() ->
+      {
+        openInFlight = false;
+        pumpOpenQueue();
+
+        // Drain buffered work (whether queued during the swap or in the gap
+        // between openDone and this release); if the pump started a newer open,
+        // openInFlight is true again and the newest open's release drains
+        // instead. In the PDF->PDF case there is no browser navigation, so no
+        // load-finished event fires; this is the point where the new PDF is
+        // known ready for the viewer's JS to be called.
+
+        if ((openInFlight == false) && ready && opened)
+        {
+          if (pendingGoToPage > 0)
+          {
+            goToPage(pendingGoToPage);
+            pendingGoToPage = -1;
+          }
+
+          if (pendingPdfHits != null)
+            applyPdfHits();
+        }
+      });
     }
 
 //---------------------------------------------------------------------------
 
-    public void closeDone(Boolean success, JSObject errMessage)
+    public void closeDone(boolean success, String errMessage)
     {
       ready = true;
 
@@ -858,7 +972,7 @@ public class PDFJSWrapper
       }
       else
       {
-        printVal(errMessage);
+        System.out.println("PDFJSWrapper: close failed: " + errMessage);
       }
 
       if (doneHndlr != null)
@@ -877,7 +991,7 @@ public class PDFJSWrapper
       return;
     }
 
-    browser.executeJavaScript("closePdfFile();");
+    execJS("closePdfFile();");
 
     for (int ndx = 0; (ndx < 5) && opened; ndx++)
       sleepForMillis(100);
@@ -889,26 +1003,82 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Remove the browser view from the scene graph without closing the browser.
+   * Called on the FX thread during application shutdown, before the hosting stage
+   * closes: JxBrowser's SceneTracker reacts to a closing window that still contains
+   * a BrowserView with Platform.runLater callbacks that otherwise run after the
+   * native window peer is destroyed ("Failed to get native widget ID"). The
+   * browser itself is closed later by the PreviewWindow.cleanup() dispose chain.
+   */
+  void detachBrowserView()
+  {
+    if (browserView != null)
+      removeFromParent(browserView);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   void loadFile(FilePath filePath, boolean isHtml) throws IOException
   {
     switchToPreviewDisplay();
 
-    cleanupPdfHtml();
+    // The navigation below replaces the whole document (viewer.html and the PDF
+    // open in it included), so there is no need to close the pdf.js app first.
+    // Doing so would empty the viewer for a frame before the new content loads,
+    // a visible flash on a pdf.js-to-direct-content switch. Just drop the flag.
+
+    pdfjsViewerLoaded = false;
+    opened = false;  // the open document (if any) goes with the page; see cleanupPdfHtml
 
     ready = false;
     resetHitState();
+    pendingGoToPage = -1;
+
+    // Navigating away destroys the page any in-flight PDF open lives in (its
+    // openDone will never arrive), and this direct content supersedes any PDF
+    // open still waiting its turn; clear the open coordination state so the
+    // coordinator is not wedged and no stale open issues after the navigation.
+
+    runInFXThread(() ->
+    {
+      pendingOpenFile = null;
+      openInFlight = false;
+      issueSeq++;  // a deferred open dispatch waiting on pulses must not fire into this navigation
+    });
+
+    // This navigation also supersedes any viewer-page load still in flight,
+    // along with whatever work was chained onto it: that load either aborts or
+    // its page is immediately replaced, so the chained work must not run, and
+    // a later viewer load must not "join" a navigation that no longer exists.
+
+    synchronized (loadLock)
+    {
+      viewerHtmlLoadInFlight = false;
+      postBrowserLoadCode = null;
+    }
+
+    lastDirectFilePath = filePath;
 
     if (isHtml)
     {
-      // Parse with charset auto-detection (BOM, then the document's own charset
-      // declaration, defaulting to UTF-8) rather than decoding with the JVM
-      // default charset.
+      // Jsoup parses with charset auto-detection (BOM, then the document's own charset declaration,
+      // defaulting to UTF-8); better than decoding with the JVM default charset.
 
       Document doc = Jsoup.parse(filePath.toFile());
 
       doc.getElementsByTag("script").forEach(Element::remove);
 
-      // browser.loadHTML transmits the string to Chromium as UTF-8. Serialize as
+      // Script preload/prefetch hints would make Chromium fetch (and CORS-reject, from
+      // loadHtml's null origin) the scripts the line above just stripped; removing them
+      // silences the resulting console-error spam and the pointless network chatter.
+      // Iframes go too: an embedded external frame (ads, videos) would otherwise trip
+      // the external-navigation policy and open the system browser unprompted.
+
+      doc.select("link[rel=modulepreload], link[rel=preload], link[rel=prefetch], iframe").forEach(Element::remove);
+
+      // loadHtml transmits the string to Chromium as UTF-8. Serialize as
       // UTF-8 and drop the document's now-stale charset declaration so it can't
       // tell Chromium to re-decode the UTF-8 byte stream as windows-1252.
 
@@ -920,10 +1090,10 @@ public class PDFJSWrapper
           meta.remove();
       });
 
-      browser.loadHTML(doc.html());
+      browser.navigation().loadHtml(doc.html());
     }
     else
-      browser.loadURL(filePath.toURLString());
+      browser.navigation().loadUrl(filePath.toURLString());
   }
 
 //---------------------------------------------------------------------------
@@ -936,49 +1106,118 @@ public class PDFJSWrapper
 
   void loadPdf(FilePath file, int initialPage)
   {
-    final boolean wasPdfjsViewerLoaded = pdfjsViewerLoaded;
-
     // Reset ready synchronously so any cross-thread setAllHits / goToPage call
-    // queued before the deferred runnable runs sees a not-ready state and
-    // buffers (or no-ops) instead of dispatching to the previous page's JS.
-    // Mirrors what loadFile does at the start of its body.
+    // queued before the open actually issues sees a not-ready state and
+    // buffers instead of dispatching to the previous page's JS. Mirrors what
+    // loadFile does at the start of its body. A buffered page correction from
+    // the previous document dies with it: this load's initialPage supersedes.
 
     ready = false;
     resetHitState();
+    pendingGoToPage = -1;
+
+    switchToPreviewDisplay();
+
+    runInFXThread(() ->
+    {
+      pendingOpenFile = file;  // Latest wins; a request superseded before it issues is never opened
+      pendingOpenPage = initialPage;
+
+      pumpOpenQueue();
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Issues the waiting open request, if there is one and no open is already in
+   * flight; otherwise does nothing (the in-flight open's {@code openDone} pumps
+   * again). FX thread only.
+   */
+  private void pumpOpenQueue()
+  {
+    if (openInFlight || (pendingOpenFile == null)) return;
+
+    FilePath file = pendingOpenFile;
+    int initialPage = pendingOpenPage;
+
+    pendingOpenFile = null;
+    openInFlight = true;
+
+    issueOpen(file, initialPage);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Dispatches an {@code openPdfFile} call for the given file, loading the
+   *  viewer page first if necessary. FX thread only; callers go through
+   *  {@link #pumpOpenQueue()} so opens never overlap. */
+  private void issueOpen(FilePath file, int initialPage)
+  {
+    final long mySeq = ++issueSeq;
+
+    String fileUrl = ResourceServer.urlForFile(file);
 
     Runnable runnable = () ->
     {
       opened = false;
 
-      if (wasPdfjsViewerLoaded == false)
-      {
-        boolean readyToOpen = false;
+      // javaapp.js's openPdfFile retries internally until PDFViewerApplication finishes
+      // initializing, so no Java-side polling is needed once the viewer page's scripts
+      // have parsed. The typeof guard covers the residual case where this executes
+      // before javaapp.js has parsed: the arguments are buffered and javaapp.js opens
+      // the file as soon as it loads.
 
-        for (int ndx = 0; (ndx < 20) && (readyToOpen == false); ndx++)
-        {
-          readyToOpen = browser.executeJavaScriptAndReturnValue("'openPdfFile' in window").getBooleanValue();
-          if (readyToOpen == false)
-            sleepForMillis(100);
-        }
+      String args = '"' + fileUrl + "\", " + initialPage + ", " + app.prefs.getInt(PrefKey.PDFJS_SIDEBAR_VIEW, SidebarView_NONE);
 
-        if (readyToOpen == false)
-        {
-          errorPopup("An error occurred while trying to show PDF file preview.");
-          return;
-        }
-      }
-
-      browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " +
-                                                   initialPage + ", " +
-                                                   app.prefs.getInt(PrefKey.PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");
+      execJS("if (typeof openPdfFile === 'function') openPdfFile(" + args + "); else window.__hnPendingOpen = [" + args + "];");
     };
 
-    switchToPreviewDisplay();
-
     if (pdfjsViewerLoaded == false)
+    {
+      if (app.debugging)
+        System.out.println("PDFJSWrapper.loadPdf: viewer not loaded; loading viewer first");
+
       loadViewerHtml(runnable);
-    else
-      Platform.runLater(runnable);  // This helps to prevent JxBrowser from crashing when quickly removing and re-adding it to the scene graph, then executing a script
+      return;
+    }
+
+    boolean chained;
+
+    synchronized (loadLock)
+    {
+      chained = viewerHtmlLoadInFlight;
+
+      if (chained)
+        postBrowserLoadCode = runnable;  // The viewer page is still loading (e.g. right after construction); run this when it finishes
+    }
+
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.loadPdf: " + (chained ? "chained onto in-flight viewer load" : "executing directly"));
+
+    if (chained == false)
+    {
+      // Deferred by a couple of render pulses (not dispatched immediately): the
+      // surface un-hide queued by loadPdf's switchToPreviewDisplay then gets
+      // presented frames before the navigation reaches the surface; see
+      // OPEN_DEFER_PULSES. The guard drops the dispatch if something navigated
+      // away (loadFile, browser reload) while it waited.
+
+      runInFXThreadAfterPulses(OPEN_DEFER_PULSES, () ->
+      {
+        if ((mySeq != issueSeq) || (openInFlight == false))
+        {
+          if (app.debugging)
+            System.out.println("PDFJSWrapper.issueOpen: deferred dispatch dropped (superseded=" + (mySeq != issueSeq) + " openInFlight=" + openInFlight + ')');
+
+          return;
+        }
+
+        runnable.run();
+      });
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -986,9 +1225,19 @@ public class PDFJSWrapper
 
   void goToPage(int pageNum)
   {
-    if (ready == false) return;
+    if (ready == false)
+    {
+      // An open is under way (or the viewer is mid-load): a page correction
+      // issued now targets the document being opened, e.g. steering to the
+      // first-match page when search hits arrive while the document is still
+      // loading. Dropping it would leave the document on its initial page, so
+      // buffer it; the open coordinator's release drains it.
 
-    browser.executeJavaScript("PDFViewerApplication.pdfViewer.currentPageNumber = " + pageNum + ';');
+      pendingGoToPage = pageNum;
+      return;
+    }
+
+    execJS("PDFViewerApplication.pdfViewer.currentPageNumber = " + pageNum + ';');
   }
 
 //---------------------------------------------------------------------------
@@ -996,21 +1245,15 @@ public class PDFJSWrapper
 
   private void applyPdfHits()
   {
-    if ((pendingPdfHits == null) || (browser == null) || browser.isDisposed()) return;
-
-    // Confirm the viewer's setAllHits function is available before consuming
-    // pendingPdfHits. If we're called prematurely (e.g., before loadViewerHtml
-    // has navigated away from a previous DIRECT_CONTENT page), leave the buffer
-    // intact so onFinishLoadingFrame can drain it once pdf.js is loaded.
-
-    boolean fnExists = browser.executeJavaScriptAndReturnValue("typeof setAllHits === 'function'").getBooleanValue();
-
-    if (fnExists == false) return;
+    if (pendingPdfHits == null) return;
 
     String json = pendingPdfHits;
     pendingPdfHits = null;
 
-    browser.executeJavaScript("setAllHits('" + json.replace("'", "\\'") + "');");
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.applyPdfHits: sending " + json.length() + " chars on " + Thread.currentThread().getName());
+
+    execJS("setAllHits('" + json.replace("'", "\\'") + "');");
   }
 
 //---------------------------------------------------------------------------
@@ -1029,6 +1272,7 @@ public class PDFJSWrapper
     if (contentToShowIsDirect)
     {
       // For non-PDF content, store hits and apply after content finishes loading
+
       pendingDirectContentHits = allHitsJson;
 
       if (ready)
@@ -1037,10 +1281,29 @@ public class PDFJSWrapper
       return;
     }
 
-    // For PDF content, store hits if not ready yet; apply when PDF finishes loading
+    // For PDF content, store hits if the document is not open yet; openDone drains
+    // the buffer once it is. (ready alone is not enough: the viewer page can be
+    // loaded with no document open, and the JS side drops hits sent in that state.)
+
     pendingPdfHits = allHitsJson;
 
-    if (ready == false) return;
+    // The opened document must also still be the latest intent: while a newer
+    // open is waiting or in flight, "opened" describes a superseded document,
+    // and applying now would spend these hits (which belong to the newest
+    // request; every loadPdf resets the buffer) on a document about to be
+    // replaced. Keep them buffered for the newest open's openDone instead.
+
+    if ((ready == false) || (opened == false) || openInFlight || (pendingOpenFile != null))
+    {
+      if (app.debugging)
+        System.out.println("PDFJSWrapper.setAllHits: buffered (ready=" + ready + " opened=" + opened +
+                           " openInFlight=" + openInFlight + " openWaiting=" + (pendingOpenFile != null) + ')');
+
+      return;
+    }
+
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.setAllHits: applying immediately");
 
     applyPdfHits();
   }
@@ -1049,19 +1312,30 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 
   /**
-   * Scroll to the highlight with the given match index (stored in data-match-ndx attribute).
+   * Scroll to the highlight for a passage. Direct content is addressed by the
+   * global match index (highlight spans carry data-match-ndx attributes, applied
+   * in matches-list order by directContentHighlight.js); the PDF viewer is
+   * addressed by page number plus index within that page.
    */
-  void scrollToHighlightByMatchNdx(int matchNdx)
+  void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage)
   {
-    if ((ready == false) || (browser == null) || browser.isDisposed()) return;
+    if (ready == false) return;
 
-    browser.executeJavaScript
-    (
-      "(function() {" +
-      "  var el = document.querySelector('.fts-highlight[data-match-ndx=\"" + matchNdx + "\"]');" +
-      "  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });" +
-      "})();"
-    );
+    if (contentToShowIsDirect)
+    {
+      execJS
+      (
+        "(function() {" +
+        "  var el = document.querySelector('.fts-highlight[data-match-ndx=\"" + matchNdx + "\"]');" +
+        "  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });" +
+        "})();"
+      );
+
+      return;
+    }
+
+    if (pageNum >= 1)
+      execJS("scrollToMatchOnPage(" + pageNum + ", " + ndxOnPage + ");");
   }
 
 //---------------------------------------------------------------------------
@@ -1083,6 +1357,9 @@ public class PDFJSWrapper
    */
   private void resetHitState()
   {
+    if (app.debugging && ((pendingPdfHits != null) || (pendingDirectContentHits != null)))
+      System.out.println("PDFJSWrapper.resetHitState: dropping buffered hits (pdf=" + (pendingPdfHits != null) + " direct=" + (pendingDirectContentHits != null) + ')');
+
     pendingDirectContentHits = null;
     pendingPdfHits = null;
   }
@@ -1098,21 +1375,18 @@ public class PDFJSWrapper
 
     if (contentToShowIsDirect)
     {
-      browser.executeJavaScript
-      (
+      execJS(
         "var hl = document.querySelectorAll('.fts-highlight');" +
         "for (var i = 0; i < hl.length; i++) {" +
         "  var parent = hl[i].parentNode;" +
         "  parent.replaceChild(document.createTextNode(hl[i].textContent), hl[i]);" +
         "  parent.normalize();" +
-        '}'
-      );
+        '}');
 
       return;
     }
 
-    if (browser.executeJavaScriptAndReturnValue("typeof clearAllHits === 'function'").getBooleanValue())
-      browser.executeJavaScript("clearAllHits();");
+    execJS("if (typeof clearAllHits === 'function') clearAllHits();");
   }
 
 //---------------------------------------------------------------------------
@@ -1125,7 +1399,7 @@ public class PDFJSWrapper
    */
   private void applyDirectContentHits()
   {
-    if ((pendingDirectContentHits == null) || (browser == null) || browser.isDisposed()) return;
+    if (pendingDirectContentHits == null) return;
 
     if (directContentHighlightJS == null)
     {
@@ -1147,91 +1421,50 @@ public class PDFJSWrapper
     // of the matched word within the context. The JS searches for the context in
     // the rendered DOM and wraps the match portion in a highlight span.
 
-    browser.executeJavaScript('(' + directContentHighlightJS + ")(" + json + ");");
+    execJS('(' + directContentHighlightJS + ")(" + json + ");");
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Closes this wrapper's browser. Safe to call from the FX thread: the blocking
+   *  close is dispatched to a background thread. */
   public void cleanup()
   {
-    cleanupPdfHtml();
-
-    dispose(oldBrowser, false);  // see cleanup(Runnable): a deferred reload disposal may not have run yet
-    dispose(browser, false);
+    runOutsideFXThread(() -> cleanup(null));
   }
 
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Closes this wrapper's browser and then runs the handler. Blocking; must be
+   *  called OFF the FX thread (the shutdown dispose chain runs on a background
+   *  thread; see {@link PreviewWindow#cleanup()}). */
   void cleanup(Runnable disposeHndlr)
   {
-    cleanupPdfHtml();
+    // No cleanupPdfHtml() here: the browser close below tears down the pdf.js
+    // app regardless, and firing PDFViewerApplication.close() (which returns a
+    // Promise) immediately before that close races JxBrowser's RPC thread as it
+    // marshals the Promise result against the by-then-destroyed page context.
 
-    // reloadBrowser() disposes the prior browser only via a deferred callback once the replacement
-    // finishes loading. If the app is closed before that runs, oldBrowser is still alive; dispose it
-    // here too so it doesn't leak (a never-disposed Browser holds its native channel and non-daemon
-    // IPC threads). ExitWatchdog is the backstop that guarantees exit if a channel wedges regardless.
+    Browser toClose = browser;
+    browser = null;
 
-    dispose(oldBrowser, true);
-    dispose(browser, true);
-
-    disposeHndlr.run();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void printIndented(String text, int indent)
-  {
-    for (int ndx = 0; ndx < indent; ndx++)
-      text = ' ' + text;
-
-    System.out.println(text);
-  }
-
-  private static void printJSValue(JSValue val, int indent)
-  {
-    if      (val.isNull        ()) { printIndented("NULL", indent); }
-    else if (val.isNumberObject()) { printIndented(String.valueOf(val.asNumberObject().getNumberValue()), indent); }
-    else if (val.isNumber      ()) { printIndented(String.valueOf(val.getNumberValue()), indent); }
-    else if (val.isBoolean     ()) { printIndented(String.valueOf(val.getBooleanValue()), indent); }
-    else if (val.isStringObject()) { printIndented('"' + val.asStringObject().getStringValue() + '"', indent); }
-    else if (val.isString      ()) { printIndented('"' + val.asString().getStringValue() + '"', indent); }
-    else if (val.isUndefined   ()) { printIndented("UNDEFINED", indent); }
-    else if (val.isFunction    ()) { printIndented(val.asFunction().toJSONString(), indent); }
-
-    else if (val.isArray())
+    if (toClose != null)
     {
-      JSArray array = val.asArray();
-
-      for (int ndx = 0; ndx < array.length(); ndx++)
+      try
       {
-        printIndented("[" + ndx + ']', indent);
-        printJSValue(array.get(ndx), indent + 2);
+        if (toClose.isClosed() == false)
+          toClose.close();
+      }
+      catch (RuntimeException e)
+      {
+        System.out.println("PDFJSWrapper: error closing browser: " + getThrowableMessage(e));
       }
     }
 
-    else if (val.isObject())
-    {
-      JSObject obj = val.asObject();
-
-      obj.getPropertyNames().forEach(propName ->
-      {
-        printIndented(propName + ':', indent);
-        printJSValue(obj.getProperty(propName), indent + 2);
-      });
-    }
-
-    else if (val.isJavaObject())
-    {
-      Object obj = val.asJavaObject();
-
-      printIndented(obj.getClass().getName() + ": " + obj, indent);
-    }
-
-    else printIndented("NONE OF THE ABOVE", indent);
+    if (disposeHndlr != null)
+      disposeHndlr.run();
   }
 
 //---------------------------------------------------------------------------

@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hypernomicon.HyperTask.HyperThread;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -30,34 +29,22 @@ import static org.hypernomicon.util.Util.*;
 /**
  * Guarantees process termination after Hypernomicon's own teardown has completed.
  * <p>
- * <b>Why this exists:</b> JxBrowser 6's shared-memory IPC transport can deadlock a channel's
- * threads when a Chromium render process dies while the channel's "Memory Writer" thread is inside
- * the native {@code SharedMemoryLibrary.sendData} call. The writer blocks forever in
- * {@code jxb::ipc::Event::Wait} (a pthread condition wait for a buffer-consumed signal that only
- * the now-dead peer would have sent) while holding both the Java monitor of its
- * {@code SharedMemory} object ({@code write()} is synchronized) and the native transport mutex.
- * The "Socket Connection Checker" thread detects the dead socket and tries to close the channel,
- * but {@code SharedMemory.close()} is synchronized on that same monitor (and the native close
- * takes that same transport mutex), so the close path that would wake and terminate the writer can
- * never run. The channel's threads (writer, checker, and the JNI-attached "IPC Memory Reader
- * Thread") are all non-daemon, so a single wedged channel keeps the JVM alive forever after the
- * FX toolkit exits. The wedge forms during routine {@code Browser.dispose()} under channel traffic
- * (e.g. pdf.js extractor recycling); it is invisible to the disposal path, because dispose
- * completes normally and deregisters the Browser.
+ * <b>Why this exists:</b> originally, JxBrowser 6's shared-memory IPC transport could leave
+ * non-daemon threads permanently wedged after browser disposal, keeping the JVM alive forever
+ * after a completely clean shutdown. The JxBrowser 9 upgrade removed that failure mode, but the
+ * watchdog is kept as cheap insurance: any library (or our own code) can leak a non-daemon thread,
+ * and a desktop application that sometimes fails to exit is a support burden out of proportion to
+ * this class's cost.
  * <p>
- * Those threads survive {@code Browser.dispose()} and prevent the JVM from exiting even after a
- * completely clean application shutdown. Until the planned JxBrowser upgrade (whose engine threads
- * are daemon) removes the problem, this watchdog bounds the damage: it is armed as the <b>last</b>
- * step of the shutdown sequence (after database is closed, every browser is disposed and
- * verified, browsercore processes are destroyed, and the main window is closed), and then gives
- * remaining threads a grace period to exit on their own.
+ * It is armed as the <b>last</b> step of the shutdown sequence (after the database is closed, the
+ * browser engine is shut down, and the main window is closed), and then gives remaining threads a
+ * grace period to exit on their own.
  * <p>
  * If the JVM exits organically during the grace period (the normal case), the watchdog is a daemon
  * thread and simply dies with it, having done nothing. If the JVM is still alive when the grace
- * period ends, the watchdog logs every surviving non-daemon thread with its stack (classified as
- * either a known JxBrowser wedge thread or an unexpected leak to investigate) and only then forces
- * exit. The log entry is the contract: a forced exit must never hide what it absorbed, so the
- * organic-exit invariant remains verifiable in myLogFile.log even though the process no longer
+ * period ends, the watchdog logs every surviving non-daemon thread with its stack and only then
+ * forces exit. The log entry is the contract: a forced exit must never hide what it absorbed, so
+ * the organic-exit invariant remains verifiable in myLogFile.log even though the process no longer
  * hangs. {@code System.exit(0)} is used first so shutdown hooks run (java.util.prefs flushes via a
  * shutdown hook on Linux; deleteOnExit temp files are cleaned); a {@code Runtime.halt(0)} backstop
  * covers the case where a shutdown hook itself hangs.
@@ -119,11 +106,7 @@ public final class ExitWatchdog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Logs the non-daemon threads still alive, so the forced exit never hides what it absorbed.
-   *  Known JxBrowser wedge threads are expected and non-actionable (see class javadoc), so
-   *  outside of debugging they get a single summary line; printing their stacks would only
-   *  prompt spurious bug reports. Anything else is a potential genuine leak and always gets
-   *  full per-thread detail with stacks. */
+  /** Logs the non-daemon threads still alive, so the forced exit never hides what it absorbed. */
   private static void logSurvivors()
   {
     List<Map.Entry<Thread, StackTraceElement[]>> survivors = Thread.getAllStackTraces().entrySet().stream()
@@ -132,45 +115,19 @@ public final class ExitWatchdog
       .filter(entry -> "DestroyJavaVM".equals(entry.getKey().getName()) == false)
       .toList();
 
-    List<Map.Entry<Thread, StackTraceElement[]>> detailed = survivors;
+    if (survivors.isEmpty()) return;
 
-    if (app.debugging == false)
-    {
-      detailed = survivors.stream().filter(entry -> isKnownJxBrowserWedgeThread(entry.getKey().getName()) == false).toList();
-
-      int knownCount = survivors.size() - detailed.size();
-
-      if (knownCount > 0)
-        System.out.println("Shutdown: " + knownCount + " known JxBrowser 6 shared-memory wedge thread(s) still running "
-          + (GRACE_PERIOD_MS / 1000) + "s after teardown completed (non-actionable; see ExitWatchdog javadoc)");
-    }
-
-    if (detailed.isEmpty()) return;
-
-    System.out.println("Shutdown: " + detailed.size() + " non-daemon thread(s) still running "
+    System.out.println("Shutdown: " + survivors.size() + " non-daemon thread(s) still running "
       + (GRACE_PERIOD_MS / 1000) + "s after teardown completed:");
 
-    for (Map.Entry<Thread, StackTraceElement[]> entry : detailed)
+    for (Map.Entry<Thread, StackTraceElement[]> entry : survivors)
     {
       Thread survivor = entry.getKey();
 
-      System.out.println("  \"" + survivor.getName() + "\" (" + survivor.getState() + "): "
-        + (isKnownJxBrowserWedgeThread(survivor.getName())
-             ? "known JxBrowser 6 shared-memory wedge thread (see class javadoc)"
-             : "UNEXPECTED: possible resource leak; investigate"));
+      System.out.println("  \"" + survivor.getName() + "\" (" + survivor.getState() + "): possible resource leak; investigate");
 
       Arrays.stream(entry.getValue()).limit(10).forEach(frame -> System.out.println("      at " + frame));
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static boolean isKnownJxBrowserWedgeThread(String name)
-  {
-    return "IPC Memory Reader Thread".equals(name)
-      ||   name.startsWith("Memory Writer SocketInfo{")
-      ||   name.startsWith("Socket Connection Checker SocketInfo{");
   }
 
 //---------------------------------------------------------------------------

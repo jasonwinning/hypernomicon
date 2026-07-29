@@ -17,6 +17,8 @@
 
 package org.hypernomicon;
 
+import static org.hypernomicon.util.DesktopUtil.*;
+
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
@@ -46,6 +48,22 @@ public final class Main
           super.write(buf, off, len);
       }
     });
+
+    // Keep AWT from registering as a second macOS application. Opening files and links
+    // (DesktopUtil, via java.awt.Desktop) and reading clipboard images (ClipboardImageHelper,
+    // via java.awt.Toolkit) initialize the AWT toolkit, which otherwise claims its own Dock
+    // icon next to the JavaFX one and can steal focus as it starts. Must be set before AWT
+    // is first touched, so it goes here rather than at the use sites.
+
+    if (IS_OS_MAC)
+      System.setProperty("apple.awt.UIElement", "true");
+
+    // Do NOT set glass.accessible.force=false here (tried and reverted, July 2026). By default, JxBrowser
+    // on macOS resolves a BrowserView's native window THROUGH the JavaFX accessibility bridge, so disabling
+    // that bridge made the lookup fail and every preview pane render blank (Chromium ran, the surface never
+    // attached). BrowserEngine.initialize now switches JxBrowser to a reflection-based lookup instead
+    // (jxbrowser.javafx.jni.embedding.disabled), which sidesteps the accessibility bridge entirely; should
+    // that switch ever be removed, the default lookup and this trap both come back.
 
     javafx.application.Application.launch(App.class, args);
   }

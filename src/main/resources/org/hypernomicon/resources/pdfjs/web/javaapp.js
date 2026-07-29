@@ -17,103 +17,295 @@
  *
  */
 
-// Stored hit data for all pages, keyed by 1-based page number.
-// Set by setAllHits(), consumed by applyHitsToPage() which is called from
-// TextLayerBuilder._finishRendering when a page's text layer becomes ready.
+// Glue between Hypernomicon's Java side (window.javaApp, injected by JxBrowser
+// before page scripts run) and the stock pdf.js 6 viewer. Unlike the pdf.js
+// 2.0.943 era, the viewer files themselves are unpatched: everything the old
+// inline patches did is done here via the viewer's public objects and eventBus.
+//
+// Hit highlighting strategy (validated against pdf.js 6.1.200): Hypernomicon's
+// Lucene-derived hit offsets are converted from Hypernomicon's extracted-text
+// space to the find controller's raw page-content space, injected into
+// PDFFindController's match arrays (sorted ascending; out-of-order entries are
+// silently dropped by the highlighter), and rendered by pdf.js's native
+// highlight machinery via the 'updatetextlayermatches' event. This gives exact
+// sub-span highlights (better than the whole-text-div CSS approach the 2.0.943
+// integration used).
 
-var pendingHits = null;  // { "1": [[s,e],...], "3": [[s,e],...], ... }
+'use strict';
+
+// Opening a document on top of one that still has queued page work (render
+// queue, text layers, annotation walks) makes every still-pending operation for
+// the old document fail; one rapid supersession of a large PDF can log hundreds
+// of rejections. They come in two shapes: operations holding the old document's
+// destroyed worker transport reject with "Transport destroyed", and viewer
+// internals that re-read their nulled document field die on null.getPage. Both
+// are the expected byproduct of superseding a document mid-work (the promised
+// work is moot), so swallow exactly those two and let every other rejection
+// surface.
+
+window.addEventListener('unhandledrejection', function(event) {
+  var reason = event.reason;
+  var message = (reason && reason.message) ? reason.message : String(reason);
+
+  if ((message === 'Transport destroyed') ||
+      (message === "Cannot read properties of null (reading 'getPage')"))
+    event.preventDefault();
+});
+
+var listenersRegistered = false;
+
+// Stored hit data for all pages, keyed by 1-based page number:
+// { "1": [[s,e],...], "3": [[s,e],...] } with offsets in Hypernomicon's
+// extracted-text space (column-aware spacing, dehyphenation, collapsed
+// whitespace); see extractor.js for the algorithm that defines that space.
+var pendingHits = null;
+
+// Per-page converted matches in find-controller space, built asynchronously by
+// applyAllHits: convertedMatches[pageNdx] = { starts: [...], lens: [...] }.
+var convertedMatches = null;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-/**
- * Store all hit data for the current file. The viewer applies highlights
- * lazily as each page's text layer finishes rendering.
- *
- * @param hitsJson  JSON object mapping 1-based page numbers to arrays of
- *                  [startOffset, endOffset] pairs (page-relative offsets)
- */
-function setAllHits(hitsJson) {
-  clearHighlights();
-  pendingHits = JSON.parse(hitsJson);
-  applyPendingHitsToRenderedPages();
+// Hide viewer chrome Hypernomicon doesn't want (see hypernomicon.css). The
+// rules are a same-origin stylesheet rather than injected inline styles, which
+// the viewer page's CSP (style-src 'self') forbids.
+
+(function () {
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'hypernomicon.css';
+  document.head.appendChild(link);
+})();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+// Init-time viewer options must be set on the 'webviewerloaded' event: it fires
+// after the viewer module evaluates (so PDFViewerApplicationOptions exists) but
+// before PDFViewerApplication initializes its components and consumes them.
+// Setting them per-open is too late for options read at initialization.
+//
+// annotationEditorMode -1 disables the annotation editor subsystem entirely.
+// Hiding the editor toolbar buttons (hypernomicon.css) is not enough: gestures
+// like double-clicking an existing highlight annotation also enter editing
+// mode, and with the buttons hidden there is no way back out. Edits could
+// never be saved anyway (downloads are rejected); annotations belong in the
+// PDF, made by real PDF tools, not in the preview pane.
+
+document.addEventListener('webviewerloaded', function () {
+  PDFViewerApplicationOptions.set('annotationEditorMode', -1);
+  PDFViewerApplicationOptions.set('viewOnLoad', 1);
+});
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+function viewerReady() {
+  return (typeof PDFViewerApplication !== 'undefined') && PDFViewerApplication.initialized;
+}
+
+function registerListeners() {
+  if (listenersRegistered) return;
+  listenersRegistered = true;
+
+  var eventBus = PDFViewerApplication.eventBus;
+
+  eventBus.on('pagechanging',       function (e) { javaApp.pageChange(e.pageNumber); });
+  eventBus.on('sidebarviewchanged', function (e) { javaApp.sidebarChange(e.view); });
 }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 /**
- * Apply pending hits to any pages whose text layer has already finished
- * rendering. Called after setAllHits() to catch pages that rendered before
- * the hits arrived. Pages that haven't rendered yet will be picked up by the
- * _finishRendering hook in viewer.js when they do; no retry needed here.
+ * Opens a PDF (served over the hnres: scheme) at the given 1-based page, with
+ * the given sidebar view (0 = none; values match pdf.js SidebarView).
+ * Retries while the viewer finishes initializing (the Java side never polls),
+ * but not forever: a stalled initialization is reported as a failed open.
  */
-function applyPendingHitsToRenderedPages() {
-  if (pendingHits == null) return;
-  if (typeof PDFViewerApplication === 'undefined') return;
+function openPdfFile(fileUrl, pageNum, sidebarView) {
 
-  var pdfViewer = PDFViewerApplication.pdfViewer;
-  if (pdfViewer == null) return;
+  if (viewerReady() === false) {
+    if (window.__hnRetryCount == null)
+      window.__hnRetryCount = 0;
 
-  for (var pageNumStr in pendingHits) {
-    var pageNum = parseInt(pageNumStr);
-    var pageView = pdfViewer.getPageView(pageNum - 1);
+    // Retrying is normal for a moment after the viewer page loads; a long wait
+    // means the viewer never finished initializing and is worth a log entry.
+    // Give up after ~30 seconds: retrying forever would leave the Java open
+    // coordinator waiting on an openDone that never comes, silently wedging
+    // every later open behind it, so convert the stall into a failed open and
+    // let the normal failure handling take over.
 
-    if ((pageView != null) && (pageView.textLayer != null) && pageView.textLayer.renderingDone) {
-      applyHitsToPage(pageNum);
+    if (++window.__hnRetryCount >= 600) {
+      window.__hnRetryCount = null;
+      javaApp.openDone(false, 0, 'The viewer never finished initializing');
+      return;
     }
-  }
-}
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    if ((window.__hnRetryCount % 100) === 0)
+      console.log('openPdfFile still waiting for viewer init after ' + window.__hnRetryCount + ' retries');
 
-/**
- * Apply pending hits for a single page, assuming the text layer is ready.
- * Called from the _finishRendering hook in viewer.js (push) and from
- * applyPendingHitsToRenderedPages after a pre-checked readiness test (pull).
- * Highlighting only; all navigation is handled by Java via goToPage.
- *
- * Re-runs the same concatenation logic as extractor.js to translate Lucene
- * post-processed character offsets back to the raw text items, then maps item
- * indices to textDiv elements and adds the .fts-highlight CSS class. The
- * .fts-active class on the text layer overrides its default opacity: 0.2 so
- * highlights are visible.
- */
-function applyHitsToPage(pageNum) {
-  if (pendingHits == null) return;
-
-  var hitRanges = pendingHits[String(pageNum)];
-  if ((hitRanges == null) || (hitRanges.length === 0)) return;
-
-  var pageView = PDFViewerApplication.pdfViewer.getPageView(pageNum - 1);
-  if ((pageView == null) || (pageView.textLayer == null) || (pageView.textLayer.renderingDone == false)) {
-    // Not ready. The _finishRendering hook will re-call us when it is.
+    window.setTimeout(openPdfFile, 50, fileUrl, pageNum, sidebarView);
     return;
   }
 
-  var pdfPage = pageView.pdfPage;
-  if (pdfPage == null) return;
+  window.__hnRetryCount = null;
 
-  pdfPage.getTextContent().then(function (textContent) {
+  registerListeners();
+
+  clearAllHits();
+
+  // The sidebar view goes through the viewer's own stock option
+  // (sidebarViewOnLoad), applied before open(). (Touching viewer components like
+  // pdfSidebar directly during initialization can abort the document load;
+  // learned the hard way.) viewOnLoad is set to 1 (INITIAL, ignoring stored
+  // per-document view history): Hypernomicon's caller decides the starting page,
+  // and neither the previous document's scroll position nor the viewer's own
+  // history may override it. The pdf.js 2.0.943 integration got the same effect
+  // from showPreviousViewOnLoad=false plus localStorage-disabling patches;
+  // viewOnLoad is that option's modern name.
+  //
+  // The requested page is applied EXPLICITLY once pages are loaded, as a physical
+  // page number (Hypernomicon page numbers are physical). The stock alternative,
+  // the initialBookmark 'page=' mechanism the viewer uses for #page=N URL hashes,
+  // proved unreliable (a fresh open landed on an unrelated page; open() appears
+  // to reset the bookmark internally), and setting the page after 'pagesloaded'
+  // overrides both the viewer's default and any stored view history.
+
+  var pagesEventBus = PDFViewerApplication.eventBus;
+
+  function onPagesLoaded() {
+    pagesEventBus.off('pagesloaded', onPagesLoaded);
+
+    if (pageNum >= 1)
+      PDFViewerApplication.pdfViewer.currentPageNumber = pageNum;
+  }
+
+  pagesEventBus.on('pagesloaded', onPagesLoaded);
+
+  if (typeof PDFViewerApplicationOptions !== 'undefined') {
+    PDFViewerApplicationOptions.set('sidebarViewOnLoad', sidebarView);
+    PDFViewerApplicationOptions.set('viewOnLoad', 1);
+  }
+
+  PDFViewerApplication.open({ url: fileUrl }).then(function () {
+    javaApp.openDone(true, PDFViewerApplication.pdfDocument.numPages, '');
+  }, function (error) {
+    javaApp.openDone(false, 0, (error && error.message) ? error.message : String(error));
+  });
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+function closePdfFile() {
+  PDFViewerApplication.close().then(function () {
+    javaApp.closeDone(true, '');
+  }, function (error) {
+    javaApp.closeDone(false, (error && error.message) ? error.message : String(error));
+  });
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+/**
+ * Collects page labels and annotation pages and reports them to Java as JSON.
+ * Annotation page numbers are sent as strings for uniform array handling on
+ * the Java side.
+ */
+function getPdfData() {
+  var pdfDocument = PDFViewerApplication.pdfDocument;
+  if (pdfDocument == null) return;
+
+  var pagesCount = pdfDocument.numPages,
+      pagesLeft = pagesCount,
+      annotPages = [];
+
+  pdfDocument.getPageLabels().then(function (pageLabels) {
+    if (pagesCount === 0) {
+      javaApp.setData(JSON.stringify({ annotPages: [], pageLabels: pageLabels }));
+      return;
+    }
+
+    for (var pageNum = 1; pageNum <= pagesCount; ++pageNum) {
+      pdfDocument.getPage(pageNum).then(function (pdfPage) {
+        var thisPageNum = pdfPage.pageNumber;
+
+        pdfPage.getAnnotations({ intent: 'display' }).then(function (annotations) {
+          for (var ndx = 0; ndx < annotations.length; ndx++) {
+            var subtype = annotations[ndx].subtype;
+            if ((subtype !== 'Link') && (subtype !== 'Widget')) {
+              if (annotPages.indexOf(String(thisPageNum)) === -1)
+                annotPages.push(String(thisPageNum));
+            }
+          }
+
+          pagesLeft--;
+          if (pagesLeft === 0)
+            javaApp.setData(JSON.stringify({ annotPages: annotPages, pageLabels: pageLabels }));
+        });
+      });
+    }
+  });
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+/**
+ * Rebuilds Hypernomicon's extraction-space offset map for one page and returns
+ * match positions for the page's hit ranges in the space pdf.js's text
+ * highlighter consumes: the plain concatenation of the page's item strings.
+ * This reruns the same concatenation algorithm as extractor.js to map
+ * extraction-space offsets back to (item, char) coordinates, then converts
+ * those to offsets in that concatenation (see the itemStart comment below for
+ * why the highlighter's space, not the find controller's, is the target).
+ */
+function convertPageHits(pdfPage, hitRanges) {
+  // disableNormalization matters three ways: (1) the find controller builds its
+  // raw page content from unnormalized items, so itemStart must be computed over
+  // the same strings; (2) extractor.js extracts from unnormalized items, so the
+  // offset-map re-run must too; (3) pdf.js 2.0.943 (which built existing indexes)
+  // had no normalization at all. All three getTextContent call sites (here and
+  // two in extractor.js) must stay in lockstep.
+  return pdfPage.getTextContent({ disableNormalization: true }).then(function (textContent) {
     var items = textContent.items;
 
-    // Re-run the same concatenation logic as extractor.js to build an offset map.
-    // Each entry maps a character offset in the post-processed text to
-    // { itemNdx, charNdx } in the raw text items.
+    // Cumulative offset of each item's first character in the TEXT HIGHLIGHTER's
+    // space: the concatenation of item.str values only. Note this deliberately
+    // differs from the find controller's page-content space, which inserts "\n"
+    // per hasEOL item (viewer.mjs PDFFindController): the highlighter's
+    // textContentItemsStr gets only item.str (the hasEOL newline becomes a <br>
+    // element with no string entry), and injected match values are consumed by
+    // the highlighter, so its space is the one that must be matched. Counting
+    // the hasEOL newlines here displaced highlights by one character per line
+    // of preceding text on hasEOL-heavy documents.
 
-    var text = '',
-        offsetMap = [];  // offsetMap[textPos] = { itemNdx, charNdx }
+    var itemStart = new Array(items.length);
+    var pos = 0;
 
     for (var ndx = 0; ndx < items.length; ndx++) {
-      var item = items[ndx],
+      itemStart[ndx] = pos;
+      pos += items[ndx].str.length;
+    }
+
+    // Rerun the extraction concatenation to map extraction-space offsets to
+    // (itemNdx, charNdx); see extractPageText in extractor.js.
+
+    var text = '',
+        offsetMap = [];  // offsetMap[extractionPos] = { itemNdx: n, charNdx: c } or null for inserted spaces
+
+    for (var ndx2 = 0; ndx2 < items.length; ndx2++) {
+      var item = items[ndx2],
           t = item.transform;
 
-      if (ndx > 0 && text.length > 0 && item.str.length > 0) {
+      if (ndx2 > 0 && text.length > 0 && item.str.length > 0) {
         var lastChar = text.charAt(text.length - 1);
 
         if (lastChar !== ' ') {
-          var prev = items[ndx - 1],
+          var prev = items[ndx2 - 1],
               pt = prev.transform;
 
           var fontSize = Math.abs(t[0]) || Math.abs(t[3]) || 10,
@@ -121,11 +313,9 @@ function applyHitsToPage(pageNum) {
 
           if (Math.abs(t[5] - pt[5]) > threshold || (t[4] - (pt[4] + prev.width)) > threshold) {
             if (lastChar === '-' && Math.abs(t[5] - pt[5]) > threshold) {
-              // Dehyphenate: remove the hyphen (don't map it)
               text = text.substring(0, text.length - 1);
               offsetMap.length = text.length;
             } else {
-              // Insert space (no item mapping for inserted spaces)
               offsetMap.push(null);
               text += ' ';
             }
@@ -134,71 +324,209 @@ function applyHitsToPage(pageNum) {
       }
 
       for (var c = 0; c < item.str.length; c++) {
-        offsetMap.push({ itemNdx: ndx, charNdx: c });
+        offsetMap.push({ itemNdx: ndx2, charNdx: c });
         text += item.str.charAt(c);
       }
     }
 
-    // Collapse whitespace: replicate the \s+ replacement
+    // Collapse whitespace and trim, mirroring the extractor's final replace/trim.
 
-    var collapsedMap = [];
-    var inWhitespace = false;
+    var collapsedMap = [],
+        inWhitespace = false;
 
-    for (var pos = 0; pos < text.length; pos++) {
-      var ch = text.charAt(pos);
-
-      if (/\s/.test(ch)) {
-        if (inWhitespace == false) {
-          collapsedMap.push(offsetMap[pos]);
+    for (var p = 0; p < text.length; p++) {
+      if (/\s/.test(text.charAt(p))) {
+        if (inWhitespace === false) {
+          collapsedMap.push(offsetMap[p]);
           inWhitespace = true;
         }
       } else {
-        collapsedMap.push(offsetMap[pos]);
+        collapsedMap.push(offsetMap[p]);
         inWhitespace = false;
       }
     }
-
-    // Trim leading/trailing space mappings
 
     var trimStart = 0, trimEnd = collapsedMap.length;
     while (trimStart < trimEnd && collapsedMap[trimStart] == null) trimStart++;
     while (trimEnd > trimStart && collapsedMap[trimEnd - 1] == null) trimEnd--;
     collapsedMap = collapsedMap.slice(trimStart, trimEnd);
 
-    // Now collapsedMap[i] maps post-processed character i to { itemNdx, charNdx }.
-    // Find which text layer divs to highlight for each hit range.
+    // Convert each hit range to a find-space (start, length) pair. A range maps
+    // to the span from its first to its last mapped character; inserted spaces
+    // (null entries) at the edges are skipped.
 
-    var textLayerDiv = pageView.textLayer.textLayerDiv;
-    if (textLayerDiv == null) return;
-
-    // pdf.js v2.0.943 stores text layer elements in textDivs (div elements, not spans)
-    var textDivs = pageView.textLayer.textDivs;
-    if ((textDivs == null) || (textDivs.length === 0)) return;
+    var starts = [], lens = [];
 
     for (var h = 0; h < hitRanges.length; h++) {
-      var hitStart = hitRanges[h][0],
-          hitEnd   = hitRanges[h][1];
+      var s = hitRanges[h][0], e = hitRanges[h][1];
 
-      if (hitStart < 0) hitStart = 0;
-      if (hitEnd > collapsedMap.length) hitEnd = collapsedMap.length;
+      if (s < 0) s = 0;
+      if (e > collapsedMap.length) e = collapsedMap.length;
 
-      var itemsInHit = new Set();
+      var first = null, last = null;
 
-      for (var p = hitStart; p < hitEnd; p++) {
-        var mapping = collapsedMap[p];
-        if (mapping != null) itemsInHit.add(mapping.itemNdx);
+      for (var q = s; q < e; q++) {
+        var mapping = collapsedMap[q];
+        if (mapping != null) {
+          if (first == null) first = mapping;
+          last = mapping;
+        }
       }
 
-      itemsInHit.forEach(function (itemNdx) {
-        if (itemNdx < textDivs.length) {
-          textDivs[itemNdx].classList.add('fts-highlight');
-        }
+      if (first == null) continue;
+
+      var startPos = itemStart[first.itemNdx] + first.charNdx,
+          endPos   = itemStart[last.itemNdx] + last.charNdx + 1;
+
+      starts.push(startPos);
+      lens.push(endPos - startPos);
+    }
+
+    return { starts: starts, lens: lens };
+  });
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+/**
+ * Store all hit data for the current file and inject it into the find
+ * controller's match arrays so pdf.js's native highlighter renders it.
+ *
+ * @param hitsJson JSON object mapping 1-based page numbers to arrays of
+ *                 [startOffset, endOffset] pairs (extraction-space offsets).
+ *                 Example: {"1":[[10,20],[50,60]],"3":[[5,15]]}
+ */
+function setAllHits(hitsJson) {
+  if (viewerReady() === false || PDFViewerApplication.pdfDocument == null) {
+    console.log('setAllHits DROPPED: viewerReady=' + viewerReady() + ' docOpen='
+      + ((typeof PDFViewerApplication !== 'undefined') && (PDFViewerApplication.pdfDocument != null)));
+    return;
+  }
+
+  pendingHits = JSON.parse(hitsJson);
+
+  // Identity of this call's hit set: the guards below compare against
+  // pendingHits by identity (not just null), so async work still in flight
+  // from a superseded setAllHits call can neither inject nor abort on behalf
+  // of this one.
+
+  var hits = pendingHits;
+
+  var pdfDocument = PDFViewerApplication.pdfDocument,
+      fc = PDFViewerApplication.findController,
+      eventBus = PDFViewerApplication.eventBus,
+      pagesCount = pdfDocument.numPages,
+      pageNums = Object.keys(hits);
+
+  convertedMatches = new Array(pagesCount);
+
+  // No find is dispatched: the TextHighlighter is enabled unconditionally
+  // whenever a page's text layer renders, and it renders whatever the find
+  // controller's match arrays hold as long as the controller's highlight gate
+  // (_highlightMatches) is on. Injection sets the gate, fills the arrays, and
+  // pokes rendered pages; pages rendered later pull the arrays automatically.
+  //
+  // Injection must not start until the find controller has been given the
+  // current document: openDone (and therefore this call) can arrive BEFORE the
+  // viewer's internal document setup, whose findController.setDocument does a
+  // reset that clears the gate and replaces the match arrays, wiping anything
+  // injected too early. If the controller doesn't have this document yet, wait
+  // for 'documentloaded'. The gate is also re-asserted in every page callback,
+  // since those complete asynchronously.
+
+  function startInjection() {
+    if ((pendingHits !== hits) || (PDFViewerApplication.pdfDocument !== pdfDocument)) {
+      console.log('javaapp.startInjection: aborted (hits cleared or superseded, or document changed)');
+      return;
+    }
+
+    // The text-layer render path reads findController.state.highlightAll (via the
+    // public state getter), and state is null unless a real find has run; the null
+    // read throws inside rendering, which is what silently killed all highlight
+    // painting. Shadow the getter with an own property carrying the one flag the
+    // render path needs. (Side effect, accepted: a user-initiated Ctrl+F find in
+    // the pane will read this shadow and behave as highlight-all.)
+
+    if (fc.state == null) {
+      Object.defineProperty(fc, 'state', {
+        value: { query: '', type: '', highlightAll: true, caseSensitive: false, entireWord: false, matchDiacritics: false, findPrevious: false },
+        writable: true,
+        configurable: true
       });
     }
 
-    // Raise the text layer opacity so highlights are visible.
-    textLayerDiv.classList.add('fts-active');
-  });
+    fc._highlightMatches = true;
+
+    // Replace the match arrays wholesale rather than merging into whatever a
+    // previous query left in them: entries persist per page, so a page outside
+    // this query's hit set would otherwise keep the previous query's matches
+    // and highlight them whenever its text layer renders later (observed as the
+    // old search term lighting up on pages scrolled to after a new search). The
+    // all-pages poke then repaints every currently-rendered page from the now
+    // empty arrays; per-page pokes follow as this query's conversions land.
+
+    fc._pageMatches = [];
+    fc._pageMatchesLength = [];
+
+    eventBus.dispatch('updatetextlayermatches', { source: fc, pageIndex: -1 });
+
+    pageNums.forEach(function (pageNumStr) {
+      var pageNum = parseInt(pageNumStr, 10),
+          hitRanges = hits[pageNumStr];
+
+      if ((hitRanges == null) || (hitRanges.length === 0)) return;
+
+      pdfDocument.getPage(pageNum).then(function (pdfPage) {
+        return convertPageHits(pdfPage, hitRanges);
+      }).then(function (converted) {
+        if (pendingHits !== hits) return;
+
+        // Matches must be sorted ascending; the highlighter silently drops
+        // out-of-order entries.
+
+        var order = converted.starts.map(function (v, ndx) { return ndx; })
+                                    .sort(function (a, b) { return converted.starts[a] - converted.starts[b]; });
+
+        var pageNdx = pageNum - 1;
+        convertedMatches[pageNdx] = {
+          starts: order.map(function (ndx) { return converted.starts[ndx]; }),
+          lens:   order.map(function (ndx) { return converted.lens[ndx]; })
+        };
+
+        fc._highlightMatches = true;
+        fc._pageMatches[pageNdx] = convertedMatches[pageNdx].starts;
+        fc._pageMatchesLength[pageNdx] = convertedMatches[pageNdx].lens;
+
+        eventBus.dispatch('updatetextlayermatches', { source: fc, pageIndex: pageNdx });
+      });
+    });
+  }
+
+  // The find controller receives the document asynchronously, later than the
+  // eventBus 'documentloaded' event: when this body runs in the gap (document
+  // loaded, controller assignment still pending), a 'documentloaded' listener
+  // would wait forever because the event already fired. No event marks the
+  // controller assignment itself, so poll for it; the same supersession checks
+  // that guard injection bound the polling (hits cleared or document changed).
+
+  if (fc._pdfDocument === pdfDocument) {
+    startInjection();
+  } else {
+    var pollForFindController = function () {
+      if ((pendingHits !== hits) || (PDFViewerApplication.pdfDocument !== pdfDocument))
+        return;  // superseded; a newer hit set (if any) polls on its own
+
+      if (fc._pdfDocument === pdfDocument) {
+        startInjection();
+        return;
+      }
+
+      setTimeout(pollForFindController, 50);
+    };
+
+    setTimeout(pollForFindController, 50);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -209,94 +537,65 @@ function applyHitsToPage(pageNum) {
  */
 function clearAllHits() {
   pendingHits = null;
-  clearHighlights();
+  convertedMatches = null;
+
+  if (viewerReady() === false) return;
+
+  // Empty the injected match arrays, not just the highlight state: findbarclose
+  // clears the highlight gate and repaints rendered pages, but the arrays
+  // persist, and a later injection re-enabling the gate would resurrect their
+  // entries on any page the new query doesn't cover.
+
+  var fc = PDFViewerApplication.findController;
+
+  fc._pageMatches = [];
+  fc._pageMatchesLength = [];
+
+  PDFViewerApplication.eventBus.dispatch('findbarclose', { source: window });
 }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-function openPdfFile(fileStr, pageNum, sidebarView) {
+// If the Java side tried to open a file before this script had parsed (see the
+// typeof guard in PDFJSWrapper.issueOpen), the arguments were buffered; open now.
+// (Function declarations are hoisted, so calling openPdfFile here is safe.)
 
-  if (PDFViewerApplication.initialized == false) {
-    window.setTimeout(openPdfFile, 50, fileStr, pageNum, sidebarView);
-    return;
-  }
-
-  PDFViewerApplicationOptions.set('initialPage', pageNum);
-  PDFViewerApplicationOptions.set('sidebarViewOnLoad', sidebarView);
-  PDFViewerApplicationOptions.set('disablePageMode', true);
-  PDFViewerApplicationOptions.set('showPreviousViewOnLoad', false);
-
-  PDFViewerApplication.pdfViewer.eventBus.on('pagechange', function (e) { javaApp.pageChange(e.pageNumber); });
-  PDFViewerApplication.pdfViewer.eventBus.on('sidebarviewchanged', function (e) { javaApp.sidebarChange(e.view); });
-
-  PDFViewerApplication.open(fileStr).then(function() {
-    javaApp.openDone(true, { });
-  }, function (error) {
-    javaApp.openDone(false, error);
-  });
+if (window.__hnPendingOpen) {
+  var pendingOpen = window.__hnPendingOpen;
+  delete window.__hnPendingOpen;
+  openPdfFile(pendingOpen[0], pendingOpen[1], pendingOpen[2]);
 }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-function closePdfFile() {
-	PDFViewerApplication.close().then(function () {
-	  javaApp.closeDone(true, { });
-	}, function (error) {
-	  javaApp.closeDone(false, error);
-	});
-}
+/**
+ * Scroll to the nth match on the given 1-based page. A match that spans
+ * multiple text divs renders as several spans (highlight begin/middle/end),
+ * so match starts are the highlight spans that are neither middle nor end.
+ */
+function scrollToMatchOnPage(pageNum, ndxOnPage) {
+  if (viewerReady() === false) return;
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  PDFViewerApplication.pdfViewer.currentPageNumber = pageNum;
 
-function clearHighlights() {
-  var highlighted = document.querySelectorAll('.fts-highlight');
+  var attempts = 0;
 
-  for (var ndx = 0; ndx < highlighted.length; ndx++) {
-    highlighted[ndx].classList.remove('fts-highlight');
-  }
+  function tryScroll() {
+    var pageDiv = document.querySelector('.page[data-page-number="' + pageNum + '"]');
+    var starts = pageDiv ? pageDiv.querySelectorAll('.textLayer .highlight:not(.middle):not(.end)') : [];
 
-  // Restore normal text layer opacity
-  var activeLayers = document.querySelectorAll('.fts-active');
-
-  for (var ndx = 0; ndx < activeLayers.length; ndx++) {
-    activeLayers[ndx].classList.remove('fts-active');
-  }
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-function getPdfData() {
-  var pagesCount = PDFViewerApplication.pagesCount;
-  var pagesLeft = pagesCount;
-  var params = { intent: 'display' };
-  var annotPages = [];
-  var pdfDocument = PDFViewerApplication.pdfDocument;
-
-  pdfDocument.getPageLabels().then(function (pageLabels) {
-    for (var pageNum = 1; pageNum <= pagesCount; ++pageNum) {
-      pdfDocument.getPage(pageNum).then(function (pageNum, pdfPage) {
-        pdfPage.getAnnotations(params).then(function (pageNum, annotations) {
-          for (var ndx = 0; ndx < annotations.length; ndx++) {
-            var subtype = annotations[ndx].subtype;
-            if ((subtype !== "Link") && (subtype !== "Widget")) {
-              if (annotPages.indexOf(pageNum) === -1) {
-                annotPages.push(pageNum);
-              }
-            }
-          }
-          pagesLeft--;
-          if (pagesLeft === 0) {
-            javaApp.setData({ annotPages, pageLabels });
-          }
-        }.bind(null, pageNum));
-      }.bind(null, pageNum));
+    if (starts.length > ndxOnPage) {
+      starts[ndxOnPage].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
     }
-  });
-}
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    if (++attempts < 20)
+      window.setTimeout(tryScroll, 100);
+    else
+      console.log('scrollToMatchOnPage: gave up; page ' + pageNum + ' ndx ' + ndxOnPage + ' starts=' + starts.length);
+  }
+
+  tryScroll();
+}

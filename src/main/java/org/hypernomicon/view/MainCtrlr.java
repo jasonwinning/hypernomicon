@@ -57,8 +57,7 @@ import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
-import org.hypernomicon.previewWindow.ContentsWindow;
-import org.hypernomicon.previewWindow.PreviewWindow;
+import org.hypernomicon.previewWindow.*;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryType;
 import org.hypernomicon.query.ui.*;
@@ -102,8 +101,6 @@ import org.jbibtex.TokenMgrException;
 import org.apache.lucene.search.Query;
 
 import com.google.common.collect.EnumHashBiMap;
-
-import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.animation.*;
 import javafx.application.Platform;
@@ -1513,10 +1510,9 @@ public final class MainCtrlr
       Platform.runLater(PreviewWindow::cleanup); // This eventually closes the application main window and arms the ExitWatchdog
     else
     {
-      stage.close();
+      runOutsideFXThread(BrowserEngine::shutdown);  // Blocking close stays off the FX thread; no-op if the engine was never created
 
-      if (Environment.isMac())
-        Platform.exit();
+      stage.close();
 
       ExitWatchdog.arm();  // Teardown is complete; anything still running after the grace period gets logged, then the process exits
     }
@@ -1539,8 +1535,7 @@ public final class MainCtrlr
     ContentsWindow      .close(exitingApp);
     SymbolPickerDlgCtrlr.close(exitingApp);
 
-    if ((exitingApp == false) || (Environment.isMac() == false))
-      PreviewWindow.close(exitingApp);
+    PreviewWindow.close(exitingApp);
   }
 
 //---------------------------------------------------------------------------

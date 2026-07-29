@@ -17,6 +17,8 @@
 
 package org.hypernomicon.util;
 
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -445,9 +447,14 @@ public final class StringUtil
     if (bytes < 1024L)
       return bytes + " bytes";
 
+    NumberFormat format = NumberFormat.getNumberInstance();
+    format.setMinimumFractionDigits(decimals);
+    format.setMaximumFractionDigits(decimals);
+    format.setRoundingMode(RoundingMode.HALF_UP);
+
     return allowMB && (bytes >= (1024L * 1024L))
-      ? String.format("%,." + decimals + "f MB", bytes / (1024.0 * 1024.0))
-      : String.format("%,." + decimals + "f KB", bytes / 1024.0);
+      ? format.format(bytes / (1024.0 * 1024.0)) + " MB"
+      : format.format(bytes / 1024.0) + " KB";
   }
 
 //---------------------------------------------------------------------------
@@ -1089,7 +1096,7 @@ public final class StringUtil
    * @return the generated string
    * @throws IllegalArgumentException if size is negative
    */
-  public static String randomAlphanumericStr(int size) { return randomStr(size, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILJLMNOPQRSTUVWXYZ"); }
+  public static String randomAlphanumericStr(int size) { return randomStr(size, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"); }
 
   /**
    * Generates a random string of the specified size using the characters from the given string.
@@ -1114,8 +1121,8 @@ public final class StringUtil
 
     Random random = new Random();
 
-    for (int i = 0; i < size; i++)
-      result[i] = chars[random.nextInt(chars.length)];
+    for (int ndx = 0; ndx < size; ndx++)
+      result[ndx] = chars[random.nextInt(chars.length)];
 
     return new String(result);
   }

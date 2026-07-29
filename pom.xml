@@ -23,6 +23,7 @@
     <mainClass>org.hypernomicon.Main</mainClass>
     <maven.compiler.release>25</maven.compiler.release>
     <javafx.version>26.0.1</javafx.version>
+    <jxbrowser.version>9.4.1</jxbrowser.version>
     <lucene.version>10.5.0</lucene.version>
   </properties>
 
@@ -269,9 +270,28 @@
 
     <dependency>
       <groupId>com.teamdev.jxbrowser</groupId>
-      <artifactId>jxbrowser-cross-platform</artifactId>
-      <version>6.24.3</version>
-      <type>pom</type>
+      <artifactId>jxbrowser-win64</artifactId>
+      <version>${jxbrowser.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.teamdev.jxbrowser</groupId>
+      <artifactId>jxbrowser-mac</artifactId>
+      <version>${jxbrowser.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.teamdev.jxbrowser</groupId>
+      <artifactId>jxbrowser-mac-arm</artifactId>
+      <version>${jxbrowser.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.teamdev.jxbrowser</groupId>
+      <artifactId>jxbrowser-linux64</artifactId>
+      <version>${jxbrowser.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.teamdev.jxbrowser</groupId>
+      <artifactId>jxbrowser-javafx</artifactId>
+      <version>${jxbrowser.version}</version>
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
@@ -435,10 +455,12 @@
 
   <profiles>
 
-    <!-- Pin the JavaFX native classifier per-OS instead of letting openjfx auto-detect it
-         from the JVM that resolves the classpath. On macOS this is deliberately mac (Intel
-         x86_64), NOT mac-aarch64: the app is debugged under an x86_64 (Rosetta) JVM because
-         JxBrowser 6 is broken on Apple Silicon. -->
+    <!-- Pin the JavaFX native classifier per-OS (and per-arch on macOS) instead of letting
+         openjfx auto-detect it from the JVM that resolves the classpath. The pin keeps the
+         resolved natives deterministic and prevents the duplicate-classifier resolution the
+         openjfx POMs otherwise produce (see the dependencies section). The macOS arch comes
+         from the resolving JVM (Eclipse's own JVM under m2e), which must match the arch of
+         the launch JDK: both native arm64 on Apple Silicon, both x86_64 on Intel Macs. -->
 
     <profile>
       <id>javafx-win</id>
@@ -452,14 +474,27 @@
       </properties>
     </profile>
     <profile>
-      <id>javafx-mac</id>
+      <id>javafx-mac-intel</id>
       <activation>
         <os>
           <family>mac</family>
+          <arch>x86_64</arch>
         </os>
       </activation>
       <properties>
         <javafx.platform>mac</javafx.platform>
+      </properties>
+    </profile>
+    <profile>
+      <id>javafx-mac-aarch64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <javafx.platform>mac-aarch64</javafx.platform>
       </properties>
     </profile>
     <profile>

@@ -136,7 +136,7 @@ public class BidiOneToManyMap<T>
       valueToKeyMap.get(relatedMT).add   (newKey);
     });
 
-    keyToValueMap.merge(newKey, oldSet, (newSet, oldSet_) -> { newSet.addAll(oldSet_); return newSet; });
+    keyToValueMap.merge(newKey, oldSet, (newSet, _oldSet) -> { newSet.addAll(_oldSet); return newSet; });
   }
 
 //---------------------------------------------------------------------------

@@ -1184,7 +1184,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       HDT_Record record = row.getRecord();
       if ((record == null) || ((record.getType() != hdtWork) && (record.getType() != hdtMiscFile))) return false;
 
-      return curInvestigation.worksAndMiscFilesStream().anyMatch(record_ -> record == record_);
+      return curInvestigation.worksAndMiscFilesStream().anyMatch(_record -> record == _record);
     });
 
     curInvestigation.viewNow();

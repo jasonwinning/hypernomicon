@@ -11,6 +11,7 @@ qodana.yaml
 .project
 .idea
 target
+target-release
 bin
 pom2*.xml
 local-resources/

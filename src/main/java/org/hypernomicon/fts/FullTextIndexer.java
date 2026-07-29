@@ -69,8 +69,9 @@ import org.hypernomicon.util.json.JsonObj;
 
 /**
  * Core full-text indexer for the database. Receives filesystem events via
- * {@link #queueEvent}, extracts text from supported file types using Apache Tika,
- * and maintains a Lucene index for search.
+ * {@link #queueEvent}, extracts text from supported file types (PDFs via an
+ * off-screen pdf.js extractor pool, everything else via Apache Tika), and
+ * maintains a Lucene index for search.
  * <p>
  * Lifecycle: {@link #bringOnline} opens the Lucene index and makes it searchable;
  * {@link #startIndexing} launches the background indexing thread; {@link #close}
@@ -232,18 +233,20 @@ public class FullTextIndexer
   /** Pool of off-screen pdf.js extractor instances; each holds a Chromium
    *  process. Lazily created by {@link #initPdfJSExtractorPool} on first PDF
    *  extraction (synchronized) and destroyed by {@link #disposePdfJSExtractorPool}
-   *  from {@link #close} after worker threads have stopped. Volatile because the
+   *  whenever a discrete batch of PDF work ends (initial-build completion, a
+   *  drained incremental burst, a finished retry pass) and finally from
+   *  {@link #close}. Volatile because the
    *  field is published from a synchronized init and read unsynchronized from
    *  workers; {@link #extractViaPdfJS} snapshots the reference at method entry
-   *  so a dispose-during-extraction race (possible only on a future
-   *  reconfigure-while-running path) disposes the held extractor locally rather
-   *  than offering it to a nulled-out queue. */
+   *  so a dispose-during-extraction race (close() can dispose the pool while a
+   *  worker is still parked in an extraction) disposes the held extractor
+   *  locally rather than offering it to a nulled-out queue. */
   private volatile LinkedBlockingQueue<PDFJSTextExtractor> pdfJSExtractorPool;
 
   /** Every pdf.js extractor created via {@link #createExtractor()} that has not yet been disposed,
    *  including those currently checked out by a worker (and therefore absent from {@link #pdfJSExtractorPool}).
    *  Lets shutdown reach in-flight extractors to {@code abort()} them, so a worker parked on extraction
-   *  releases its {@code Browser} before {@code BrowserCore.shutdown()} runs. */
+   *  releases its {@code Browser} before {@code BrowserEngine.shutdown()} runs. */
   private final Set<PDFJSTextExtractor> liveExtractors = ConcurrentHashMap.newKeySet();
 
   private volatile ExecutorService buildWorkerPool, buildLargeFileExecutor;
@@ -397,8 +400,9 @@ public class FullTextIndexer
 
   /** Performs the actual rebuild. Called from the background thread only, at the top
    *  of the background loop when no initial-build workers are active (a rebuild request
-   *  makes any in-progress build bail out first), so it has exclusive access to the
-   *  writer and metadataMap and needs no locking. */
+   *  makes any in-progress build bail out first), so in the normal case it has
+   *  exclusive access to the writer and metadataMap and needs no locking (a worker
+   *  that outlives the drain window in shutdownAndAwait is logged there). */
   private void performRebuild()
   {
     System.out.println("Full-text indexer: rebuilding index from scratch");
@@ -702,7 +706,7 @@ public class FullTextIndexer
     stopRequested = true;
 
     // Unblock any worker parked in a pdf.js extraction so it returns and releases its Browser before
-    // the join below (and any later BrowserCore.shutdown). requestStop() already does this on the
+    // the join below (and any later BrowserEngine.shutdown). requestStop() already does this on the
     // two-phase app-shutdown path; repeating it here also covers a direct close() (e.g. database switch).
 
     liveExtractors.forEach(PDFJSTextExtractor::abort);
@@ -824,9 +828,10 @@ public class FullTextIndexer
     stopRequested = true;
 
     // Unblock any worker currently parked in a pdf.js extraction so it returns promptly, exits, and
-    // releases its Browser instance. Otherwise the worker would wait out EXTRACTION_TIMEOUT_SECONDS,
-    // keeping that Browser alive past the JxBrowser engine teardown (BrowserCore.shutdown), which then
-    // fails with "Pending Browser instances are detected" and leaves the process running.
+    // releases its Browser instance. Otherwise the worker would wait out the full pdf.js extraction
+    // timeout (PDFJSTextExtractor.extractionTimeoutSeconds(), user-settable, possibly unbounded),
+    // holding that Browser (and its Chromium process) alive past the engine teardown
+    // (BrowserEngine.shutdown) and delaying application exit.
 
     liveExtractors.forEach(PDFJSTextExtractor::abort);
   }
@@ -1705,9 +1710,10 @@ public class FullTextIndexer
 
   /**
    * Handle a file rename. When both the old and new extensions are indexable, this
-   * attempts to reuse the stored content from the existing Lucene document rather than
-   * re-extracting via Tika/PDFBox, since content-based MIME detection in
-   * {@link #extractText} means the extracted text is independent of the file extension.
+   * attempts to reuse the stored content from the existing Lucene document rather
+   * than re-extracting via pdf.js/Tika, since {@link #extractText} dispatches on the
+   * detected media type (content magic, with the filename only as a hint), so the
+   * extracted text does not normally depend on the file extension.
    * <p>
    * Falls back to full re-extraction if the old document is not yet visible in the
    * searcher (e.g., CREATE followed by RENAME in the same event batch before a
@@ -1917,10 +1923,10 @@ public class FullTextIndexer
    *  worker's finally block and from {@link #disposePdfJSExtractorPool} is harmless.
    *  <p>
    *  Dispose the Browser BEFORE removing from {@link #liveExtractors}: a concurrent
-   *  {@link #disposePdfJSExtractorPool} (e.g. from {@link #close} on the FX thread) must still find this
+   *  {@link #disposePdfJSExtractorPool} (e.g. from {@link #close}) must still find this
    *  extractor and block on dispose()'s synchronized lock until disposal actually completes. Removing
    *  first would let that pool-dispose report "disposed" while a Browser is still being torn down on
-   *  another thread, so the subsequent {@code BrowserCore.shutdown()} would see a pending instance. */
+   *  another thread, so the engine teardown that follows would race it. */
   private void disposeExtractor(PDFJSTextExtractor extractor)
   {
     extractor.dispose();
@@ -2000,9 +2006,8 @@ public class FullTextIndexer
     finally
     {
       // During shutdown (stopRequested) do nothing here: leave the held extractor in liveExtractors for
-      // close()'s disposePdfJSExtractorPool() to dispose after the background-thread join, on the FX thread.
-      // JxBrowser requires Browser.dispose() on the FX thread on Linux/macOS, so disposing here, on a worker
-      // or background thread, would deadlock on the native side and also race close()'s join.
+      // close()'s disposePdfJSExtractorPool() to dispose after the background-thread join, so a worker's
+      // disposal cannot race the join or the engine teardown that follows.
 
       if (stopRequested == false)
       {
@@ -2235,7 +2240,8 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /** Commits the Lucene index, refreshes the searcher, and saves the metadata map.
-   *  Called only from the background thread to avoid concurrent commit races.
+   *  Called from the background thread, plus once from bringOnline()'s exclusion
+   *  purge before that thread exists; never concurrently, so commits cannot race.
    *  <p>
    *  The metadata is snapshotted <em>before</em> the Lucene commit because worker
    *  threads may call {@code writer.updateDocument()} then

@@ -1,0 +1,3 @@
+# Keep the bundled stock pdf.js distribution byte-identical to upstream: no EOL
+# conversion, so diffs against future stock releases stay clean.
+src/main/resources/org/hypernomicon/resources/pdfjs/** -text

@@ -1523,22 +1523,34 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
           setPreview(selected);
 
-          // Scroll to the highlight for this passage. Each highlight span has a
-          // data-match-ndx attribute corresponding to its index in the matches list.
+          // Scroll to the highlight for this passage. Direct content uses the global
+          // match index (each highlight span carries a data-match-ndx attribute in
+          // matches-list order); the PDF viewer is addressed by (page, index within
+          // that page), since the global list order is not reconstructible there.
 
           if (passageNdx >= 0)
           {
             List<PageMatch> matches = nullSwitch(highlightCache.get(selected.path()), selected.result().pageMatches());
 
-            int matchNdx = 0;
+            int matchNdx = 0, pageNum = -1, ndxOnPage = 0;
 
-            if (matches != null)
+            if ((matches != null) && (passageNdx < matches.size()))
             {
-              for (int ndx = 0; (ndx < passageNdx) && (ndx < matches.size()); ndx++)
-                matchNdx += (matches.get(ndx).hitRanges() != null) ? matches.get(ndx).hitRanges().size() : 0;
+              pageNum = matches.get(passageNdx).pageNumber();
+
+              for (int ndx = 0; ndx < passageNdx; ndx++)
+              {
+                PageMatch match = matches.get(ndx);
+                int rangeCount = (match.hitRanges() != null) ? match.hitRanges().size() : 0;
+
+                matchNdx += rangeCount;
+
+                if (match.pageNumber() == pageNum)
+                  ndxOnPage += rangeCount;
+              }
             }
 
-            PreviewWindow.scrollToHighlightByMatchNdx(pvsQueriesTab, matchNdx);
+            PreviewWindow.scrollToHighlight(pvsQueriesTab, matchNdx, pageNum, ndxOnPage);
           }
         }
       }

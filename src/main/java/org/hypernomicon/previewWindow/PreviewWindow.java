@@ -28,12 +28,6 @@ import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 
 import java.util.*;
 
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.BrowserCore;
-import com.teamdev.jxbrowser.chromium.internal.Environment;
-import com.teamdev.jxbrowser.chromium.internal.ipc.IPC;
-import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
-
 import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.ExitWatchdog;
 import org.hypernomicon.bib.BibManager;
@@ -102,8 +96,6 @@ public final class PreviewWindow extends NonmodalWindow
   PreviewSource curSource()                      { return curWrapper().getSource(); }
   int curPage()                                  { return (int) sldPreview.getValue(); }
   int getMax()                                   { return (int) sldPreview.getMax(); }
-
-  public static void close(boolean exitingApp)   { close(instance, exitingApp); }
 
   @Override protected void getDividerPositions() { }
   @Override protected void setDividerPositions() { }
@@ -327,18 +319,34 @@ public final class PreviewWindow extends NonmodalWindow
 
     tfPreviewPage.setOnAction(event -> curWrapper().updatePage(curWrapper().getPageByLabel(tfPreviewPage.getText())));
 
-    onShown = () -> runDelayedInFXThread(1, 300, () -> curWrapper().activate());
+    // The browser views are detached from the scene graph while this window is hidden, and
+    // re-attached only once it is showing again. Both halves must straddle the stage's native
+    // peer, which JavaFX destroys on hide and recreates on show: JxBrowser's SceneTracker
+    // reacts to a BrowserView joining or leaving a scene by resolving the window's native id,
+    // so re-attaching while hidden throws ("Failed to get native widget ID") and leaves the
+    // view unattached (a blank pane on the next show). Hence prepareToShow runs here, on
+    // shown, and not from onHidden.
+
+    onShown = () ->
+    {
+      srcToWrapper.values().forEach(PreviewWrapper::prepareToShow);
+
+      runDelayedInFXThread(1, 300, () -> curWrapper().activate());
+    };
 
     stage.setOnHiding(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToHide));
-
-    onHidden = () -> srcToWrapper.values().forEach(PreviewWrapper::prepareToShow);
 
     btnContents.setOnAction(event -> ContentsWindow.show());
 
     stage.addEventFilter(ScrollEvent.SCROLL, event ->
     {
       double deltaY = event.getDeltaY();
-      if ((event.isControlDown() == false) || (deltaY == 0)) return;
+
+      // Ctrl or Cmd, matching the browser-side wheel callback in PDFJSWrapper
+      // (this filter sees only wheel events over the window's own controls;
+      // the browser view's native surface takes its wheel input directly)
+
+      if (((event.isControlDown() || event.isMetaDown()) == false) || (deltaY == 0)) return;
 
       if (curWrapper().zoom(deltaY > 0))
         event.consume();
@@ -577,11 +585,11 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void scrollToHighlightByMatchNdx(PreviewSource src, int matchNdx)
+  public static void scrollToHighlight(PreviewSource src, int matchNdx, int pageNum, int ndxOnPage)
   {
     if (jxBrowserDisabled || (instance == null)) return;
 
-    nullSwitch(instance.srcToWrapper.get(src), wrapper -> wrapper.scrollToHighlightByMatchNdx(matchNdx));
+    nullSwitch(instance.srcToWrapper.get(src), wrapper -> wrapper.scrollToHighlight(matchNdx, pageNum, ndxOnPage));
   }
 
 //---------------------------------------------------------------------------
@@ -943,16 +951,11 @@ public final class PreviewWindow extends NonmodalWindow
         }
       }
 
-      disposeStragglerBrowsers();
+      // Closing the shared engine terminates the Chromium process tree and closes any
+      // browser still open; there is no straggler sweep and no per-browser process
+      // management (JxBrowser 6 needed both; its exit-hang failure modes are gone).
 
-      try
-      {
-        BrowserCore.shutdown();
-      }
-      catch (IPCException e)
-      {
-        errorPopup("An error occurred while shutting down preview window: " + getThrowableMessage(e));
-      }
+      BrowserEngine.shutdown();
 
       Platform.runLater(() ->
       {
@@ -961,66 +964,9 @@ public final class PreviewWindow extends NonmodalWindow
 
         ui.getStage().close();
 
-        List<ProcessHandle> browserProcesses = ProcessHandle.current().children()
-          .filter(ph -> ph.info().command().map(cmd -> cmd.contains("browsercore")).orElse(false))
-          .toList();
-
-        if (browserProcesses.isEmpty() == false)
-        {
-          System.out.println("Shutdown: destroying " + browserProcesses.size() + " remaining browsercore process(es)");
-          browserProcesses.forEach(ProcessHandle::destroy);
-        }
-
-        if (Environment.isMac())
-          Platform.exit();
-
         ExitWatchdog.arm();  // Teardown is complete; anything still running after the grace period gets logged, then the process exits
       });
     };
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Disposes any Browser still registered with JxBrowser's IPC layer after the per-wrapper cleanup
-   * chain has run, logging where each was created. This is leak hygiene and diagnostics: it catches
-   * a Browser that was genuinely never disposed, frees its native channel, and names its origin via
-   * {@link BrowserTracker}.
-   * <p>
-   * It is NOT what guarantees the process exits. The primary exit hang comes from channel threads
-   * that stay wedged after their Browser has already disposed and deregistered (see
-   * {@link org.hypernomicon.ExitWatchdog}); such browsers are absent from the IPC registry, so this
-   * sweep never sees them, and disposing here can even provoke that wedge. {@code ExitWatchdog} is
-   * the backstop that guarantees exit regardless.
-   */
-  private static void disposeStragglerBrowsers()
-  {
-    List<Browser> stragglers;
-
-    try { stragglers = List.copyOf(IPC.getBrowsers()); }
-    catch (RuntimeException e)
-    {
-      System.out.println("Shutdown: unable to check for undisposed browser instances: " + getThrowableMessage(e));
-      return;
-    }
-
-    if (stragglers.isEmpty())
-    {
-      if (app.debugging)
-        System.out.println("Shutdown: all browser instances were disposed");
-
-      return;
-    }
-
-    System.out.println("Shutdown: " + stragglers.size() + " undisposed browser instance(s) remain; disposing now:");
-
-    for (Browser browser : stragglers)
-    {
-      System.out.println("  " + BrowserTracker.describe(browser));
-
-      PDFJSWrapper.dispose(browser, true);
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -1044,6 +990,23 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static void close(boolean exitingApp)
+  {
+    // On app exit, detach live BrowserViews from the scene graph before the stage
+    // closes; otherwise JxBrowser's SceneTracker reacts to the closing window with
+    // Platform.runLater callbacks that run after the native window peer is gone
+    // ("Failed to get native widget ID" on the FX thread). The browsers themselves
+    // are closed later by the cleanup() dispose chain.
+
+    if (exitingApp && (instance != null))
+      tabToWrapper.values().forEach(PreviewWrapper::detachBrowserView);
+
+    close(instance, exitingApp);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void cleanup()
   {
     if (jxBrowserInitialized == false) return;
@@ -1051,7 +1014,12 @@ public final class PreviewWindow extends NonmodalWindow
     if (app.debugging)
       System.out.println("Shutdown: disposing browser instances...");
 
-    getDisposeHandler(tabToWrapper.values().iterator()).run();
+    // The chain calls the blocking browser/engine close(), which must stay off the FX
+    // thread (closing a browser whose view is in the scene graph can need the FX thread,
+    // so blocking it there can deadlock). The chain's final step hops back onto the FX
+    // thread itself for the window close.
+
+    runOutsideFXThread(getDisposeHandler(tabToWrapper.values().iterator()));
   }
 
 //---------------------------------------------------------------------------

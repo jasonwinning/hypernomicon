@@ -28,7 +28,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.io.FileUtils;
-import org.hypernomicon.previewWindow.PDFJSWrapper;
+import org.hypernomicon.previewWindow.BrowserEngine;
 import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
@@ -81,7 +81,7 @@ public final class InterProcClient
                     .forEach(instance -> idToInstance.put(instance.getID(), instance));
 
     if (firstRun && idToInstance.isEmpty())
-      PDFJSWrapper.clearContextFolder();
+      BrowserEngine.clearStaleDataDirs();
 
     firstRun = false;
 

@@ -182,17 +182,15 @@
               </Button>
             </AnchorPane>
             <AnchorPane GridPane.columnIndex="1">
-              <children>
-                <Button fx:id="btnGoToManager" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
-                        prefHeight="25.0" text="File Mgr" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                        AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                  <graphic>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                      <Image url="@../resources/images/folders_explorer.png"/>
-                    </ImageView>
-                  </graphic>
-                </Button>
-              </children>
+              <Button fx:id="btnGoToManager" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false"
+                      prefHeight="25.0" text="File Mgr" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../resources/images/folders_explorer.png"/>
+                  </ImageView>
+                </graphic>
+              </Button>
             </AnchorPane>
           </GridPane>
           <VBox.margin>

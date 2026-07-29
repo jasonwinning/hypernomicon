@@ -108,6 +108,10 @@ public class PreviewWrapper
   void setStartingConverter()           { if (initialized) jsWrapper.setStartingConverter(); }
   void setUnable(FilePath filePath)     { if (initialized) jsWrapper.setUnable(filePath); }
 
+  /** Shutdown-only: detach the browser view from the scene graph before the
+   *  preview stage closes. See {@link PDFJSWrapper#detachBrowserView()}. */
+  void detachBrowserView()              { if (initialized) jsWrapper.detachBrowserView(); }
+
   void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
   { if (initialized) jsWrapper.setGenerating(filePath, dontRestartProgressIfSamePreview); }
 
@@ -117,7 +121,7 @@ public class PreviewWrapper
   String getLabelByPage(int page)       { return collEmpty(pageToLabel) ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
   boolean zoom(boolean zoomingIn)       { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }
 
-  void scrollToHighlightByMatchNdx(int matchNdx) { if (initialized) jsWrapper.scrollToHighlightByMatchNdx(matchNdx); }
+  void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage) { if (initialized) jsWrapper.scrollToHighlight(matchNdx, pageNum, ndxOnPage); }
   boolean enableFileNavButton(boolean isForward) { return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1; }
 
 //---------------------------------------------------------------------------
@@ -204,6 +208,13 @@ public class PreviewWrapper
   private void initJS()
   {
     if (jxBrowserDisabled) return;
+
+    // This pane's viewer attaches into the (non-modal) Preview Window. On macOS the
+    // process's first BrowserView attach has to happen in a modal window or a later attach
+    // in a modal dialog can kill the JVM, so make a throwaway modal attach first if nothing
+    // else has. No-op elsewhere, and after the first time.
+
+    BrowserEngine.primeModalAttach();
 
     jsWrapper = new PDFJSWrapper(ap, this::doneHndlr, this::pageChangeHndlr, this::retrievedDataHndlr);
 

@@ -1,0 +1,19 @@
+/*
+ * Copyright 2026 Jason Winning
+ *
+ * This file is new with Hypernomicon and is not part of PDF.js
+ *
+ * Hides viewer chrome Hypernomicon doesn't want: file operations (downloads
+ * are rejected on the Java side anyway), printing, presentation mode,
+ * bookmarking, and the annotation editors (edits could never be saved).
+ * Loaded by javaapp.js as a same-origin stylesheet; the viewer page's CSP
+ * (style-src 'self') forbids injected inline styles.
+ */
+
+#printButton, #secondaryPrint, #downloadButton, #secondaryDownload,
+#openFile, #secondaryOpenFile, #presentationMode, #secondaryPresentationMode,
+#viewBookmark, #secondaryViewBookmark, #editorFreeTextButton, #editorInkButton,
+#editorStampButton, #editorHighlightButton, #editorSignatureButton,
+#editorFreeText, #editorInk, #editorStamp, #editorHighlight, #editorSignature {
+  display: none !important;
+}

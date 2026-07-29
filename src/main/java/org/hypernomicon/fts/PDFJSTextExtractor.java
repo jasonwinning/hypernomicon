@@ -19,40 +19,39 @@ package org.hypernomicon.fts;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.PrefKey.*;
-import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.*;
 
-import com.teamdev.jxbrowser.chromium.*;
-import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
-import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
-import com.teamdev.jxbrowser.chromium.internal.Environment;
-import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
+import com.teamdev.jxbrowser.browser.Browser;
+import com.teamdev.jxbrowser.browser.callback.InjectJsCallback;
+import com.teamdev.jxbrowser.js.JsAccessible;
+import com.teamdev.jxbrowser.js.JsObject;
 
 import org.apache.commons.text.StringEscapeUtils;
 
-import org.hypernomicon.App;
-import org.hypernomicon.previewWindow.BrowserTracker;
-import org.hypernomicon.previewWindow.PDFJSWrapper;
+import org.hypernomicon.previewWindow.BrowserEngine;
+import org.hypernomicon.previewWindow.ResourceServer;
 import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 
 /**
- * Extracts text from PDF files using pdf.js running in an off-screen JxBrowser
- * instance. This produces column-aware text extraction where columns are read
- * in the correct order, preserving phrase adjacency within columns.
+ * Extracts text from PDF files using pdf.js running in an off-screen browser
+ * under the shared {@link BrowserEngine}. This produces column-aware text
+ * extraction where columns are read in the correct order, preserving phrase
+ * adjacency within columns.
  * <p>
  * Lifecycle: call {@link #initialize()} before first use, {@link #extractText}
- * for each PDF, and {@link #dispose()} when done. The off-screen Chromium process
- * is created on {@link #initialize()} and destroyed on {@link #dispose()}.
+ * for each PDF, and {@link #dispose()} when done. Each instance is one
+ * off-screen browser (a Chromium renderer under the shared engine); closing
+ * the browser fully releases its renderer process.
  * <p>
  * Thread safety: This class is NOT thread-safe. Each thread that needs to extract
  * PDFs should have its own instance. Multiple instances can coexist (each runs its
- * own Chromium process). The single-writer assumption is also load-bearing for the
+ * own renderer). The single-writer assumption is also load-bearing for the
  * non-atomic {@code ++currentRequestID} in {@link #extractText}: if a future change
  * shares an instance across worker threads, that increment must be made atomic.
  */
@@ -67,10 +66,6 @@ public class PDFJSTextExtractor
 
   public static final int DEFAULT_EXTRACTION_TIMEOUT_MINUTES = 15;  // overridable per-computer on the FTS settings page
 
-  private static final String BASE_PLACEHOLDER = "<!-- base placeholder -->";
-
-  private static String extractorHTMLStr = null;
-
   private volatile Browser browser = null;
 
   // currentFuture/currentRequestID correlate an async pdf.js callback to the request that is waiting on it.
@@ -83,10 +78,15 @@ public class PDFJSTextExtractor
   private volatile int currentRequestID = 0;
   private volatile boolean ready = false;
 
-  // Completed by the load listener when the extractor page finishes loading (a one-time event in initialize()).
+  // Completed when the extractor page's module finishes loading and calls javaApp.pageReady()
+  // (a one-time event in initialize()).
   private volatile CompletableFuture<Void> pageReadyFuture = null;
 
-  // Count of extractions this instance's Chromium process has performed. Written and read only on the worker
+  // The bridge object injected as window.javaApp; a strong reference is required so it is not
+  // garbage collected out from under the page.
+  private final JavascriptToJava javascriptToJava = new JavascriptToJava();
+
+  // Count of extractions this instance's browser has performed. Written and read only on the worker
   // thread that owns this extractor (the pool grants one worker exclusive use at a time), so a plain int is safe.
   private int extractionCount = 0;
 
@@ -95,15 +95,27 @@ public class PDFJSTextExtractor
 
   /**
    * Bridge object exposed to JavaScript as {@code window.javaApp}.
-   * pdf.js extraction calls back into these methods when done.
+   * pdf.js extraction calls back into these methods when done. JS numbers
+   * arrive as double per the JxBrowser type mapping.
    */
+  @JsAccessible
   public class JavascriptToJava
   {
-    public void extractionDone(int requestID, String text, String pageOffsetsJson)
+    public void pageReady()
+    {
+      ready = true;
+
+      CompletableFuture<Void> readyFuture = pageReadyFuture;
+      if (readyFuture != null) readyFuture.complete(null);
+    }
+
+//---------------------------------------------------------------------------
+
+    public void extractionDone(double requestID, String text, String pageOffsetsJson)
     {
       CompletableFuture<ExtractionResult> future = currentFuture;
 
-      if ((future == null) || (requestID != currentRequestID)) return;  // no active request, or a stale callback from a timed-out extraction
+      if ((future == null) || (((int) requestID) != currentRequestID)) return;  // no active request, or a stale callback from a timed-out extraction
 
       try
       {
@@ -119,11 +131,11 @@ public class PDFJSTextExtractor
 
 //---------------------------------------------------------------------------
 
-    public void extractionFailed(int requestID, String errorMessage)
+    public void extractionFailed(double requestID, String errorMessage)
     {
       CompletableFuture<ExtractionResult> future = currentFuture;
 
-      if ((future == null) || (requestID != currentRequestID)) return;
+      if ((future == null) || (((int) requestID) != currentRequestID)) return;
 
       future.completeExceptionally(new IOException("pdf.js extraction failed: " + errorMessage));
     }
@@ -136,7 +148,7 @@ public class PDFJSTextExtractor
    *  {@link #abort()}); the pool then disposes and replaces this instance rather than reusing a dead one. */
   public boolean isReady() { return ready; }
 
-  /** Number of extractions this instance has performed; the pool uses it to recycle the Chromium process
+  /** Number of extractions this instance has performed; the pool uses it to recycle the browser
    *  periodically, before its accumulated memory footprint grows large enough to risk an OOM. */
   public int extractionCount() { return extractionCount; }
 
@@ -147,8 +159,8 @@ public class PDFJSTextExtractor
    * The per-computer PDF extraction timeout, in seconds, for both indexing and the diagnostic extraction.
    * Read live from prefs so a change on the FTS settings page applies to the next extraction without a
    * restart. The pref stores minutes; a value of 0 (or less) means "no timeout", for which this returns
-   * {@link Long#MAX_VALUE} (TimeUnit saturation makes the timed {@code future.get}/{@code pool.poll}
-   * effectively unbounded).
+   * {@link Long#MAX_VALUE}: TimeUnit saturation makes the timed {@code future.get} effectively
+   * unbounded, and it likewise unbounds FullTextIndexer's one-second-sliced pool-wait loop.
    */
   static long extractionTimeoutSeconds()
   {
@@ -162,11 +174,13 @@ public class PDFJSTextExtractor
 
   /**
    * Unblock any in-flight extraction (or page load) so a worker parked in {@link #extractText} returns
-   * immediately instead of waiting out the full extraction timeout. Called during shutdown: a parked worker
-   * still holds this extractor's {@code Browser}, which would keep {@code BrowserCore.shutdown()} from
-   * succeeding until the timeout elapses. Completing the future with {@code null} makes {@code extractText}
-   * return null; the request-ID check then discards any late pdf.js callback. The held {@code Browser} is
-   * disposed by the caller after the worker releases it.
+   * immediately instead of waiting out the full extraction timeout. Called on shutdown
+   * (requestStop/close), on a rebuild request, and during pool teardown. What happens to the held
+   * {@code Browser} depends on the caller: pool teardown disposes it right away (dispose() is
+   * synchronized, so it blocks until the worker is out), while after a rebuild request the returning
+   * worker sees {@code isReady() == false} and disposes/replaces the extractor itself. Completing the
+   * future with {@code null} makes {@code extractText} return null; the request-ID check then discards
+   * any late pdf.js callback.
    */
   public void abort()
   {
@@ -183,73 +197,53 @@ public class PDFJSTextExtractor
 //---------------------------------------------------------------------------
 
   /**
-   * Creates the off-screen Chromium browser and loads the pdf.js extractor page.
+   * Creates the off-screen browser and loads the pdf.js extractor page.
    * Must be called before {@link #extractText}. This is a blocking call that waits
-   * for the browser to be ready.
-   * <p>
-   * JxBrowser must already be initialized (via {@link PDFJSWrapper#init()}) before
-   * calling this method.
+   * for the extractor page to be ready.
    *
-   * @throws IOException if the extractor HTML cannot be loaded
-   * @throws RuntimeException if the browser fails to initialize
+   * @throws IOException if the extractor page fails to load; returns without initializing
+   *                     (leaving {@link #isReady()} false) if the browser engine is unavailable
    */
   public void initialize() throws IOException
   {
     if ((browser != null) || jxBrowserDisabled) return;
 
-    if (jxBrowserInitialized == false)
-      PDFJSWrapper.init();
+    browser = BrowserEngine.newOffScreenBrowser();
 
-    if (jxBrowserDisabled) return;
+    if (browser == null) return;  // engine unavailable (never initialized, or disabled after a failure/crash)
 
-    if (extractorHTMLStr == null)
-      initExtractorHTML();
+    // Inject the bridge before page scripts run, so javaApp already exists when the
+    // extractor module executes (no readiness polling needed; the module calls
+    // javaApp.pageReady() when it finishes loading).
 
-    browser = new Browser(BrowserType.LIGHTWEIGHT);
-
-    BrowserTracker.register(browser, "PDFJSTextExtractor");
-
-    PDFJSWrapper.addCustomProtocolHandler(browser, "jar");
-
-    browser.addLoadListener(new LoadAdapter()
+    browser.set(InjectJsCallback.class, params ->
     {
-      @Override public void onFinishLoadingFrame(FinishLoadingEvent event)
-      {
-        if (event.isMainFrame() == false) return;
+      JsObject window = params.frame().executeJavaScript("window");
 
-        // Fires when the extractor page finishes loading (the one-time load in initialize()); it completes
-        // the pending pageReadyFuture (completing an already-completed one is a harmless no-op).
+      if (window != null)
+        window.putProperty("javaApp", javascriptToJava);
 
-        CompletableFuture<Void> readyFuture = pageReadyFuture;
-
-        try
-        {
-          // Both calls can throw IllegalStateException if the browser was disposed mid-load (e.g. a
-          // concurrent abort()). Keep both inside the try so either failure completes pageReadyFuture
-          // promptly rather than leaving loadExtractorPageAndWait to fall back to its 30s timeout.
-
-          JSValue window = browser.executeJavaScriptAndReturnValue("window");
-          window.asObject().setProperty("javaApp", new JavascriptToJava());
-        }
-        catch (IllegalStateException e)
-        {
-          if (readyFuture != null) readyFuture.completeExceptionally(e);
-          return;
-        }
-
-        ready = true;
-        if (readyFuture != null) readyFuture.complete(null);
-      }
+      return InjectJsCallback.Response.proceed();
     });
+
+    pageReadyFuture = new CompletableFuture<>();
+
+    browser.navigation().loadUrl(ResourceServer.extractorUrl());
 
     try
     {
-      loadExtractorPageAndWait();
+      pageReadyFuture.get(30, TimeUnit.SECONDS);
     }
-    catch (IOException e)
+    catch (InterruptedException e)
+    {
+      Thread.currentThread().interrupt();
+      dispose();
+      throw new IOException("Interrupted while loading pdf.js extractor page", e);
+    }
+    catch (ExecutionException | TimeoutException e)
     {
       dispose();
-      throw e;
+      throw new IOException("Failed to load pdf.js extractor page: " + getThrowableMessage(e), e);
     }
   }
 
@@ -287,11 +281,20 @@ public class PDFJSTextExtractor
     CompletableFuture<ExtractionResult> future = new CompletableFuture<>();
     currentFuture = future;
 
-    String fileUrl = filePath.toURLString();
+    // The file is served through the hnres: scheme; the extractor page cannot fetch file:// URLs
+    // (cross-origin from the scheme's origin).
 
-    browser.executeJavaScript(debug
-      ? "extractDebug(" + requestID + ", \"" + StringEscapeUtils.escapeEcmaScript(fileUrl) + "\", " + page + ");"
-      : "extractText (" + requestID + ", \"" + StringEscapeUtils.escapeEcmaScript(fileUrl) + "\");");
+    String fileUrl = ResourceServer.urlForFile(filePath),
+
+           script = debug
+             ? "extractDebug(" + requestID + ", \"" + StringEscapeUtils.escapeEcmaScript(fileUrl) + "\", " + page + ");"
+             : "extractText (" + requestID + ", \"" + StringEscapeUtils.escapeEcmaScript(fileUrl) + "\");";
+
+    // Async variant: fire the script and return; the bridge callback completes the future.
+    // The synchronous executeJavaScript would block this worker thread on the browser, which
+    // is pointless here and contrary to the v9 threading guidance.
+
+    browser.mainFrame().ifPresent(frame -> frame.executeJavaScript(script, result -> {}));
 
     try
     {
@@ -301,11 +304,11 @@ public class PDFJSTextExtractor
     {
       System.out.println("Full-text indexer: pdf.js extraction timed out for " + filePath + "; recycling extractor");
 
-      // The JS extraction is still running in (and likely thrashing) the off-screen Chromium. Reloading just the
-      // page doesn't reliably recover a wedged process. Under the memory pressure that causes these timeouts, even
-      // the reload can hang. So mark this extractor dead: FullTextIndexer's pool then disposes the whole Chromium
-      // process (reliably reclaiming its memory) and replaces it with a fresh instance. The request-ID check
-      // discards any late pdf.js callback from the abandoned job.
+      // The JS extraction is still running in (and likely thrashing) the off-screen renderer. Under the memory
+      // pressure that causes these timeouts, reloading just the page doesn't reliably recover it. So mark this
+      // extractor dead: FullTextIndexer's pool then closes the whole browser (reliably reclaiming its renderer's
+      // memory) and replaces it with a fresh instance. The request-ID check discards any late pdf.js callback
+      // from the abandoned job.
 
       ready = false;
 
@@ -334,37 +337,8 @@ public class PDFJSTextExtractor
 //---------------------------------------------------------------------------
 
   /**
-   * Creates a fresh {@link #pageReadyFuture}, loads the extractor HTML into the browser, and blocks
-   * until the load listener completes the future (or 30s elapses). Used for the initial load in
-   * {@link #initialize()}.
-   */
-  private void loadExtractorPageAndWait() throws IOException
-  {
-    pageReadyFuture = new CompletableFuture<>();
-
-    browser.loadHTML(extractorHTMLStr);
-
-    try
-    {
-      pageReadyFuture.get(30, TimeUnit.SECONDS);
-    }
-    catch (InterruptedException e)
-    {
-      Thread.currentThread().interrupt();
-      throw new IOException("Interrupted while loading pdf.js extractor page", e);
-    }
-    catch (ExecutionException | TimeoutException e)
-    {
-      throw new IOException("Failed to load pdf.js extractor page: " + getThrowableMessage(e), e);
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Disposes the off-screen Chromium browser and frees its resources.
-   * Safe to call multiple times.
+   * Closes the off-screen browser, releasing its renderer process.
+   * Safe to call multiple times, from any thread.
    */
   public synchronized void dispose()
   {
@@ -372,70 +346,18 @@ public class PDFJSTextExtractor
 
     if (browser == null) return;
 
-    Browser toDispose = browser;
+    Browser toClose = browser;
     browser = null;
-
-    if (toDispose.isDisposed()) return;
-
-    CountDownLatch latch = new CountDownLatch(1);
-    toDispose.addDisposeListener(event -> latch.countDown());
-
-    Runnable runnable = () ->
-    {
-      try
-      {
-        toDispose.dispose();
-      }
-      catch (IPCException e)
-      {
-        latch.countDown();
-        System.out.println("Full-text indexer: error disposing pdf.js extractor: " + getThrowableMessage(e));
-      }
-    };
-
-    // JxBrowser 6 requires Browser.dispose() to run on a specific thread, and which thread differs by OS:
-    // on Linux and macOS it must be the JavaFX Application Thread (the UI thread); on Windows it must NOT
-    // be the UI thread. Disposing on the wrong thread deadlocks on the native side. This mirrors
-    // PDFJSWrapper.dispose(); FullTextIndexer routes extractor disposal here from the FX thread on
-    // Linux/macOS (close() disposes the pool after the background-thread join) so this never blocks the FX thread.
-
-    if (Environment.isWindows())
-      runOutsideFXThread(runnable);
-    else
-      runInFXThread(runnable);
-
-    // Wait for disposal to complete before returning, so that the caller
-    // can safely dispose the next browser (sequential disposal required)
 
     try
     {
-      if (latch.await(10, TimeUnit.SECONDS) == false)
-        System.out.println("Full-text indexer: timed out waiting for pdf.js extractor disposal; next disposal may overlap.");
+      if (toClose.isClosed() == false)
+        toClose.close();
     }
-    catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void initExtractorHTML() throws IOException
-  {
-    StringBuilder sb = new StringBuilder();
-
-    readResourceTextFile("resources/pdfjs/web/extractor.html", sb);
-
-    int ndx = sb.indexOf(BASE_PLACEHOLDER);
-
-    String pathStr = App.class.getResource("resources/pdfjs/web").toExternalForm();
-
-    if (pathStr.contains("file:/") && (pathStr.contains("file:///") == false))
-      pathStr = pathStr.replace("file:/", "file:///");
-
-    String baseTag = "<base href=\"" + pathStr + "/\" />";
-
-    sb.replace(ndx, ndx + BASE_PLACEHOLDER.length(), baseTag);
-
-    extractorHTMLStr = sb.toString();
+    catch (RuntimeException e)
+    {
+      System.out.println("Full-text indexer: error disposing pdf.js extractor: " + getThrowableMessage(e));
+    }
   }
 
 //---------------------------------------------------------------------------

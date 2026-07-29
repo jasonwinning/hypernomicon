@@ -73,9 +73,6 @@ import org.apache.logging.log4j.core.config.DefaultConfiguration;
 
 import com.google.common.collect.Table;
 
-import com.teamdev.jxbrowser.chromium.BrowserPreferences;
-import com.teamdev.jxbrowser.chromium.internal.Environment;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
@@ -152,10 +149,6 @@ public final class App extends Application
 
     if (debugging == false)
       Configurator.setLevel("org.apache.poi", Level.FATAL);
-
-    BrowserPreferences.setChromiumSwitches(Environment.isLinux()
-      ? new String[] { "--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses", "--disable-gpu" }
-      : new String[] { "--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses" });
 
     Preferences appPrefs = null;
 
@@ -278,9 +271,11 @@ public final class App extends Application
 
     suppressLibreOfficePrinterLookup();
 
-    // On Mac OS Chromium engine must be initialized outside of FX application thread
+    // Engine creation is a blocking call that must happen off the FX thread; doing it
+    // here (launcher thread, on every platform) means the engine is ready before the
+    // UI shows and no later caller ever blocks the FX thread creating it.
 
-    if (Environment.isMac()) PDFJSWrapper.init();
+    BrowserEngine.initialize();
   }
 
 //---------------------------------------------------------------------------

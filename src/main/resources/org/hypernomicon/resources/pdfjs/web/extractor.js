@@ -17,6 +17,19 @@
  *
  */
 
+// Column-aware PDF text extraction using the pdf.js 6 API (ES module import,
+// getDocument({url}).promise, loadingTask.destroy()). The concatenation
+// algorithm is unchanged from the pdf.js 2.0.943 version: it defines the FTS
+// index's text space, and javaapp.js reruns it to map hit offsets back to the
+// viewer, so all three must stay in lockstep.
+
+import { getDocument, GlobalWorkerOptions } from '../build/pdf.mjs';
+
+GlobalWorkerOptions.workerSrc = '../build/pdf.worker.mjs';
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 // Assemble one page's text from its pdf.js textContent items, applying the column-aware spacing and
 // dehyphenation rules. This depends only on the page's own items, not on how or when the page was
 // fetched, so sequential and concurrent extraction produce identical per-page text.
@@ -63,55 +76,20 @@ function extractPageText(textContent) {
   return text.replace(/\s+/g, ' ').trim();
 }
 
-function extractDebug(requestID, fileUrl, pageNum) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '../build/pdf.worker.js';
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  pdfjsLib.getDocument(fileUrl).then(function (pdf) {
-    pdf.getPage(pageNum).then(function (page) {
-      return page.getTextContent().then(function (textContent) {
-        var items = textContent.items,
-            lines = [];
+window.extractText = function (requestID, fileUrl) {
+  var task = getDocument({ url: fileUrl });
 
-        for (var ndx = 0; ndx < items.length; ndx++) {
-          var item = items[ndx],
-              t = item.transform;
-
-          lines.push(
-            'ndx=' + ndx +
-            ' str=' + JSON.stringify(item.str) +
-            ' hasEOL=' + (item.hasEOL || false) +
-            ' w=' + (item.width || 0).toFixed(2) +
-            ' tx=' + (t ? t[4].toFixed(2) : '?') +
-            ' ty=' + (t ? t[5].toFixed(2) : '?') +
-            ' fs=' + (t ? t[0].toFixed(2) : '?')
-          );
-        }
-
-        pdf.destroy();
-        javaApp.extractionDone(requestID, lines.join('\n'), '[]');
-      });
-    }).catch(function (error) {
-      // A failure after getDocument resolved (e.g. a corrupt page) won't reach the getDocument
-      // reject handler below, so destroy the document and report here to avoid leaking it and
-      // hanging the Java-side worker until its timeout.
-      pdf.destroy();
-      javaApp.extractionFailed(requestID, (error && error.message) ? error.message : String(error));
-    });
-  }, function (error) {
-    javaApp.extractionFailed(requestID, (error && error.message) ? error.message : String(error));
-  });
-}
-
-function extractText(requestID, fileUrl) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '../build/pdf.worker.js';
-
-  pdfjsLib.getDocument(fileUrl).then(function (pdf) {
+  task.promise.then(function (pdf) {
     var pageCount = pdf.numPages,
         pageTexts = new Array(pageCount);
 
     if (pageCount === 0) {
-      pdf.destroy();
-      javaApp.extractionDone(requestID, '', '[]');
+      task.destroy().then(function () {
+        javaApp.extractionDone(requestID, '', '[]');
+      });
       return;
     }
 
@@ -137,21 +115,23 @@ function extractText(requestID, fileUrl) {
       // ToUnicode CMaps yield NUL for unmapped glyphs (commonly
       // ligature glyphs like Th/fi/ft/tt/cr that the font's subset
       // doesn't expose mappings for). The JxBrowser JS-to-Java string
-      // bridge terminates at NUL (C-string convention), so leaving
-      // NUL in the assembled text truncates everything past the first
-      // unmapped glyph.
+      // bridge terminates at NUL (C-string convention; verified still
+      // true in JxBrowser 9), so leaving NUL in the assembled text
+      // truncates everything past the first unmapped glyph.
 
       fullText = fullText.replace(/\x00/g, '?');
 
-      pdf.destroy();
-      javaApp.extractionDone(requestID, fullText, JSON.stringify(offsets));
+      task.destroy().then(function () {
+        javaApp.extractionDone(requestID, fullText, JSON.stringify(offsets));
+      });
     }
 
     function fail(error) {
       // Release the document so a mid-extraction failure can't leak it or hang the Java-side worker
       // until its timeout, then report the failure.
-      pdf.destroy();
-      javaApp.extractionFailed(requestID, (error && error.message) ? error.message : String(error));
+      task.destroy().then(function () {
+        javaApp.extractionFailed(requestID, (error && error.message) ? error.message : String(error));
+      });
     }
 
     // Process one page at a time, holding only a single page's textContent in memory at once instead of
@@ -166,7 +146,12 @@ function extractText(requestID, fileUrl) {
       }
 
       pdf.getPage(pageNum).then(function (page) {
-        return page.getTextContent().then(function (textContent) {
+        // disableNormalization: extract from raw (unnormalized) items. This matches
+        // pdf.js 2.0.943 (which predated text normalization and built existing
+        // indexes), and it is what lets javaapp.js's hit mapping and the find
+        // controller's page content share one text space. All three getTextContent
+        // call sites (two here, one in javaapp.js) must stay in lockstep.
+        return page.getTextContent({ disableNormalization: true }).then(function (textContent) {
           pageTexts[pageNum - 1] = extractPageText(textContent);
           processPage(pageNum + 1);
         });
@@ -177,4 +162,53 @@ function extractText(requestID, fileUrl) {
   }, function (error) {
     javaApp.extractionFailed(requestID, (error && error.message) ? error.message : String(error));
   });
-}
+};
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+window.extractDebug = function (requestID, fileUrl, pageNum) {
+  var task = getDocument({ url: fileUrl });
+
+  task.promise.then(function (pdf) {
+    pdf.getPage(pageNum).then(function (page) {
+      return page.getTextContent({ disableNormalization: true }).then(function (textContent) {
+        var items = textContent.items,
+            lines = [];
+
+        for (var ndx = 0; ndx < items.length; ndx++) {
+          var item = items[ndx],
+              t = item.transform;
+
+          lines.push(
+            'ndx=' + ndx +
+            ' str=' + JSON.stringify(item.str) +
+            ' hasEOL=' + (item.hasEOL || false) +
+            ' w=' + (item.width || 0).toFixed(2) +
+            ' tx=' + (t ? t[4].toFixed(2) : '?') +
+            ' ty=' + (t ? t[5].toFixed(2) : '?') +
+            ' fs=' + (t ? t[0].toFixed(2) : '?')
+          );
+        }
+
+        task.destroy().then(function () {
+          javaApp.extractionDone(requestID, lines.join('\n'), '[]');
+        });
+      });
+    }).catch(function (error) {
+      // A failure after getDocument resolved (e.g. a corrupt page) won't reach the getDocument
+      // reject handler below, so destroy the document and report here to avoid leaking it and
+      // hanging the Java-side worker until its timeout.
+      task.destroy().then(function () {
+        javaApp.extractionFailed(requestID, (error && error.message) ? error.message : String(error));
+      });
+    });
+  }, function (error) {
+    javaApp.extractionFailed(requestID, (error && error.message) ? error.message : String(error));
+  });
+};
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+javaApp.pageReady();

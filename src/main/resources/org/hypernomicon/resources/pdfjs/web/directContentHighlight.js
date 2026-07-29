@@ -31,12 +31,14 @@ function (data) {
   if (!entries || entries.length === 0) { console.log('FTS-DOM: no entries'); return; }
   console.log('FTS-DOM: ' + entries.length + ' match entries');
 
-  // Inject CSS
+  // Inject CSS. The color matches pdf.js's stock match highlight
+  // (viewer.css --highlight-bg-color), so hits look the same in every
+  // preview content kind.
 
   if (!document.getElementById('fts-hl-style')) {
     var style = document.createElement('style');
     style.id = 'fts-hl-style';
-    style.textContent = '.fts-highlight { background-color: rgba(255, 165, 0, 0.35); border-radius: 2px; }';
+    style.textContent = '.fts-highlight { background-color: rgba(180, 0, 170, 0.25); border-radius: 2px; }';
     var target = document.head || document.body || document.documentElement;
     if (!target) { console.log('FTS-DOM: no target for CSS'); return; }
     target.appendChild(style);
