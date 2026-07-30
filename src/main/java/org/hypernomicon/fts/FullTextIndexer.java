@@ -125,7 +125,7 @@ public class FullTextIndexer
    *  extracted text or page offsets), etc. A bump does not wipe the index; existing
    *  entries are loaded as stale and re-extracted in place while the index stays
    *  searchable. */
-  private static final int INDEX_SCHEMA_VERSION = 1;
+  private static final int INDEX_SCHEMA_VERSION = 2;
 
   private static final Set<String> INDEXABLE_EXTENSIONS = Set.of
   (
