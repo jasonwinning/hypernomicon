@@ -42,7 +42,7 @@ final class FakeViewer implements ViewerPort
    * One recorded command. Fields not applicable to a command kind hold
    * {@code -1}/{@code null}.
    */
-  record Call(String method, long gen, FilePath filePath, int pageNum, int ndxOnPage, String hitsJson, ProgressVariant variant) { }
+  record Call(String method, long gen, FilePath filePath, int pageNum, int ndxOnPage, int matchNdx, String hitsJson, ProgressVariant variant) { }
 
 //---------------------------------------------------------------------------
 
@@ -56,6 +56,11 @@ final class FakeViewer implements ViewerPort
   /** Just the method names, in issue order; the cheapest sequence assertion. */
   List<String> methods() { return calls.stream().map(Call::method).toList(); }
 
+  void clear() { calls.clear(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /** The most recent call of the given method, or null. */
   Call last(String method)
   {
@@ -65,6 +70,9 @@ final class FakeViewer implements ViewerPort
 
     return null;
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   /** The generation of the most recent show command; -1 if none was issued. */
   long lastShownGen()
@@ -76,54 +84,52 @@ final class FakeViewer implements ViewerPort
     return -1;
   }
 
-  void clear() { calls.clear(); }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void showEmpty()
   {
-    calls.add(new Call("showEmpty", -1, null, -1, -1, null, null));
+    calls.add(new Call("showEmpty", -1, null, -1, -1, -1, null, null));
   }
 
   @Override public void showProgress(FilePath sourceFile, ProgressVariant variant)
   {
-    calls.add(new Call("showProgress", -1, sourceFile, -1, -1, null, variant));
+    calls.add(new Call("showProgress", -1, sourceFile, -1, -1, -1, null, variant));
   }
 
   @Override public void showUnable(FilePath sourceFile)
   {
-    calls.add(new Call("showUnable", -1, sourceFile, -1, -1, null, null));
+    calls.add(new Call("showUnable", -1, sourceFile, -1, -1, -1, null, null));
   }
 
   @Override public void showDocument(long gen, FilePath documentPath, int pageNum)
   {
-    calls.add(new Call("showDocument", gen, documentPath, pageNum, -1, null, null));
+    calls.add(new Call("showDocument", gen, documentPath, pageNum, -1, -1, null, null));
   }
 
   @Override public void showContent(long gen, FilePath contentPath)
   {
-    calls.add(new Call("showContent", gen, contentPath, -1, -1, null, null));
+    calls.add(new Call("showContent", gen, contentPath, -1, -1, -1, null, null));
   }
 
   @Override public void setHits(long gen, String hitsJson)
   {
-    calls.add(new Call("setHits", gen, null, -1, -1, hitsJson, null));
+    calls.add(new Call("setHits", gen, null, -1, -1, -1, hitsJson, null));
   }
 
   @Override public void clearHits(long gen)
   {
-    calls.add(new Call("clearHits", gen, null, -1, -1, null, null));
+    calls.add(new Call("clearHits", gen, null, -1, -1, -1, null, null));
   }
 
   @Override public void goToPage(long gen, int pageNum)
   {
-    calls.add(new Call("goToPage", gen, null, pageNum, -1, null, null));
+    calls.add(new Call("goToPage", gen, null, pageNum, -1, -1, null, null));
   }
 
   @Override public void scrollToMatch(long gen, int matchNdx, int pageNum, int ndxOnPage)
   {
-    calls.add(new Call("scrollToMatch", gen, null, pageNum, ndxOnPage, null, null));
+    calls.add(new Call("scrollToMatch", gen, null, pageNum, ndxOnPage, matchNdx, null, null));
   }
 
 //---------------------------------------------------------------------------

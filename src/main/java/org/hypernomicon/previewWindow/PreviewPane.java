@@ -49,8 +49,10 @@ import org.hypernomicon.util.file.FilePath;
  * <b>Diffing is against issued, not confirmed.</b> {@code issuedView} is the
  * last DesiredView commands were sent for; equal desired and issued means
  * no-op. Confirmation state (the viewer's {@code documentLoaded}) gates only
- * hit delivery: hits are pushed once the load of the current generation is
- * confirmed, by reconcile observing the confirmation event.
+ * hit and scroll-target delivery: hits are pushed once the load of the
+ * current generation is confirmed, by reconcile observing the confirmation
+ * event, and the intent's clicked-match scroll target follows the hits (see
+ * {@link #issueScrollTargetIfReady}).
  * <p>
  * <b>Generations.</b> Each {@code showDocument}/{@code showContent}
  * establishes a new document generation; events carrying any other generation
@@ -90,6 +92,7 @@ final class PreviewPane
 
   private DesiredView issuedView = null;
   private String issuedHitsJson = null;
+  private ScrollTarget issuedScrollTarget = null;
   private long generation = 0;
   private boolean loadConfirmed = false;
 
@@ -291,26 +294,10 @@ final class PreviewPane
 
       issuedView = null;
       issuedHitsJson = null;
+      issuedScrollTarget = null;
       loadConfirmed = false;
 
       reconcile();
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * One-shot command: scroll the viewer to a match. Forwarded only when the
-   * desired view equals the issued view and the current generation's load is
-   * confirmed; dropped otherwise (same staleness rule as events).
-   */
-  void scrollToMatch(int matchNdx, int pageNum, int ndxOnPage)
-  {
-    paneExecutor.execute(() ->
-    {
-      if (loadConfirmed && derive().equals(issuedView))
-        viewer.scrollToMatch(generation, matchNdx, pageNum, ndxOnPage);
     });
   }
 
@@ -333,6 +320,7 @@ final class PreviewPane
       snapshot = null;
       issuedView = null;
       issuedHitsJson = null;
+      issuedScrollTarget = null;
       loadConfirmed = false;
       retryDocPath = null;
       escalatedDocPath = null;
@@ -357,6 +345,7 @@ final class PreviewPane
     {
       issuedView = null;
       issuedHitsJson = null;
+      issuedScrollTarget = null;
       loadConfirmed = false;
       retryDocPath = null;
       escalatedDocPath = null;
@@ -493,6 +482,7 @@ final class PreviewPane
           generation++;
           loadConfirmed = false;
           issuedHitsJson = null;
+          issuedScrollTarget = null;
           viewer.showDocument(generation, pagedDoc.displayPath(), pagedDoc.pageNum());
         }
         else if (((PagedDoc) issuedView).pageNum() != pagedDoc.pageNum())
@@ -501,6 +491,7 @@ final class PreviewPane
         }
 
         issueHitsIfConfirmed(pagedDoc.hitsJson());
+        issueScrollTargetIfReady();
       }
 
       case DirectDoc directDoc ->
@@ -510,10 +501,12 @@ final class PreviewPane
           generation++;
           loadConfirmed = false;
           issuedHitsJson = null;
+          issuedScrollTarget = null;
           viewer.showContent(generation, directDoc.displayPath());
         }
 
         issueHitsIfConfirmed(directDoc.hitsJson());
+        issueScrollTargetIfReady();
       }
     }
 
@@ -541,6 +534,32 @@ final class PreviewPane
       viewer.setHits(generation, hitsJson);
 
     issuedHitsJson = hitsJson;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Scroll-target delivery: the intent's clicked-match target is forwarded
+   * once per target, after the current generation's load is confirmed and its
+   * highlights have been issued (a scroll target addresses highlight spans,
+   * so without hits there is nothing to scroll to). A repeat click arrives as
+   * a fresh target (new serial) and delivers again; the back-edge folding a
+   * user scroll into intent preserves the delivered target, so reconcile
+   * never re-fires it against the user. A reload of the same document (a
+   * viewer-error re-issue or a user refresh) resets the issued target with
+   * the rest of the generation's sub-state and re-delivers.
+   */
+  private void issueScrollTargetIfReady()
+  {
+    if ((loadConfirmed == false) || (issuedHitsJson == null)) return;
+
+    ScrollTarget target = intent.scrollTarget();
+
+    if ((target == null) || target.equals(issuedScrollTarget)) return;
+
+    viewer.scrollToMatch(generation, target.matchNdx(), target.pageNum(), target.ndxOnPage());
+    issuedScrollTarget = target;
   }
 
 //---------------------------------------------------------------------------

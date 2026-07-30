@@ -17,6 +17,7 @@
 
 package org.hypernomicon.fts;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.fts.FTSUtil.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.StringUtil.*;
@@ -451,6 +452,25 @@ public final class HitSetService
     if (query.keyLookup() != null)
       convertedMatches = rescanHitRanges(convertedMatches, query.keyLookup());
 
+    // The context pane's passages come from the Tika-side search of the source
+    // document; these highlights come from this independent re-search of the
+    // converted PDF's extraction. Divergence between the two texts makes a
+    // passage exist with no converted-side match, so when a highlight is
+    // missing, the per-page counts here are the first thing to check.
+    // (Observed cause of exactly that, fixed 2026-07: pdf.js 6's empty hasEOL
+    // marker items defeating the extractor's line-break space insertion,
+    // which glued each line's last word to the next line's first.)
+
+    if ((app != null) && app.debugging)  // null check: this path runs headless under test
+    {
+      Map<Integer, Integer> pageToRangeCount = new TreeMap<>();
+
+      for (PageMatch match : convertedMatches)
+        pageToRangeCount.merge(match.pageNumber(), (match.hitRanges() != null) ? match.hitRanges().size() : 0, Integer::sum);
+
+      System.out.println("computeConvertedPdfHits: " + convertedMatches.size() + " matches; page->rangeCount " + pageToRangeCount);
+    }
+
     if (convertedMatches.isEmpty())
       return new PagedHits(null, 1, alignment);
 
@@ -461,8 +481,9 @@ public final class HitSetService
     // in convertedMatches are also in raw-text coordinates (we passed
     // extraction.text()/extraction.pageOffsets() to searchExtractedText above).
     // Using adjustedPageOffsets here would introduce a per-page drift equal
-    // to the cumulative header strip, eventually exceeding page-text length
-    // and causing the viewer to drop those hits.
+    // to the cumulative header strip, eventually exceeding page-text length,
+    // at which point convertPageHits (javaapp.js) clamps the range or drops it
+    // entirely, logging either way.
 
     String allHitsJson = buildAllHitsJson(convertedMatches, extraction.pageOffsets());
 

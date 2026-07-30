@@ -58,7 +58,6 @@ public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWi
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public boolean setAuthors(List<HDT_Person> list) { return updateObjectsFromList(rtAuthorOfFile, list); }
 

@@ -57,6 +57,7 @@ import org.hypernomicon.model.searchKeys.SearchKeys;
 import org.hypernomicon.previewWindow.ConversionSession;
 import org.hypernomicon.previewWindow.ConversionSession.NoOfficeInstallationException;
 import org.hypernomicon.previewWindow.PreviewWindow;
+import org.hypernomicon.previewWindow.ScrollTarget;
 import org.hypernomicon.util.SettleGate;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.util.file.FilePath;
@@ -136,6 +137,20 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
    *  pane (guards redundant selection-listener refires), or {@code null} when
    *  no FTS preview is active. */
   private String currentPreviewPath;
+
+  /** Clicked-match target for the next preview intent, set by a passage click
+   *  and consumed when {@link #setPreview} actually sets an intent. It stays
+   *  set across the closed-window deferral, so the activation replay opens the
+   *  preview scrolled to the clicked match; a selection change or new search
+   *  abandons it. */
+  private ScrollTarget pendingScrollTarget;
+
+  /** Passage index of a converted-office passage click that could not be
+   *  navigated at click time because the alignment did not exist yet (preview
+   *  window closed, or pipeline still running); consumed by
+   *  {@link #applyStashedConvertedPassage} when the pipeline publishes the
+   *  alignment. Same lifecycle as {@link #pendingScrollTarget}. */
+  private int pendingConvertedPassageNdx = -1;
 
   /** Tika-to-pdf.js coordinate alignment for passage-click navigation,
    *  published by the converted-office hit pipeline for the path in
@@ -558,6 +573,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       }
 
       currentPreviewPage = 1;
+      pendingScrollTarget = null;
+      pendingConvertedPassageNdx = -1;
       updateContextView(newValue);  // Context view is cheap; only the preview work is settle-gated
       requestSettledPreview(newValue);
     });
@@ -870,6 +887,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       useRecordScope ? recordScopeList::filterResults : null));
 
     currentPreviewPage = 1;
+    pendingScrollTarget = null;
+    pendingConvertedPassageNdx = -1;
     previewSettleGate.cancel();
     PreviewWindow.runWhenSourceActivates(pvsQueriesTab, null);
     currentPreviewPath = null;
@@ -1465,37 +1484,57 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
             }
           }
 
-          setPreview(selected);
-
-          // Scroll to the highlight for this passage. Direct content uses the global
-          // match index (each highlight span carries a data-match-ndx attribute in
-          // matches-list order); the PDF viewer is addressed by (page, index within
-          // that page), since the global list order is not reconstructible there.
+          // Scroll to the highlight for this passage: the target is computed
+          // here but rides the preview intent, so it is delivered once the
+          // document and its highlights are in place; a click made while the
+          // preview window is closed survives the deferral and the window
+          // opens scrolled to the clicked match. Direct content uses the global
+          // match index (each highlight span carries a data-match-ndx attribute
+          // in matches-list order); the PDF viewer is addressed by (page, index
+          // within that page), since the global list order is not
+          // reconstructible there.
 
           if (passageNdx >= 0)
           {
-            List<PageMatch> matches = nullSwitch(hitSetService.cachedMatches(selected.path()), selected.result().pageMatches());
-
-            int matchNdx = 0, pageNum = -1, ndxOnPage = 0;
-
-            if ((matches != null) && (passageNdx < matches.size()))
+            if (isOfficeDocConvertedToPdf(db.getRootPath(selected.path())))
             {
-              pageNum = matches.get(passageNdx).pageNumber();
+              // No match target from here: these Tika-side numbers cannot
+              // address the converted artifact's viewer coordinates. Stash the
+              // passage instead; when the hit pipeline publishes the
+              // alignment, applyStashedConvertedPassage derives the clicked
+              // passage's viewer page and re-sets the intent to it (the
+              // open-from-closed and mid-pipeline cases; aligned clicks were
+              // already navigated by page above).
 
-              for (int ndx = 0; ndx < passageNdx; ndx++)
-              {
-                PageMatch match = matches.get(ndx);
-                int rangeCount = (match.hitRanges() != null) ? match.hitRanges().size() : 0;
-
-                matchNdx += rangeCount;
-
-                if (match.pageNumber() == pageNum)
-                  ndxOnPage += rangeCount;
-              }
+              pendingConvertedPassageNdx = passageNdx;
             }
+            else
+            {
+              List<PageMatch> matches = nullSwitch(hitSetService.cachedMatches(selected.path()), selected.result().pageMatches());
 
-            PreviewWindow.queriesScrollToMatch(matchNdx, pageNum, ndxOnPage);
+              int matchNdx = 0, pageNum = -1, ndxOnPage = 0;
+
+              if ((matches != null) && (passageNdx < matches.size()))
+              {
+                pageNum = matches.get(passageNdx).pageNumber();
+
+                for (int ndx = 0; ndx < passageNdx; ndx++)
+                {
+                  PageMatch match = matches.get(ndx);
+                  int rangeCount = (match.hitRanges() != null) ? match.hitRanges().size() : 0;
+
+                  matchNdx += rangeCount;
+
+                  if (match.pageNumber() == pageNum)
+                    ndxOnPage += rangeCount;
+                }
+              }
+
+              pendingScrollTarget = ScrollTarget.of(matchNdx, pageNum, ndxOnPage);
+            }
           }
+
+          setPreview(selected);
         }
       }
       else if (data.startsWith("work:"))
@@ -1530,12 +1569,27 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Hands off the pending clicked-match target to the intent that carries it;
+   *  the deferral and early-return paths of {@link #setPreview} deliberately do
+   *  not consume, so a later re-invocation for the same row still carries it. */
+  private ScrollTarget consumeScrollTarget()
+  {
+    ScrollTarget target = pendingScrollTarget;
+    pendingScrollTarget = null;
+    return target;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void setPreview(FTSResultRow row)
   {
     if ((row == null) || (db.getRootPath(row.path()).exists() == false))
     {
       PreviewWindow.runWhenSourceActivates(pvsQueriesTab, null);
       currentPreviewPath = null;
+      pendingScrollTarget = null;
+      pendingConvertedPassageNdx = -1;
       PreviewWindow.clearQueriesFtsPreview();
       return;
     }
@@ -1602,7 +1656,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       // same-file navigation (passage clicks) honors the explicit page
 
       PreviewWindow.setQueriesFtsPreview(filePath, row.resolvedRecord(), true,
-        alreadyLaunched ? currentPreviewPage : -1, true);
+        alreadyLaunched ? currentPreviewPage : -1, true, consumeScrollTarget());
 
       if (alreadyLaunched == false)
       {
@@ -1627,7 +1681,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     currentPreviewPath = row.path();
 
-    PreviewWindow.setQueriesFtsPreview(filePath, row.resolvedRecord(), paged, paged ? Math.max(currentPreviewPage, 1) : 1, matches != null);
+    PreviewWindow.setQueriesFtsPreview(filePath, row.resolvedRecord(), paged, paged ? Math.max(currentPreviewPage, 1) : 1, matches != null, consumeScrollTarget());
 
     if ((matches == null) || (indexer == null)) return;
 
@@ -1725,9 +1779,56 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
         convertedAlignment = hits.alignment();
         convertedAlignmentPath = indexPath;
 
+        // Before the hits: the display is withheld until they arrive, so an
+        // intent re-set here paints directly at the clicked passage's page
+        // instead of flashing the first-match page first
+
+        applyStashedConvertedPassage(indexPath, filePath);
+
         PreviewWindow.updateQueriesFtsHitsPaged(filePath, hits.hitsJson(), hits.firstMatchPage());
       });
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Applies a converted-office passage click that could not be navigated at
+   * click time because the alignment did not exist yet (the preview window
+   * was closed, or the pipeline was still running): now that the pipeline has
+   * published the alignment, derive the clicked passage's viewer page and
+   * re-set the intent to it, so the document displays at the clicked
+   * passage's page instead of the derived first-match page. The scroll target
+   * centers the first highlight on that page (best-effort; the exact match is
+   * not addressable in viewer coordinates).
+   */
+  private void applyStashedConvertedPassage(String indexPath, FilePath filePath)
+  {
+    int passageNdx = pendingConvertedPassageNdx;
+    pendingConvertedPassageNdx = -1;
+
+    if (passageNdx < 0) return;
+
+    // Same context checks as the deferred-preview replay: the click must still
+    // describe the current sub-tab, the selected row, and a showing pane
+
+    if ((tab.isSelected() == false) || (PreviewWindow.isSourceActiveAndShowing(pvsQueriesTab) == false)) return;
+
+    FTSResultRow row = tvResults.getSelectionModel().getSelectedItem();
+    if ((row == null) || (row.path().equals(indexPath) == false)) return;
+
+    List<PageMatch> tikaMatches = hitSetService.cachedMatches(indexPath);
+    if (tikaMatches == null) tikaMatches = row.result().pageMatches();
+
+    if ((tikaMatches == null) || (passageNdx >= tikaMatches.size())) return;
+
+    int targetPage = convertedAlignment.pageForPassage(tikaMatches.get(passageNdx));
+    if (targetPage < 1) return;
+
+    currentPreviewPage = targetPage;
+
+    PreviewWindow.setQueriesFtsPreview(filePath, row.resolvedRecord(), true, targetPage, true, ScrollTarget.of(0, targetPage, 0));
   }
 
 //---------------------------------------------------------------------------

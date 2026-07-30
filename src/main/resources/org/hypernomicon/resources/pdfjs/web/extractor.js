@@ -36,17 +36,25 @@ GlobalWorkerOptions.workerSrc = '../build/pdf.worker.mjs';
 
 function extractPageText(textContent) {
   var text = '',
-      items = textContent.items;
+      items = textContent.items,
+      prevTextNdx = -1;  // last item with a non-empty str
 
   for (var ndx = 0; ndx < items.length; ndx++) {
     var item = items[ndx],
         t = item.transform;
 
-    if (ndx > 0 && text.length > 0 && item.str.length > 0) {
+    if (prevTextNdx >= 0 && text.length > 0 && item.str.length > 0) {
       var lastChar = text.charAt(text.length - 1);
 
       if (lastChar !== ' ') {
-        var prev = items[ndx - 1],
+        // Compare against the previous item WITH TEXT, not items[ndx - 1]:
+        // pdf.js 6 emits empty hasEOL marker items positioned at the NEXT
+        // line's start (pdf.js 2.0.943 emitted no empty items), and comparing
+        // geometry against such a marker yields zero y-difference and zero
+        // gap, which glued the last word of one line to the first word of
+        // the next. That made every line-boundary word unsearchable.
+
+        var prev = items[prevTextNdx],
             pt = prev.transform;
 
         // Different line (different ty) or gap between items on the same line.
@@ -69,6 +77,9 @@ function extractPageText(textContent) {
         }
       }
     }
+
+    if (item.str.length > 0)
+      prevTextNdx = ndx;
 
     text += item.str;
   }

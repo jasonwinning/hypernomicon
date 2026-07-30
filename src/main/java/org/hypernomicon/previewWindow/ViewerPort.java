@@ -65,10 +65,11 @@ interface ViewerPort
 
   void goToPage(long gen, int pageNum);
 
-  /** One-shot: scrolls to a match. Paged mode addresses by (page, index
-   *  within that page); direct mode addresses by the global match index.
-   *  Never part of desired state; forwarded only against a confirmed
-   *  generation. */
+  /** Scrolls to a match. Paged mode addresses by (page, index within that
+   *  page); direct mode addresses by the global match index. Carried in the
+   *  intent as a {@link ScrollTarget}; the reconciler forwards it once per
+   *  target, after the generation's load is confirmed and its hits have been
+   *  issued. */
   void scrollToMatch(long gen, int matchNdx, int pageNum, int ndxOnPage);
 
 //---------------------------------------------------------------------------

@@ -73,8 +73,8 @@ public final class FTSUtil
 
   /**
    * Normalizes text for matching between Tika and pdf.js extractions:
-   * Unicode to ASCII via {@code convertToEnglishCharsWithMap}, collapse whitespace,
-   * lowercase. The position map tracks output positions back to original positions.
+   * Unicode to ASCII via {@code convertToEnglishCharsWithMap}, lowercase, then
+   * collapse whitespace. The position map tracks output positions back to original positions.
    *
    * @param text the raw text to normalize
    * @param posMap output parameter; on return, maps each normalized position to
@@ -89,7 +89,7 @@ public final class FTSUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // Matches the timestamp LibreOffice appends to each converted-PDF header
+  // Matches the SAVEDATE timestamp that ends each leaked page header
   // (HH:MM, optionally :SS, optionally AM/PM). Used to locate where the header ends.
   private static final Pattern HEADER_TIME = Pattern.compile("\\d{1,2}:\\d{2}(?::\\d{2})?(?:\\s*[ap]m\\b)?", Pattern.CASE_INSENSITIVE);
 
@@ -138,7 +138,7 @@ public final class FTSUtil
 
       sb.append(text, pos, idx);
 
-      // Find end of header: the converter appends "<date> <time>", where <time> is
+      // Find end of header: the materialized SAVEDATE field ends it with "<date> <time>", where <time> is
       // HH:MM[:SS] optionally followed by AM/PM. Anchor on that time token rather than a
       // bare "am"/"pm", so this handles 24-hour-clock locales and is not fooled by ordinary
       // words ending in "am"/"pm" (team, exam, diagram) that may follow the path.
@@ -220,9 +220,17 @@ public final class FTSUtil
 
   /**
    * Builds the per-page hit JSON consumed by the pdf.js viewer to highlight
-   * matches. Maps each {@link PageMatch} to its page number and converts
-   * absolute character offsets within the document to page-relative offsets
-   * using {@code pageOffsets}.
+   * matches, converting absolute character offsets within the document to
+   * page-relative offsets using {@code pageOffsets} (page start offsets plus
+   * a trailing total-length sentinel).
+   * <p>
+   * Each range is assigned its own page from its absolute offset rather than
+   * inheriting {@link PageMatch#pageNumber()}: a PageMatch is a highlighter
+   * passage whose page number comes from its first match, but a passage can
+   * straddle a page boundary, putting later matches on the following page.
+   * Offsets computed against the first match's page would then point past
+   * that page's text, and the viewer clamps or drops such ranges (logged by
+   * convertPageHits in javaapp.js).
    *
    * @return the JSON object as a string ({@code {"page":[[start,end],...],...}}),
    *         or {@code null} if no usable ranges were produced
@@ -238,17 +246,20 @@ public final class FTSUtil
 
     for (PageMatch pm : matches)
     {
-      int pageNum = pm.pageNumber();
-      if ((pageNum < 1) || (pageNum > pageOffsets.length)) continue;
-
-      int pageStart = pageOffsets[pageNum - 1];
-
       for (HitRange hr : pm.hitRanges())
       {
-        int relStart = (pm.startOffset() + hr.start()) - pageStart,
-            relEnd   = (pm.startOffset() + hr.end  ()) - pageStart;
+        int absStart = pm.startOffset() + hr.start(),
+            absEnd   = pm.startOffset() + hr.end  ();
 
-        pageToRanges.computeIfAbsent(pageNum, _ -> new ArrayList<>()).add(new int[] { relStart, relEnd });
+        int pageNum = pageForOffset(pageOffsets, absStart);
+        if (pageNum < 1) continue;
+
+        int pageStart = pageOffsets[pageNum - 1];
+
+        // A range that itself crosses the page boundary (a wide phrase match)
+        // keeps its full extent; the viewer clamps it to the page's text
+
+        pageToRanges.computeIfAbsent(pageNum, _ -> new ArrayList<>()).add(new int[] { absStart - pageStart, absEnd - pageStart });
       }
     }
 
@@ -274,6 +285,35 @@ public final class FTSUtil
 
     sb.append('}');
     return sb.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Largest 1-based page whose start offset is {@code <= charOffset}, or 0 for
+   * an offset outside the document's pages. {@code pageOffsets} is
+   * sentinel-terminated (page starts plus the total length), so offsets at or
+   * beyond the sentinel return 0 rather than a phantom page.
+   */
+  private static int pageForOffset(int[] pageOffsets, int charOffset)
+  {
+    if ((pageOffsets.length < 2) || (charOffset < 0) || (charOffset >= pageOffsets[pageOffsets.length - 1]))
+      return 0;
+
+    int lo = 0, hi = pageOffsets.length - 2;
+
+    while (lo <= hi)
+    {
+      int mid = (lo + hi) >>> 1;
+
+      if (pageOffsets[mid] <= charOffset)
+        lo = mid + 1;
+      else
+        hi = mid - 1;
+    }
+
+    return lo;
   }
 
 //---------------------------------------------------------------------------
@@ -343,7 +383,9 @@ public final class FTSUtil
    * @param tikaNormText the normalized Tika text
    * @param convertedPdfNormText the normalized converted PDF text
    * @param convertedPdfPosMap output-to-input map for normalized PDF text
-   * @param convertedPdfPageOffsets page boundary offsets in original pdf.js text
+   * @param convertedPdfPageOffsets page boundary offsets in the converted-PDF text that
+   *                                 {@code convertedPdfPosMap} maps into (header-stripped
+   *                                 where stripping applied)
    * @return the 1-based page number, or -1 if not found
    */
   public static int findConvertedPdfPage(PageMatch tikaMatch, int[] tikaReverseMap, String tikaNormText,

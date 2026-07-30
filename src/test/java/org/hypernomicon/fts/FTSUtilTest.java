@@ -44,6 +44,8 @@ import java.util.function.Function;
  *   <li>{@link FTSUtil#findPdfNormPos}: locating a normalized-Tika position in the normalized
  *       pdf.js text via proportional, progressively-shorter context-window search.</li>
  *   <li>{@link FTSUtil#pageForPdfNormPos}: mapping a normalized-PDF position to a 1-based page.</li>
+ *   <li>{@link FTSUtil#buildAllHitsJson}: conversion of absolute hit offsets to the viewer's
+ *       per-page JSON, including per-range page assignment for boundary-straddling passages.</li>
  * </ul>
  */
 class FTSUtilTest
@@ -483,6 +485,54 @@ class FTSUtilTest
     int[] pageOffsets = { 5, 10 };
 
     assertEquals(1, pageForPdfNormPos(0, map, pageOffsets));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // buildAllHitsJson tests: pageOffsets are page start offsets plus a trailing
+  // total-length sentinel, so { 0, 50, 100 } is a two-page document.
+
+  @Test
+  void testBuildAllHitsJsonAssignsEachRangeItsOwnPage()
+  {
+    // A passage that starts on page 1 but straddles the boundary: its second
+    // hit is physically on page 2 and must be emitted page-relative to page 2,
+    // not as an out-of-bounds page-1 range (which the viewer silently drops).
+    // The passage's pageNumber is 1 (the first match's page) for BOTH hits.
+
+    PageMatch passage = new PageMatch(1, 40, 65, "snippet", 1.0f,
+      List.of(new HitRange(0, 5), new HitRange(15, 20)));
+
+    assertEquals("{\"1\":[[40,45]],\"2\":[[5,10]]}", buildAllHitsJson(List.of(passage), new int[] { 0, 50, 100 }));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testBuildAllHitsJsonGroupsRangesFromMultiplePassagesByPage()
+  {
+    List<PageMatch> passages = List.of
+    (
+      new PageMatch(1, 10, 30, "snippet", 1.0f, List.of(new HitRange(0, 4))),  // abs 10-14, page 1
+      new PageMatch(2, 60, 80, "snippet", 1.0f, List.of(new HitRange(5, 9)))   // abs 65-69, page 2
+    );
+
+    assertEquals("{\"1\":[[10,14]],\"2\":[[15,19]]}", buildAllHitsJson(passages, new int[] { 0, 50, 100 }));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testBuildAllHitsJsonDropsRangesOutsideTheDocument()
+  {
+    // The absolute offset lands at or beyond the sentinel: no page can own it
+
+    PageMatch passage = new PageMatch(2, 95, 130, "snippet", 1.0f, List.of(new HitRange(10, 15)));  // abs 105-110
+
+    assertNull(buildAllHitsJson(List.of(passage), new int[] { 0, 50, 100 }));
   }
 
 //---------------------------------------------------------------------------

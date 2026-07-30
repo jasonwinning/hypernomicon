@@ -295,17 +295,18 @@ function convertPageHits(pdfPage, hitRanges) {
     // (itemNdx, charNdx); see extractPageText in extractor.js.
 
     var text = '',
-        offsetMap = [];  // offsetMap[extractionPos] = { itemNdx: n, charNdx: c } or null for inserted spaces
+        offsetMap = [],  // offsetMap[extractionPos] = { itemNdx: n, charNdx: c } or null for inserted spaces
+        prevTextNdx = -1;  // last item with a non-empty str; see extractPageText in extractor.js
 
     for (var ndx2 = 0; ndx2 < items.length; ndx2++) {
       var item = items[ndx2],
           t = item.transform;
 
-      if (ndx2 > 0 && text.length > 0 && item.str.length > 0) {
+      if (prevTextNdx >= 0 && text.length > 0 && item.str.length > 0) {
         var lastChar = text.charAt(text.length - 1);
 
         if (lastChar !== ' ') {
-          var prev = items[ndx2 - 1],
+          var prev = items[prevTextNdx],
               pt = prev.transform;
 
           var fontSize = Math.abs(t[0]) || Math.abs(t[3]) || 10,
@@ -323,6 +324,9 @@ function convertPageHits(pdfPage, hitRanges) {
         }
       }
 
+      if (item.str.length > 0)
+        prevTextNdx = ndx2;
+
       for (var c = 0; c < item.str.length; c++) {
         offsetMap.push({ itemNdx: ndx2, charNdx: c });
         text += item.str.charAt(c);
@@ -330,25 +334,34 @@ function convertPageHits(pdfPage, hitRanges) {
     }
 
     // Collapse whitespace and trim, mirroring the extractor's final replace/trim.
+    // The extractor's trim() removes real leading/trailing whitespace characters,
+    // not only inserted spaces, so the trim here must strip edge entries that map
+    // to whitespace too; keeping them would shift every offset on a page whose
+    // item stream begins (or ends) with whitespace.
 
     var collapsedMap = [],
+        collapsedChars = [],
         inWhitespace = false;
 
     for (var p = 0; p < text.length; p++) {
-      if (/\s/.test(text.charAt(p))) {
+      var ch = text.charAt(p);
+
+      if (/\s/.test(ch)) {
         if (inWhitespace === false) {
           collapsedMap.push(offsetMap[p]);
+          collapsedChars.push(' ');
           inWhitespace = true;
         }
       } else {
         collapsedMap.push(offsetMap[p]);
+        collapsedChars.push(ch);
         inWhitespace = false;
       }
     }
 
     var trimStart = 0, trimEnd = collapsedMap.length;
-    while (trimStart < trimEnd && collapsedMap[trimStart] == null) trimStart++;
-    while (trimEnd > trimStart && collapsedMap[trimEnd - 1] == null) trimEnd--;
+    while (trimStart < trimEnd && (collapsedMap[trimStart] == null || collapsedChars[trimStart] === ' ')) trimStart++;
+    while (trimEnd > trimStart && (collapsedMap[trimEnd - 1] == null || collapsedChars[trimEnd - 1] === ' ')) trimEnd--;
     collapsedMap = collapsedMap.slice(trimStart, trimEnd);
 
     // Convert each hit range to a find-space (start, length) pair. A range maps
@@ -361,7 +374,12 @@ function convertPageHits(pdfPage, hitRanges) {
       var s = hitRanges[h][0], e = hitRanges[h][1];
 
       if (s < 0) s = 0;
-      if (e > collapsedMap.length) e = collapsedMap.length;
+
+      if (e > collapsedMap.length) {
+        console.log('convertPageHits: range [' + s + ',' + e + '] exceeds page text length ' +
+          collapsedMap.length + ' on page ' + pdfPage.pageNumber + ' (offset drift?)');
+        e = collapsedMap.length;
+      }
 
       var first = null, last = null;
 
@@ -373,7 +391,11 @@ function convertPageHits(pdfPage, hitRanges) {
         }
       }
 
-      if (first == null) continue;
+      if (first == null) {
+        console.log('convertPageHits: DROPPED range [' + hitRanges[h][0] + ',' + hitRanges[h][1] +
+          '] on page ' + pdfPage.pageNumber + ' (no mappable characters)');
+        continue;
+      }
 
       var startPos = itemStart[first.itemNdx] + first.charNdx,
           endPos   = itemStart[last.itemNdx] + last.charNdx + 1;

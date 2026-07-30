@@ -135,8 +135,10 @@ final class PreviewPaneHost
    * @param paged           pdf.js mode vs direct browser content
    * @param pageNum         1-based explicit page, or -1 to derive from the hit set
    * @param wantsHighlights whether hit results will be pushed for this view
+   * @param scrollTarget    clicked-match target to scroll to once the document and
+   *                        its highlights are in place, or {@code null}
    */
-  void setPreview(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights)
+  void setPreview(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
   {
     // Record the request target before gating, so hits arriving for it while
     // the intent waits in the gate are stashed rather than dropped as stale.
@@ -149,13 +151,13 @@ final class PreviewPaneHost
       requestedFileHits = null;
     }
 
-    settleGate.request(() -> setPreviewNow(filePath, record, paged, pageNum, wantsHighlights));
+    settleGate.request(() -> setPreviewNow(filePath, record, paged, pageNum, wantsHighlights, scrollTarget));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setPreviewNow(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights)
+  private void setPreviewNow(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
   {
     PreviewWrapper wrapper = wrapper();
     if ((wrapper == null) || (wrapper.ensureInitialized() == false)) return;
@@ -191,7 +193,7 @@ final class PreviewPaneHost
     // as separate pushSnapshot() updates.
 
     pane.setIntentAndPipeline(
-      new PreviewIntent(filePath, paged ? ContentKind.PAGED : ContentKind.DIRECT, pageNum, wantsHighlights),
+      new PreviewIntent(filePath, paged ? ContentKind.PAGED : ContentKind.DIRECT, pageNum, wantsHighlights, scrollTarget),
       new PipelineSnapshot(filePath, artifacts.status(), DocumentArtifactService.converterState(), hitsStatus));
   }
 
@@ -207,7 +209,7 @@ final class PreviewPaneHost
   {
     boolean paged = PreviewIntent.kindFor(filePath) == ContentKind.PAGED;
 
-    setPreview(filePath, record, paged, paged ? Math.max(pageNum, 1) : 1, false);
+    setPreview(filePath, record, paged, paged ? Math.max(pageNum, 1) : 1, false, null);
   }
 
 //---------------------------------------------------------------------------
@@ -263,16 +265,6 @@ final class PreviewPaneHost
 
     hitsStatus = newStatus;
     pushSnapshot();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /** One-shot scroll to a match, gated by the pane on a confirmed load. */
-  void scrollToMatch(int matchNdx, int pageNum, int ndxOnPage)
-  {
-    if (pane != null)
-      pane.scrollToMatch(matchNdx, pageNum, ndxOnPage);
   }
 
 //---------------------------------------------------------------------------

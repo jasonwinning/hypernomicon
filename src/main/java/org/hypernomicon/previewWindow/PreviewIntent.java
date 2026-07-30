@@ -36,8 +36,10 @@ import org.hypernomicon.util.file.FilePath;
  * @param pageNum         1-based explicit page request, or -1 to derive the page
  *                        from the hit set (the FTS first-match-page rule)
  * @param wantsHighlights whether a hit set should be computed and applied for this view
+ * @param scrollTarget    clicked-match target to scroll to once the document and its
+ *                        highlights are in place, or {@code null}; delivered once per target
  */
-record PreviewIntent(FilePath sourceFile, ContentKind kind, int pageNum, boolean wantsHighlights)
+record PreviewIntent(FilePath sourceFile, ContentKind kind, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
 {
 
 //---------------------------------------------------------------------------
@@ -50,10 +52,13 @@ record PreviewIntent(FilePath sourceFile, ContentKind kind, int pageNum, boolean
   /** Whether the page should be derived from the hit set rather than honored as given. */
   boolean derivesPage() { return pageNum < 1; }
 
-  /** Copy with a different page; used by the viewer-scroll intent back-edge. */
+  /** Copy with a different page; used by the viewer-scroll intent back-edge
+   *  and by chrome page navigation. The scroll target is preserved: a target
+   *  already delivered is never re-issued (the pane tracks delivery), and one
+   *  not yet delivered, its hits still pending, delivers when they arrive. */
   PreviewIntent withPage(int newPageNum)
   {
-    return new PreviewIntent(sourceFile, kind, newPageNum, wantsHighlights);
+    return new PreviewIntent(sourceFile, kind, newPageNum, wantsHighlights, scrollTarget);
   }
 
 //---------------------------------------------------------------------------

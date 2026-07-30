@@ -61,7 +61,7 @@ class PreviewPaneTest
 
   private static PreviewIntent ftsIntent(FilePath filePath)
   {
-    return new PreviewIntent(filePath, ContentKind.PAGED, -1, true);
+    return new PreviewIntent(filePath, ContentKind.PAGED, -1, true, null);
   }
 
   private static PipelineSnapshot readySnapshot(FilePath sourceFile, FilePath displayPath, HitsStatus hits)
@@ -215,7 +215,7 @@ class PreviewPaneTest
 
   @Test void explicitPageShowsImmediatelyAndAppliesHitsWhenTheyArrive()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, true));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, true, null));
     viewer.clear();
 
     pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.Pending()));
@@ -236,12 +236,12 @@ class PreviewPaneTest
 
   @Test void pageChangeOnSameDocumentIssuesGoToPageOnly()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
     confirmLoad();
     viewer.clear();
 
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 9, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 9, false, null));
 
     assertEquals(List.of("goToPage"), viewer.methods());
     assertEquals(9, viewer.last("goToPage").pageNum());
@@ -253,7 +253,7 @@ class PreviewPaneTest
    *  producing the same-document goToPage diff. */
   @Test void setIntentPageIssuesGoToPageOnCurrentDocument()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
     confirmLoad();
     viewer.clear();
@@ -298,7 +298,7 @@ class PreviewPaneTest
 
   @Test void hitsChangeOnSameDocumentIssuesSetHitsOnly()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, true));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, true, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 3)));
     confirmLoad();
     viewer.clear();
@@ -339,12 +339,12 @@ class PreviewPaneTest
 
   @Test void pagedToDirectModeSwitchIssuesShowContent()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
     confirmLoad();
     viewer.clear();
 
-    pane.setIntent(new PreviewIntent(HTML, ContentKind.DIRECT, -1, false));
+    pane.setIntent(new PreviewIntent(HTML, ContentKind.DIRECT, -1, false, null));
     pane.updatePipeline(readySnapshot(HTML, HTML, null));
 
     // The stale paged snapshot maps to Progress until the new file's pipeline
@@ -358,7 +358,7 @@ class PreviewPaneTest
 
   @Test void directContentAppliesDirectHitsAfterLoad()
   {
-    pane.setIntent(new PreviewIntent(HTML, ContentKind.DIRECT, -1, true));
+    pane.setIntent(new PreviewIntent(HTML, ContentKind.DIRECT, -1, true, null));
     pane.updatePipeline(readySnapshot(HTML, HTML, new HitsStatus.ReadyDirect(HITS)));
 
     assertNull(viewer.last("setHits"));
@@ -374,7 +374,7 @@ class PreviewPaneTest
    *  so reconcile never fights the user with a goToPage to the stale page. */
   @Test void userScrollFoldsBackIntoIntentWithoutCounterCommands()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
     confirmLoad();
 
@@ -433,7 +433,7 @@ class PreviewPaneTest
   {
     assertNull(pane.currentFile());
 
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
 
     assertNull(pane.currentFile(), "read-back reflects confirmed state, not issued commands");
@@ -448,7 +448,7 @@ class PreviewPaneTest
 
   @Test void viewerErrorReissuesBoundedThenEscalatesToUnable()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
 
     // Initial attempt plus MAX_VIEWER_RETRIES re-issues, each with a fresh generation
@@ -476,7 +476,7 @@ class PreviewPaneTest
 
     // An intent change is the way out of the terminal state
 
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false, null));
 
     assertEquals(List.of("showDocument"), viewer.methods());
   }
@@ -485,7 +485,7 @@ class PreviewPaneTest
 
   @Test void staleErrorEventsAreDropped()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
 
     long oldGen = viewer.lastShownGen();
@@ -505,7 +505,7 @@ class PreviewPaneTest
    *  and leaves the pane cleanly re-enterable. */
   @Test void yieldDisplayIssuesNothingAndNextIntentStartsFresh()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 3, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 3, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
     confirmLoad();
     viewer.clear();
@@ -518,7 +518,7 @@ class PreviewPaneTest
     // The next intent re-issues a full load even for the same document,
     // because the pane no longer trusts what the viewer shows
 
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 3, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 3, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
 
     assertTrue(viewer.methods().contains("showDocument"));
@@ -530,7 +530,7 @@ class PreviewPaneTest
    *  hits re-ship once the reloaded document confirms. */
   @Test void refreshDisplayReissuesTheFullDisplayWithAFreshGeneration()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 3, true));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 3, true, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 3)));
     confirmLoad();
 
@@ -553,7 +553,7 @@ class PreviewPaneTest
    *  viewer-failure display. */
   @Test void refreshDisplayResetsViewerFailureEscalation()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
 
     for (int ndx = 0; ndx <= PreviewPane.MAX_VIEWER_RETRIES; ndx++)
@@ -569,21 +569,203 @@ class PreviewPaneTest
 
 //---------------------------------------------------------------------------
 
-  @Test void scrollToMatchForwardedOnlyAgainstConfirmedLoad()
+  /** Scroll-target delivery: the intent's clicked-match target follows the
+   *  hits, once the generation's load is confirmed; it is never forwarded
+   *  before both conditions hold. This is what lets a passage click made
+   *  while the preview window is closed open the window scrolled to the
+   *  clicked match. */
+  @Test void scrollTargetWaitsForLoadConfirmationAndHits()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, true));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, true, ScrollTarget.of(3, 2, 1)));
+    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.Pending()));
+
+    assertNull(viewer.last("scrollToMatch"), "no scroll before hits are ready");
+
     pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 2)));
 
-    pane.scrollToMatch(0, 2, 0);
-
-    assertNull(viewer.last("scrollToMatch"), "one-shots against an unconfirmed load are dropped");
+    assertNull(viewer.last("scrollToMatch"), "no scroll before the load confirms");
 
     confirmLoad();
-    pane.scrollToMatch(1, 2, 1);
+
+    // Hits ship first, then the scroll, in the same generation
+
+    List<String> methods = viewer.methods();
+    assertEquals(List.of("setHits", "scrollToMatch"), methods.subList(methods.size() - 2, methods.size()));
 
     assertEquals(2, viewer.last("scrollToMatch").pageNum());
     assertEquals(1, viewer.last("scrollToMatch").ndxOnPage());
+    assertEquals(3, viewer.last("scrollToMatch").matchNdx());
     assertEquals(viewer.lastShownGen(), viewer.last("scrollToMatch").gen());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** A target is delivered once: later reconciles and the user-scroll
+   *  back-edge must not re-fire it against the user. A repeat click on the
+   *  same passage arrives as a fresh target (new serial) and delivers
+   *  again. */
+  @Test void scrollTargetDeliveredOncePerTargetAndRedeliveredOnRepeatClick()
+  {
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, true, ScrollTarget.of(0, 2, 0)));
+    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 2)));
+    confirmLoad();
+
+    assertEquals(1, countCalls("scrollToMatch"));
+
+    // User scrolls away; an unrelated reconcile follows
+
+    pane.onPageChanged(viewer.lastShownGen(), 9);
+    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 2)));
+
+    assertEquals(1, countCalls("scrollToMatch"), "a delivered target must never re-fire against the user");
+
+    // Repeat click on the same passage: same coordinates, fresh target
+
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 9, true, ScrollTarget.of(0, 2, 0)));
+
+    assertEquals(2, countCalls("scrollToMatch"));
+  }
+
+//---------------------------------------------------------------------------
+
+  /** A scroll target addresses highlight spans, so without hits there is
+   *  nothing to scroll to: the degraded no-hits display drops the target. */
+  @Test void scrollTargetNotDeliveredWithoutHits()
+  {
+    pane.setIntent(new PreviewIntent(DOC, ContentKind.PAGED, -1, true, ScrollTarget.of(0, 2, 0)));
+    pane.updatePipeline(readySnapshot(DOC, ARTIFACT, new HitsStatus.Failed()));
+    confirmLoad();
+
+    assertNull(viewer.last("scrollToMatch"));
+  }
+
+//---------------------------------------------------------------------------
+
+  /** A viewer-error re-issue of the same document re-delivers the target with
+   *  the rest of the generation's sub-state: the reload lands where the
+   *  intent says, clicked match included. */
+  @Test void scrollTargetRedeliveredAfterViewerErrorReissue()
+  {
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, true, ScrollTarget.of(0, 2, 0)));
+    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 2)));
+    confirmLoad();
+
+    assertEquals(1, countCalls("scrollToMatch"));
+
+    pane.onViewerError(viewer.lastShownGen(), "render failure");
+    confirmLoad();
+
+    assertEquals(2, countCalls("scrollToMatch"));
+    assertEquals(viewer.lastShownGen(), viewer.last("scrollToMatch").gen());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Direct content addresses the scroll by the global match index. */
+  @Test void scrollTargetDeliveredForDirectContentByMatchNdx()
+  {
+    pane.setIntent(new PreviewIntent(HTML, ContentKind.DIRECT, -1, true, ScrollTarget.of(4, -1, 0)));
+    pane.updatePipeline(readySnapshot(HTML, HTML, new HitsStatus.ReadyDirect(HITS)));
+
+    assertNull(viewer.last("scrollToMatch"));
+
+    confirmLoad();
+
+    assertEquals(4, viewer.last("scrollToMatch").matchNdx());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** A target belongs to the document whose intent carried it. Switching to
+   *  another document before delivery retires it with that document's
+   *  generation; the new document's own target is delivered once its
+   *  generation confirms; and a late confirmation for the superseded
+   *  generation delivers nothing. */
+  @Test void scrollTargetNeverDeliveredAgainstSupersededDocument()
+  {
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, true, ScrollTarget.of(0, 2, 0)));
+    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 2)));
+
+    long pdfGen = viewer.lastShownGen();
+
+    // Supersede before the PDF's load confirms
+
+    pane.setIntentAndPipeline(new PreviewIntent(DOC, ContentKind.PAGED, 1, true, ScrollTarget.of(5, 2, 1)),
+                              readySnapshot(DOC, ARTIFACT, new HitsStatus.ReadyPaged(HITS, 2)));
+
+    assertNull(viewer.last("scrollToMatch"), "nothing has confirmed yet");
+
+    pane.onDocumentLoaded(pdfGen, new ViewerMeta(10));  // late confirmation of the superseded generation
+
+    assertNull(viewer.last("scrollToMatch"), "a superseded generation's confirmation must not release a target");
+
+    confirmLoad();  // confirms the DOC generation
+
+    assertEquals(1, countCalls("scrollToMatch"));
+    assertEquals(5, viewer.last("scrollToMatch").matchNdx());
+    assertEquals(1, viewer.last("scrollToMatch").ndxOnPage());
+    assertEquals(viewer.lastShownGen(), viewer.last("scrollToMatch").gen());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The delivered-target memo belongs to the issued document, not to the
+   *  target's identity: clearing the pane and re-setting the very same intent
+   *  (same ScrollTarget instance, so equal by serial) re-issues the document,
+   *  and the target is delivered again with it. */
+  @Test void scrollTargetRedeliveredWhenSameIntentReissuedAfterClear()
+  {
+    PreviewIntent intent = new PreviewIntent(PDF, ContentKind.PAGED, 1, true, ScrollTarget.of(0, 2, 0));
+
+    pane.setIntent(intent);
+    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 2)));
+    confirmLoad();
+
+    assertEquals(1, countCalls("scrollToMatch"));
+
+    pane.setIntent(null);
+    pane.setIntent(intent);
+    confirmLoad();
+
+    assertEquals(2, countCalls("scrollToMatch"));
+  }
+
+//---------------------------------------------------------------------------
+
+  /** A user refresh rebuilds the display from the intent, clicked match
+   *  included: the target is delivered again once the reissued document
+   *  confirms. */
+  @Test void scrollTargetRedeliveredAfterUserRefresh()
+  {
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, true, ScrollTarget.of(0, 2, 0)));
+    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 2)));
+    confirmLoad();
+
+    assertEquals(1, countCalls("scrollToMatch"));
+
+    pane.refreshDisplay();
+    confirmLoad();
+
+    assertEquals(2, countCalls("scrollToMatch"));
+    assertEquals(viewer.lastShownGen(), viewer.last("scrollToMatch").gen());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Chrome page navigation re-sets only the intent's page; the scroll-target
+   *  facet is untouched and, having been delivered, does not fire again. */
+  @Test void scrollTargetNotRefiredByChromePageNavigation()
+  {
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, true, ScrollTarget.of(0, 2, 0)));
+    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.ReadyPaged(HITS, 2)));
+    confirmLoad();
+
+    assertEquals(1, countCalls("scrollToMatch"));
+
+    pane.setIntentPage(7);
+
+    assertEquals(1, countCalls("goToPage"));
+    assertEquals(1, countCalls("scrollToMatch"));
   }
 
 //---------------------------------------------------------------------------
@@ -592,13 +774,13 @@ class PreviewPaneTest
    *  goes straight to the document, with no intermediate Progress on the switch. */
   @Test void setIntentAndPipelineSwitchesModeWithoutProgressFlash()
   {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false));
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false, null));
     pane.updatePipeline(readySnapshot(PDF, PDF, null));
     confirmLoad();
     viewer.clear();
 
     pane.setIntentAndPipeline(
-      new PreviewIntent(HTML, ContentKind.DIRECT, -1, false),
+      new PreviewIntent(HTML, ContentKind.DIRECT, -1, false, null),
       readySnapshot(HTML, HTML, null));
 
     assertEquals(List.of("showContent"), viewer.methods());

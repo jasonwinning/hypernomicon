@@ -380,7 +380,7 @@ public final class DialogPreviewHost
     // an instant-ready file goes straight to its document.
 
     pane.setIntentAndPipeline(
-      new PreviewIntent(filePath, PreviewIntent.kindFor(filePath), 1, false),
+      new PreviewIntent(filePath, PreviewIntent.kindFor(filePath), 1, false, null),
       new PipelineSnapshot(filePath, artifacts.status(), DocumentArtifactService.converterState(), null));
   }
 

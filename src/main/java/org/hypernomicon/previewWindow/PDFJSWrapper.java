@@ -133,6 +133,7 @@ public class PDFJSWrapper
   private volatile boolean viewerHtmlLoadInFlight = false;
 
   private String pendingDirectContentHits = null, pendingPdfHits = null;
+  private ScrollTarget pendingScroll = null;
   private FilePath lastDirectFilePath = null;
   private int numPages = -1;
   private boolean ready = false, hiding = false, showingAlt = false;
@@ -629,6 +630,9 @@ public class PDFJSWrapper
       if (contentToShowIsDirect && (pendingDirectContentHits != null))
         applyDirectContentHits();
 
+      if (contentToShowIsDirect)
+        drainPendingScroll();
+
       // PDF hits are NOT drained here, ever: at this moment no document is open
       // yet (openPdfFile runs via toRun below), and the JS side drops setAllHits
       // calls that arrive with no open document. The drain point for PDF hits is
@@ -945,6 +949,8 @@ public class PDFJSWrapper
 
           if (pendingPdfHits != null)
             applyPdfHits();
+
+          drainPendingScroll();
         }
       });
     }
@@ -1341,13 +1347,27 @@ public class PDFJSWrapper
    * global match index (highlight spans carry data-match-ndx attributes, applied
    * in matches-list order by directContentHighlight.js); the PDF viewer is
    * addressed by page number plus index within that page.
+   * <p>
+   * The reconciler issues the scroll right after the hits for a loading
+   * document, so a scroll that arrives while the document (or its hits) is
+   * still in flight is buffered, like the hits themselves, and drained right
+   * after they apply. Both buffers are dropped together when a new load
+   * supersedes them ({@link #resetHitState}).
    */
   void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage)
   {
-    if (ready == false) return;
-
     if (contentToShowIsDirect)
     {
+      // Content still loading, or its hits not yet applied: the highlight
+      // spans do not exist yet, and the direct-content scroll is
+      // single-attempt. Hold the scroll until the hits drain applies them.
+
+      if ((ready == false) || (pendingDirectContentHits != null))
+      {
+        pendingScroll = ScrollTarget.of(matchNdx, pageNum, ndxOnPage);
+        return;
+      }
+
       execJS
       (
         "(function() {" +
@@ -1359,8 +1379,36 @@ public class PDFJSWrapper
       return;
     }
 
+    // Buffer under the same conditions as setAllHits: no document open yet, a
+    // newer open waiting or in flight, or hits still buffered. The open
+    // coordinator's release drains the hits and then this scroll.
+
+    if ((ready == false) || (opened == false) || openInFlight || (pendingOpenFile != null) || (pendingPdfHits != null))
+    {
+      pendingScroll = ScrollTarget.of(matchNdx, pageNum, ndxOnPage);
+      return;
+    }
+
     if (pageNum >= 1)
       execJS("scrollToMatchOnPage(" + pageNum + ", " + ndxOnPage + ");");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Re-runs a buffered scroll now that its document and hits are in place;
+   *  {@link #scrollToHighlight} re-buffers it if they still are not. */
+  private void drainPendingScroll()
+  {
+    if (pendingScroll == null) return;
+
+    ScrollTarget scroll = pendingScroll;
+    pendingScroll = null;
+
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.drainPendingScroll: page " + scroll.pageNum() + " ndx " + scroll.ndxOnPage() + " matchNdx " + scroll.matchNdx());
+
+    scrollToHighlight(scroll.matchNdx(), scroll.pageNum(), scroll.ndxOnPage());
   }
 
 //---------------------------------------------------------------------------
@@ -1382,11 +1430,12 @@ public class PDFJSWrapper
    */
   private void resetHitState()
   {
-    if (app.debugging && ((pendingPdfHits != null) || (pendingDirectContentHits != null)))
-      System.out.println("PDFJSWrapper.resetHitState: dropping buffered hits (pdf=" + (pendingPdfHits != null) + " direct=" + (pendingDirectContentHits != null) + ')');
+    if (app.debugging && ((pendingPdfHits != null) || (pendingDirectContentHits != null) || (pendingScroll != null)))
+      System.out.println("PDFJSWrapper.resetHitState: dropping buffered hits (pdf=" + (pendingPdfHits != null) + " direct=" + (pendingDirectContentHits != null) + " scroll=" + (pendingScroll != null) + ')');
 
     pendingDirectContentHits = null;
     pendingPdfHits = null;
+    pendingScroll = null;
   }
 
 //---------------------------------------------------------------------------

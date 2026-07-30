@@ -589,11 +589,11 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /** Sets the queries pane's FTS preview intent; see {@link PreviewPaneHost#setPreview}. */
-  public static void setQueriesFtsPreview(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights)
+  public static void setQueriesFtsPreview(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
   {
     if (jxBrowserDisabled || (instance == null)) return;
 
-    hostFor(PreviewSource.pvsQueriesTab).setPreview(filePath, record, paged, pageNum, wantsHighlights);
+    hostFor(PreviewSource.pvsQueriesTab).setPreview(filePath, record, paged, pageNum, wantsHighlights, scrollTarget);
   }
 
 //---------------------------------------------------------------------------
@@ -628,14 +628,6 @@ public final class PreviewWindow extends NonmodalWindow
   public static void clearQueriesFtsPreview()
   {
     hostFor(PreviewSource.pvsQueriesTab).clear();
-  }
-
-//---------------------------------------------------------------------------
-
-  /** One-shot scroll to a match in the queries pane, gated on a confirmed load. */
-  public static void queriesScrollToMatch(int matchNdx, int pageNum, int ndxOnPage)
-  {
-    hostFor(PreviewSource.pvsQueriesTab).scrollToMatch(matchNdx, pageNum, ndxOnPage);
   }
 
 //---------------------------------------------------------------------------
