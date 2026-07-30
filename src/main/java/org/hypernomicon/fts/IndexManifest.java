@@ -40,12 +40,15 @@ import static org.hypernomicon.util.Util.*;
 
 /**
  * Captures the indexing configuration at a point in time so the indexer can
- * detect when a rebuild is needed. Stored as {@code index-manifest.json}
+ * detect when that configuration has changed. Stored as {@code index-manifest.json}
  * alongside the Lucene index and metadata.
  * <p>
  * The {@link #configHash} is a SHA-256 digest of all indexing-affecting fields.
  * On startup, the current config is compared to the stored manifest; a mismatch
- * triggers a clean wipe-and-rebuild.
+ * is logged with a field-level description of what changed. The hash is also
+ * recorded in the metadata snapshot, where it drives per-file staleness: files
+ * indexed under an older config are re-extracted in place while the existing
+ * index remains searchable.
  */
 final class IndexManifest
 {
@@ -73,6 +76,16 @@ final class IndexManifest
     this.tikaVersion = tikaVersion;
     this.configHash = configHash;
   }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns {@code true} if the other manifest has the same config hash.
+   */
+  boolean matches(IndexManifest other)  { return (other != null) && other.configHash.equals(configHash); }
+
+  /** The SHA-256 digest of all indexing-affecting fields. */
+  String configHash()                   { return configHash; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -162,19 +175,9 @@ final class IndexManifest
 //---------------------------------------------------------------------------
 
   /**
-   * Returns {@code true} if the other manifest has the same config hash.
-   */
-  boolean matches(IndexManifest other)
-  {
-    return (other != null) && configHash.equals(other.configHash);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
    * Returns a human-readable description of which fields differ between this
-   * manifest and another. Used for diagnostic logging when a rebuild is triggered.
+   * manifest and another. Used for diagnostic logging when a configuration change
+   * is detected.
    */
   String describeDifferences(IndexManifest other)
   {

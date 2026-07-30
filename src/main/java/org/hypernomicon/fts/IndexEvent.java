@@ -22,9 +22,10 @@ import org.hypernomicon.util.file.FilePath;
 //---------------------------------------------------------------------------
 
 /**
- * Represents a filesystem event relevant to full-text indexing. Constructed by
- * {@link org.hypernomicon.FolderTreeWatcher FolderTreeWatcher} from its internal
- * watcher events and passed to the {@link FullTextIndexer#queueEvent}.
+ * Represents a filesystem event relevant to full-text indexing. Constructed from
+ * filesystem activity ({@link org.hypernomicon.FolderTreeWatcher FolderTreeWatcher}
+ * events, {@code FileDeletion}'s post-deletion hook, and {@code FilePath}'s own
+ * file operations) and passed to {@link FullTextIndexer#queueEvent}.
  *
  * @param kind     the type of event
  * @param oldPath  the previous path (for DELETE and MOVE events)

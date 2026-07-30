@@ -77,9 +77,9 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.stage.Stage;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 //---------------------------------------------------------------------------
 
@@ -119,6 +119,12 @@ public final class App extends Application
 
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
   public static final String appTitle = "Hypernomicon";
+
+//---------------------------------------------------------------------------
+
+  /** Null-safe read of {@link #debugging} for diagnostic code on paths that can
+   *  run before the application instance exists (unit tests). */
+  public static boolean debugging() { return (app != null) && app.debugging; }
 
 //---------------------------------------------------------------------------
 

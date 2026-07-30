@@ -120,7 +120,11 @@ public class FullTextIndexer
 
   /** Bump when application-level indexing behavior changes that the auto-detected
    *  fields (analyzer class, Lucene/Tika version, extensions) cannot catch:
-   *  custom tokenization, fuzzy search settings, text preprocessing, document field structure, etc. */
+   *  custom tokenization, fuzzy search settings, text preprocessing, document field
+   *  structure, PDF text-extraction changes (e.g. a pdf.js upgrade that alters
+   *  extracted text or page offsets), etc. A bump does not wipe the index; existing
+   *  entries are loaded as stale and re-extracted in place while the index stays
+   *  searchable. */
   private static final int INDEX_SCHEMA_VERSION = 1;
 
   private static final Set<String> INDEXABLE_EXTENSIONS = Set.of
@@ -197,10 +201,11 @@ public class FullTextIndexer
    *  often than the interval allows; any staleness is bounded by it. */
   private final Map<String, Long> lastExtractionStart = new ConcurrentHashMap<>();
 
-  /** Tracks per-file indexing state (mtime, size, extraction status) for build
-   *  resumption and change detection. When a build is interrupted, the next
-   *  startup loads this map from {@code metadata.json} and skips files whose
-   *  mtime and size are unchanged, avoiding redundant text extraction.
+  /** Tracks per-file indexing state (mtime, size, extraction status, staleness)
+   *  for build resumption and change detection. When a build is interrupted, the
+   *  next startup loads this map from {@code metadata.json} and skips files whose
+   *  mtime and size are unchanged and that are not stale from a configuration
+   *  change, avoiding redundant text extraction.
    *  <p>
    *  This is intentionally separate from the Lucene index. Lucene stores
    *  searchable content; this map stores filesystem identity for O(1) change
@@ -259,6 +264,10 @@ public class FullTextIndexer
   private volatile boolean stopRequested, rebuildRequested, retryFailedRequested;
   private volatile int buildTotalFiles, buildProcessedFiles;
 
+  /** Overrides {@link #INDEX_SCHEMA_VERSION} in {@link #bringOnline} so tests can
+   *  simulate a configuration change between sessions. Null in production. */
+  private volatile Integer schemaVersionForTesting;
+
 //---------------------------------------------------------------------------
 
   public int getIndexedFileCount()                 { return metadataMap.size(); }
@@ -268,6 +277,7 @@ public class FullTextIndexer
   public int getQueueSize()                        { return eventQueue.size(); }
   public Analyzer getAnalyzer()                    { return analyzer; }
   public void setStatusListener(Runnable listener) { this.statusListener = listener; }
+  void setSchemaVersionForTesting(Integer version) { assertThatThisIsUnitTestThread(); schemaVersionForTesting = version; }
 
   /** Whether the Lucene index is open and searchable; true in every state except {@code CLOSED}. */
   public boolean isQueryable()                     { return state != IndexerState.CLOSED; }
@@ -301,13 +311,16 @@ public class FullTextIndexer
    */
   public String getStatistics()
   {
-    int total = 0, indexed = 0, noText = 0, failed = 0, abandoned = 0;
+    int total = 0, indexed = 0, noText = 0, failed = 0, abandoned = 0, stale = 0;
 
     List<String> failedFiles = new ArrayList<>(), abandonedFiles = new ArrayList<>(), noTextFiles = new ArrayList<>();
 
     for (Map.Entry<String, FileIndexEntry> mapEntry : metadataMap.entrySet())
     {
       total++;
+
+      if (mapEntry.getValue().stale())
+        stale++;
 
       switch (mapEntry.getValue().status())
       {
@@ -341,8 +354,12 @@ public class FullTextIndexer
       .append("Successfully indexed: ").append(indexed).append('\n')
       .append("No extractable text: ").append(noText).append('\n')
       .append("Failed: ").append(failed).append('\n')
-      .append("Abandoned (repeatedly failed): ").append(abandoned).append('\n')
-      .append("Index size on disk: ").append(sizeStr);
+      .append("Abandoned (repeatedly failed): ").append(abandoned).append('\n');
+
+    if (stale > 0)
+      sb.append("Awaiting re-extraction after configuration change: ").append(stale).append('\n');
+
+    sb.append("Index size on disk: ").append(sizeStr);
 
     appendFileList(sb, "Failed files"                  , failedFiles   );
     appendFileList(sb, "Abandoned files"               , abandonedFiles);
@@ -411,7 +428,7 @@ public class FullTextIndexer
     metadataMap.clear();
 
     // Also reset the in-session skip set: a rebuild means every file gets a fresh attempt.
-    // A stale entry (e.g. from an extraction the rebuild request itself aborted) would
+    // A leftover entry (e.g. from an extraction the rebuild request itself aborted) would
     // otherwise make processOneFile count that file as failed after it indexes cleanly.
 
     extractionFailures.clear();
@@ -563,25 +580,20 @@ public class FullTextIndexer
     manifestPath = indexDir.resolve(MANIFEST_FILENAME);
     FilePath metadataPath = indexDir.resolve(METADATA_FILENAME);
 
-    // Schema versioning: detect config changes and wipe stale index.
-    // Only wipe when the stored manifest exists but mismatches (genuine schema change).
-    // A missing manifest is not a reason to wipe; the build resumes via metadataMap.
+    // Schema versioning: detect config changes. A mismatch no longer wipes the
+    // index; it is logged here for diagnostics, and the actual staleness handling
+    // is per file, driven by the config hash recorded in the metadata snapshot
+    // (see loadMetadata). Existing entries stay searchable while each file is
+    // re-extracted in place, and because the per-file flags are persisted with
+    // the metadata, an interrupted re-extraction pass resumes where it left off.
 
-    currentManifest = IndexManifest.computeCurrent(INDEXABLE_EXTENSIONS, INDEX_SCHEMA_VERSION);
+    Integer versionOverride = schemaVersionForTesting;
+    currentManifest = IndexManifest.computeCurrent(INDEXABLE_EXTENSIONS, versionOverride != null ? versionOverride : INDEX_SCHEMA_VERSION);
     IndexManifest storedManifest = IndexManifest.loadFrom(manifestPath);
 
     if ((storedManifest != null) && (currentManifest.matches(storedManifest) == false))
-    {
-      System.out.println("Full-text indexer: schema mismatch: " + currentManifest.describeDifferences(storedManifest));
-
-      if (isLucenePopulated(lucenePath) || metadataPath.exists())
-      {
-        System.out.println("Full-text indexer: wiping stale index due to schema change");
-        FileDeletion.ofDirContentsOnly(lucenePath).nonInteractiveLogErrors().execute();
-        FileDeletion.ofFile(metadataPath).nonInteractiveLogErrors().execute();
-        Files.createDirectories(lucenePath.toPath());
-      }
-    }
+      System.out.println("Full-text indexer: indexing configuration changed (" + currentManifest.describeDifferences(storedManifest)
+        + "); index remains searchable while files are re-extracted in place");
 
     // Metadata/Lucene mismatch rule: if one exists without the other, wipe both
 
@@ -597,8 +609,10 @@ public class FullTextIndexer
       Files.createDirectories(lucenePath.toPath());
     }
 
-    // Write manifest now so that even a partial build is recognized as valid
-    // on next startup. If the config changes later, the mismatch triggers a wipe.
+    // Write the manifest now. It is purely a diagnostic record of the configuration
+    // this index directory last saw (used for the field-level change description
+    // above); staleness decisions are driven by the config hash in the metadata
+    // snapshot, not by this file.
 
     currentManifest.saveTo(manifestPath);
 
@@ -615,7 +629,32 @@ public class FullTextIndexer
 
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-    writer = new IndexWriter(luceneDir, config);
+
+    try
+    {
+      writer = new IndexWriter(luceneDir, config);
+    }
+    catch (IndexFormatTooOldException e)
+    {
+      // Segments written by a Lucene version too old for this one to read (a
+      // multi-major-version jump). In-place re-extraction is impossible because the
+      // existing index cannot even be opened, so fall back to a full wipe-and-rebuild.
+
+      System.out.println("Full-text indexer: index format too old to read (" + getThrowableMessage(e) + "); wiping and rebuilding from scratch");
+
+      luceneDir.close();
+      FileDeletion.ofDirContentsOnly(lucenePath).nonInteractiveLogErrors().execute();
+      FileDeletion.ofFile(metadataPath).nonInteractiveLogErrors().execute();
+      Files.createDirectories(lucenePath.toPath());
+
+      luceneDir = FSDirectory.open(lucenePath.toPath());
+
+      // An IndexWriterConfig instance can only be used once
+
+      IndexWriterConfig retryConfig = new IndexWriterConfig(analyzer);
+      retryConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+      writer = new IndexWriter(luceneDir, retryConfig);
+    }
 
     searcherMgr = new SearcherManager(writer, null);
 
@@ -1081,7 +1120,7 @@ public class FullTextIndexer
     // file we've already given up on; a real change resets it to a fresh attempt.
 
     FileIndexEntry existing = metadataMap.get(relPath);
-    if ((existing != null) && ((existing.status() == INDEXED) || (existing.status() == ABANDONED)))
+    if ((existing != null) && (existing.stale() == false) && ((existing.status() == INDEXED) || (existing.status() == ABANDONED)))
     {
       try
       {
@@ -1165,7 +1204,7 @@ public class FullTextIndexer
       catch (IOException e) { smallFiles.add(filePath); }
     }
 
-    if (app.debugging)
+    if (debugging())
       System.out.println("Full-text indexer: " + smallFiles.size() + " small, "
         + largeFiles.size() + " large, " + workerThreads + " worker thread" + (workerThreads == 1 ? "" : "s"));
 
@@ -1188,7 +1227,7 @@ public class FullTextIndexer
       int processed = docCount.get() + skipped.get() + failed.get() + noText.get();
       buildProcessedFiles = processed;
 
-      if (app.debugging)
+      if (debugging())
         System.out.println("Full-text indexer: " + processed + '/' + totalIndexable
           + " processed (" + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + noText.get() + " no text, " + failed.get() + " failed)");
 
@@ -1233,7 +1272,7 @@ public class FullTextIndexer
           logThrowable(t);
         }
 
-        if (app.debugging)
+        if (debugging())
           System.out.println("Full-text indexer: " + Thread.currentThread().getName()
             + " exiting after " + workerCount + " files. stopRequested=" + stopRequested + " queueEmpty=" + workQueue.isEmpty());
       });
@@ -1264,7 +1303,7 @@ public class FullTextIndexer
 
       waitForExecutorToFinish(buildWorkerPool);
 
-      if (app.debugging)
+      if (debugging())
         System.out.println("Full-text indexer: worker pool loop exited. stopRequested=" + stopRequested
           + " workQueue.size=" + workQueue.size()
           + " pool.isTerminated=" + (buildWorkerPool == null ? "null" : buildWorkerPool.isTerminated())
@@ -1272,7 +1311,7 @@ public class FullTextIndexer
 
       waitForExecutorToFinish(buildLargeFileExecutor);
 
-      if (app.debugging)
+      if (debugging())
         System.out.println("Full-text indexer: large file loop exited. stopRequested=" + stopRequested
           + " executor.isTerminated=" + (buildLargeFileExecutor == null ? "null" : buildLargeFileExecutor.isTerminated())
           + " processed=" + (docCount.get() + skipped.get() + failed.get() + noText.get())
@@ -1324,7 +1363,7 @@ public class FullTextIndexer
     }
     else
     {
-      if (app.debugging)
+      if (debugging())
         System.out.println("Full-text indexer: initial build interrupted after " + elapsedStr(startTime) + ". "
           + processed + '/' + totalIndexable + " processed ("
           + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + noText.get() + " no text, " + failed.get() + " failed).");
@@ -1412,7 +1451,12 @@ public class FullTextIndexer
     {
       try
       {
-        if (isFileUnchanged(filePath, existing))
+        // A stale entry is due for re-extraction under the current configuration,
+        // so it never takes the unchanged-skip regardless of its status; in
+        // particular, a stale NO_TEXT file gets a fresh attempt (a newer extractor
+        // may succeed where the old one found nothing).
+
+        if (isFileUnchanged(filePath, existing) && (existing.stale() == false))
         {
           if (existing.status() == NO_TEXT)
           {
@@ -1432,8 +1476,8 @@ public class FullTextIndexer
       }
       catch (IOException e) { skipped.incrementAndGet(); return; }
 
-      // File changed on disk or retrying a prior failure; clear any prior
-      // failure so it gets a fresh attempt
+      // File changed on disk, is stale after a config change, or is retrying a
+      // prior failure; clear any prior failure so it gets a fresh attempt
 
       extractionFailures.remove(relPath);
     }
@@ -1474,7 +1518,7 @@ public class FullTextIndexer
 
     boolean changed = false;
 
-    // Remove stale entries (in metadata but no longer indexable: gone from the registry, now excluded, or non-indexable)
+    // Remove orphaned entries (in metadata but no longer indexable: gone from the registry, now excluded, or non-indexable)
 
     List<String> toRemove = metadataMap.keySet().stream().filter(key -> indexableInRegistry.containsKey(key) == false).toList();
 
@@ -1484,7 +1528,7 @@ public class FullTextIndexer
       changed = true;
     }
 
-    // Add missing entries and reindex stale entries
+    // Add missing entries and reindex changed or stale entries
 
     for (Map.Entry<String, FilePath> entry : indexableInRegistry.entrySet())
     {
@@ -1497,12 +1541,15 @@ public class FullTextIndexer
       {
         try
         {
-          if (isFileUnchanged(entry.getValue(), existing))
+          // The stale check is a backstop: a stale entry that slipped through the
+          // build (e.g. its attribute probe failed transiently) gets re-extracted here
+
+          if (isFileUnchanged(entry.getValue(), existing) && (existing.stale() == false))
             continue;
         }
         catch (IOException e) { continue; }
 
-        // File changed on disk; clear any prior failure so it gets a fresh attempt
+        // File changed on disk or is stale; clear any prior failure so it gets a fresh attempt
 
         extractionFailures.remove(relPath);
       }
@@ -1626,7 +1673,7 @@ public class FullTextIndexer
 
     if (result.text().isBlank())
     {
-      if (app.debugging)
+      if (debugging())
         System.out.println("Full-text indexer: no text extracted from " + filePath);
 
       markAsNoText(relPath, mtime, size);
@@ -1644,9 +1691,11 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Records the result of a fresh extraction attempt, which by definition ran
+   *  under the current configuration, so the entry is never stale. */
   private void putMetadataEntry(String relPath, long mtime, long size, FileIndexEntry.IndexStatus status)
   {
-    metadataMap.put(relPath, new FileIndexEntry(mtime, size, status));
+    metadataMap.put(relPath, new FileIndexEntry(mtime, size, status, false));
   }
 
 //---------------------------------------------------------------------------
@@ -1683,12 +1732,15 @@ public class FullTextIndexer
     // retry; a file that fails twice unchanged is treated as permanently
     // unindexable until it changes (which resets it to a fresh FAILED) or the
     // index is rebuilt. A prior ABANDONED counts as the failed strike too, so a
-    // re-attempt of an unchanged abandoned file stays ABANDONED.
+    // re-attempt of an unchanged abandoned file stays ABANDONED. A stale prior
+    // failure does not count as a strike: it happened under an older configuration,
+    // so this failure is the first attempt under the current one.
 
     FileIndexEntry prior = metadataMap.get(relPath);
 
     boolean priorFailedUnchanged = (prior != null)
         && prior.status().isFailedOrAbandoned()
+        && (prior.stale() == false)
         && (prior.mtime() == mtime)
         && (prior.size() == size);
 
@@ -1770,7 +1822,10 @@ public class FullTextIndexer
           size = newFile.size();
         }
 
-        putMetadataEntry(newRelPath, mtime, size, status);
+        // Not putMetadataEntry: the reused content came from the old extraction,
+        // so the old entry's staleness carries over rather than being cleared
+
+        metadataMap.put(newRelPath, new FileIndexEntry(mtime, size, status, (oldEntry != null) && oldEntry.stale()));
         return true;
       });
 
@@ -1819,7 +1874,7 @@ public class FullTextIndexer
       disposeExtractor(extractor);
     }
 
-    if (app.debugging)
+    if (debugging())
       System.out.println("Full-text indexer: pdf.js extractor pool disposed");
   }
 
@@ -1868,7 +1923,7 @@ public class FullTextIndexer
 
     LinkedBlockingQueue<PDFJSTextExtractor> pool = new LinkedBlockingQueue<>(poolSize);
 
-    if (app.debugging)
+    if (debugging())
       System.out.println("Full-text indexer: initializing " + poolSize + " pdf.js extractor instance(s)...");
 
     for (int ndx = 0; ndx < poolSize; ndx++)
@@ -1886,7 +1941,7 @@ public class FullTextIndexer
     }
     else
     {
-      if (app.debugging)
+      if (debugging())
         System.out.println("Full-text indexer: " + pool.size() + " pdf.js extractor(s) ready");
 
       pdfJSExtractorPool = pool;
@@ -2028,7 +2083,7 @@ public class FullTextIndexer
           //     V8 retention that pdf.destroy() does not return to the OS).
           // Either way, dispose the process and put a fresh instance back so the pool does not degrade.
 
-          if (app.debugging)
+          if (debugging())
             System.out.println("Full-text indexer: " + (extractor.isReady()
               ? "recycling pdf.js extractor after " + extractor.extractionCount() + " extractions"
               : "replacing unresponsive pdf.js extractor"));
@@ -2188,7 +2243,7 @@ public class FullTextIndexer
     if (FilePath.isEmpty(filePath))
       return false;
 
-    if (db.xmlPath().contains(filePath))
+    if ((db != null) && db.xmlPath().contains(filePath))   // db is null in unit tests
       return false;
 
     if (isExcluded(filePath))
@@ -3221,6 +3276,11 @@ public class FullTextIndexer
       arr.add(entry.getValue().toJson(entry.getKey()));
 
     JsonObj root = new JsonObj();
+
+    // The config hash the (non-stale) entries were built under; loadMetadata
+    // compares it against the current config to detect configuration changes
+
+    root.put("configHash", currentManifest.configHash());
     root.put("files", arr);
 
     return root.toString();
@@ -3251,7 +3311,15 @@ public class FullTextIndexer
 
       if (files == null) return;
 
-      int failedCount = 0, noTextCount = 0, abandonedCount = 0;
+      // The snapshot records the config hash its entries were built under. If it
+      // differs from the current config (or is absent, i.e. the snapshot predates
+      // hash stamping), every entry is loaded as stale: still searchable, but due
+      // for re-extraction. Otherwise each entry's own persisted flag is honored,
+      // which is what lets an interrupted re-extraction pass resume.
+
+      boolean allStale = currentManifest.configHash().equals(root.getStrSafe("configHash")) == false;
+
+      int failedCount = 0, noTextCount = 0, abandonedCount = 0, staleCount = 0;
 
       for (JsonObj obj : files.getObjs())
       {
@@ -3259,8 +3327,11 @@ public class FullTextIndexer
 
         if (path != null)
         {
-          FileIndexEntry entry = FileIndexEntry.fromJson(obj);
+          FileIndexEntry entry = FileIndexEntry.fromJson(obj, allStale);
           metadataMap.put(path, entry);
+
+          if (entry.stale())
+            staleCount++;
 
           if (entry.status() == NO_TEXT)
           {
@@ -3290,6 +3361,10 @@ public class FullTextIndexer
 
       System.out.println("Full-text indexer: loaded metadata for " + metadataMap.size()
         + " files (" + noTextCount + " no text, " + failedCount + " previously failed, " + abandonedCount + " abandoned)");
+
+      if (staleCount > 0)
+        System.out.println("Full-text indexer: " + staleCount + " entr" + (staleCount == 1 ? "y is" : "ies are")
+          + " from an older indexing configuration and will be re-extracted in place");
     }
     catch (Exception e)
     {

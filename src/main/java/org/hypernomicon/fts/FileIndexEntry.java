@@ -30,8 +30,15 @@ import static org.hypernomicon.util.Util.*;
  * {@code ConcurrentHashMap.put()} establishes a happens-before edge,
  * guaranteeing visibility of all fields to concurrent readers. Extensible
  * for future fields (page count, annotation count, etc.) via JSON defaults.
+ * <p>
+ * A {@code stale} entry was produced under an older indexing configuration
+ * (schema version, analyzer, extraction pipeline). Its Lucene document remains
+ * searchable, but the file is due for re-extraction; the flag makes the change
+ * detection in {@code FullTextIndexer} treat the file as changed regardless of
+ * mtime and size, and is persisted so an interrupted re-extraction pass resumes
+ * where it left off instead of starting over.
  */
-record FileIndexEntry(long mtime, long size, IndexStatus status)
+record FileIndexEntry(long mtime, long size, IndexStatus status, boolean stale)
 {
 
 //---------------------------------------------------------------------------
@@ -62,18 +69,25 @@ record FileIndexEntry(long mtime, long size, IndexStatus status)
     if (status != IndexStatus.INDEXED)
       obj.put("status", status.name());
 
+    if (stale)
+      obj.put("stale", Boolean.TRUE);
+
     return obj;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static FileIndexEntry fromJson(JsonObj obj)
+  /**
+   * @param forceStale load the entry as stale regardless of its own flag; used when the
+   *                   metadata file as a whole was written under an older configuration
+   */
+  static FileIndexEntry fromJson(JsonObj obj, boolean forceStale)
   {
     String statusStr = obj.getStr("status");
     IndexStatus status = nullSwitch(statusStr, IndexStatus.INDEXED, IndexStatus::valueOf);
 
-    return new FileIndexEntry(obj.getLong("mtime", 0L), obj.getLong("size", 0L), status);
+    return new FileIndexEntry(obj.getLong("mtime", 0L), obj.getLong("size", 0L), status, forceStale || obj.getBoolean("stale", false));
   }
 
 //---------------------------------------------------------------------------

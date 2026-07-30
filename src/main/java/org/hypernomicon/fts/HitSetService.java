@@ -461,7 +461,7 @@ public final class HitSetService
     // marker items defeating the extractor's line-break space insertion,
     // which glued each line's last word to the next line's first.)
 
-    if ((app != null) && app.debugging)  // null check: this path runs headless under test
+    if (debugging())
     {
       Map<Integer, Integer> pageToRangeCount = new TreeMap<>();
 
