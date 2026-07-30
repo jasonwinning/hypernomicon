@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.io.IOException;
 
-import org.controlsfx.control.MasterDetailPane;
+import org.hypernomicon.view.controls.CollapsibleSplitPane;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -43,8 +43,7 @@ import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
-import org.hypernomicon.previewWindow.PDFJSWrapper;
-import org.hypernomicon.previewWindow.PreviewWrapper;
+import org.hypernomicon.previewWindow.DialogPreviewHost;
 import org.hypernomicon.util.file.FilePath;
 
 import javafx.application.Platform;
@@ -69,13 +68,13 @@ public class MergeWorksDlgCtrlr extends ModalDialog
   @FXML private Button btnLaunch, btnCancel;
 
   private final AnchorPane apPreview;
-  private final MasterDetailPane mdp;
+  private final CollapsibleSplitPane spPreview;
   private final Map<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
   private final Map<BibFieldEnum, BibFieldRow<?>> rows = new EnumMap<>(BibFieldEnum.class);
   private final List<BibData> bibDataList;
   private final boolean creatingNewWork;
 
-  private PDFJSWrapper jsWrapper = null;
+  private DialogPreviewHost previewHost = null;
   private int nextRowNdx = 0;
   private boolean previewInitialized = false;
   private Ternary newEntryChoice;
@@ -144,7 +143,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
     this.creatingNewWork = creatingNewWork;
 
     apPreview = new AnchorPane();
-    mdp = WorkDlgCtrlr.addPreview(rootPane, apMain, apPreview, btnPreview);
+    spPreview = WorkDlgCtrlr.addPreview(rootPane, apMain, apPreview, btnPreview);
 
     bibDataList = newBibDataStream.filter(Objects::nonNull).toList();
 
@@ -158,19 +157,19 @@ public class MergeWorksDlgCtrlr extends ModalDialog
         launchFile(filePath);
     });
 
-    mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
+    spPreview.detailShowingProperty().addListener((ob, ov, nv) ->
     {
       if ((Boolean.TRUE.equals(nv) == false) || previewInitialized || jxBrowserDisabled) return;
 
-      WorkDlgCtrlr.accommodatePreview(stage, apMain, mdp);
+      WorkDlgCtrlr.accommodatePreview(stage, apMain, spPreview);
 
-      jsWrapper = new PDFJSWrapper(apPreview);
+      previewHost = new DialogPreviewHost(apPreview);
 
       if (jxBrowserDisabled) return;
 
       previewInitialized = true;
 
-      PreviewWrapper.showFile(FilePath.isEmpty(filePath) ? destWork.filePath() : filePath, 1, jsWrapper);
+      previewHost.setPreview(FilePath.isEmpty(filePath) ? destWork.filePath() : filePath);
     });
 
     if (FilePath.isEmpty(filePath) && ((destWork == null) || (destWork.pathNotEmpty() == false)))
@@ -270,7 +269,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
     boolean rv = super.showModal();
 
     if (previewInitialized)
-      jsWrapper.cleanup();
+      previewHost.cleanup();
 
     return rv;
   }

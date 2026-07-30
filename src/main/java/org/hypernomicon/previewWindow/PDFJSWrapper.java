@@ -172,16 +172,6 @@ public class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  /** Creates a viewer for a preview hosted in a modal dialog. The dialog attach itself
-   *  satisfies the macOS modal-first-attach rule, so priming is recorded as unnecessary;
-   *  see {@link BrowserEngine#primeModalAttach()}. */
-  public PDFJSWrapper(AnchorPane apBrowser)
-  {
-    this(apBrowser, null, null, null);
-
-    BrowserEngine.noteModalAttach();
-  }
-
   PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, Consumer<Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
   {
     this.doneHndlr = doneHndlr;

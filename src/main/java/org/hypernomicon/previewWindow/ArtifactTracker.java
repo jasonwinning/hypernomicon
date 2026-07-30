@@ -29,9 +29,9 @@ import org.hypernomicon.util.file.FilePath;
 //---------------------------------------------------------------------------
 
 /**
- * The artifact side of a preview host ({@link PreviewPaneHost}): turns the
- * host's intent file into the {@link ArtifactStatus} its reconciler derives
- * from. For office documents it
+ * The artifact side of a preview host, shared by {@link PreviewPaneHost} and
+ * {@link DialogPreviewHost}: turns the host's intent file into the
+ * {@link ArtifactStatus} its reconciler derives from. For office documents it
  * starts (or joins) the content-keyed conversion and follows the session's
  * display notifications; for natively-viewable files the artifact is the
  * source file itself.

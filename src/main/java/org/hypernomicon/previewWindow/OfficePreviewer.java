@@ -109,13 +109,8 @@ final class OfficePreviewer
    *       newer request or the user navigated away, in which case the wrapper's
    *       UI has already moved on.</li>
    * </ul>
-   *
-   * <p>{@code previewWrapper} is null for dialog-hosted previews (WorkDlgCtrlr,
-   * SelectWorkDlgCtrlr, MergeWorksDlgCtrlr), which own a bare {@code jsWrapper}
-   * with no preview pane; in that case the callback drives {@code jsWrapper}
-   * directly, mirroring what the PreviewWrapper load methods do for panes.
    */
-  static ConversionSession.DisplayCallback displayCallbackForPreview(ConversionSession session, FilePath filePath, PreviewWrapper previewWrapper, PDFJSWrapper jsWrapper, boolean convertToHtml, int pageNum)
+  static ConversionSession.DisplayCallback displayCallbackForPreview(ConversionSession session, FilePath filePath, PreviewWrapper previewWrapper, boolean convertToHtml, int pageNum)
   {
     return (state, convertedPath, failure) ->
     {
@@ -124,24 +119,14 @@ final class OfficePreviewer
         case PENDING, CONVERTING ->
         {
           if (DocumentArtifactService.converterState() != ConverterState.RUNNING)
-          {
-            if (previewWrapper != null)
-              previewWrapper.setStartingConverter();
-            else
-              jsWrapper.setStartingConverter();
-          }
+            previewWrapper.setStartingConverter();
           else
           {
             // dontRestartProgressIfSamePreview once the conversion is actually
             // under way, so the CONVERTING notification doesn't restart the
             // progress animation the PENDING notification started.
 
-            boolean converting = (state == ConversionSession.ConversionState.CONVERTING);
-
-            if (previewWrapper != null)
-              previewWrapper.setGenerating(filePath, converting);
-            else
-              jsWrapper.setGenerating(filePath, converting);
+            previewWrapper.setGenerating(filePath, state == ConversionSession.ConversionState.CONVERTING);
           }
         }
 
@@ -151,56 +136,31 @@ final class OfficePreviewer
           // eviction cannot delete the file out from under the viewer. The holder
           // releases its previous lease, if any.
 
-          if (previewWrapper != null)
-            previewWrapper.leaseArtifact(session);
-          else
-            jsWrapper.leaseArtifact(session);
+          previewWrapper.leaseArtifact(session);
 
           if (convertToHtml)
           {
             try
             {
-              if (previewWrapper != null)
-                previewWrapper.loadConvertedHtml(convertedPath);
-              else
-              {
-                jsWrapper.setContentToShowIsDirect(true);
-                jsWrapper.loadFile(convertedPath, false);
-              }
+              previewWrapper.loadConvertedHtml(convertedPath);
             }
             catch (IOException e)
             {
-              if (previewWrapper != null)
-                previewWrapper.setUnable(filePath);
-              else
-                jsWrapper.setUnable(filePath);
+              previewWrapper.setUnable(filePath);
             }
           }
           else
           {
-            if (previewWrapper != null)
-              previewWrapper.loadConvertedPdfBytes(convertedPath, pageNum);
-            else
-            {
-              jsWrapper.setContentToShowIsDirect(false);
-              jsWrapper.loadPdf(convertedPath, pageNum);
-            }
+            previewWrapper.loadConvertedPdfBytes(convertedPath, pageNum);
           }
         }
 
         case FAILED ->
         {
           if (failure instanceof NoOfficeInstallationException)
-          {
-            if (previewWrapper != null)
-              previewWrapper.setNoOfficeInstallation();
-            else
-              jsWrapper.setNoOfficeInstallation();
-          }
-          else if (previewWrapper != null)
-            previewWrapper.setUnable(filePath);
+            previewWrapper.setNoOfficeInstallation();
           else
-            jsWrapper.setUnable(filePath);
+            previewWrapper.setUnable(filePath);
         }
 
         default -> { /* CANCELLED: no action */ }

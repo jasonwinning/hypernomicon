@@ -43,6 +43,18 @@ import javafx.stage.Window;
 
 //---------------------------------------------------------------------------
 
+/**
+ * Wraps a SplitPane region pair with a thickened divider carrying one-touch
+ * expand/collapse buttons; collapsing moves the divider without removing
+ * either node from the scene graph.
+ * <p>
+ * Conceptual cousin of
+ * {@link org.hypernomicon.view.controls.CollapsibleSplitPane}, which also
+ * collapses in place but is driven by an external toggle and enforces the
+ * native-surface rules JxBrowser views require (attached once, never
+ * zero-width). Content here is plain JavaFX, so none of those rules apply;
+ * if this wrapper ever hosts a browser view, they will.
+ */
 public final class OneTouchExpandableWrapper
 {
 

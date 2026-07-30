@@ -146,9 +146,9 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 
   /**
-   * Viewer lifecycle events forwarded to the reconciler when one is
-   * driving this wrapper (the queries pane's FTS flow). The wrapper's own
-   * legacy handling continues unchanged; the sink is an additional listener.
+   * Viewer lifecycle events forwarded to the reconciler driving this wrapper;
+   * the wrapper's own bookkeeping (nav history, window controls) runs
+   * alongside, fed by the same events.
    */
   interface PaneEventSink
   {
@@ -832,15 +832,6 @@ public class PreviewWrapper
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper)
-  {
-    return showFile(filePath, pageNum, jsWrapper, null);
-  }
-
-  // The null-previewWrapper branch intentionally does not retain the Subscription
-  // returned by subscribeDisplay (see comment in the office-doc branch below).
-
-  @SuppressWarnings("resource")
   private static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
   {
     String mimetypeStr = getMediaType(filePath).toString();
@@ -850,7 +841,7 @@ public class PreviewWrapper
     // so the order (unsubscribe-first vs subscribe-first) doesn't matter here:
     // we're clearing state regardless of what comes next.
 
-    if ((previewWrapper != null) && (previewWrapper.displaySubscription != null))
+    if (previewWrapper.displaySubscription != null)
     {
       previewWrapper.displaySubscription.unsubscribe();
       previewWrapper.displaySubscription = null;
@@ -871,19 +862,10 @@ public class PreviewWrapper
     {
       if (OfficePreviewer.isOfficeConvertible(mimetypeStr))
       {
-        // Direct session path for both instance-owned wrappers and static
-        // dialog callers. Instance callers track the subscription so future
-        // navigation can unsubscribe cleanly; dialog callers don't navigate,
-        // so silent displacement + session lifecycle handle cleanup when the
-        // dialog closes and the session's subscribers drop away.
-
         ConversionSession session = OfficePreviewer.getOrCreateSession(filePath, mimetypeStr);
-        ConversionSession.DisplayCallback callback = OfficePreviewer.displayCallbackForPreview(session, filePath, previewWrapper, jsWrapper, session.convertToHtml(), pageNum);
+        ConversionSession.DisplayCallback callback = OfficePreviewer.displayCallbackForPreview(session, filePath, previewWrapper, session.convertToHtml(), pageNum);
 
-        if (previewWrapper != null)
-          previewWrapper.displaySubscription = session.subscribeDisplay(previewWrapper, callback);
-        else
-          session.subscribeDisplay(null, callback);  // intentionally untracked; see comment above
+        previewWrapper.displaySubscription = session.subscribeDisplay(previewWrapper, callback);
 
         OfficePreviewer.enqueueForConversion(session);
       }

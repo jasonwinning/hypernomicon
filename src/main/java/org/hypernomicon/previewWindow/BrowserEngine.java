@@ -239,8 +239,8 @@ public final class BrowserEngine
   private static boolean modalAttachDone = false;
 
   /** Records that a modal window is about to host a BrowserView, which makes priming
-   *  unnecessary. Called by {@link PDFJSWrapper#PDFJSWrapper(AnchorPane)}, whose callers
-   *  are all modal dialogs hosting previews. */
+   *  unnecessary. Called by {@link DialogPreviewHost}, whose previews are always
+   *  dialog-hosted. */
   static void noteModalAttach() { modalAttachDone = true; }
 
 //---------------------------------------------------------------------------

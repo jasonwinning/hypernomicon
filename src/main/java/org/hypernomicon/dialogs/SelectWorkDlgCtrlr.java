@@ -28,8 +28,7 @@ import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
-import org.hypernomicon.previewWindow.PDFJSWrapper;
-import org.hypernomicon.previewWindow.PreviewWrapper;
+import org.hypernomicon.previewWindow.DialogPreviewHost;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.http.AsyncHttpClient;
 
@@ -84,8 +83,8 @@ public class SelectWorkDlgCtrlr extends ModalDialog
 
   private BibData bd = null;
   private AnchorPane apPreview;
-  private FilePath filePath = null, previewFilePath = null;
-  private PDFJSWrapper jsWrapper = null;
+  private FilePath filePath = null;
+  private DialogPreviewHost previewHost = null;
   private HDT_Work work;
   private HDT_Person author = null;
   private BibEntry<?, ?> bibEntry;
@@ -512,21 +511,13 @@ public class SelectWorkDlgCtrlr extends ModalDialog
   {
     if ((btnPreview.isSelected() == false) || jxBrowserDisabled) return;
 
-    if (previewInitialized == false) jsWrapper = new PDFJSWrapper(apPreview);
+    if (previewInitialized == false) previewHost = new DialogPreviewHost(apPreview);
 
     if (jxBrowserDisabled) return;
 
     previewInitialized = true;
 
-    if (FilePath.isEmpty(filePath) && (FilePath.isEmpty(previewFilePath) == false))
-      jsWrapper.close();
-
-    if (FilePath.isEmpty(filePath) || filePath.equals(previewFilePath))
-      return;
-
-    previewFilePath = filePath;
-
-    PreviewWrapper.showFile(previewFilePath, 1, jsWrapper);
+    previewHost.setPreview(filePath);  // empty clears; same-file and rapid changes coalesce in the host
   }
 
 //---------------------------------------------------------------------------
@@ -537,7 +528,7 @@ public class SelectWorkDlgCtrlr extends ModalDialog
     boolean rv = super.showModal();
 
     if (previewInitialized)
-      jsWrapper.cleanup();
+      previewHost.cleanup();
 
     return rv;
   }

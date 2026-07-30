@@ -32,8 +32,6 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-import org.controlsfx.control.MasterDetailPane;
-
 import org.hypernomicon.dialogs.LongMessageDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.util.PopupDialog.DialogResult;
@@ -733,11 +731,6 @@ public final class UIUtil
     {
       (node instanceof TreeTableView ? ((TreeTableView<?>)node).getColumns() : ((TableView<?>)node).getColumns()).forEach(column ->
         scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty()));
-    }
-    else if (node instanceof MasterDetailPane mdp)
-    {
-      scaleNodeForDPI(mdp.getMasterNode());
-      scaleNodeForDPI(mdp.getDetailNode());
     }
     else if (node instanceof ToolBar toolBar)
       toolBar.getItems().forEach(UIUtil::scaleNodeForDPI);

@@ -43,8 +43,6 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-import org.controlsfx.control.MasterDetailPane;
-
 import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.bib.BibManager;
@@ -62,12 +60,12 @@ import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.model.relations.ObjectGroup;
-import org.hypernomicon.previewWindow.PDFJSWrapper;
-import org.hypernomicon.previewWindow.PreviewWrapper;
+import org.hypernomicon.previewWindow.DialogPreviewHost;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.http.AsyncHttpClient;
 import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.controls.CollapsibleSplitPane;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.HyperTableColumn.CellUpdateHandler;
@@ -76,7 +74,6 @@ import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
-import javafx.geometry.Side;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -109,7 +106,7 @@ public class WorkDlgCtrlr extends ModalDialog
   @FXML public Button btnCancel;
 
   private final AnchorPane apPreview;
-  private final MasterDetailPane mdp;
+  private final CollapsibleSplitPane spPreview;
   private final HyperCB hcbType;
   private final HyperTable htAuthors, htISBN;
   private final DateControlsWrapper dateCtrls;
@@ -120,8 +117,8 @@ public class WorkDlgCtrlr extends ModalDialog
 
   private BibDataRetriever bibDataRetriever = null;
   private HDT_WorkFile newWorkFile = null;
-  private PDFJSWrapper jsWrapper = null;
-  private FilePath previewFilePath = null, origFilePath = null;
+  private DialogPreviewHost previewHost = null;
+  private FilePath origFilePath = null;
   private GUIBibData origBDtoUse = null;
   private Ternary newEntryChoice;
   private boolean userOverrideDest = false, dontRegenerateFilename = false, previewInitialized = false;
@@ -163,14 +160,14 @@ public class WorkDlgCtrlr extends ModalDialog
     dateCtrls = new DateControlsWrapper(tfYear, cbMonth, tfDay);
 
     apPreview = new AnchorPane();
-    mdp = addPreview(rootPane, apMain, apPreview, btnPreview);
+    spPreview = addPreview(rootPane, apMain, apPreview, btnPreview);
 
-    mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
+    spPreview.detailShowingProperty().addListener((ob, ov, nv) ->
     {
       if (Boolean.TRUE.equals(nv) == false) return;
 
       if ((previewInitialized == false) && (jxBrowserDisabled == false))
-        accommodatePreview(stage, apMain, mdp);
+        accommodatePreview(stage, apMain, spPreview);
 
       updatePreview();
     });
@@ -617,23 +614,29 @@ public class WorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MasterDetailPane addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, Toggle btnPreview)
+  public static CollapsibleSplitPane addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, Toggle btnPreview)
   {
     stagePane.getChildren().remove(apMain);
 
-    MasterDetailPane mdp = new MasterDetailPane(Side.RIGHT, apMain, apPreview, false);
-    setAnchors(mdp, 0.0, 0.0, 0.0, 0.0);
-    stagePane.getChildren().add(mdp);
+    // The preview pane stays in the scene graph at all times, collapsed to a
+    // sliver while hidden: removing and re-adding a pane that hosts a JxBrowser
+    // view strands the native surface at the window origin (see
+    // CollapsibleSplitPane's class comment).
 
-    btnPreview.selectedProperty().bindBidirectional(mdp.showDetailNodeProperty());
+    CollapsibleSplitPane spPreview = new CollapsibleSplitPane(apMain, apPreview);
 
-    return mdp;
+    setAnchors(spPreview, 0.0, 0.0, 0.0, 0.0);
+    stagePane.getChildren().add(spPreview);
+
+    btnPreview.selectedProperty().bindBidirectional(spPreview.detailShowingProperty());
+
+    return spPreview;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void accommodatePreview(Stage stage, AnchorPane apMain, MasterDetailPane mdp)
+  public static void accommodatePreview(Stage stage, AnchorPane apMain, CollapsibleSplitPane spPreview)
   {
     List<Screen> screens = Screen.getScreensForRectangle(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
     double minWidth = screens.size() == 1 ? screens.getFirst().getVisualBounds().getWidth() - 60.0 : 1600.0;
@@ -646,7 +649,7 @@ public class WorkDlgCtrlr extends ModalDialog
       ensureVisible(stage, apMain.getPrefWidth(), apMain.getPrefHeight());
     }
 
-    mdp.setDividerPosition(0.55);
+    spPreview.setExpandedDividerPosition(0.55);
   }
 
 //---------------------------------------------------------------------------
@@ -654,23 +657,15 @@ public class WorkDlgCtrlr extends ModalDialog
 
   private void updatePreview()
   {
-    if ((mdp.isShowDetailNode() == false) || jxBrowserDisabled) return;
+    if ((spPreview.isDetailShowing() == false) || jxBrowserDisabled) return;
 
-    if (previewInitialized == false) jsWrapper = new PDFJSWrapper(apPreview);
+    if (previewInitialized == false) previewHost = new DialogPreviewHost(apPreview);
 
     if (jxBrowserDisabled) return;
 
     previewInitialized = true;
 
-    if (FilePath.isEmpty(origFilePath) && (FilePath.isEmpty(previewFilePath) == false))
-      jsWrapper.close();
-
-    if (FilePath.isEmpty(origFilePath) || origFilePath.equals(previewFilePath))
-      return;
-
-    previewFilePath = origFilePath;
-
-    PreviewWrapper.showFile(previewFilePath, 1, jsWrapper);
+    previewHost.setPreview(origFilePath);  // empty clears; same-file and rapid changes coalesce in the host
   }
 
 //---------------------------------------------------------------------------
@@ -857,7 +852,7 @@ public class WorkDlgCtrlr extends ModalDialog
     stopRetrieving();
 
     if (previewInitialized)
-      jsWrapper.cleanup();
+      previewHost.cleanup();
 
     return rv;
   }
@@ -896,7 +891,7 @@ public class WorkDlgCtrlr extends ModalDialog
         if ((pdfBD == null) && (queryBD == null))
         {
           if (launchIfNoData && app.prefs.getBoolean(PrefKey.AUTO_OPEN_PDF, true))
-            mdp.setShowDetailNode(true);
+            spPreview.setDetailShowing(true);
 
           return;
         }
@@ -910,7 +905,7 @@ public class WorkDlgCtrlr extends ModalDialog
           populateFieldsFromBibData(pdfBD, true, true);
 
           if (launchIfNoData && app.prefs.getBoolean(PrefKey.AUTO_OPEN_PDF, true))
-            mdp.setShowDetailNode(true);
+            spPreview.setDetailShowing(true);
         }
       });
 
@@ -935,7 +930,7 @@ public class WorkDlgCtrlr extends ModalDialog
     if (pdfBD == null)
     {
       if (launchIfNoData && app.prefs.getBoolean(PrefKey.AUTO_OPEN_PDF, true))
-        mdp.setShowDetailNode(true);
+        spPreview.setDetailShowing(true);
 
       return;
     }
