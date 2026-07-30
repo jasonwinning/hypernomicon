@@ -40,14 +40,18 @@ public class PreviewAltDisplayCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
+  void setGenerating(FilePath filePath)
   {
     String msg = OfficePreviewer.getFirstConversion() ?
       "Starting office document previewer and generating preview for file: " + filePath.toString()
     :
       "Generating preview for file: " + filePath.toString();
 
-    if (dontRestartProgressIfSamePreview && lblMessage.getText().equals(msg))
+    // Same message already up: leave the indeterminate progress animation
+    // running rather than restarting it, so repeated pushes for the same
+    // conversion do not make the bar flicker
+
+    if (lblMessage.getText().equals(msg))
       return;
 
     progressBar.setProgress(0.0);

@@ -104,7 +104,7 @@ public final class ContentsWindow extends NonmodalWindow
 
     htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
-      if (PreviewWindow.disablePreviewUpdating) return;
+      if (PreviewWindow.disablePreviewUpdating || PreviewWindow.isRefreshingControls()) return;
 
       int pageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
 
@@ -132,7 +132,7 @@ public final class ContentsWindow extends NonmodalWindow
 
     htContents.addTextEditColWithUpdateHandler(hdtWork, false, smNumeric, (row, _, cellVal, nextColNdx, nextPopulator) ->
     {
-      if (PreviewWindow.disablePreviewUpdating) return;
+      if (PreviewWindow.disablePreviewUpdating || PreviewWindow.isRefreshingControls()) return;
 
       int pageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
 

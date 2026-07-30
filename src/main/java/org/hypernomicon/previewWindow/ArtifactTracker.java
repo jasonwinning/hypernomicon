@@ -94,7 +94,7 @@ final class ArtifactTracker
 
     if (OfficePreviewer.isOfficeConvertible(mimetypeStr))
     {
-      status = new ArtifactStatus.Queued();
+      status = ArtifactStatus.QUEUED;
 
       ConversionSession newSession = OfficePreviewer.getOrCreateSession(filePath, mimetypeStr);
 
@@ -136,8 +136,8 @@ final class ArtifactTracker
 
     switch (state)
     {
-      case PENDING    -> status = new ArtifactStatus.Queued();
-      case CONVERTING -> status = new ArtifactStatus.Converting();
+      case PENDING    -> status = ArtifactStatus.QUEUED;
+      case CONVERTING -> status = ArtifactStatus.CONVERTING;
 
       case COMPLETED  ->
       {

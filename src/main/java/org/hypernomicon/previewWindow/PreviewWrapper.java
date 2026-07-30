@@ -19,7 +19,6 @@ package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
@@ -39,7 +38,18 @@ import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------
 
-public class PreviewWrapper
+/**
+ * One preview pane's viewer host and window-facing state: owns the pane's
+ * {@link PDFJSWrapper}, executes the load/page/hit commands its
+ * {@link PreviewPaneHost} issues, and keeps everything the Preview Window's
+ * controls read (current file and record, page and page-label metadata,
+ * annotated pages, work start/end pages) plus the pane's navigation history
+ * (the file back/forward list and each file's page history), fed by viewer
+ * events and intent-driven loads. What to DISPLAY is never decided here; that
+ * is the reconciler's job, and setting a pane's intent is the only mutation
+ * path.
+ */
+final class PreviewWrapper
 {
 
 //---------------------------------------------------------------------------
@@ -50,37 +60,24 @@ public class PreviewWrapper
     private final FilePath filePath;
     private final HDT_RecordWithPath record;
     private final List<Integer> navList = new ArrayList<>();
-    private final boolean isEmpty;
     private int navNdx = -1;
 
     private PreviewFile(FilePath filePath, HDT_RecordWithPath record)
     {
       this.filePath = filePath;
       this.record = record;
-
-      isEmpty = FilePath.isEmpty(filePath) || filePath.isDirectory();
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private FilePath filePathShowing = null;
-  private HDT_RecordWithPath recordShowing = null;
-  private int fileNdx = -1, pageNum = -1, pageNumShowing = -1, workStartPageNum = -1, workEndPageNum = -1, numPages = 0;
+  private int fileNdx = -1, pageNum = -1, workStartPageNum = -1, workEndPageNum = -1, numPages = 0;
   private final PreviewSource src;
   private final PreviewWindow window;
   private final Tab tab;
-  private boolean viewerErrOccurred = false, needsRefresh = true, initialized = false;
+  private boolean initialized = false;
   private PDFJSWrapper jsWrapper;
-
-  /** FTS hit JSON received via {@link #setAllHits} while {@link #jsWrapper}
-   *  did not yet exist (the preview window was closed when hits were
-   *  delivered, so they could not be queued in the JS layer). Drained in
-   *  {@link #finishRefresh} after the file load has set the correct
-   *  {@code contentToShowIsDirect} on the newly-created jsWrapper. */
-  private String deferredHitsJson;
-
   private Map<String, Integer> labelToPage;
   private Map<Integer, String> pageToLabel;
   private List<Integer> hilitePages;
@@ -89,9 +86,11 @@ public class PreviewWrapper
   private final ToggleButton btn;
   private final AnchorPane ap;
 
-  /** Current display subscription on the active {@link ConversionSession}, if any.
-   *  Unsubscribed when the wrapper is cleared or a new file is loaded into it. */
-  private ConversionSession.Subscription displaySubscription;
+  /** File-history entry a back/forward file navigation is returning to;
+   *  consumed by the next pane-driven load of that file, which then reuses the
+   *  entry (keeping its page history and the forward file history) instead of
+   *  appending a new one. See {@link #fileNavClick}. */
+  private PreviewFile pendingHistoryNav = null;
 
   PreviewSource getSource()             { return src; }
   int getPageNum()                      { return pageNum; }
@@ -101,20 +100,17 @@ public class PreviewWrapper
   int getWorkStartPageNum()             { return workStartPageNum; }
   int getWorkEndPageNum()               { return workEndPageNum; }
   HDT_RecordWithPath getRecord()        { return curPrevFile == null ? null : curPrevFile.record; }
-  FilePath getFilePathShowing()         { return filePathShowing; }
   void prepareToHide()                  { if (initialized) jsWrapper.prepareToHide(); }
   void prepareToShow()                  { if (initialized) jsWrapper.prepareToShow(); }
   void clearAllHits()                   { if (initialized) jsWrapper.clearAllHits(); }
   void setNoOfficeInstallation()        { if (initialized) jsWrapper.setNoOfficeInstallation(); }
   void setStartingConverter()           { if (initialized) jsWrapper.setStartingConverter(); }
   void setUnable(FilePath filePath)     { if (initialized) jsWrapper.setUnable(filePath); }
+  void setGenerating(FilePath filePath) { if (initialized) jsWrapper.setGenerating(filePath); }
 
   /** Shutdown-only: detach the browser view from the scene graph before the
    *  preview stage closes. See {@link PDFJSWrapper#detachBrowserView()}. */
   void detachBrowserView()              { if (initialized) jsWrapper.detachBrowserView(); }
-
-  void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
-  { if (initialized) jsWrapper.setGenerating(filePath, dontRestartProgressIfSamePreview); }
 
   int lowestHilitePage()                { return collEmpty(hilitePages) ? -1 : hilitePages.getFirst(); }
   int highestHilitePage()               { return collEmpty(hilitePages) ? -1 : hilitePages.getLast(); }
@@ -152,7 +148,13 @@ public class PreviewWrapper
    */
   interface PaneEventSink
   {
-    void onOpened(boolean success);
+    /**
+     * A document load completed (a pdf.js open, or a direct-content navigation
+     * finishing). {@code file} is the document the load was for; the consumer
+     * must match it against what it issued, because a superseded open still
+     * reports here before the newest request's load has run.
+     */
+    void onOpened(FilePath file, boolean success);
 
     void onPageChanged(int pageNum);
   }
@@ -165,18 +167,20 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
-  private void doneHndlr(PDFJSOperation operation, boolean success, String errMessage)
+  private void doneHndlr(PDFJSOperation operation, FilePath file, boolean success, String errMessage)
   {
     switch (operation)
     {
-      case pjsOpen:
+      case pjsOpen: case pjsDirectLoad:
 
         if (paneEventSink != null)
-          paneEventSink.onOpened(success);
+          paneEventSink.onOpened(file, success);
 
         if (curPrevFile == null) return;
 
-        numPages = jsWrapper.getNumPages();
+        if (operation == PDFJSOperation.pjsOpen)
+          numPages = jsWrapper.getNumPages();
+
         Platform.runLater(() ->
         {
           if ((curPrevFile != null) && (curPrevFile.navNdx == -1))
@@ -198,18 +202,22 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void pageChangeHndlr(int newPageNumShowing)
+  private void pageChangeHndlr(int newPageNum)
   {
     if (paneEventSink != null)
-      paneEventSink.onPageChanged(newPageNumShowing);
+      paneEventSink.onPageChanged(newPageNum);
 
-    pageNumShowing = newPageNumShowing;
+    // A change Java did not already know about is viewer-originated (the user
+    // scrolled): it enters the page-nav history here. Java-initiated jumps
+    // recorded at issue time (recordChromePageNav) and reconciler-driven ones
+    // (which do not enter history) pre-set pageNum, so they only refresh the
+    // window controls.
 
-    if (pageNum == pageNumShowing) return;
-
-    pageNum = pageNumShowing;
-
-    incrementNav();
+    if ((curPrevFile != null) && (pageNum != newPageNum))
+    {
+      pageNum = newPageNum;
+      incrementNav();
+    }
 
     if (window.curSource() == src)
       Platform.runLater(this::refreshControls);
@@ -266,32 +274,62 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Load the HTML output of an office-to-HTML conversion (e.g., spreadsheets).
-   *  Used by the display callback after conversion completes; file tracking
-   *  (curPrevFile, fileList) was already set up by the earlier setPreview call. */
-  void loadConvertedHtml(FilePath convertedPath) throws IOException
+  /** Reloads the embedded browser (recreating the viewer page), then runs
+   *  {@code done}; the caller re-issues the display afterward. */
+  void reloadViewer(Runnable done)
   {
-    if (initialized == false) return;
-
-    jsWrapper.setContentToShowIsDirect(true);
-    jsWrapper.loadFile(convertedPath, false);
+    if (initialized)
+      jsWrapper.reloadBrowser(done);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Load the bytes of an office-to-PDF conversion into the viewer.
-   *  Used by the display callback after conversion completes; file tracking
-   *  (curPrevFile, fileList) was already set up by the earlier setPreview call.
-   *  The FTS path bypasses the normal preview flow and uses the heavier
-   *  {@link #loadConvertedPDF(FilePath, FilePath, int, HDT_Record)} overload,
-   *  which sets up file tracking itself before delegating here. */
-  void loadConvertedPdfBytes(FilePath convertedPath, int pageNum)
+  /** Load a paged document (a native PDF, or the PDF output of an office
+   *  conversion) into the pdf.js viewer. */
+  private void loadPagedDocument(FilePath displayPath, int pageNum)
   {
-    if (initialized == false) return;
-
     jsWrapper.setContentToShowIsDirect(false);
-    jsWrapper.loadPdf(convertedPath, pageNum);
+    jsWrapper.loadPdf(displayPath, pageNum);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Records {@code sourceFile} as the file this pane is showing: reuses the
+   * file-history entry a back/forward navigation is returning to (keeping its
+   * page history and the forward file history), else appends a new entry,
+   * truncating any forward history. Also resets the per-document metadata the
+   * previous document left behind.
+   */
+  private void trackFile(FilePath sourceFile, HDT_Record record)
+  {
+    if ((record != null) && (record.getType() != hdtWork    ) && (record.getType() != hdtMiscFile) &&
+                            (record.getType() != hdtWorkFile) && (record.getType() != hdtPerson  ))
+      record = null;
+
+    if ((pendingHistoryNav != null) && pendingHistoryNav.filePath.equals(sourceFile))
+    {
+      curPrevFile = pendingHistoryNav;  // fileNdx was repositioned by fileNavClick
+    }
+    else
+    {
+      curPrevFile = new PreviewFile(sourceFile, (HDT_RecordWithPath) record);
+
+      fileNdx++;
+
+      while (fileList.size() > fileNdx)
+        fileList.remove(fileNdx);
+
+      fileList.add(curPrevFile);
+    }
+
+    pendingHistoryNav = null;
+
+    labelToPage = null;
+    pageToLabel = null;
+    hilitePages = null;
   }
 
 //---------------------------------------------------------------------------
@@ -300,12 +338,7 @@ public class PreviewWrapper
   /**
    * Pane-driven paged load: displays {@code displayPath} in the pdf.js viewer
    * at the given page, tracking {@code sourceFile} as the file being shown
-   * (they differ for LibreOffice-converted office documents). Initializes
-   * {@code curPrevFile} and page tracking so subsequent legacy navigation
-   * (nav history, refreshControls, passage clicks) works against the source
-   * path, and marks the file as currently displayed so a later tab activation
-   * refreshes controls instead of re-entering showFile (which would create a
-   * new display subscription and enqueue a redundant conversion).
+   * (they differ for LibreOffice-converted office documents).
    *
    * @param sourceFile  the file the user asked to preview (used for file tracking)
    * @param displayPath the file the viewer actually loads (source itself, or converted artifact)
@@ -316,33 +349,11 @@ public class PreviewWrapper
   {
     if (ensureInitialized() == false) return;
 
-    if ((record != null) && (record.getType() != hdtWork    ) && (record.getType() != hdtMiscFile) &&
-                            (record.getType() != hdtWorkFile) && (record.getType() != hdtPerson  ))
-      record = null;
-
-    curPrevFile = new PreviewFile(sourceFile, (HDT_RecordWithPath) record);
-
-    fileNdx++;
-
-    while (fileList.size() > fileNdx)
-      fileList.remove(fileNdx);
-
-    fileList.add(curPrevFile);
+    trackFile(sourceFile, record);
 
     this.pageNum = pageNum;
 
-    viewerErrOccurred = false;
-
-    labelToPage = null;
-    pageToLabel = null;
-    hilitePages = null;
-
-    filePathShowing = sourceFile;
-    recordShowing   = (HDT_RecordWithPath) record;
-    pageNumShowing  = -1;
-    needsRefresh    = false;
-
-    loadConvertedPdfBytes(displayPath, pageNum);
+    loadPagedDocument(displayPath, pageNum);
   }
 
 //---------------------------------------------------------------------------
@@ -351,8 +362,7 @@ public class PreviewWrapper
   /**
    * Pane-driven direct-content load: displays {@code displayPath} as direct
    * browser content (HTML, plain text, image, media), with the same
-   * source-file tracking as {@link #paneShowPaged}. Mirrors the direct-content
-   * branches of {@link #showFile}.
+   * source-file tracking as {@link #paneShowPaged}.
    *
    * @return true if content was loaded; false if the file kind cannot be
    *         previewed or loading failed (the unable indicator is shown)
@@ -361,32 +371,10 @@ public class PreviewWrapper
   {
     if (ensureInitialized() == false) return false;
 
-    if ((record != null) && (record.getType() != hdtWork    ) && (record.getType() != hdtMiscFile) &&
-                            (record.getType() != hdtWorkFile) && (record.getType() != hdtPerson  ))
-      record = null;
-
-    curPrevFile = new PreviewFile(sourceFile, (HDT_RecordWithPath) record);
-
-    fileNdx++;
-
-    while (fileList.size() > fileNdx)
-      fileList.remove(fileNdx);
-
-    fileList.add(curPrevFile);
+    trackFile(sourceFile, record);
 
     pageNum = 1;
     numPages = 1;
-
-    viewerErrOccurred = false;
-
-    labelToPage = null;
-    pageToLabel = null;
-    hilitePages = null;
-
-    filePathShowing = sourceFile;
-    recordShowing   = (HDT_RecordWithPath) record;
-    pageNumShowing  = 1;
-    needsRefresh    = false;
 
     try
     {
@@ -419,16 +407,13 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Push FTS hit JSON to the underlying jsWrapper. If lazy-init has not yet
-   *  run (the preview window is closed), the JSON is stored on this wrapper
-   *  and will be replayed by {@code finishRefresh} after the file load has
-   *  set the correct {@code contentToShowIsDirect}. */
+  /** Push FTS hit JSON to the underlying jsWrapper. The reconciler delivers
+   *  hits only after the intended document's load is confirmed, which implies
+   *  the wrapper is initialized; a push before then is a caller bug. */
   void setAllHits(String allHitsJson)
   {
     if (initialized)
       jsWrapper.setAllHits(allHitsJson);
-    else
-      deferredHitsJson = allHitsJson;
   }
 
 //---------------------------------------------------------------------------
@@ -546,7 +531,7 @@ public class PreviewWrapper
     item.setOnAction(event ->
     {
       curPrevFile.navNdx = ndx;
-      setPreview(page, false);
+      jumpToHistoryPage(page);
     });
 
     return item;
@@ -561,28 +546,67 @@ public class PreviewWrapper
 
     curPrevFile.navNdx += (isForward ? 1 : -1);
 
-    setPreview(curPrevFile.navList.get(curPrevFile.navNdx), false);
+    jumpToHistoryPage(curPrevFile.navList.get(curPrevFile.navNdx));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Navigates to a page reached through the back/forward history: the history
+   * index was already repositioned, so no entry is recorded, and
+   * {@link #pageNum} is pre-set so the resulting page-change event does not
+   * re-enter history either.
+   */
+  private void jumpToHistoryPage(int page)
+  {
+    pageNum = page;
+
+    PreviewWindow.hostFor(src).navigateToPage(page);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Records a page jump made with the window's controls (slider, page buttons,
+   * page field, ContentsWindow) in this file's page-nav history at issue time;
+   * the jump itself is then issued through the pane's intent. Also pre-sets
+   * {@link #pageNum} so the resulting page-change event is recognized as
+   * Java-initiated rather than user scrolling.
+   */
+  void recordChromePageNav(int page)
+  {
+    if (curPrevFile == null) return;
+
+    pageNum = page;
+    incrementNav();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Back/forward file navigation: repositions the file history and re-previews
+   * that entry through the pane's intent. The entry itself is reused by the
+   * resulting load (see {@link #trackFile}), preserving its page history and
+   * the forward file history.
+   */
   void fileNavClick(boolean isForward)
   {
-    // File-level nav on the queries tab loads a different file through the
-    // legacy path, outside the reconciler's intent; the pane must relinquish
-    // so its next intent starts from a clean diff
+    int newNdx = isForward ? getNextFileNdx() : getPreviousFileNdx();
+    if (newNdx < 0) return;
 
-    if (src == PreviewSource.pvsQueriesTab)
-      PreviewWindow.hostFor(src).yieldToExternalWriter();
-
-    fileNdx = isForward ? getNextFileNdx() : getPreviousFileNdx();
+    fileNdx = newNdx;
 
     PreviewFile prevFile = fileList.get(fileNdx);
 
     int newPageNum = prevFile.navNdx < 0 ? 1 : prevFile.navList.get(prevFile.navNdx);
 
-    setPreview(prevFile.filePath, newPageNum, prevFile.record, false, prevFile);
+    curPrevFile = prevFile;        // reflect the target immediately (controls, launch, go)
+    pendingHistoryNav = prevFile;  // the load that follows reuses this entry
+
+    PreviewWindow.hostFor(src).setPreviewAuto(prevFile.filePath, prevFile.record, newPageNum);
   }
 
 //---------------------------------------------------------------------------
@@ -600,102 +624,16 @@ public class PreviewWrapper
 
   void clearPreview()
   {
-    filePathShowing = null;
-    recordShowing = null;
     pageNum = -1;
-    pageNumShowing = -1;
     workStartPageNum = -1;
     workEndPageNum = -1;
     curPrevFile = null;
+    pendingHistoryNav = null;
 
     if (window.curSource() == src) window.clearControls();
 
-    if (initialized == false) return;
-
-    if (displaySubscription != null)
-    {
-      displaySubscription.unsubscribe();
-      displaySubscription = null;
-    }
-
-    jsWrapper.reset();
-
-    if (window.curSource() == src)
-      needsRefresh = false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void setPreview(FilePath filePath, int pageNum, HDT_Record record)
-  {
-    setPreview(filePath, pageNum, record, true, null);
-  }
-
-  void setPreview(int pageNum, boolean incrementNav)
-  {
-    setPreview(getFilePath(), pageNum, getRecord(), incrementNav, null);
-  }
-
-  private void setPreview(FilePath filePath, int pageNum, HDT_Record record, boolean incrementNav, PreviewFile prevFile)
-  {
-    boolean fileChanged = true;
-
-    if ((record != null) && (record.getType () != hdtWork    ) && (record.getType() != hdtMiscFile) &&
-                            (record.getType () != hdtWorkFile) && (record.getType() != hdtPerson  ))
-      record = null;
-
-    if ((getRecord() == record) && (FilePath.isEmpty(getFilePath()) == false) && curPrevFile.filePath.equals(filePath))
-    {
-      fileChanged = false;
-
-      if (this.pageNum == pageNum)
-        return;
-    }
-
-    if (fileChanged)
-    {
-      if (prevFile != null)
-        curPrevFile = prevFile;
-      else
-      {
-        curPrevFile = new PreviewFile(filePath, (HDT_RecordWithPath) record);
-
-        fileNdx++;
-        while (fileList.size() > fileNdx)
-          fileList.remove(fileNdx);
-
-        fileList.add(curPrevFile);
-
-        // Now remove empties
-
-        int ndx = 0;
-        while (ndx < fileNdx)
-        {
-          if (fileList.get(ndx).isEmpty)
-          {
-            fileList.remove(ndx);
-            fileNdx--;
-          }
-          else
-            ndx++;
-        }
-      }
-    }
-
-    this.pageNum = pageNum;
-
-    if (FilePath.isEmpty(filePath))
-      clearPreview();
-    else if ((window.curSource() == src) && window.isShowing())
-      refreshPreview(false, incrementNav);
-    else
-    {
-      if ((window.curSource() == src) && ContentsWindow.instance().isShowing())
-        refreshControls();
-
-      needsRefresh = !filePath.equals(filePathShowing);
-    }
+    if (initialized)
+      jsWrapper.reset();
   }
 
 //---------------------------------------------------------------------------
@@ -705,7 +643,7 @@ public class PreviewWrapper
   {
     FilePath filePath = getFilePath();
 
-    if ((pageNum <= 0) || FilePath.isEmpty(filePath) || viewerErrOccurred || (filePath.exists() == false))
+    if ((pageNum <= 0) || FilePath.isEmpty(filePath) || (filePath.exists() == false))
     {
       clearPreview();
       return;
@@ -714,214 +652,30 @@ public class PreviewWrapper
     window.refreshControls(pageNum, numPages, this);
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private void finishRefresh(boolean force, boolean incrementNav)
-  {
-    if ((pageNum <= 0) || FilePath.isEmpty(getFilePath()) || (initialized == false) || (curPrevFile.filePath.equals(filePathShowing) && viewerErrOccurred))
-    {
-      clearPreview();
-      return;
-    }
-
-    viewerErrOccurred = false;
-
-    if (force || (curPrevFile.filePath.equals(filePathShowing) == false))
-    {
-      if (curPrevFile.filePath.isDirectory())
-      {
-        clearPreview();
-        return;
-      }
-
-      filePathShowing = null;
-      recordShowing = null;
-      pageNumShowing = -1;
-
-      window.clearControls();
-      needsRefresh = false;
-
-      if (viewerErrOccurred) return;
-
-      labelToPage = null;
-      pageToLabel = null;
-      hilitePages = null;
-
-      String mimetypeStr = showFile(curPrevFile.filePath, pageNum, jsWrapper, this);  // This can set needsRefresh to true
-
-      // Drain any FTS hits that were delivered while jsWrapper did not yet exist
-      // (preview window closed at the time). showFile has just set the correct
-      // contentToShowIsDirect, so jsWrapper.setAllHits will route to the right pending-hits
-      // bucket and apply once the browser finishes loading.
-
-      if (deferredHitsJson != null)
-      {
-        jsWrapper.setAllHits(deferredHitsJson);
-        deferredHitsJson = null;
-      }
-
-      if (mimetypeStr.contains("pdf"))
-      {
-        filePathShowing = curPrevFile.filePath;
-        recordShowing = curPrevFile.record;
-        pageNumShowing = -1;
-
-        return;
-      }
-
-      numPages = 1;
-
-      filePathShowing = curPrevFile.filePath;
-      recordShowing = curPrevFile.record;
-      pageNumShowing = pageNum;
-    }
-
-    if ((pageNum != pageNumShowing) && ((pageNum > 1) || (pageNumShowing > 1)))
-      jsWrapper.goToPage(pageNum);
-
-    if (incrementNav)
-      incrementNav();
-
-    refreshControls();
-  }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * This pane's tab became the active one. The display itself needs nothing
+   * (each tab has its own browser, and loads deferred while this source was
+   * not the active, showing one replay through the intent path below); only
+   * the window controls are brought up to date.
+   */
   void activate()
   {
-    // A conversion-in-progress alt display (e.g. "Generating preview...") shouldn't
-    // be clobbered by a tab activation. Without this guard, the FTS converted-office
-    // path gets reset to an empty PDF viewer the first time the preview window is
-    // opened during conversion, because finishRefresh's empty-filePath branch calls
-    // clearPreview -> jsWrapper.reset() -> switchToPreviewDisplay.
-
-    if ((jsWrapper != null) && jsWrapper.isShowingAlt())
-    {
-      btn.setSelected(true);
-
-      // Still honor deferred preview work on this early return; otherwise replaying it would depend
-      // on the alt display always having been cleared at deferral-registration time, a non-local
-      // invariant. In the common case here (a conversion this source already kicked off is still
-      // generating) no deferral is pending and this is a no-op.
-
-      PreviewWindow.fireActivation(getSource());
-      return;
-    }
-
-    if (needsRefresh)
-      refreshPreview(false, true);
-    else
-    {
-      if ((getRecord() != recordShowing) && (pageNum != pageNumShowing) && ((pageNum > 1) || (pageNumShowing > 1)))
-        jsWrapper.goToPage(pageNum);
-
-      refreshControls();
-    }
-
     btn.setSelected(true);
 
-    // This source is now active and showing, so any preview work a caller deferred while it was not
-    // (the FTS hit pipeline) can now run. Fired after the wrapper's own refresh so the deferred caller,
-    // which drives the viewer itself, has the last word on what is displayed.
+    if (curPrevFile == null)
+      window.clearControls();
+    else
+      refreshControls();
+
+    // This source is now active and showing, so any preview work a caller
+    // deferred while it was not (record navigation with the window closed, the
+    // FTS hit pipeline) can now run; the deferred caller has the last word on
+    // what is displayed.
 
     PreviewWindow.fireActivation(getSource());
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper, PreviewWrapper previewWrapper)
-  {
-    String mimetypeStr = getMediaType(filePath).toString();
-
-    // Unsubscribe the previous display subscription (if this wrapper had one).
-    // Silent displacement via a new subscribe handles the same-session case,
-    // so the order (unsubscribe-first vs subscribe-first) doesn't matter here:
-    // we're clearing state regardless of what comes next.
-
-    if (previewWrapper.displaySubscription != null)
-    {
-      previewWrapper.displaySubscription.unsubscribe();
-      previewWrapper.displaySubscription = null;
-    }
-
-    // For PDF, no conversion is necessary. We display it as-is using the PDF viewer.
-
-    if (mimetypeStr.contains("pdf"))
-    {
-      jsWrapper.setContentToShowIsDirect(false);
-      jsWrapper.loadPdf(filePath, pageNum);
-      return mimetypeStr;
-    }
-
-    // Look for format that JodConverter can convert to PDF and display it using the PDF viewer.
-
-    try
-    {
-      if (OfficePreviewer.isOfficeConvertible(mimetypeStr))
-      {
-        ConversionSession session = OfficePreviewer.getOrCreateSession(filePath, mimetypeStr);
-        ConversionSession.DisplayCallback callback = OfficePreviewer.displayCallbackForPreview(session, filePath, previewWrapper, session.convertToHtml(), pageNum);
-
-        previewWrapper.displaySubscription = session.subscribeDisplay(previewWrapper, callback);
-
-        OfficePreviewer.enqueueForConversion(session);
-      }
-
-      // Treat as an HTML file (removing scripts and making links external) if it appears to be HTML and load directly into browser.
-
-      else if (mimetypeStr.contains("html"))
-      {
-        jsWrapper.setContentToShowIsDirect(true);
-        jsWrapper.loadFile(filePath, true);
-      }
-
-      // Otherwise load into the browser as-is if it appears to be an ASCII text file or embeddable media file.
-
-      else if (mimetypeStr.contains("image")  || mimetypeStr.contains("plain") || mimetypeStr.contains("video") || mimetypeStr.contains("audio") ||
-               "application/xml".equalsIgnoreCase(mimetypeStr) ||
-               "application/json".equalsIgnoreCase(mimetypeStr) ||
-               isAsciiFile(filePath))
-      {
-        jsWrapper.setContentToShowIsDirect(true);
-        jsWrapper.loadFile(filePath, false);
-      }
-
-      // None of the above, so tell the user it cannot be previewed
-
-      else
-      {
-        jsWrapper.setContentToShowIsDirect(false);
-        jsWrapper.setUnable(filePath);
-      }
-    }
-    catch (IllegalStateException | IOException e)
-    {
-      jsWrapper.setUnable(filePath);
-    }
-
-    return mimetypeStr;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void refreshPreview(boolean forceReload, boolean incrementNav)
-  {
-    if (initialized == false)
-      initJS();
-
-    if (PreviewWindow.disablePreviewUpdating) return;
-
-    boolean neededRefresh = needsRefresh;
-    needsRefresh = false;
-
-    if (forceReload)
-      jsWrapper.reloadBrowser(() -> Platform.runLater(() -> finishRefresh(true, incrementNav)));
-    else
-      finishRefresh(neededRefresh, incrementNav);
   }
 
   //---------------------------------------------------------------------------
@@ -960,17 +714,6 @@ public class PreviewWrapper
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-
-  void updatePage(int newPageNum)
-  {
-    if ((newPageNum < 1) || (pageNum < 1) || FilePath.isEmpty(getFilePath()) || (newPageNum > numPages))
-      return;
-
-    setPreview(curPrevFile.filePath, newPageNum, curPrevFile.record);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   void setWorkPageFromContentsWindow(int pageNum, boolean isStart)
   {

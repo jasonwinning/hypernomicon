@@ -50,6 +50,11 @@ record PipelineSnapshot(FilePath sourceFile, ArtifactStatus artifact, ConverterS
 
   sealed interface ArtifactStatus
   {
+    /** Shared instances of the parameterless variants: every instance of a
+     *  parameterless record is equal to every other, so these only save the
+     *  allocation and let a status read as the state it names. */
+    ArtifactStatus QUEUED = new Queued(), CONVERTING = new Converting();
+
     record Queued() implements ArtifactStatus { }
 
     record Converting() implements ArtifactStatus { }
@@ -64,6 +69,9 @@ record PipelineSnapshot(FilePath sourceFile, ArtifactStatus artifact, ConverterS
 
   sealed interface HitsStatus
   {
+    /** Shared instances of the parameterless variants; see {@link ArtifactStatus}. */
+    HitsStatus PENDING = new Pending(), FAILED = new Failed();
+
     record Pending() implements HitsStatus { }
 
     /** @param hitsJson     per-page hit JSON, or {@code null} when the computation found no hits

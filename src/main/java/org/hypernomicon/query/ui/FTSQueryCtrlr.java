@@ -1590,7 +1590,34 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       currentPreviewPath = null;
       pendingScrollTarget = null;
       pendingConvertedPassageNdx = -1;
+
+      if (PreviewWindow.isPreviewLocked(pvsQueriesTab))
+      {
+        // Locked: keep the current preview; the clear replays on unlock (unless
+        // a later selection replaces it)
+
+        PreviewWindow.runWhenUnlocked(pvsQueriesTab, PreviewWindow::clearQueriesFtsPreview);
+        return;
+      }
+
       PreviewWindow.clearQueriesFtsPreview();
+      return;
+    }
+
+    // The lock defers previews of OTHER files; re-previews of the locked file
+    // itself (passage clicks navigating within it) proceed as page navigation
+
+    if (PreviewWindow.isPreviewLocked(pvsQueriesTab) && (row.path().equals(currentPreviewPath) == false))
+    {
+      // Keep the current preview and replay this row's preview on unlock, with
+      // the same context re-checks as the activation replay below
+
+      PreviewWindow.runWhenUnlocked(pvsQueriesTab, () ->
+      {
+        if (tab.isSelected() && (tvResults.getSelectionModel().getSelectedItem() == row))
+          setPreview(row);
+      });
+
       return;
     }
 

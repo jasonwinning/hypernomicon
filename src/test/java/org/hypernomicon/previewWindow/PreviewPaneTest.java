@@ -107,7 +107,7 @@ class PreviewPaneTest
   @Test void queuedConversionShowsStartingConverterWhileConverterIsNotRunning()
   {
     pane.setIntent(ftsIntent(DOC));
-    pane.updatePipeline(new PipelineSnapshot(DOC, new ArtifactStatus.Queued(), ConverterState.STOPPED, new HitsStatus.Pending()));
+    pane.updatePipeline(new PipelineSnapshot(DOC, ArtifactStatus.QUEUED, ConverterState.STOPPED, HitsStatus.PENDING));
 
     assertEquals(ProgressVariant.STARTING_CONVERTER, viewer.last("showProgress").variant());
   }
@@ -119,8 +119,8 @@ class PreviewPaneTest
   @Test void progressVariantChangesToGeneratingOnceConverterRuns()
   {
     pane.setIntent(ftsIntent(DOC));
-    pane.updatePipeline(new PipelineSnapshot(DOC, new ArtifactStatus.Converting(), ConverterState.STOPPED, new HitsStatus.Pending()));
-    pane.updatePipeline(new PipelineSnapshot(DOC, new ArtifactStatus.Converting(), ConverterState.RUNNING, new HitsStatus.Pending()));
+    pane.updatePipeline(new PipelineSnapshot(DOC, ArtifactStatus.CONVERTING, ConverterState.STOPPED, HitsStatus.PENDING));
+    pane.updatePipeline(new PipelineSnapshot(DOC, ArtifactStatus.CONVERTING, ConverterState.RUNNING, HitsStatus.PENDING));
 
     assertEquals(List.of("showProgress", "showProgress"), viewer.methods());
     assertEquals(ProgressVariant.GENERATING, viewer.last("showProgress").variant());
@@ -130,14 +130,14 @@ class PreviewPaneTest
 
   @Test void unchangedDesiredViewIssuesNoDuplicateCommands()
   {
-    PipelineSnapshot snapshot = new PipelineSnapshot(DOC, new ArtifactStatus.Converting(), ConverterState.RUNNING, new HitsStatus.Pending());
+    PipelineSnapshot snapshot = new PipelineSnapshot(DOC, ArtifactStatus.CONVERTING, ConverterState.RUNNING, HitsStatus.PENDING);
 
     pane.setIntent(ftsIntent(DOC));
     pane.updatePipeline(snapshot);
     viewer.clear();
 
     pane.updatePipeline(snapshot);
-    pane.updatePipeline(new PipelineSnapshot(DOC, new ArtifactStatus.Converting(), ConverterState.RUNNING, new HitsStatus.Pending()));
+    pane.updatePipeline(new PipelineSnapshot(DOC, ArtifactStatus.CONVERTING, ConverterState.RUNNING, HitsStatus.PENDING));
 
     assertEquals(List.of(), viewer.methods());
   }
@@ -149,7 +149,7 @@ class PreviewPaneTest
     pane.setIntent(ftsIntent(DOC));
     viewer.clear();
 
-    pane.updatePipeline(new PipelineSnapshot(DOC, new ArtifactStatus.Failed("LibreOffice exited"), ConverterState.STOPPED, new HitsStatus.Pending()));
+    pane.updatePipeline(new PipelineSnapshot(DOC, new ArtifactStatus.Failed("LibreOffice exited"), ConverterState.STOPPED, HitsStatus.PENDING));
 
     assertEquals(List.of("showUnable"), viewer.methods());
     assertEquals(DOC, viewer.last("showUnable").filePath());
@@ -164,7 +164,7 @@ class PreviewPaneTest
     pane.setIntent(ftsIntent(DOC));
     viewer.clear();
 
-    pane.updatePipeline(readySnapshot(DOC, ARTIFACT, new HitsStatus.Pending()));
+    pane.updatePipeline(readySnapshot(DOC, ARTIFACT, HitsStatus.PENDING));
 
     assertEquals(List.of("showProgress"), viewer.methods());
     assertEquals(ProgressVariant.GENERATING, viewer.last("showProgress").variant());
@@ -186,7 +186,7 @@ class PreviewPaneTest
     pane.setIntent(ftsIntent(DOC));
     viewer.clear();
 
-    pane.updatePipeline(readySnapshot(DOC, ARTIFACT, new HitsStatus.Failed()));
+    pane.updatePipeline(readySnapshot(DOC, ARTIFACT, HitsStatus.FAILED));
 
     assertEquals(List.of("showDocument"), viewer.methods());
     assertEquals(1, viewer.last("showDocument").pageNum());
@@ -218,7 +218,7 @@ class PreviewPaneTest
     pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 7, true, null));
     viewer.clear();
 
-    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.Pending()));
+    pane.updatePipeline(readySnapshot(PDF, PDF, HitsStatus.PENDING));
 
     assertEquals(List.of("showDocument"), viewer.methods());
     assertEquals(7, viewer.last("showDocument").pageNum());
@@ -413,7 +413,7 @@ class PreviewPaneTest
     // withheld and no new document has issued (the generation has not moved)
 
     pane.setIntent(ftsIntent(DOC));
-    pane.updatePipeline(readySnapshot(DOC, ARTIFACT, new HitsStatus.Pending()));
+    pane.updatePipeline(readySnapshot(DOC, ARTIFACT, HitsStatus.PENDING));
     viewer.clear();
 
     // A trailing page event from the outgoing document arrives; by generation
@@ -501,31 +501,6 @@ class PreviewPaneTest
 
 //---------------------------------------------------------------------------
 
-  /** The hybrid escape hatch: yielding to an external writer issues nothing
-   *  and leaves the pane cleanly re-enterable. */
-  @Test void yieldDisplayIssuesNothingAndNextIntentStartsFresh()
-  {
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 3, false, null));
-    pane.updatePipeline(readySnapshot(PDF, PDF, null));
-    confirmLoad();
-    viewer.clear();
-
-    pane.yieldDisplay();
-
-    assertEquals(List.of(), viewer.methods(), "yielding must not disturb the external writer's display");
-    assertNull(pane.currentFile());
-
-    // The next intent re-issues a full load even for the same document,
-    // because the pane no longer trusts what the viewer shows
-
-    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 3, false, null));
-    pane.updatePipeline(readySnapshot(PDF, PDF, null));
-
-    assertTrue(viewer.methods().contains("showDocument"));
-  }
-
-//---------------------------------------------------------------------------
-
   /** User-driven refresh re-issues the full display with a fresh generation;
    *  hits re-ship once the reloaded document confirms. */
   @Test void refreshDisplayReissuesTheFullDisplayWithAFreshGeneration()
@@ -577,7 +552,7 @@ class PreviewPaneTest
   @Test void scrollTargetWaitsForLoadConfirmationAndHits()
   {
     pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, true, ScrollTarget.of(3, 2, 1)));
-    pane.updatePipeline(readySnapshot(PDF, PDF, new HitsStatus.Pending()));
+    pane.updatePipeline(readySnapshot(PDF, PDF, HitsStatus.PENDING));
 
     assertNull(viewer.last("scrollToMatch"), "no scroll before hits are ready");
 
@@ -633,7 +608,7 @@ class PreviewPaneTest
   @Test void scrollTargetNotDeliveredWithoutHits()
   {
     pane.setIntent(new PreviewIntent(DOC, ContentKind.PAGED, -1, true, ScrollTarget.of(0, 2, 0)));
-    pane.updatePipeline(readySnapshot(DOC, ARTIFACT, new HitsStatus.Failed()));
+    pane.updatePipeline(readySnapshot(DOC, ARTIFACT, HitsStatus.FAILED));
     confirmLoad();
 
     assertNull(viewer.last("scrollToMatch"));

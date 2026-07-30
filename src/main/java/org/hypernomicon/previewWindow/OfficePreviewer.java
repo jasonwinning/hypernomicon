@@ -17,19 +17,16 @@
 
 package org.hypernomicon.previewWindow;
 
-import java.io.IOException;
-
-import org.hypernomicon.previewWindow.ConversionSession.NoOfficeInstallationException;
 import org.hypernomicon.previewWindow.DocumentArtifactService.ConverterState;
 import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 
 /**
- * UI adapter over {@link DocumentArtifactService}: builds the display callbacks
- * that translate conversion-session state changes into wrapper/viewer UI
- * (progress alt-displays, loading the finished artifact, failure indicators),
- * and forwards session creation, enqueueing, and shutdown to the service.
+ * Thin adapter over {@link DocumentArtifactService}: mimetype dispatch for
+ * convertible office formats, plus session creation, enqueueing, and shutdown
+ * forwarding. UI feedback happens entirely through the callers' display
+ * subscriptions (the preview pane and dialog hosts).
  */
 final class OfficePreviewer
 {
@@ -91,81 +88,6 @@ final class OfficePreviewer
   static void enqueueForConversion(ConversionSession session)
   {
     DocumentArtifactService.enqueue(session);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Builds the DisplayCallback used for previewing an office document.
-   * <ul>
-   *   <li>PENDING/CONVERTING: shows the progress alt-display; the
-   *       starting-converter variant is chosen when the converter process is
-   *       not yet running ({@link DocumentArtifactService#converterState()}).</li>
-   *   <li>COMPLETED: loads the PDF (or HTML for spreadsheets) into the viewer.</li>
-   *   <li>FAILED: shows the unable-to-preview indicator, or the no-office
-   *       message for {@link NoOfficeInstallationException}.</li>
-   *   <li>CANCELLED: does nothing; cancellation means either supersession by a
-   *       newer request or the user navigated away, in which case the wrapper's
-   *       UI has already moved on.</li>
-   * </ul>
-   */
-  static ConversionSession.DisplayCallback displayCallbackForPreview(ConversionSession session, FilePath filePath, PreviewWrapper previewWrapper, boolean convertToHtml, int pageNum)
-  {
-    return (state, convertedPath, failure) ->
-    {
-      switch (state)
-      {
-        case PENDING, CONVERTING ->
-        {
-          if (DocumentArtifactService.converterState() != ConverterState.RUNNING)
-            previewWrapper.setStartingConverter();
-          else
-          {
-            // dontRestartProgressIfSamePreview once the conversion is actually
-            // under way, so the CONVERTING notification doesn't restart the
-            // progress animation the PENDING notification started.
-
-            previewWrapper.setGenerating(filePath, state == ConversionSession.ConversionState.CONVERTING);
-          }
-        }
-
-        case COMPLETED ->
-        {
-          // Lease the artifact for as long as this consumer displays it, so cache
-          // eviction cannot delete the file out from under the viewer. The holder
-          // releases its previous lease, if any.
-
-          previewWrapper.leaseArtifact(session);
-
-          if (convertToHtml)
-          {
-            try
-            {
-              previewWrapper.loadConvertedHtml(convertedPath);
-            }
-            catch (IOException e)
-            {
-              previewWrapper.setUnable(filePath);
-            }
-          }
-          else
-          {
-            previewWrapper.loadConvertedPdfBytes(convertedPath, pageNum);
-          }
-        }
-
-        case FAILED ->
-        {
-          if (failure instanceof NoOfficeInstallationException)
-            previewWrapper.setNoOfficeInstallation();
-          else
-            previewWrapper.setUnable(filePath);
-        }
-
-        default -> { /* CANCELLED: no action */ }
-      }
-    };
   }
 
 //---------------------------------------------------------------------------

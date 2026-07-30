@@ -305,35 +305,6 @@ final class PreviewPane
 //---------------------------------------------------------------------------
 
   /**
-   * Transitional-hybrid escape hatch: a legacy writer (record navigation from
-   * a non-FTS query tab) has taken over this pane's viewer outside the intent
-   * path. Drops intent, snapshot, issued/confirmed state, and escalation
-   * WITHOUT issuing any command, so the external writer's display is left
-   * alone and the next intent starts from a clean diff. Dissolves when every
-   * writer goes through intent.
-   */
-  void yieldDisplay()
-  {
-    paneExecutor.execute(() ->
-    {
-      intent = null;
-      snapshot = null;
-      issuedView = null;
-      issuedHitsJson = null;
-      issuedScrollTarget = null;
-      loadConfirmed = false;
-      retryDocPath = null;
-      escalatedDocPath = null;
-      retryCount = 0;
-      confirmedFile = null;
-      confirmedPage = -1;
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
    * User-driven refresh: drops the issued view and confirmation state so
    * reconcile re-issues the full display (a fresh generation) for the current
    * intent, and resets viewer-failure escalation, making this the second exit
@@ -377,8 +348,8 @@ final class PreviewPane
 
     DesiredView desired = switch (snapshot.artifact())
     {
-      case ArtifactStatus.Queued     _     -> new Progress(sourceFile, progressVariant());
-      case ArtifactStatus.Converting _     -> new Progress(sourceFile, progressVariant());
+      case ArtifactStatus.Queued     _,
+           ArtifactStatus.Converting _     -> new Progress(sourceFile, progressVariant());
       case ArtifactStatus.Failed     f     -> new Unable(sourceFile, f.cause());
       case ArtifactStatus.Ready      ready -> deriveDocView(sourceFile, ready.displayPath());
     };

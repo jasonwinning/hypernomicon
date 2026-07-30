@@ -45,18 +45,14 @@ import javafx.application.Platform;
  * kind derived from the mimetype). The queries pane additionally drives the FTS
  * flow: {@code FTSQueryCtrlr} sets intent via {@link #setPreview} and pushes
  * hit-set results (the {@code updateHits*} methods) through the
- * {@link PreviewWindow} facade.
- * <p>
- * Transitional-hybrid note: some legacy writers (file-level nav buttons, and
- * whatever has not converted yet) still drive the wrapper directly; those
- * paths call {@link #yieldToExternalWriter} so the pane relinquishes the
- * viewer without disturbing the external display. The yield dissolves as the
- * last legacy writers convert.
+ * {@link PreviewWindow} facade. Window-chrome actions (page navigation,
+ * refresh) arrive as intent updates too ({@link #navigateToPage},
+ * {@link #refresh}); nothing displays anything except by setting intent.
  * <p>
  * Threading: everything here runs on the FX thread (controller calls, session
  * display callbacks, and pane executor tasks all marshal there), except the
  * wrapper's event sink, which arrives on browser threads and only reads the
- * two volatile fields before handing off to the pane's own marshalling.
+ * volatile fields before handing off to the pane's own marshalling.
  */
 final class PreviewPaneHost
 {
@@ -82,7 +78,7 @@ final class PreviewPaneHost
 
   private PreviewPane pane = null;
 
-  private volatile FilePath intentFile = null;
+  private volatile FilePath intentFile = null, issuedDisplayPath = null;
   private volatile long issuedGen = 0;
 
   private HDT_Record intentRecord = null;
@@ -178,7 +174,7 @@ final class PreviewPaneHost
     if (sameFile == false)
     {
       hitsStatus = wantsHighlights
-        ? (earlyHits != null ? earlyHits : new HitsStatus.Pending())
+        ? (earlyHits != null ? earlyHits : HitsStatus.PENDING)
         : null;
 
       suppressSnapshotPush = true;
@@ -227,7 +223,7 @@ final class PreviewPaneHost
 
   void updateHitsFailed(FilePath filePath)
   {
-    updateHits(filePath, new HitsStatus.Failed());
+    updateHits(filePath, HitsStatus.FAILED);
   }
 
 //---------------------------------------------------------------------------
@@ -270,30 +266,49 @@ final class PreviewPaneHost
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Clears the queries pane's FTS preview (intent = none; the viewer empties). */
-  void clear()
+  /** The file whose load the viewer last confirmed for this pane, or
+   *  {@code null}; the sanctioned read of "what is this pane showing". */
+  FilePath confirmedFile()
   {
-    settleGate.cancel();
-
-    if (pane == null) return;
-
-    artifacts.drop();
-    hitsStatus = null;
-    intentFile = null;
-    intentRecord = null;
-
-    pane.setIntent(null);
+    return pane == null ? null : pane.currentFile();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * A legacy writer (record navigation from a non-FTS query sub-tab,
-   * file-level nav buttons) has taken over this pane's viewer. Relinquish
-   * without touching the display; see the class comment.
+   * User-driven refresh: reloads the embedded browser, then re-issues the
+   * current display from intent (fresh generation; hits re-ship after the
+   * reloaded document confirms). No-op without an active intent.
    */
-  void yieldToExternalWriter()
+  void refresh()
+  {
+    if ((pane == null) || (intentFile == null)) return;
+
+    wrapper().reloadViewer(() -> Platform.runLater(pane::refreshDisplay));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Chrome-driven page navigation within the currently intended document
+   * (slider, page buttons, page field, nav history, ContentsWindow): re-sets
+   * the intent's page. Deliberate single actions, so the settle gate is
+   * bypassed. No-op without an active intent.
+   */
+  void navigateToPage(int pageNum)
+  {
+    if ((pane == null) || (intentFile == null) || (pageNum < 1)) return;
+
+    pane.setIntentPage(pageNum);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Clears the queries pane's FTS preview (intent = none; the viewer empties). */
+  void clear()
   {
     settleGate.cancel();
 
@@ -306,8 +321,9 @@ final class PreviewPaneHost
     hitsStatus = null;
     intentFile = null;
     intentRecord = null;
+    issuedDisplayPath = null;
 
-    pane.yieldDisplay();
+    pane.setIntent(null);
   }
 
 //---------------------------------------------------------------------------
@@ -334,13 +350,19 @@ final class PreviewPaneHost
 
     wrapper().setPaneEventSink(new PreviewWrapper.PaneEventSink()
     {
-      // Arrives on browser threads; the intentFile gate keeps legacy-driven
-      // loads (after a yield) from reaching the pane, and the pane marshals
-      // and generation-checks everything else.
+      // Arrives on browser threads; the pane marshals and generation-checks
+      // everything after the identity gates here.
 
-      @Override public void onOpened(boolean success)
+      @Override public void onOpened(FilePath file, boolean success)
       {
         if (intentFile == null) return;
+
+        // Confirm by document identity, not arrival order: the open
+        // coordinator's latest-wins coalescing means a superseded document's
+        // open can complete (and report here) after a newer document was
+        // issued, and it must not confirm the newer generation.
+
+        if ((file == null) || (file.equals(issuedDisplayPath) == false)) return;
 
         if (success)
           pane.onDocumentLoaded(issuedGen, new ViewerMeta(-1));
@@ -366,20 +388,27 @@ final class PreviewPaneHost
    * thread), so the wrapper's source-file tracking is read from the host
    * fields.
    * <p>
-   * Both load kinds self-confirm: the wrapper buffers hits (pendingPdfHits for
-   * paged, pendingDirectContentHits for direct) and applies them when the
-   * viewer is ready, so it accepts hits the moment the load command is issued.
-   * Deferring confirmation to the wrapper's open event would deliver paged
-   * hits only after the page had rendered, too late to highlight. The open
-   * event remains the source of load-failure reporting (onViewerError).
+   * Both load kinds are confirmed by the viewer's real completion events
+   * (openDone for paged documents, the direct navigation finishing for direct
+   * content), matched by document identity in the pane event sink; hits and
+   * scroll targets are then pushed by the reconciler observing the
+   * confirmation, and apply directly (the JS injection is render-idempotent,
+   * so hits arriving after pages render still highlight).
    */
   private final class WrapperPort implements ViewerPort
   {
 
   //---------------------------------------------------------------------------
 
+    // The non-document views clear issuedDisplayPath: once no document is issued, a
+    // late completion (or supersession report) for the previously issued document
+    // must fail the identity gate in the pane event sink rather than matching a
+    // stale path and landing as a confirmation or viewer error.
+
     @Override public void showEmpty()
     {
+      issuedDisplayPath = null;
+
       wrapper().clearPreview();
     }
 
@@ -387,16 +416,20 @@ final class PreviewPaneHost
 
     @Override public void showProgress(FilePath sourceFile, ProgressVariant variant)
     {
+      issuedDisplayPath = null;
+
       if (variant == ProgressVariant.STARTING_CONVERTER)
         wrapper().setStartingConverter();
       else
-        wrapper().setGenerating(sourceFile, true);
+        wrapper().setGenerating(sourceFile);
     }
 
   //---------------------------------------------------------------------------
 
     @Override public void showUnable(FilePath sourceFile)
     {
+      issuedDisplayPath = null;
+
       if (artifacts.noOfficeInstallation())
         wrapper().setNoOfficeInstallation();
       else
@@ -407,7 +440,7 @@ final class PreviewPaneHost
 
     @Override public void showDocument(long gen, FilePath documentPath, int pageNum)
     {
-      // The host may have been cleared (or yielded) after the pane task that
+      // The host may have been cleared after the pane task that
       // issues this command was queued; the intent fields are already null and
       // a setIntent(null) is queued right behind. Drop the command.
 
@@ -415,16 +448,9 @@ final class PreviewPaneHost
       if (sourceFile == null) return;
 
       issuedGen = gen;
+      issuedDisplayPath = documentPath;
+
       wrapper().paneShowPaged(sourceFile, documentPath, pageNum, intentRecord);
-
-      // Self-confirm, like showContent. The wrapper buffers PDF hits
-      // (pendingPdfHits) and drains them inside openDone, before the page
-      // renders. Waiting for the actual open event to confirm would deliver
-      // hits only after the page had already rendered, too late for the viewer
-      // to highlight them. Genuine load failures still surface through the open
-      // event as onViewerError.
-
-      pane.onDocumentLoaded(gen, new ViewerMeta(-1));
     }
 
   //---------------------------------------------------------------------------
@@ -435,10 +461,9 @@ final class PreviewPaneHost
       if (sourceFile == null) return;
 
       issuedGen = gen;
+      issuedDisplayPath = contentPath;
 
-      if (wrapper().paneShowDirect(sourceFile, contentPath, intentRecord))
-        pane.onDocumentLoaded(gen, new ViewerMeta(1));
-      else
+      if (wrapper().paneShowDirect(sourceFile, contentPath, intentRecord) == false)
         pane.onViewerError(gen, "The file kind cannot be shown as direct content");
     }
 

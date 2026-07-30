@@ -18,7 +18,9 @@
 package org.hypernomicon.previewWindow;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -58,19 +60,28 @@ import javafx.scene.layout.GridPane;
 
 //---------------------------------------------------------------------------
 
-public class PDFJSWrapper
+final class PDFJSWrapper
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  enum PDFJSOperation { pjsOpen, pjsClose }
+  enum PDFJSOperation { pjsOpen, pjsDirectLoad, pjsClose }
 
 //---------------------------------------------------------------------------
 
   @FunctionalInterface interface PDFJSDoneHandler
   {
-    void handle(PDFJSOperation operation, boolean success, String errMessage);
+    /**
+     * @param operation which viewer operation completed: a pdf.js document open,
+     *                  a direct-content navigation finishing, or a document close
+     * @param file      the file the operation was for (open: the file whose open
+     *                  completed, which may already be superseded by a newer
+     *                  request; direct load: the navigated file; close: null).
+     *                  Consumers confirming loads must match this against what
+     *                  they issued rather than trusting arrival order.
+     */
+    void handle(PDFJSOperation operation, FilePath file, boolean success, String errMessage);
   }
 
 //---------------------------------------------------------------------------
@@ -105,8 +116,8 @@ public class PDFJSWrapper
   /**
    * Whether the content slated for the viewer is direct browser content (HTML, plain text, XML,
    * media loaded straight into the browser). <b>Declared</b> by the load path as intent for what we
-   * are about to show; not read back from the browser. Used to route pending FTS hits to the
-   * direct-content highlighter rather than the pdf.js one.
+   * are about to show; not read back from the browser. Used to route FTS hits and scroll targets
+   * to the direct-content highlighter rather than the pdf.js one.
    * <p>
    * False means "not direct", which is not the same as "PDF": the alternative is a pdf.js-rendered
    * PDF <i>or</i> nothing (an unpreviewable file). Whether a PDF is actually up is the separate
@@ -132,26 +143,37 @@ public class PDFJSWrapper
    */
   private volatile boolean viewerHtmlLoadInFlight = false;
 
-  private String pendingDirectContentHits = null, pendingPdfHits = null;
-  private ScrollTarget pendingScroll = null;
   private FilePath lastDirectFilePath = null;
+
+  /** The exact URL the most recent direct-content load was issued under (the
+   *  self-minted {@code data:} URL for HTML, the file URL otherwise), written
+   *  before the navigation is started. The main-frame load-finished handler
+   *  confirms a direct load only when the finished URL is this one: a
+   *  superseded direct load can finish after its successor was issued, and
+   *  attributing that late finish to {@link #lastDirectFilePath} confirmed the
+   *  new document's load while the old document was still on screen (the FTS
+   *  hits then went into the wrong DOM and were never re-applied). Volatile:
+   *  written from load paths, read on the browser event thread. */
+  private volatile String expectedDirectUrl = null;
+
   private int numPages = -1;
   private boolean ready = false, hiding = false, showingAlt = false;
 
   private volatile boolean opened = false;
 
   /**
-   * Open coordination (writes are FX-confined; the first two fields are
-   * volatile because the hit-buffering guards read them from other threads): at
-   * most one {@code openPdfFile} call is in flight at a time. A request made
-   * while one is loading replaces any previously waiting request (latest wins,
-   * never a queue) and is issued when the in-flight open reports
-   * {@code openDone}, success or failure. Concurrent {@code openPdfFile} calls
-   * race inside pdf.js (null-document errors, a nondeterministic final
-   * document) and under rapid selection can destabilize the engine.
+   * Open coordination (writes are FX-confined; volatile because the openDone
+   * bridge callback reads {@link #openInFlightFile} and viewer-driving threads
+   * read the others): at most one {@code openPdfFile} call is in flight at a
+   * time. A request made while one is loading replaces any previously waiting
+   * request (latest wins, never a queue) and is issued when the in-flight open
+   * reports {@code openDone}, success or failure. Concurrent
+   * {@code openPdfFile} calls race inside pdf.js (null-document errors, a
+   * nondeterministic final document) and under rapid selection can destabilize
+   * the engine.
    */
   private volatile boolean openInFlight = false;
-  private volatile FilePath pendingOpenFile = null;
+  private volatile FilePath pendingOpenFile = null, openInFlightFile = null;
   private int pendingOpenPage = 1;
 
   /** Page correction that arrived while an open was in flight (see
@@ -200,8 +222,7 @@ public class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  int getNumPages()      { return numPages; }
-  boolean isShowingAlt() { return showingAlt; }
+  int getNumPages() { return numPages; }
 
   /** Declares whether the content for the next preview is direct browser content; set by the load
    *  path. See {@link #contentToShowIsDirect}. */
@@ -297,11 +318,11 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setGenerating(FilePath filePath, boolean dontRestartProgressIfSamePreview)
+  void setGenerating(FilePath filePath)
   {
     runInFXThread(() ->
     {
-      altDisplay.setGenerating(filePath, dontRestartProgressIfSamePreview);
+      altDisplay.setGenerating(filePath);
       switchToAltDisplay();
     });
   }
@@ -586,15 +607,15 @@ public class PDFJSWrapper
       // Attribute this completion by what actually loaded, not by which load
       // path ran last: two navigations can be in flight at once (a direct-
       // content load superseded by a viewer-page load carrying a PDF open's
-      // dispatch), and Chromium can commit the superseded one first. Trusting
-      // the load-path flags here executed the open's dispatch in the dying
-      // direct-content page, and the open then wedged the coordinator forever
-      // (observed under rapid mixed-type selection).
+      // dispatch, or one direct-content load superseded by another), and
+      // Chromium can commit the superseded one first, or finish it late.
+      // Trusting the load-path flags here executed the open's dispatch in the
+      // dying direct-content page, and the open then wedged the coordinator
+      // forever (observed under rapid mixed-type selection). The event's own
+      // URL identifies the document this finish belongs to; reading the
+      // browser's current URL instead would race a newer commit.
 
-      @SuppressWarnings("resource")
-      Browser eventBrowser = event.frame().browser();  // the event's own browser, not ours to close
-
-      String url = eventBrowser.url();
+      String url = event.url();
       boolean isViewerPage = url.regionMatches(true, 0, ResourceServer.viewerUrl(), 0, ResourceServer.viewerUrl().length());
 
       ready = true;
@@ -627,19 +648,19 @@ public class PDFJSWrapper
                            " hadPostLoadCode=" + hadPostLoadCode +
                            " url=" + (url.length() <= 100 ? url : (url.substring(0, 100) + "...")));
 
-      if (contentToShowIsDirect && (pendingDirectContentHits != null))
-        applyDirectContentHits();
+      // A direct-content navigation finishing IS the load confirmation for
+      // that content kind (there is no openDone; the document is the content),
+      // but only the finish of the load most recently issued, matched by URL.
+      // A superseded direct load can finish after its successor was issued
+      // (Chromium does not cancel the in-flight one), and reporting that late
+      // finish here confirmed the successor's load while the superseded
+      // document was still on screen: the FTS hits were injected into the
+      // wrong DOM (0 matches found), and when the intended document finished,
+      // the reconciler believed its hits were already applied. A stale finish
+      // is dropped; the intended load's own finish arrives later and confirms.
 
-      if (contentToShowIsDirect)
-        drainPendingScroll();
-
-      // PDF hits are NOT drained here, ever: at this moment no document is open
-      // yet (openPdfFile runs via toRun below), and the JS side drops setAllHits
-      // calls that arrive with no open document. The drain point for PDF hits is
-      // the open coordinator's release, once the document is actually open. (A
-      // guarded drain here once misfired on an "opened" flag left stale by a
-      // direct-content interlude, spending the buffered hits on a documentless
-      // viewer.)
+      if ((isViewerPage == false) && contentToShowIsDirect && isExpectedDirectUrl(url) && (doneHndlr != null))
+        doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, true, "");
 
       // A finished navigation that neither carries the in-flight open's
       // dispatch nor precedes a viewer load that will (reset's bare viewer
@@ -651,12 +672,30 @@ public class PDFJSWrapper
 
       if (openInFlight && (toRun == null) && (viewerLoadStillInFlight == false))
       {
-        System.out.println("PDFJSWrapper: navigation superseded the in-flight open; releasing the coordinator");
+        FilePath releasedFile = openInFlightFile;
+
+        System.out.println("PDFJSWrapper: navigation superseded the in-flight open of " + releasedFile + "; releasing the coordinator");
 
         Platform.runLater(() ->
         {
           openInFlight = false;
           pumpOpenQueue();
+
+          // If the pump issued a waiting request, the newest open is now under way and
+          // recovery is unnecessary (latest wins). With nothing waiting, the released
+          // open would otherwise vanish silently: JxBrowser can deliver a duplicate
+          // main-frame load-finished event for the same viewer navigation (observed),
+          // which lands in this branch after the first finish consumed the open's
+          // dispatch; the reconciler still believes the document is issued, so
+          // nothing re-issues and the viewer sits empty until a manual refresh.
+          // Report the released open as a failed open through the normal completion
+          // channel instead: the pane's identity and generation gates drop the report
+          // if intent has moved on, and otherwise its bounded retry re-issues the
+          // document from intent (by then the viewer page is loaded, so the re-issued
+          // open dispatches directly without another navigation).
+
+          if ((openInFlight == false) && (doneHndlr != null))
+            doneHndlr.handle(PDFJSOperation.pjsOpen, releasedFile, false, "The open was superseded by another navigation");
         });
       }
 
@@ -701,7 +740,7 @@ public class PDFJSWrapper
 
   /** Whether the given URL is content this application serves to the preview pane
    *  (as opposed to an external URL, which must open in the system browser). data:
-   *  covers loadHtml, which transmits its content as a data URL internally. */
+   *  covers the data URLs {@link #loadFile} mints for sanitized HTML. */
   private static boolean isInternalUrl(String url)
   {
     if (url == null) return true;
@@ -769,7 +808,7 @@ public class PDFJSWrapper
       execJS("if (typeof PDFViewerApplication !== 'undefined') PDFViewerApplication.close();");
 
     pdfjsViewerLoaded = false;
-    opened = false;  // the page's document goes with it; a stale true here misdirects the hit-drain guards
+    opened = false;  // the page's document goes with it; a stale true here would let setAllHits, scrollToHighlight, and zoom address a document that is gone
   }
 
 //---------------------------------------------------------------------------
@@ -897,30 +936,26 @@ public class PDFJSWrapper
       ready = true;
 
       if (app.debugging)
-        System.out.println("PDFJSWrapper.openDone: success=" + success + " pendingPdfHits=" + (pendingPdfHits != null));
+        System.out.println("PDFJSWrapper.openDone: success=" + success);
 
       if (success)
       {
         numPages = (int) pagesCount;
         execJS("getPdfData();");
         opened = true;
-
-        // Any setAllHits queued during the PDF swap is drained in the runLater
-        // below, on the FX thread: this callback arrives on a JxBrowser bridge
-        // thread, and applyPdfHits consumes the buffer before its execJS, so a
-        // dispatch problem in callback context would lose the hits with no
-        // fallback. The FX drain also runs only when this open is still the
-        // latest intent (buffered hits always belong to the newest request;
-        // every loadPdf resets the buffer), so a superseded document can never
-        // spend the newer document's hits.
       }
       else
       {
         System.out.println("PDFJSWrapper: open failed: " + errMessage);
       }
 
+      // The file identifies which open this was: a newer request may already be
+      // waiting (latest-wins coalescing), in which case this event describes a
+      // superseded document and consumers must not treat it as confirming the
+      // newest one.
+
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsOpen, success, "");
+        doneHndlr.handle(PDFJSOperation.pjsOpen, openInFlightFile, success, errMessage);
 
       // This open is finished (success or failure); release the coordinator and
       // issue the latest request that arrived while it was loading, if any. The
@@ -932,25 +967,17 @@ public class PDFJSWrapper
         openInFlight = false;
         pumpOpenQueue();
 
-        // Drain buffered work (whether queued during the swap or in the gap
-        // between openDone and this release); if the pump started a newer open,
-        // openInFlight is true again and the newest open's release drains
-        // instead. In the PDF->PDF case there is no browser navigation, so no
-        // load-finished event fires; this is the point where the new PDF is
-        // known ready for the viewer's JS to be called.
+        // Drain a buffered page correction (whether queued during the swap or in
+        // the gap between openDone and this release); if the pump started a
+        // newer open, openInFlight is true again and the newest open's release
+        // drains instead. In the PDF->PDF case there is no browser navigation,
+        // so no load-finished event fires; this is the point where the new PDF
+        // is known ready for the viewer's JS to be called.
 
-        if ((openInFlight == false) && ready && opened)
+        if ((openInFlight == false) && ready && opened && (pendingGoToPage > 0))
         {
-          if (pendingGoToPage > 0)
-          {
-            goToPage(pendingGoToPage);
-            pendingGoToPage = -1;
-          }
-
-          if (pendingPdfHits != null)
-            applyPdfHits();
-
-          drainPendingScroll();
+          goToPage(pendingGoToPage);
+          pendingGoToPage = -1;
         }
       });
     }
@@ -972,18 +999,18 @@ public class PDFJSWrapper
       }
 
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsClose, success, "");
+        doneHndlr.handle(PDFJSOperation.pjsClose, null, success, "");
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void close()
+  private void close()
   {
     if (opened == false)
     {
-      if (doneHndlr != null) doneHndlr.handle(PDFJSOperation.pjsClose, false, "Unable to close because the viewer is already closed.");
+      if (doneHndlr != null) doneHndlr.handle(PDFJSOperation.pjsClose, null, false, "Unable to close because the viewer is already closed.");
       return;
     }
 
@@ -1016,7 +1043,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void loadFile(FilePath filePath, boolean isHtml) throws IOException
+  private void loadFile(FilePath filePath, boolean isHtml) throws IOException
   {
     switchToPreviewDisplay();
 
@@ -1029,7 +1056,6 @@ public class PDFJSWrapper
     opened = false;  // the open document (if any) goes with the page; see cleanupPdfHtml
 
     ready = false;
-    resetHitState();
     pendingGoToPage = -1;
 
     // Navigating away destroys the page any in-flight PDF open lives in (its
@@ -1057,6 +1083,8 @@ public class PDFJSWrapper
 
     lastDirectFilePath = filePath;
 
+    String url;
+
     if (isHtml)
     {
       // Jsoup parses with charset auto-detection (BOM, then the document's own charset declaration,
@@ -1067,16 +1095,17 @@ public class PDFJSWrapper
       doc.getElementsByTag("script").forEach(Element::remove);
 
       // Script preload/prefetch hints would make Chromium fetch (and CORS-reject, from
-      // loadHtml's null origin) the scripts the line above just stripped; removing them
+      // the data URL's opaque origin) the scripts the line above just stripped; removing them
       // silences the resulting console-error spam and the pointless network chatter.
       // Iframes go too: an embedded external frame (ads, videos) would otherwise trip
       // the external-navigation policy and open the system browser unprompted.
 
       doc.select("link[rel=modulepreload], link[rel=preload], link[rel=prefetch], iframe").forEach(Element::remove);
 
-      // loadHtml transmits the string to Chromium as UTF-8. Serialize as
-      // UTF-8 and drop the document's now-stale charset declaration so it can't
-      // tell Chromium to re-decode the UTF-8 byte stream as windows-1252.
+      // The data URL minted below carries the document as UTF-8 and says so in
+      // its media type. Serialize as UTF-8 and drop the document's now-stale
+      // charset declaration so it can't tell Chromium to re-decode the UTF-8
+      // byte stream as windows-1252.
 
       doc.outputSettings().charset(StandardCharsets.UTF_8);
 
@@ -1086,10 +1115,52 @@ public class PDFJSWrapper
           meta.remove();
       });
 
-      browser.navigation().loadHtml(doc.html());
+      // Mint the data URL here rather than through loadHtml (which mints an
+      // equivalent one internally) so the exact committed URL is known and the
+      // load-finished handler can attribute completions to this load; see
+      // isExpectedDirectUrl.
+
+      url = "data:text/html;charset=utf-8;base64,"
+        + Base64.getEncoder().encodeToString(doc.html().getBytes(StandardCharsets.UTF_8));
     }
     else
-      browser.navigation().loadUrl(filePath.toURLString());
+    {
+      url = filePath.toURLString();
+    }
+
+    expectedDirectUrl = url;
+
+    browser.navigation().loadUrl(url);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether a finished main-frame URL is the one the most recent direct-content
+   * load was issued under. Exact comparison suffices for the {@code data:} URLs
+   * {@link #loadFile} mints for HTML; file URLs additionally compare as paths,
+   * since Chromium's canonicalized commit can differ from the Java-built form
+   * in percent-encoding.
+   */
+  private boolean isExpectedDirectUrl(String url)
+  {
+    String expected = expectedDirectUrl;
+
+    if (expected == null) return false;
+    if (expected.equals(url)) return true;
+
+    if (expected.startsWith("file:") && url.startsWith("file:"))
+    {
+      // Raw Path rather than FilePath on purpose: FilePath equality resolves
+      // real paths on disk, and this runs per load-finished event on a browser
+      // thread; the comparison here is purely syntactic.
+
+      try { return Paths.get(URI.create(expected)).equals(Paths.get(URI.create(url))); }
+      catch (RuntimeException e) { return false; }
+    }
+
+    return false;
   }
 
 //---------------------------------------------------------------------------
@@ -1137,14 +1208,13 @@ public class PDFJSWrapper
 
   void loadPdf(FilePath file, int initialPage)
   {
-    // Reset ready synchronously so any cross-thread setAllHits / goToPage call
-    // queued before the open actually issues sees a not-ready state and
-    // buffers instead of dispatching to the previous page's JS. Mirrors what
-    // loadFile does at the start of its body. A buffered page correction from
-    // the previous document dies with it: this load's initialPage supersedes.
+    // Reset ready synchronously so a cross-thread goToPage call queued before
+    // the open actually issues sees a not-ready state and buffers instead of
+    // dispatching to the previous page's JS. Mirrors what loadFile does at the
+    // start of its body. A buffered page correction from the previous document
+    // dies with it: this load's initialPage supersedes.
 
     ready = false;
-    resetHitState();
     pendingGoToPage = -1;
 
     switchToPreviewDisplay();
@@ -1168,13 +1238,26 @@ public class PDFJSWrapper
    */
   private void pumpOpenQueue()
   {
-    if (openInFlight || (pendingOpenFile == null)) return;
+    if (openInFlight)
+    {
+      // The waiting request is issued when the in-flight open's openDone
+      // releases the coordinator; if that never happens, every later open
+      // parks here and the viewer sits empty, so make the wait visible.
+
+      if (app.debugging && (pendingOpenFile != null))
+        System.out.println("PDFJSWrapper.pumpOpenQueue: waiting on in-flight open of " + openInFlightFile + "; queued " + pendingOpenFile.getNameOnly());
+
+      return;
+    }
+
+    if (pendingOpenFile == null) return;
 
     FilePath file = pendingOpenFile;
     int initialPage = pendingOpenPage;
 
     pendingOpenFile = null;
     openInFlight = true;
+    openInFlightFile = file;
 
     issueOpen(file, initialPage);
   }
@@ -1274,25 +1357,14 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void applyPdfHits()
-  {
-    if (pendingPdfHits == null) return;
-
-    String json = pendingPdfHits;
-    pendingPdfHits = null;
-
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.applyPdfHits: sending " + json.length() + " chars on " + Thread.currentThread().getName());
-
-    execJS("setAllHits('" + json.replace("'", "\\'") + "');");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   /**
    * Send all hit data for the current file. The viewer stores it and applies
-   * highlights lazily as each page's text layer finishes rendering.
+   * highlights lazily as each page's text layer finishes rendering (the JS
+   * injection is render-idempotent, so hits arriving after pages have rendered
+   * still highlight). Callers push hits only after the load of the intended
+   * document has been confirmed (the reconciler's contract), so no Java-side
+   * buffering is needed; a call against an unready viewer is a caller bug and
+   * is dropped with a log rather than misapplied.
    *
    * @param allHitsJson JSON object mapping 1-based page numbers to arrays of
    *                    [startOffset, endOffset] pairs (page-relative offsets).
@@ -1302,41 +1374,26 @@ public class PDFJSWrapper
   {
     if (contentToShowIsDirect)
     {
-      // For non-PDF content, store hits and apply after content finishes loading
+      if (ready == false)
+      {
+        System.out.println("PDFJSWrapper.setAllHits: dropped (direct content not loaded)");
+        return;
+      }
 
-      pendingDirectContentHits = allHitsJson;
-
-      if (ready)
-        applyDirectContentHits();
-
+      applyDirectContentHits(allHitsJson);
       return;
     }
 
-    // For PDF content, store hits if the document is not open yet; openDone drains
-    // the buffer once it is. (ready alone is not enough: the viewer page can be
-    // loaded with no document open, and the JS side drops hits sent in that state.)
-
-    pendingPdfHits = allHitsJson;
-
-    // The opened document must also still be the latest intent: while a newer
-    // open is waiting or in flight, "opened" describes a superseded document,
-    // and applying now would spend these hits (which belong to the newest
-    // request; every loadPdf resets the buffer) on a document about to be
-    // replaced. Keep them buffered for the newest open's openDone instead.
-
-    if ((ready == false) || (opened == false) || openInFlight || (pendingOpenFile != null))
+    if ((ready == false) || (opened == false))
     {
-      if (app.debugging)
-        System.out.println("PDFJSWrapper.setAllHits: buffered (ready=" + ready + " opened=" + opened +
-                           " openInFlight=" + openInFlight + " openWaiting=" + (pendingOpenFile != null) + ')');
-
+      System.out.println("PDFJSWrapper.setAllHits: dropped (ready=" + ready + " opened=" + opened + ')');
       return;
     }
 
     if (app.debugging)
-      System.out.println("PDFJSWrapper.setAllHits: applying immediately");
+      System.out.println("PDFJSWrapper.setAllHits: sending " + allHitsJson.length() + " chars");
 
-    applyPdfHits();
+    execJS("setAllHits('" + allHitsJson.replace("'", "\\'") + "');");
   }
 
 //---------------------------------------------------------------------------
@@ -1346,28 +1403,16 @@ public class PDFJSWrapper
    * Scroll to the highlight for a passage. Direct content is addressed by the
    * global match index (highlight spans carry data-match-ndx attributes, applied
    * in matches-list order by directContentHighlight.js); the PDF viewer is
-   * addressed by page number plus index within that page.
-   * <p>
-   * The reconciler issues the scroll right after the hits for a loading
-   * document, so a scroll that arrives while the document (or its hits) is
-   * still in flight is buffered, like the hits themselves, and drained right
-   * after they apply. Both buffers are dropped together when a new load
-   * supersedes them ({@link #resetHitState}).
+   * addressed by page number plus index within that page. The reconciler
+   * delivers a scroll only after the document's load is confirmed and its hits
+   * have been issued, so like {@link #setAllHits} this applies directly.
    */
   void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage)
   {
+    if (ready == false) return;
+
     if (contentToShowIsDirect)
     {
-      // Content still loading, or its hits not yet applied: the highlight
-      // spans do not exist yet, and the direct-content scroll is
-      // single-attempt. Hold the scroll until the hits drain applies them.
-
-      if ((ready == false) || (pendingDirectContentHits != null))
-      {
-        pendingScroll = ScrollTarget.of(matchNdx, pageNum, ndxOnPage);
-        return;
-      }
-
       execJS
       (
         "(function() {" +
@@ -1379,16 +1424,6 @@ public class PDFJSWrapper
       return;
     }
 
-    // Buffer under the same conditions as setAllHits: no document open yet, a
-    // newer open waiting or in flight, or hits still buffered. The open
-    // coordinator's release drains the hits and then this scroll.
-
-    if ((ready == false) || (opened == false) || openInFlight || (pendingOpenFile != null) || (pendingPdfHits != null))
-    {
-      pendingScroll = ScrollTarget.of(matchNdx, pageNum, ndxOnPage);
-      return;
-    }
-
     if (pageNum >= 1)
       execJS("scrollToMatchOnPage(" + pageNum + ", " + ndxOnPage + ");");
   }
@@ -1396,55 +1431,8 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Re-runs a buffered scroll now that its document and hits are in place;
-   *  {@link #scrollToHighlight} re-buffers it if they still are not. */
-  private void drainPendingScroll()
-  {
-    if (pendingScroll == null) return;
-
-    ScrollTarget scroll = pendingScroll;
-    pendingScroll = null;
-
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.drainPendingScroll: page " + scroll.pageNum() + " ndx " + scroll.ndxOnPage() + " matchNdx " + scroll.matchNdx());
-
-    scrollToHighlight(scroll.matchNdx(), scroll.pageNum(), scroll.ndxOnPage());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Drops any buffered FTS hit data so a newly-loading file cannot inherit the
-   * previous file's hits. Called at the start of every load ({@link #loadPdf},
-   * {@link #loadFile}); the JS viewer separately resets its own stored hits when
-   * a new document opens (see openPdfFile in javaapp.js). Together these make
-   * "loading a file clears prior hits" an invariant, independent of any caller.
-   *
-   * <p>Only the Java-side buffers are touched here; the browser is not, because
-   * the in-progress load is replacing the document (and its highlight DOM)
-   * anyway. Hits intended for the file being loaded are pushed afterward, so
-   * this reset never clobbers them.
-   * <p>Also reused by {@link #clearAllHits}, which drops these same buffers and
-   * then clears the browser-side highlights.
-   */
-  private void resetHitState()
-  {
-    if (app.debugging && ((pendingPdfHits != null) || (pendingDirectContentHits != null) || (pendingScroll != null)))
-      System.out.println("PDFJSWrapper.resetHitState: dropping buffered hits (pdf=" + (pendingPdfHits != null) + " direct=" + (pendingDirectContentHits != null) + " scroll=" + (pendingScroll != null) + ')');
-
-    pendingDirectContentHits = null;
-    pendingPdfHits = null;
-    pendingScroll = null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   void clearAllHits()
   {
-    resetHitState();
-
     if (ready == false) return;
 
     if (contentToShowIsDirect)
@@ -1471,10 +1459,8 @@ public class PDFJSWrapper
    * directly-loaded content (HTML, text, XML, etc.). Walks DOM text nodes,
    * maps character offsets, and wraps matching ranges in highlight spans.
    */
-  private void applyDirectContentHits()
+  private void applyDirectContentHits(String json)
   {
-    if (pendingDirectContentHits == null) return;
-
     if (directContentHighlightJS == null)
     {
       try { initDirectContentHighlightJS(); }
@@ -1484,9 +1470,6 @@ public class PDFJSWrapper
         return;
       }
     }
-
-    String json = pendingDirectContentHits;
-    pendingDirectContentHits = null;
 
     // The JS resource is a function expression "function (data) { ... }" that
     // we wrap in parens and immediately invoke with the parsed JSON data.

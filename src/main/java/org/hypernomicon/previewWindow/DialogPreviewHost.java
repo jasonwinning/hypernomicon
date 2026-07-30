@@ -47,9 +47,8 @@ import javafx.stage.WindowEvent;
  * derived, never commanded. The host owns the dialog's {@link PDFJSWrapper}
  * outright; there is no {@link PreviewWrapper} and no window chrome, so the
  * {@link ViewerPort} drives the viewer directly, and document loads are
- * confirmed by the viewer's real open event rather than self-confirmed
- * (dialog previews carry no hit sets, so there is no hit-timing reason to
- * confirm early).
+ * confirmed by the viewer's real completion events, matched by document
+ * identity.
  * <p>
  * The viewer is not created along with the host: it waits until the dialog's
  * preview pane is in a scene and laid out (see
@@ -62,7 +61,7 @@ import javafx.stage.WindowEvent;
  * <p>
  * Threading: dialog calls and session display callbacks arrive on the FX
  * thread; the viewer's done handler arrives on a browser thread and only reads
- * the two volatile fields before handing off to the pane's own marshalling.
+ * the volatile fields before handing off to the pane's own marshalling.
  */
 public final class DialogPreviewHost
 {
@@ -87,7 +86,7 @@ public final class DialogPreviewHost
    *  leased through the dialog's own viewer. */
   private final ArtifactTracker artifacts;
 
-  private volatile FilePath intentFile = null;
+  private volatile FilePath intentFile = null, issuedDisplayPath = null;
 
   /** See {@code PreviewPaneHost.suppressSnapshotPush}. FX-confined. */
   private boolean suppressSnapshotPush = false;
@@ -330,6 +329,7 @@ public final class DialogPreviewHost
     settleGate.cancel();
     artifacts.drop();
     intentFile = null;
+    issuedDisplayPath = null;
     pendingFile = null;
 
     if (jsWrapper != null)
@@ -344,6 +344,7 @@ public final class DialogPreviewHost
     pendingFile = null;
     artifacts.drop();
     intentFile = null;
+    issuedDisplayPath = null;
 
     if (jsWrapper == null) return;  // nothing was ever issued; see the field's note
 
@@ -400,10 +401,15 @@ public final class DialogPreviewHost
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** The viewer's open event; the pane confirms or fails the current generation from it. */
-  private void onViewerDone(PDFJSOperation operation, boolean success, String errMessage)
+  /** The viewer's load-completion event (a pdf.js open, or a direct navigation
+   *  finishing); the pane confirms or fails the current generation from it.
+   *  Matched by document identity: a superseded open's completion can arrive
+   *  after a newer document was issued and must not confirm it. */
+  private void onViewerDone(PDFJSOperation operation, FilePath file, boolean success, String errMessage)
   {
-    if ((operation != PDFJSOperation.pjsOpen) || (intentFile == null)) return;
+    if ((operation == PDFJSOperation.pjsClose) || (intentFile == null)) return;
+
+    if ((file == null) || (file.equals(issuedDisplayPath) == false)) return;
 
     if (success)
       pane.onDocumentLoaded(issuedGen, new ViewerMeta(-1));
@@ -416,27 +422,37 @@ public final class DialogPreviewHost
 
   /**
    * The {@link ViewerPort} directly over the dialog's {@link PDFJSWrapper}.
-   * Paged loads are confirmed by the viewer's open event (see
-   * {@link #onViewerDone}); direct content self-confirms on a successful
-   * navigation, since navigations report no completion to the host.
+   * Both load kinds are confirmed by the viewer's real completion events (see
+   * {@link #onViewerDone}): openDone for paged documents, the navigation
+   * finishing for direct content.
    */
   private final class Port implements ViewerPort
   {
+    // The non-document views clear issuedDisplayPath; see PreviewPaneHost.WrapperPort
+    // (a stale path would let a late event for the previous document pass the
+    // identity gate).
+
     @Override public void showEmpty()
     {
+      issuedDisplayPath = null;
+
       jsWrapper.reset();
     }
 
     @Override public void showProgress(FilePath sourceFile, ProgressVariant variant)
     {
+      issuedDisplayPath = null;
+
       if (variant == ProgressVariant.STARTING_CONVERTER)
         jsWrapper.setStartingConverter();
       else
-        jsWrapper.setGenerating(sourceFile, true);
+        jsWrapper.setGenerating(sourceFile);
     }
 
     @Override public void showUnable(FilePath sourceFile)
     {
+      issuedDisplayPath = null;
+
       if (artifacts.noOfficeInstallation())
         jsWrapper.setNoOfficeInstallation();
       else
@@ -448,6 +464,7 @@ public final class DialogPreviewHost
       if (intentFile == null) return;  // cleared after the command was queued; a setIntent(null) is right behind
 
       issuedGen = gen;
+      issuedDisplayPath = documentPath;
 
       jsWrapper.setContentToShowIsDirect(false);
       jsWrapper.loadPdf(documentPath, pageNum);
@@ -458,12 +475,11 @@ public final class DialogPreviewHost
       if (intentFile == null) return;  // see showDocument
 
       issuedGen = gen;
+      issuedDisplayPath = contentPath;
 
       try
       {
-        if (jsWrapper.loadDirectContent(contentPath))
-          pane.onDocumentLoaded(gen, new ViewerMeta(1));
-        else
+        if (jsWrapper.loadDirectContent(contentPath) == false)
           pane.onViewerError(gen, "The file kind cannot be shown as direct content");
       }
       catch (IllegalStateException | IOException e)
