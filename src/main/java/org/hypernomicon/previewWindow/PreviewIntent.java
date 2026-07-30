@@ -17,6 +17,9 @@
 
 package org.hypernomicon.previewWindow;
 
+import static org.hypernomicon.fts.FTSUtil.*;
+import static org.hypernomicon.util.MediaUtil.*;
+
 import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
@@ -51,6 +54,22 @@ record PreviewIntent(FilePath sourceFile, ContentKind kind, int pageNum, boolean
   PreviewIntent withPage(int newPageNum)
   {
     return new PreviewIntent(sourceFile, kind, newPageNum, wantsHighlights);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The viewer mode a file is shown in, derived from its mimetype: PDFs and
+   * office documents converted to PDF are paged; everything else (including
+   * spreadsheets, whose conversion artifact is HTML) is direct content.
+   */
+  static ContentKind kindFor(FilePath filePath)
+  {
+    return (getMediaType(filePath).toString().contains("pdf") || isOfficeDocConvertedToPdf(filePath)) ?
+      ContentKind.PAGED
+    :
+      ContentKind.DIRECT;
   }
 
 //---------------------------------------------------------------------------

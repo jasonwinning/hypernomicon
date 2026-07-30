@@ -47,6 +47,31 @@ final class OfficePreviewer
 //---------------------------------------------------------------------------
 
   /**
+   * Whether the mimetype is an office format JodConverter converts for
+   * preview (to PDF for documents/presentations, to HTML for spreadsheets).
+   */
+  static boolean isOfficeConvertible(String mimetypeStr)
+  {
+    return mimetypeStr.contains("openxmlformats-officedocument") ||  // docx (Microsoft Word XML), xlsx, pptx
+           "application/msword".equalsIgnoreCase(mimetypeStr)    ||  // doc  (Microsoft Word)
+           "application/rtf".equalsIgnoreCase(mimetypeStr)       ||  // rtf  (Rich Text format)
+           mimetypeStr.contains("opendocument.text")             ||  // odt  (OpenDocument text), ott (OpenDocument text template)
+           mimetypeStr.contains("sun.xml.writer")                ||  // sxw  (OpenOffice.org 1.0 text)
+           mimetypeStr.contains("ms-powerpoint")                 ||  // ppt  (Microsoft PowerPoint)
+           mimetypeStr.contains("opendocument.presentation")     ||  // odp  (OpenDocument presentation), otp (OpenDocument presentation template)
+           mimetypeStr.contains("sun.xml.impress")               ||  // sxi  (OpenOffice.org 1.0 presentation)
+           mimetypeStr.contains("vnd.wordperfect")               ||  // wpd  (WordPerfect)
+           mimetypeStr.contains("ms-excel")                      ||  // xls  (Microsoft Excel)
+           "text/csv".equalsIgnoreCase(mimetypeStr)              ||  // csv  (Comma-separated values)
+           mimetypeStr.contains("tab-separated-values")          ||  // tsv  (Tab-separated values)
+           mimetypeStr.contains("opendocument.spreadsheet")      ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
+           mimetypeStr.contains("sun.xml.calc");                     // sxc  (OpenOffice.org 1.0 spreadsheet)
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Find or create the {@link ConversionSession} for the given document.
    * Sessions are content-keyed, so every pane and dialog requesting the same
    * (unmodified) document shares one conversion and one cached artifact.

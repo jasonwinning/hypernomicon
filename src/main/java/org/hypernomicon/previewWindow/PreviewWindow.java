@@ -77,6 +77,9 @@ public final class PreviewWindow extends NonmodalWindow
   private static final Object LOCK = new Object();
   private static final Map<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
 
+  /** One reconciler host per preview source, created on first use. */
+  private static final Map<PreviewSource, PreviewPaneHost> srcToHost = new EnumMap<>(PreviewSource.class);
+
   private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new EnumMap<>(PreviewSource.class);
   private final Map<PreviewSource, PreviewSetting> srcToSetting = new EnumMap<>(PreviewSource.class);
 
@@ -564,32 +567,75 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Send all hit data for the current file. Highlights are applied lazily as
-   * each page's text layer finishes rendering in pdf.js.
-   *
-   * @param src         the preview source tab
-   * @param allHitsJson JSON object mapping 1-based page numbers to hit range arrays
-   */
-  public static boolean setAllHits(PreviewSource src, String allHitsJson)
+  // The FTS-driven preview flow of the queries tab runs through its
+  // reconciler host (see PreviewPaneHost): the FTS controller sets intent and
+  // pushes hit results; the display is derived, never commanded directly.
+
+  /** The wrapper for {@code src}, or {@code null} if the preview system is
+   *  unavailable; the pane's {@link PreviewPaneHost} drives it as the ViewerPort. */
+  static PreviewWrapper wrapperForSource(PreviewSource src)
   {
-    if (jxBrowserDisabled || (instance == null)) return false;
-
-    PreviewWrapper wrapper = instance.srcToWrapper.get(src);
-    if (wrapper == null) return false;
-
-    wrapper.setAllHits(allHitsJson);
-    return true;
+    return (jxBrowserDisabled || (instance == null)) ? null : instance.srcToWrapper.get(src);
   }
 
 //---------------------------------------------------------------------------
+
+  /** The reconciler host for {@code src} (one per pane), created on first use. */
+  static PreviewPaneHost hostFor(PreviewSource src)
+  {
+    return srcToHost.computeIfAbsent(src, PreviewPaneHost::new);
+  }
+
 //---------------------------------------------------------------------------
 
-  public static void scrollToHighlight(PreviewSource src, int matchNdx, int pageNum, int ndxOnPage)
+  /** Sets the queries pane's FTS preview intent; see {@link PreviewPaneHost#setPreview}. */
+  public static void setQueriesFtsPreview(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights)
   {
     if (jxBrowserDisabled || (instance == null)) return;
 
-    nullSwitch(instance.srcToWrapper.get(src), wrapper -> wrapper.scrollToHighlight(matchNdx, pageNum, ndxOnPage));
+    hostFor(PreviewSource.pvsQueriesTab).setPreview(filePath, record, paged, pageNum, wantsHighlights);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Delivers computed paged (pdf.js) hit results for the intended file; a
+   *  {@code null} JSON means the computation found no hits to apply. */
+  public static void updateQueriesFtsHitsPaged(FilePath filePath, String hitsJson, int firstMatchPage)
+  {
+    hostFor(PreviewSource.pvsQueriesTab).updateHitsPaged(filePath, hitsJson, firstMatchPage);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Delivers computed direct-content hit results for the intended file. */
+  public static void updateQueriesFtsHitsDirect(FilePath filePath, String hitsJson)
+  {
+    hostFor(PreviewSource.pvsQueriesTab).updateHitsDirect(filePath, hitsJson);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Reports that hit computation for the intended file failed; the pane
+   *  degrades to an unhighlighted display rather than withholding it. */
+  public static void updateQueriesFtsHitsFailed(FilePath filePath)
+  {
+    hostFor(PreviewSource.pvsQueriesTab).updateHitsFailed(filePath);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Clears the queries pane's FTS preview (intent = none). */
+  public static void clearQueriesFtsPreview()
+  {
+    hostFor(PreviewSource.pvsQueriesTab).clear();
+  }
+
+//---------------------------------------------------------------------------
+
+  /** One-shot scroll to a match in the queries pane, gated on a confirmed load. */
+  public static void queriesScrollToMatch(int matchNdx, int pageNum, int ndxOnPage)
+  {
+    hostFor(PreviewSource.pvsQueriesTab).scrollToMatch(matchNdx, pageNum, ndxOnPage);
   }
 
 //---------------------------------------------------------------------------
@@ -636,51 +682,9 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Load a converted PDF into the viewer at the specified page. Called by
-   * FTSQueryCtrlr after extraction determines the correct first-match page.
-   */
-  public static void loadConvertedPDF(PreviewSource src, FilePath originalPath, FilePath convertedPath, int pageNum, HDT_Record record)
-  {
-    if (jxBrowserDisabled || (instance == null)) return;
-
-    nullSwitch(instance.srcToWrapper.get(src), wrapper -> wrapper.loadConvertedPDF(originalPath, convertedPath, pageNum, record));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void clearAllHits(PreviewSource src)
-  {
-    if (jxBrowserDisabled || (instance == null)) return;
-
-    nullSwitch(instance.srcToWrapper.get(src), PreviewWrapper::clearAllHits);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Show the unable-to-preview indicator for the given source wrapper. Used by
-   * callers that drive a conversion without a display subscription (the FTS
-   * converted-office path) to surface a conversion failure that would
-   * otherwise leave the generating-preview display up indefinitely.
-   */
-  public static void setUnable(PreviewSource src, FilePath filePath)
-  {
-    if (jxBrowserDisabled || (instance == null)) return;
-
-    nullSwitch(instance.srcToWrapper.get(src), wrapper -> wrapper.setUnable(filePath));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void doSetPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
   {
     if (jxBrowserDisabled || disablePreviewUpdating) return;
-
-    boolean previewAlreadySet = false;
 
     if ((record != null) && (record.getType () != hdtWork    ) && (record.getType() != hdtMiscFile) &&
                             (record.getType () != hdtWorkFile) && (record.getType() != hdtPerson  ))
@@ -692,34 +696,36 @@ public final class PreviewWindow extends NonmodalWindow
       return;
     }
 
-    for (PreviewWrapper wrapper : srcToWrapper.values())
-    {
-      if (FilePath.isEmpty(wrapper.getFilePath())           ||
-          FilePath.isEmpty(filePath)                        ||
-          (wrapper.getFilePath().equals(filePath) == false) ||
-          (wrapper.getRecord() != record))
-        continue;
-
-      wrapper.setWorkPageNums(startPageNum, endPageNum);
-
-      if ((wrapper == curWrapper()) && (src == curSource()))
-      {
-        if ((startPageNum > 0) && (wrapper.getPageNum() != startPageNum))
-          wrapper.setPreview(startPageNum, false);
-        else
-          wrapper.refreshControls();
-
-        previewAlreadySet = true;
-      }
-    }
-
-    if (previewAlreadySet) return;
+    // Every pane routes through its reconciler host as intent: the host is that
+    // source's single decision layer, deriving the display rather than being
+    // commanded directly. Work-page numbers stay on the wrapper for the
+    // Set-start/end chrome and the ContentsWindow.
 
     srcToWrapper.get(src).setWorkPageNums(startPageNum, endPageNum);
 
-    if (startPageNum < 0) startPageNum = 1;
+    // Directories clear the pane like empty paths do: nothing can preview a
+    // folder (the File Manager passes one when a folder row is selected), and
+    // the pre-host refresh path cleared the preview for them as well.
 
-    srcToWrapper.get(src).setPreview(filePath, startPageNum, record);
+    if (FilePath.isEmpty(filePath) || filePath.isDirectory())
+    {
+      hostFor(src).clear();
+      return;
+    }
+
+    if (isSourceActiveAndShowing(src) == false)
+    {
+      // Defer the load until the source is the active, showing one, then replay
+      // through this same intent path (the File Manager's laziness, generalized).
+
+      HDT_Record finalRecord = record;
+      int finalStartPageNum = startPageNum;
+
+      runWhenSourceActivates(src, () -> doSetPreview(src, filePath, finalStartPageNum, endPageNum, finalRecord));
+      return;
+    }
+
+    hostFor(src).setPreviewAuto(filePath, record, startPageNum);
   }
 
 //---------------------------------------------------------------------------
@@ -762,6 +768,7 @@ public final class PreviewWindow extends NonmodalWindow
 
   public static void clearAll()
   {
+    hostFor(PreviewSource.pvsQueriesTab).yieldToExternalWriter();
     pendingActivation.clear();
     tabToWrapper.values().forEach(PreviewWrapper::reset);
     instance().clearControls();

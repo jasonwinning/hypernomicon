@@ -212,10 +212,10 @@ public final class ConversionSession
 
   /**
    * Determines whether the given MIME type should be converted to HTML
-   * (spreadsheets, CSV) rather than PDF. The spreadsheet/CSV types listed here
-   * are a subset of the office-doc types recognized by
-   * {@code PreviewWrapper.showFile}; this helper specifically identifies the
-   * ones that JodConverter should render as HTML instead of PDF.
+   * (spreadsheets, CSV) rather than PDF. The types listed here are a subset of
+   * the office-doc types {@code OfficePreviewer.isOfficeConvertible}
+   * recognizes; this helper specifically identifies the ones that JodConverter
+   * should render as HTML instead of PDF.
    */
   static boolean determineConvertToHtml(String mimetypeStr)
   {

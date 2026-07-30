@@ -74,12 +74,13 @@ public class PreviewWrapper
   private boolean viewerErrOccurred = false, needsRefresh = true, initialized = false;
   private PDFJSWrapper jsWrapper;
 
-  /** FTS hit JSON received via {@link PreviewWindow#setAllHits} while
-   *  {@link #jsWrapper} did not yet exist (the preview window was closed when
-   *  the FTS coordinator delivered hits, so the hits could not be queued in
-   *  the JS layer). Drained in {@link #finishRefresh} after the file load has
-   *  set the correct {@code contentToShowIsDirect} on the newly-created jsWrapper. */
+  /** FTS hit JSON received via {@link #setAllHits} while {@link #jsWrapper}
+   *  did not yet exist (the preview window was closed when hits were
+   *  delivered, so they could not be queued in the JS layer). Drained in
+   *  {@link #finishRefresh} after the file load has set the correct
+   *  {@code contentToShowIsDirect} on the newly-created jsWrapper. */
   private String deferredHitsJson;
+
   private Map<String, Integer> labelToPage;
   private Map<Integer, String> pageToLabel;
   private List<Integer> hilitePages;
@@ -144,12 +145,34 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Viewer lifecycle events forwarded to the reconciler when one is
+   * driving this wrapper (the queries pane's FTS flow). The wrapper's own
+   * legacy handling continues unchanged; the sink is an additional listener.
+   */
+  interface PaneEventSink
+  {
+    void onOpened(boolean success);
+
+    void onPageChanged(int pageNum);
+  }
+
+  private PaneEventSink paneEventSink = null;
+
+  void setPaneEventSink(PaneEventSink sink) { paneEventSink = sink; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @SuppressWarnings("unused")
   private void doneHndlr(PDFJSOperation operation, boolean success, String errMessage)
   {
     switch (operation)
     {
       case pjsOpen:
+
+        if (paneEventSink != null)
+          paneEventSink.onOpened(success);
 
         if (curPrevFile == null) return;
 
@@ -177,6 +200,9 @@ public class PreviewWrapper
 
   private void pageChangeHndlr(int newPageNumShowing)
   {
+    if (paneEventSink != null)
+      paneEventSink.onPageChanged(newPageNumShowing);
+
     pageNumShowing = newPageNumShowing;
 
     if (pageNum == pageNumShowing) return;
@@ -272,26 +298,29 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 
   /**
-   * Load a converted PDF into the viewer, bypassing the normal
-   * {@code setPreview -> showFile} path. Initializes {@code curPrevFile} and
-   * page tracking so that subsequent navigation (goToPage, refreshControls)
-   * works against the original (pre-conversion) file path, then delegates to
-   * {@link #loadConvertedPdfBytes} for the actual byte load.
+   * Pane-driven paged load: displays {@code displayPath} in the pdf.js viewer
+   * at the given page, tracking {@code sourceFile} as the file being shown
+   * (they differ for LibreOffice-converted office documents). Initializes
+   * {@code curPrevFile} and page tracking so subsequent legacy navigation
+   * (nav history, refreshControls, passage clicks) works against the source
+   * path, and marks the file as currently displayed so a later tab activation
+   * refreshes controls instead of re-entering showFile (which would create a
+   * new display subscription and enqueue a redundant conversion).
    *
-   * @param originalPath  the source office document (used for file tracking)
-   * @param convertedPath the LibreOffice-produced PDF to actually load
-   * @param pageNum       1-based first-match page in the converted PDF
-   * @param record        record associated with the original file, or {@code null}
+   * @param sourceFile  the file the user asked to preview (used for file tracking)
+   * @param displayPath the file the viewer actually loads (source itself, or converted artifact)
+   * @param pageNum     1-based page to open at
+   * @param record      record associated with the source file, or {@code null}
    */
-  void loadConvertedPDF(FilePath originalPath, FilePath convertedPath, int pageNum, HDT_Record record)
+  void paneShowPaged(FilePath sourceFile, FilePath displayPath, int pageNum, HDT_Record record)
   {
-    if (initialized == false) return;
+    if (ensureInitialized() == false) return;
 
     if ((record != null) && (record.getType() != hdtWork    ) && (record.getType() != hdtMiscFile) &&
                             (record.getType() != hdtWorkFile) && (record.getType() != hdtPerson  ))
       record = null;
 
-    curPrevFile = new PreviewFile(originalPath, (HDT_RecordWithPath) record);
+    curPrevFile = new PreviewFile(sourceFile, (HDT_RecordWithPath) record);
 
     fileNdx++;
 
@@ -302,22 +331,89 @@ public class PreviewWrapper
 
     this.pageNum = pageNum;
 
-    // Mark the file as currently displayed so that subsequent setPreview calls
-    // (e.g., passage clicks in FTS, which route through doSetPreview,
-    // wrapper.setPreview(page), finishRefresh) see the file as already shown
-    // and trigger navigation instead of a full reload. Clearing needsRefresh
-    // here is part of the same intent: once the converted PDF is actually
-    // displayed, a subsequent tab activation shouldn't force a refresh that
-    // re-enters showFile and re-enqueues the conversion. Without this, the
-    // reload path calls showFile, which creates a new session subscription
-    // and enqueues a redundant office-to-PDF conversion.
+    viewerErrOccurred = false;
 
-    filePathShowing = originalPath;
+    labelToPage = null;
+    pageToLabel = null;
+    hilitePages = null;
+
+    filePathShowing = sourceFile;
     recordShowing   = (HDT_RecordWithPath) record;
     pageNumShowing  = -1;
     needsRefresh    = false;
 
-    loadConvertedPdfBytes(convertedPath, pageNum);
+    loadConvertedPdfBytes(displayPath, pageNum);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Pane-driven direct-content load: displays {@code displayPath} as direct
+   * browser content (HTML, plain text, image, media), with the same
+   * source-file tracking as {@link #paneShowPaged}. Mirrors the direct-content
+   * branches of {@link #showFile}.
+   *
+   * @return true if content was loaded; false if the file kind cannot be
+   *         previewed or loading failed (the unable indicator is shown)
+   */
+  boolean paneShowDirect(FilePath sourceFile, FilePath displayPath, HDT_Record record)
+  {
+    if (ensureInitialized() == false) return false;
+
+    if ((record != null) && (record.getType() != hdtWork    ) && (record.getType() != hdtMiscFile) &&
+                            (record.getType() != hdtWorkFile) && (record.getType() != hdtPerson  ))
+      record = null;
+
+    curPrevFile = new PreviewFile(sourceFile, (HDT_RecordWithPath) record);
+
+    fileNdx++;
+
+    while (fileList.size() > fileNdx)
+      fileList.remove(fileNdx);
+
+    fileList.add(curPrevFile);
+
+    pageNum = 1;
+    numPages = 1;
+
+    viewerErrOccurred = false;
+
+    labelToPage = null;
+    pageToLabel = null;
+    hilitePages = null;
+
+    filePathShowing = sourceFile;
+    recordShowing   = (HDT_RecordWithPath) record;
+    pageNumShowing  = 1;
+    needsRefresh    = false;
+
+    try
+    {
+      if (jsWrapper.loadDirectContent(displayPath))
+        return true;
+
+      jsWrapper.setContentToShowIsDirect(false);
+      jsWrapper.setUnable(sourceFile);
+    }
+    catch (IllegalStateException | IOException e)
+    {
+      jsWrapper.setUnable(sourceFile);
+    }
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Pane-driven page navigation within the currently-displayed document. */
+  void paneGoToPage(int pageNum)
+  {
+    if (initialized == false) return;
+
+    this.pageNum = pageNum;
+    jsWrapper.goToPage(pageNum);
   }
 
 //---------------------------------------------------------------------------
@@ -342,24 +438,6 @@ public class PreviewWrapper
   {
     workStartPageNum = start;
     workEndPageNum = end;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Indicate that this preview file needs to be refreshed. If the passed in file is the one this preview is currently
-   * supposed to show, then make sure the preview is refreshed next time it is activated.
-   * @param nextFilePath The file that needs to be refreshed
-   */
-  void setNeedsRefresh(FilePath nextFilePath)
-  {
-    // If an office file preview is still being generated, filePathShowing will already be set even though
-    // the file isn't really showing yet. This gets called when the preview wrapper is being deactivated before
-    // the preview was done generating and a different preview was queued to be generated; this one will have to
-    // be regenerated when this preview wrapper gets reactivated.
-
-    needsRefresh = Objects.equals(nextFilePath, filePathShowing);
   }
 
 //---------------------------------------------------------------------------
@@ -491,6 +569,13 @@ public class PreviewWrapper
 
   void fileNavClick(boolean isForward)
   {
+    // File-level nav on the queries tab loads a different file through the
+    // legacy path, outside the reconciler's intent; the pane must relinquish
+    // so its next intent starts from a clean diff
+
+    if (src == PreviewSource.pvsQueriesTab)
+      PreviewWindow.hostFor(src).yieldToExternalWriter();
+
     fileNdx = isForward ? getNextFileNdx() : getPreviousFileNdx();
 
     PreviewFile prevFile = fileList.get(fileNdx);
@@ -784,20 +869,7 @@ public class PreviewWrapper
 
     try
     {
-      if (mimetypeStr.contains("openxmlformats-officedocument") ||  // docx (Microsoft Word XML)
-          "application/msword".equalsIgnoreCase(mimetypeStr)    ||  // doc  (Microsoft Word)
-          "application/rtf".equalsIgnoreCase(mimetypeStr)       ||  // rtf  (Rich Text format)
-          mimetypeStr.contains("opendocument.text")             ||  // odt  (OpenDocument text), ott (OpenDocument test template)
-          mimetypeStr.contains("sun.xml.writer")                ||  // sxw  (OpenOffice.org 1.0 text)
-          mimetypeStr.contains("ms-powerpoint")                 ||  // ppt  (Microsoft PowerPoint)
-          mimetypeStr.contains("opendocument.presentation")     ||  // odp  (OpenDocument presentation), otp (OpenDocument presentation template)
-          mimetypeStr.contains("sun.xml.impress")               ||  // sxi  (OpenOffice.org 1.0 presentation)
-          mimetypeStr.contains("vnd.wordperfect")               ||  // wpd  (WordPerfect)
-          mimetypeStr.contains("ms-excel")                      ||  // xls  (Microsoft Excel)
-          "text/csv".equalsIgnoreCase(mimetypeStr)              ||  // csv  (Comma-separated values)
-          mimetypeStr.contains("tab-separated-values")          ||  // tsv  (Tab-separated values)
-          mimetypeStr.contains("opendocument.spreadsheet")      ||  // ods  (OpenDocument spreadsheet), ots (OpenDocument spreadsheet template)
-          mimetypeStr.contains("sun.xml.calc"))                     // sxc  (OpenOffice.org 1.0 spreadsheet)
+      if (OfficePreviewer.isOfficeConvertible(mimetypeStr))
       {
         // Direct session path for both instance-owned wrappers and static
         // dialog callers. Instance callers track the subscription so future

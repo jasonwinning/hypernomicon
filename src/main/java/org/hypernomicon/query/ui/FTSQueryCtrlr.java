@@ -30,6 +30,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -53,7 +54,10 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_WorkFile.WorkBoundary;
 import org.hypernomicon.model.searchKeys.Keyword;
 import org.hypernomicon.model.searchKeys.SearchKeys;
+import org.hypernomicon.previewWindow.ConversionSession;
+import org.hypernomicon.previewWindow.ConversionSession.NoOfficeInstallationException;
 import org.hypernomicon.previewWindow.PreviewWindow;
+import org.hypernomicon.util.SettleGate;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.controls.WebTooltip;
@@ -128,14 +132,30 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   private List<HDT_RecordWithPath> recordScopeRecords;
   private String lastQueryStr, lastFileMask, lastFolderPrefix, cachedContextHtml;
 
-  /** Owns the current file's highlight lifecycle (viewer load sequencing,
-   *  extraction future for converted office docs, coordinate-translation
-   *  state for passage-click navigation). Disposed and replaced on file
-   *  switch; {@code null} when no file is being previewed. */
-  private FileHighlightCoordinator currentCoordinator;
+  /** Path of the row whose preview intent is currently set on the queries
+   *  pane (guards redundant selection-listener refires), or {@code null} when
+   *  no FTS preview is active. */
+  private String currentPreviewPath;
+
+  /** Tika-to-pdf.js coordinate alignment for passage-click navigation,
+   *  published by the converted-office hit pipeline for the path in
+   *  {@code convertedAlignmentPath}; never gated on whether highlights were
+   *  delivered. {@code convertedLaunchPath} records which path's pipeline has
+   *  been launched this generation, so same-file navigation does not re-run
+   *  extraction. */
+  private HitSetService.ConvertedPdfAlignment convertedAlignment;
+  private String convertedAlignmentPath, convertedLaunchPath;
 
   private int currentPreviewPage = 1, totalMatchCount = -1;
   private boolean hasMore;
+
+  /**
+   * Settle gate for result-row selection: rapid selection (key-repeat through
+   * the results table) must not set a preview intent, launch a hit pipeline, or
+   * enqueue a conversion for rows it merely passes over; only the row the
+   * selection settles on previews.
+   */
+  private final SettleGate previewSettleGate = new SettleGate(150);
 
 //---------------------------------------------------------------------------
 
@@ -531,15 +551,29 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       // file. Don't reset the page or re-trigger setPreview (which would scroll the preview back to page 1 and, for converted docs, risk
       // re-queueing work). Just refresh the context view since the row's resolvedRecord may have changed.
 
-      if ((currentCoordinator != null) && currentCoordinator.path().equals(newValue.path()))
+      if (newValue.path().equals(currentPreviewPath))
       {
         updateContextView(newValue);
         return;
       }
 
       currentPreviewPage = 1;
-      updateContextView(newValue);
-      setPreview(newValue);
+      updateContextView(newValue);  // Context view is cheap; only the preview work is settle-gated
+      requestSettledPreview(newValue);
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Previews through the settle gate; a deferred preview re-checks at fire
+   *  time that its row is still the selected one. */
+  private void requestSettledPreview(FTSResultRow row)
+  {
+    previewSettleGate.request(() ->
+    {
+      if (row == tvResults.getSelectionModel().getSelectedItem())
+        setPreview(row);
     });
   }
 
@@ -570,14 +604,13 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
         FilePath fp = db.getRootPath(item.path());
         if (fp.exists() == false) return;
 
-        // Open the window first so the WebView is initialized before the
-        // coordinator pushes hits into it. Dispose the existing coordinator
-        // so setPreview's same-file check fails and a fresh coordinator is
-        // created against the now-visible viewer (otherwise direct-content
-        // hits set while the window was closed would be silently dropped).
+        // Open the window first so the viewer is initialized, then set a
+        // fresh intent against the now-visible pane (hits computed while the
+        // window was closed would otherwise never have been requested, since
+        // setPreview defers all work while the source is not showing).
 
         PreviewWindow.show(pvsQueriesTab);
-        disposeCurrentCoordinator();
+        currentPreviewPath = null;
         setPreview(item);
       }));
 
@@ -837,7 +870,12 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       useRecordScope ? recordScopeList::filterResults : null));
 
     currentPreviewPage = 1;
-    disposeCurrentCoordinator();
+    previewSettleGate.cancel();
+    PreviewWindow.runWhenSourceActivates(pvsQueriesTab, null);
+    currentPreviewPath = null;
+    convertedAlignment = null;
+    convertedAlignmentPath = null;
+    convertedLaunchPath = null;
 
     // Fast light search: no highlighting, just paths and scores. Both the
     // searchLight and the countMatches run off the FX thread inside one
@@ -1146,9 +1184,9 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       {
         updateContextView(selected);
 
-        // Force re-send of hits now that we have match data
+        // Re-derive the preview now that match data exists: the intent is
+        // refreshed and the newly-computed hits ship to the pane
 
-        disposeCurrentCoordinator();
         setPreview(selected);
       }
     });
@@ -1407,15 +1445,17 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
         if (selected != null)
         {
-          // For converted PDFs, ask the coordinator to map the passage index to a viewer page
-          // via the Tika/pdf.js normalized-text alignment it computed during extraction.
+          // For converted PDFs, map the passage index to a viewer page via the
+          // Tika/pdf.js normalized-text alignment the hit pipeline computed.
 
-          if ((currentCoordinator != null) && (passageNdx >= 0))
+          if ((passageNdx >= 0) && (convertedAlignment != null) && selected.path().equals(convertedAlignmentPath))
           {
             List<PageMatch> tikaMatches = hitSetService.cachedMatches(selected.path());
             if (tikaMatches == null) tikaMatches = selected.result().pageMatches();
 
-            int targetPage = currentCoordinator.pageForPassage(passageNdx, tikaMatches);
+            int targetPage = ((tikaMatches == null) || (passageNdx >= tikaMatches.size()))
+              ? -1
+              : convertedAlignment.pageForPassage(tikaMatches.get(passageNdx));
 
             if (targetPage > 0)
             {
@@ -1454,7 +1494,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
               }
             }
 
-            PreviewWindow.scrollToHighlight(pvsQueriesTab, matchNdx, pageNum, ndxOnPage);
+            PreviewWindow.queriesScrollToMatch(matchNdx, pageNum, ndxOnPage);
           }
         }
       }
@@ -1494,15 +1534,16 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   {
     if ((row == null) || (db.getRootPath(row.path()).exists() == false))
     {
-      disposeCurrentCoordinator();
-      PreviewWindow.clearPreview(pvsQueriesTab);
+      PreviewWindow.runWhenSourceActivates(pvsQueriesTab, null);
+      currentPreviewPath = null;
+      PreviewWindow.clearQueriesFtsPreview();
       return;
     }
 
     if (PreviewWindow.isSourceActiveAndShowing(pvsQueriesTab) == false)
     {
-      disposeCurrentCoordinator();                          // also cancels any prior deferred load
-      PreviewWindow.clearPreview(pvsQueriesTab);
+      currentPreviewPath = null;
+      PreviewWindow.clearQueriesFtsPreview();
 
       // The replay verifies its context is still current before firing: pvsQueriesTab is shared with
       // the non-FTS QueryCtrlr (which knows nothing about this deferral), so a stale replay would
@@ -1520,34 +1561,6 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     FilePath filePath = db.getRootPath(row.path());
 
-    // Same file: user is navigating within it (passage click, Record-column
-    // re-resolve). Keep the active coordinator; just move the viewer to the
-    // requested page. For converted office docs this relies on PreviewWindow
-    // detecting that the file is already loaded and short-circuiting to
-    // goToPage (see PreviewWindow.doSetPreview), which is only valid once the
-    // coordinator's pipeline has actually loaded the viewer.
-
-    if ((currentCoordinator != null) && currentCoordinator.path().equals(row.path()))
-    {
-      if (currentCoordinator.viewerLoaded())
-      {
-        PreviewWindow.setPreview(pvsQueriesTab, filePath, currentPreviewPage, -1, row.resolvedRecord());
-        return;
-      }
-
-      // The viewer doesn't have this file yet, so doSetPreview's already-loaded
-      // check cannot short-circuit; routing the request through
-      // PreviewWindow.setPreview would fall through to showFile and start a
-      // duplicate, display-path conversion with no hit highlighting. If the
-      // pipeline is still in flight, it will load the viewer itself when it
-      // finishes. If it already failed without loading anything (e.g. no office
-      // installation was configured at the time), fall through and rebuild the
-      // coordinator so the retry runs the full pipeline.
-
-      if (currentCoordinator.failedBeforeViewerLoad() == false)
-        return;
-    }
-
     List<PageMatch> matches = nullSwitch(row.result().pageMatches(), hitSetService.cachedMatches(row.path()));
 
     // For new files, navigate to the first page with a match (if known)
@@ -1563,68 +1576,158 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
         currentPreviewPage = firstPage;
     }
 
-    boolean isConvertedPdf = isOfficeDocConvertedToPdf(filePath);
-
-    // Converted office: the coordinator owns the viewer load because the first
-    // page shown depends on the first-match page determined after extraction.
+    // Converted office: the pane withholds the display until the hit pipeline
+    // determines the first-match page (intent page -1 = derive from hit set).
     // Skip entirely until matches are available; requestHighlight's callback
     // will re-invoke setPreview once the cache is populated.
 
-    if (isConvertedPdf)
+    if (isOfficeDocConvertedToPdf(filePath))
     {
       if (matches == null) return;
 
       FullTextIndexer indexer = db.getFullTextIndexer();
       if (indexer == null) return;
 
-      disposeCurrentCoordinator();
-      currentCoordinator = new ConvertedOfficeHitCoordinator(row, indexer, hitSetService);
-      currentCoordinator.start();
+      // "Already launched" must also mean the preview never left this file: on
+      // any navigation away, the pane host discards the delivered hit status
+      // (hitsStatus resets to Pending for the new file), so a revisit needs the
+      // pipeline relaunched even though the conversion itself is cached; without
+      // this, the revisited document displays but its hits never arrive.
+
+      boolean alreadyLaunched = row.path().equals(convertedLaunchPath) && row.path().equals(currentPreviewPath);
+
+      currentPreviewPath = row.path();
+
+      // The first display derives its page from the hit set; subsequent
+      // same-file navigation (passage clicks) honors the explicit page
+
+      PreviewWindow.setQueriesFtsPreview(filePath, row.resolvedRecord(), true,
+        alreadyLaunched ? currentPreviewPage : -1, true);
+
+      if (alreadyLaunched == false)
+      {
+        convertedLaunchPath = row.path();
+        launchConvertedHitPipeline(row.path(), filePath, indexer);
+      }
+
       return;
     }
 
-    // Native PDF / direct content: load the file immediately (so the user
-    // sees it while highlights compute), then create a coordinator to apply
-    // hits if matches are ready.
-
-    PreviewWindow.setPreview(pvsQueriesTab, filePath, currentPreviewPage, -1, row.resolvedRecord());
-
-    disposeCurrentCoordinator();
-
-    if (matches == null) return;
+    // Native PDF / direct content: the intent shows the file immediately at
+    // an explicit page; hits attach when computed
 
     FullTextIndexer indexer = db.getFullTextIndexer();
-    if (indexer == null) return;
+    int[] pageOffsets = (indexer == null) ? null : indexer.getPageOffsets(row.path());
 
-    int[] pageOffsets = indexer.getPageOffsets(row.path());
+    // Kind comes from the mimetype, not from whether the index has page
+    // offsets: a PDF must go to the paged viewer even if offsets are missing
+    // (it then simply displays without page-addressed hits)
 
-    currentCoordinator = (pageOffsets != null)
-      ? new PdfHitCoordinator          (row, indexer, matches, currentPreviewPage)
-      : new DirectContentHitCoordinator(row, indexer, matches, currentPreviewPage);
+    boolean paged = (pageOffsets != null) || getMediaType(filePath).toString().contains("pdf");
 
-    currentCoordinator.start();
+    currentPreviewPath = row.path();
+
+    PreviewWindow.setQueriesFtsPreview(filePath, row.resolvedRecord(), paged, paged ? Math.max(currentPreviewPage, 1) : 1, matches != null);
+
+    if ((matches == null) || (indexer == null)) return;
+
+    HitSetService.TextSource source = HitSetService.TextSource.of(indexer);
+
+    if (paged)
+    {
+      HitSetService.PagedHits hits = HitSetService.pdfHits(source, row.path(), matches);
+      PreviewWindow.updateQueriesFtsHitsPaged(filePath, hits == null ? null : hits.hitsJson(), -1);
+    }
+    else
+    {
+      HitSetService.DirectHits hits = HitSetService.directContentHits(source, row.path(), matches);
+      PreviewWindow.updateQueriesFtsHitsDirect(filePath, hits == null ? null : hits.hitsJson());
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * Disposes the current coordinator (if any), nulls the reference, and cancels any
-   * preview load deferred until the Queries tab next activates. Safe to call when no
-   * coordinator is active.
+   * Runs the converted-office hit pipeline for the current query on the hit
+   * service's worker thread: joins the content-keyed conversion, extracts the
+   * converted PDF's text, computes hits and the passage-click alignment, and
+   * pushes the results to the queries pane. A hit-pipeline failure pushes a
+   * failed hit status, which the pane degrades to an unhighlighted page-1
+   * display; conversion failures themselves surface through the pane's
+   * artifact side.
    */
-  private void disposeCurrentCoordinator()
+  private void launchConvertedHitPipeline(String indexPath, FilePath filePath, FullTextIndexer indexer)
   {
-    // Drop any preview load deferred until pvsQueriesTab next activates; the selection it was tied to is
-    // no longer current (new selection, re-query, or this controller going away), so it must not fire.
+    String mimetypeStr = getMediaType(filePath).toString();
 
-    PreviewWindow.runWhenSourceActivates(pvsQueriesTab, null);
+    ConversionSession session = PreviewWindow.getOrCreateSession(pvsQueriesTab, mimetypeStr, filePath);
 
-    if (currentCoordinator != null)
+    if (session == null)
     {
-      currentCoordinator.dispose();
-      currentCoordinator = null;
+      PreviewWindow.updateQueriesFtsHitsFailed(filePath);
+      return;
     }
+
+    CompletableFuture<FilePath> extractionFuture = session.subscribeExtraction();
+    PreviewWindow.enqueueForConversion(pvsQueriesTab, session);
+
+    HitSetService.QueryDescriptor query = hitSetService.query();
+
+    hitSetService.execute(() ->
+    {
+      FilePath convertedPath;
+
+      try { convertedPath = extractionFuture.get(60, TimeUnit.SECONDS); }
+      catch (Exception e)
+      {
+        // Cancellation means this request was superseded, interruption means the
+        // executor is shutting down, and the no-office failure is a settings
+        // condition the artifact side already reports specifically; anything
+        // else is a real conversion failure worth recording.
+
+        if   (((e instanceof CancellationException)
+           ||  (e instanceof InterruptedException)
+           ||  (e.getCause() instanceof CancellationException)
+           ||  (e.getCause() instanceof NoOfficeInstallationException)) == false)
+          logThrowable(e);
+
+        Platform.runLater(() -> PreviewWindow.updateQueriesFtsHitsFailed(filePath));
+        return;
+      }
+
+      HitSetService.PagedHits hits;
+
+      try
+      {
+        String dbRootPathStr = db.isLoaded() ? db.getRootPath().toString().replace('/', '\\') : null;
+
+        hits = HitSetService.computeConvertedPdfHits(HitSetService.TextSource.of(indexer), query, indexPath, convertedPath, dbRootPathStr);
+      }
+      catch (Throwable e)
+      {
+        logThrowable(e);
+        Platform.runLater(() -> PreviewWindow.updateQueriesFtsHitsFailed(filePath));
+        return;
+      }
+
+      Platform.runLater(() ->
+      {
+        if (hits == null)
+        {
+          PreviewWindow.updateQueriesFtsHitsFailed(filePath);
+          return;
+        }
+
+        // Publish the alignment unconditionally; passage-click navigation must
+        // never depend on whether highlights were applied
+
+        convertedAlignment = hits.alignment();
+        convertedAlignmentPath = indexPath;
+
+        PreviewWindow.updateQueriesFtsHitsPaged(filePath, hits.hitsJson(), hits.firstMatchPage());
+      });
+    });
   }
 
 //---------------------------------------------------------------------------

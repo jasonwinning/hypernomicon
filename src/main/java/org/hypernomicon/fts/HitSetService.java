@@ -213,8 +213,9 @@ public final class HitSetService
   /**
    * Submits a task to the service's single worker thread. Used by callers whose
    * pipelines interleave hit computation with await points and viewer delivery
-   * of their own (the converted-office coordinator); tasks queue behind, and
-   * never run concurrently with, the service's own match computations.
+   * of their own ({@code FTSQueryCtrlr.launchConvertedHitPipeline}); tasks
+   * queue behind, and never run concurrently with, the service's own match
+   * computations.
    */
   public void execute(Runnable task) { executor.execute(task); }
 
@@ -369,9 +370,9 @@ public final class HitSetService
    * pdf.js, strips LibreOffice page-header metadata, normalizes both the
    * converted-PDF text and the Tika-indexed text for passage-click alignment,
    * searches the converted PDF for matches, and builds per-page hit JSON plus
-   * the first-match page. Pure computation; runs on the calling thread (the
-   * converted-office coordinator submits it via {@link #execute}) and performs
-   * no viewer delivery.
+   * the first-match page. Runs on the calling thread
+   * ({@code FTSQueryCtrlr.launchConvertedHitPipeline} submits it via
+   * {@link #execute}) and performs no viewer delivery.
    * <p>
    * The returned {@link ConvertedPdfAlignment} is always populated when
    * extraction succeeds, including when there are no matches; passage-click

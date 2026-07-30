@@ -1099,6 +1099,41 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Loads a file as direct browser content if its kind can be shown that way:
+   * HTML is sanitized (scripts and frames stripped); text, images, media,
+   * XML/JSON, and other ASCII files load as-is.
+   *
+   * @return {@code false} if the file kind cannot be shown as direct content
+   *         (nothing was loaded); the caller decides how to surface that
+   */
+  boolean loadDirectContent(FilePath displayPath) throws IOException
+  {
+    String mimetypeStr = getMediaType(displayPath).toString();
+
+    if (mimetypeStr.contains("html"))
+    {
+      setContentToShowIsDirect(true);
+      loadFile(displayPath, true);
+      return true;
+    }
+
+    if (mimetypeStr.contains("image") || mimetypeStr.contains("plain") || mimetypeStr.contains("video") || mimetypeStr.contains("audio") ||
+        "application/xml".equalsIgnoreCase(mimetypeStr)  ||
+        "application/json".equalsIgnoreCase(mimetypeStr) ||
+        isAsciiFile(displayPath))
+    {
+      setContentToShowIsDirect(true);
+      loadFile(displayPath, false);
+      return true;
+    }
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   static final int SidebarView_NONE = 0,
                    SidebarView_THUMBS = 1,
                    SidebarView_OUTLINE = 2,
