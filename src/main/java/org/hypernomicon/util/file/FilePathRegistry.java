@@ -443,6 +443,14 @@ public final class FilePathRegistry implements RegistryAccessor
     if (isUnitTestThread() == false)
       throw new IllegalStateException("populateForTesting can only be called from a unit test thread.");
 
+    // The registry is a process-wide singleton; repopulating it while a database session
+    // is online would silently break that session's path lookups (its HyperPath
+    // registrations are keyed here). Close the session (e.g. TestHyperDB.closeIfOpen())
+    // before activating the registry for a different root.
+
+    if (isActive())
+      throw new IllegalStateException("populateForTesting called while the registry is already active; close the online database session first.");
+
     this.normalizedRoot = new NormalizedAncestor(rootPath);
 
     for (Path path : paths)

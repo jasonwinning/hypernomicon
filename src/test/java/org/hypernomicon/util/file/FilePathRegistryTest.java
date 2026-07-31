@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.util.file.deletion.FileDeletion;
 
 //---------------------------------------------------------------------------
@@ -57,6 +58,11 @@ class FilePathRegistryTest
   @BeforeEach
   void setUp()
   {
+    // Close the shared TestHyperDB session (if an earlier test class left it online)
+    // rather than silently destroying its registry registration with the clear() below.
+
+    TestHyperDB.closeIfOpen();
+
     registry = FilePathRegistry.instance();
     registry.clear();
   }

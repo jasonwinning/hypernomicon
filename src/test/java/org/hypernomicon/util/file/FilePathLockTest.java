@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assumptions.*;
 import java.io.*;
 import java.nio.file.*;
 
+import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.util.PopupRobot;
 
 import org.junit.jupiter.api.*;
@@ -57,6 +58,8 @@ class FilePathLockTest
   @BeforeEach
   void setUp()
   {
+    TestHyperDB.closeIfOpen();  // populateForTesting refuses to trample an online session's registry
+
     FilePathRegistry.instance().populateForTesting(FilePath.of(tempDir));
     PopupRobot.setActive(true);
     PopupRobot.clear();

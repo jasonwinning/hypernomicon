@@ -111,7 +111,12 @@ public final class TestHyperDB extends AbstractHyperDB
       if ((HyperDB.db instanceof TestHyperDB) == false)
         throw new AssertionError("HyperDB already exists");
 
-      return (TestHyperDB) HyperDB.db;
+      TestHyperDB testDB = (TestHyperDB) HyperDB.db;
+
+      if (testDB.isOffline())  // e.g. after closeIfOpen(); callers always get a live session
+        testDB.open();
+
+      return testDB;
     }
 
     TestHyperDB db = new TestHyperDB();
@@ -340,6 +345,32 @@ public final class TestHyperDB extends AbstractHyperDB
     }
 
     open();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Close the singleton's session if it is currently online, deactivating the
+   * {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry} with it.
+   * <p>
+   * For test classes that activate the registry for their own root (via
+   * {@code populateForTesting}), which the registry refuses while a session is
+   * online. A later call to {@link #instance()} transparently reopens the database.
+   */
+  public static void closeIfOpen()
+  {
+    if ((HyperDB.db instanceof TestHyperDB testDB) && testDB.isOnline())
+    {
+      try
+      {
+        testDB.close(null);
+      }
+      catch (HDB_UnrecoverableInternalError e)
+      {
+        throw newAssertionError(e);
+      }
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -17,6 +17,8 @@
 
 package org.hypernomicon.util.file;
 
+import org.hypernomicon.model.TestHyperDB;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
@@ -47,6 +49,8 @@ class FilePathTest
   @BeforeEach
   void setUp() throws IOException
   {
+    TestHyperDB.closeIfOpen();  // populateForTesting refuses to trample an online session's registry
+
     FilePathRegistry.instance().populateForTesting(FilePath.of(tempDir));
 
     // Create a directory tree for contains tests:

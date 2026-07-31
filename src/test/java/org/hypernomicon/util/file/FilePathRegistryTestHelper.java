@@ -19,6 +19,8 @@ package org.hypernomicon.util.file;
 
 import java.nio.file.Path;
 
+import org.hypernomicon.model.TestHyperDB;
+
 //---------------------------------------------------------------------------
 
 /**
@@ -44,6 +46,13 @@ public final class FilePathRegistryTestHelper
    */
   public static RegistryAccessor activateForTesting(Path root, Path... paths)
   {
+    // The registry is a process-wide singleton owned by whichever database session is
+    // online; populateForTesting refuses to trample an online session's registration.
+    // Close the shared TestHyperDB session first (TestHyperDB.instance() transparently
+    // reopens it for any later test class).
+
+    TestHyperDB.closeIfOpen();
+
     RegistryAccessor accessor = FilePathRegistry.getAccessor();
     accessor.populateForTesting(FilePath.of(root), paths);
     return accessor;

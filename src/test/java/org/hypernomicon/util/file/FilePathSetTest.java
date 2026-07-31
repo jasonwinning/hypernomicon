@@ -30,6 +30,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
 import org.hypernomicon.TestConfig;
+import org.hypernomicon.model.TestHyperDB;
 
 //---------------------------------------------------------------------------
 
@@ -52,6 +53,8 @@ class FilePathSetTest
   @BeforeEach
   void setUp()
   {
+    TestHyperDB.closeIfOpen();  // populateForTesting refuses to trample an online session's registry
+
     FilePathRegistry.instance().populateForTesting(FilePath.of(tempDir));
     set = new FilePathSet();
   }
