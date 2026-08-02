@@ -38,17 +38,18 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutAction;
 import org.hypernomicon.settings.shortcuts.Shortcut.ShortcutContext;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.view.controls.LoadingDots;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 
 //---------------------------------------------------------------------------
 
@@ -106,6 +107,13 @@ public final class PreviewWindow extends NonmodalWindow
   // registered before the window instance exists (the preview window may never have been opened).
 
   private static final Map<PreviewSource, Runnable> pendingActivation = new EnumMap<>(PreviewSource.class);
+
+  private final LoadingDots hiliteDotsPrev = new LoadingDots(),
+                            hiliteDotsNext = new LoadingDots();
+
+  /** The annotation-navigation buttons' normal graphics (from the FXML),
+   *  restored when the scan loading indicator comes down. */
+  private Node hiliteGraphicPrev, hiliteGraphicNext;
 
   /** Batch suppression for initiators: the File Manager sets this around bulk
    *  table updates so the selection churn they cause does not set previews. */
@@ -214,6 +222,9 @@ public final class PreviewWindow extends NonmodalWindow
       if (Boolean.TRUE.equals(oldValue) && Boolean.FALSE.equals(newValue) && (tfPreviewPage.isDisabled() == false))
         navigateToPage((int) sldPreview.getValue());
     });
+
+    hiliteGraphicPrev = btnHilitePrev.getGraphic();
+    hiliteGraphicNext = btnHiliteNext.getGraphic();
 
     btnHilitePrev.setOnAction(event ->
     {
@@ -833,12 +844,54 @@ public final class PreviewWindow extends NonmodalWindow
 
     tfPreviewPage.setText("");
 
+    setHiliteScanningIndicator(false);
+
     disableAll(tfPreviewPage, btnPreviewPrev, btnPreviewNext, btnHilitePrev, btnHiliteNext, btnPreviewBack, btnPreviewForward);
 
     sldPreview.setValue(1);
     lblPreviewPages.setText("");
 
     ContentsWindow.clear();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Swaps the annotation-navigation buttons' graphics for animated loading dots
+   * while the current pane's annotation scan is running, and back to the normal
+   * icons when it isn't. The buttons stay disabled while scanning (there is
+   * nothing to navigate to yet); the inline opacity override keeps the
+   * indicator from being washed out by the disabled-state dimming, which is the
+   * point: a dimmed idle button reads as "no annotations", and until the scan
+   * finishes that isn't known.
+   */
+  private void setHiliteScanningIndicator(boolean scanning)
+  {
+    if (scanning == (btnHilitePrev.getGraphic() == hiliteDotsPrev)) return;
+
+    if (scanning)
+    {
+      btnHilitePrev.setGraphic(hiliteDotsPrev);
+      btnHiliteNext.setGraphic(hiliteDotsNext);
+
+      btnHilitePrev.setStyle("-fx-opacity: 1.0;");
+      btnHiliteNext.setStyle("-fx-opacity: 1.0;");
+
+      hiliteDotsPrev.play();
+      hiliteDotsNext.play();
+    }
+    else
+    {
+      hiliteDotsPrev.stop();
+      hiliteDotsNext.stop();
+
+      btnHilitePrev.setGraphic(hiliteGraphicPrev);
+      btnHiliteNext.setGraphic(hiliteGraphicNext);
+
+      btnHilitePrev.setStyle("");
+      btnHiliteNext.setStyle("");
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -950,17 +1003,29 @@ public final class PreviewWindow extends NonmodalWindow
 
     updateFileNavButtons();
 
-    int lowest = previewWrapper.lowestHilitePage();
-
-    if (lowest < 0)
+    if (previewWrapper.annotScanInProgress())
     {
+      setHiliteScanningIndicator(true);
+
       btnHilitePrev.setDisable(true);
       btnHiliteNext.setDisable(true);
     }
     else
     {
-      btnHilitePrev.setDisable(pageNum <= lowest);
-      btnHiliteNext.setDisable(pageNum >= previewWrapper.highestHilitePage());
+      setHiliteScanningIndicator(false);
+
+      int lowest = previewWrapper.lowestHilitePage();
+
+      if (lowest < 0)
+      {
+        btnHilitePrev.setDisable(true);
+        btnHiliteNext.setDisable(true);
+      }
+      else
+      {
+        btnHilitePrev.setDisable(pageNum <= lowest);
+        btnHiliteNext.setDisable(pageNum >= previewWrapper.highestHilitePage());
+      }
     }
 
     lblPreviewPages.setText(pageNum + " / " + numPages);

@@ -26,6 +26,7 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import java.io.IOException;
 import java.util.*;
 
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSOperation;
@@ -226,14 +227,63 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void retrievedDataHndlr(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages)
+  private void retrievedDataHndlr(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel)
   {
     this.labelToPage = labelToPage;
     this.pageToLabel = pageToLabel;
-    this.hilitePages = hilitePages;
 
     if (window.curSource() == src)
       Platform.runLater(this::refreshControls);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Identifies the newest tracked file (FX-confined; bumped by
+   *  {@link #trackFile}); a finishing annotation scan delivers its result only
+   *  if this pane hasn't moved on to another file in the meantime. */
+  private long annotScanSeq = 0;
+
+  /** Whether an annotation scan for the currently tracked file is still running
+   *  (FX-confined). The window shows a loading indicator on the annotation
+   *  navigation buttons while this is true, so the not-yet-known state cannot be
+   *  mistaken for "no annotations". */
+  private boolean annotScanInProgress = false;
+
+  boolean annotScanInProgress() { return annotScanInProgress; }
+
+  /**
+   * Scans the displayed document for annotated pages on a background thread
+   * and applies the result to {@link #hilitePages}. The scan reads the PDF
+   * directly with PDFBox ({@link PDFAnnotationScanner}) instead of walking
+   * pages through the pdf.js worker, and it runs concurrently with the
+   * viewer's own open, so the annotation-navigation buttons can enable without
+   * waiting for the document to render.
+   */
+  private void startAnnotationScan(FilePath displayPath)
+  {
+    long seq = annotScanSeq;
+
+    annotScanInProgress = true;
+
+    HyperThread thread = new HyperThread("AnnotationScan", () ->
+    {
+      List<Integer> annotPages = PDFAnnotationScanner.scan(displayPath);
+
+      Platform.runLater(() ->
+      {
+        if (seq != annotScanSeq) return;  // this pane has moved on to another file
+
+        annotScanInProgress = false;
+        hilitePages = annotPages;
+
+        if (window.curSource() == src)
+          refreshControls();
+      });
+    });
+
+    thread.setDaemon(true);
+    thread.start();
   }
 
 //---------------------------------------------------------------------------
@@ -330,6 +380,9 @@ final class PreviewWrapper
     labelToPage = null;
     pageToLabel = null;
     hilitePages = null;
+
+    annotScanSeq++;               // a scan of the previous file must not deliver into this one
+    annotScanInProgress = false;  // no scan is running for the newly tracked file yet; paneShowPaged starts one for paged content
   }
 
 //---------------------------------------------------------------------------
@@ -352,6 +405,8 @@ final class PreviewWrapper
     trackFile(sourceFile, record);
 
     this.pageNum = pageNum;
+
+    startAnnotationScan(displayPath);
 
     loadPagedDocument(displayPath, pageNum);
   }

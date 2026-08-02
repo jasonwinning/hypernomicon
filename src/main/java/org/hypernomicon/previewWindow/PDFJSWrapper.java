@@ -86,9 +86,12 @@ final class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
+  /** Receives the page-label maps after a document opens. Annotated pages are
+   *  not part of this channel: they are scanned Java-side straight from the
+   *  file ({@link PDFAnnotationScanner}), not collected through the viewer. */
   @FunctionalInterface interface PDFJSRetrievedDataHandler
   {
-    void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages);
+    void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel);
   }
 
 //---------------------------------------------------------------------------
@@ -881,15 +884,12 @@ final class PDFJSWrapper
 //---------------------------------------------------------------------------
 
     /**
-     * Receives page labels and annotation pages after a document opens.
-     * @param json {@code {"annotPages":["3","7",...], "pageLabels":["i","ii","1",...] or null}}
-     *             (annotation pages as strings for uniform array handling)
+     * Receives page labels after a document opens.
+     * @param json {@code {"pageLabels":["i","ii","1",...] or null}}
      */
     public void setData(String json)
     {
       if (retrievedDataHndlr == null) return;
-
-      List<Integer> hilitePages = new ArrayList<>();
 
       Map<String, Integer> labelToPage = new HashMap<>();
       Map<Integer, String> pageToLabel = new HashMap<>();
@@ -897,16 +897,6 @@ final class PDFJSWrapper
       try
       {
         JsonObj obj = JsonObj.parseJsonObj(json);
-
-        JsonArray annotPages = obj.getArraySafe("annotPages");
-
-        for (int ndx = 0; ndx < annotPages.size(); ndx++)
-        {
-          int pageNum = Integer.parseInt(annotPages.getStr(ndx));
-
-          if (hilitePages.contains(pageNum) == false)
-            addToSortedList(hilitePages, pageNum);
-        }
 
         JsonArray pageLabels = obj.getArray("pageLabels");
 
@@ -920,13 +910,13 @@ final class PDFJSWrapper
           }
         }
       }
-      catch (ParseException | NumberFormatException e)
+      catch (ParseException e)
       {
         System.out.println("PDFJSWrapper.setData: malformed data from viewer: " + getThrowableMessage(e));
         return;
       }
 
-      retrievedDataHndlr.handle(labelToPage, pageToLabel, hilitePages);
+      retrievedDataHndlr.handle(labelToPage, pageToLabel);
     }
 
 //---------------------------------------------------------------------------

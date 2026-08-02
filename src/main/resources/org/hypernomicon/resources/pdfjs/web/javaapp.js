@@ -34,7 +34,7 @@
 'use strict';
 
 // Opening a document on top of one that still has queued page work (render
-// queue, text layers, annotation walks) makes every still-pending operation for
+// queue, text layers, annotation layers) makes every still-pending operation for
 // the old document fail; one rapid supersession of a large PDF can log hundreds
 // of rejections. They come in two shapes: operations holding the old document's
 // destroyed worker transport reject with "Transport destroyed", and viewer
@@ -96,6 +96,15 @@ var convertedMatches = null;
 document.addEventListener('webviewerloaded', function () {
   PDFViewerApplicationOptions.set('annotationEditorMode', -1);
   PDFViewerApplicationOptions.set('viewOnLoad', 1);
+
+  // The document is served locally with range support, so every chunk the
+  // viewer needs is a fast on-demand read. Prefetching the entire file in the
+  // background (the default) gains nothing here, and on very large documents
+  // it monopolizes the disk and the transport channel for tens of seconds
+  // (competing with page fetches and the Java-side annotation scan) while
+  // accumulating the whole file in worker memory.
+
+  PDFViewerApplicationOptions.set('disableAutoFetch', true);
 });
 
 //---------------------------------------------------------------------------
@@ -211,43 +220,19 @@ function closePdfFile() {
 //---------------------------------------------------------------------------
 
 /**
- * Collects page labels and annotation pages and reports them to Java as JSON.
- * Annotation page numbers are sent as strings for uniform array handling on
- * the Java side.
+ * Reports the document's page labels to Java as JSON. Annotated pages are
+ * deliberately not collected here: doing it through the viewer forces every
+ * page dictionary through the worker's single thread, where the walk competes
+ * with page rendering (over a minute on a 10,000-page document, even batched).
+ * The Java side reads them straight from the file instead
+ * (PDFAnnotationScanner), which takes seconds regardless of document size.
  */
 function getPdfData() {
   var pdfDocument = PDFViewerApplication.pdfDocument;
   if (pdfDocument == null) return;
 
-  var pagesCount = pdfDocument.numPages,
-      pagesLeft = pagesCount,
-      annotPages = [];
-
   pdfDocument.getPageLabels().then(function (pageLabels) {
-    if (pagesCount === 0) {
-      javaApp.setData(JSON.stringify({ annotPages: [], pageLabels: pageLabels }));
-      return;
-    }
-
-    for (var pageNum = 1; pageNum <= pagesCount; ++pageNum) {
-      pdfDocument.getPage(pageNum).then(function (pdfPage) {
-        var thisPageNum = pdfPage.pageNumber;
-
-        pdfPage.getAnnotations({ intent: 'display' }).then(function (annotations) {
-          for (var ndx = 0; ndx < annotations.length; ndx++) {
-            var subtype = annotations[ndx].subtype;
-            if ((subtype !== 'Link') && (subtype !== 'Widget')) {
-              if (annotPages.indexOf(String(thisPageNum)) === -1)
-                annotPages.push(String(thisPageNum));
-            }
-          }
-
-          pagesLeft--;
-          if (pagesLeft === 0)
-            javaApp.setData(JSON.stringify({ annotPages: annotPages, pageLabels: pageLabels }));
-        });
-      });
-    }
+    javaApp.setData(JSON.stringify({ pageLabels: pageLabels }));
   });
 }
 
@@ -507,7 +492,7 @@ function setAllHits(hitsJson) {
         // Matches must be sorted ascending; the highlighter silently drops
         // out-of-order entries.
 
-        var order = converted.starts.map(function (v, ndx) { return ndx; })
+        var order = converted.starts.map(function (_, ndx) { return ndx; })
                                     .sort(function (a, b) { return converted.starts[a] - converted.starts[b]; });
 
         var pageNdx = pageNum - 1;
@@ -583,9 +568,12 @@ function clearAllHits() {
 // typeof guard in PDFJSWrapper.issueOpen), the arguments were buffered; open now.
 // (Function declarations are hoisted, so calling openPdfFile here is safe.)
 
-if (window.__hnPendingOpen) {
-  var pendingOpen = window.__hnPendingOpen;
-  delete window.__hnPendingOpen;
+// (Bracket access because the property is created by the Java side, never
+// assigned in this file, so the editor's JS type inference does not know it.)
+
+if (window['__hnPendingOpen']) {
+  var pendingOpen = window['__hnPendingOpen'];
+  delete window['__hnPendingOpen'];
   openPdfFile(pendingOpen[0], pendingOpen[1], pendingOpen[2]);
 }
 
