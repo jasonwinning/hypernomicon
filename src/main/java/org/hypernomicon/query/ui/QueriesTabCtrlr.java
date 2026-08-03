@@ -438,6 +438,17 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     if (newValue == tabNew)
     {
+      // Selection lands on the New Tab tab in two ways: the user clicked it, or the last
+      // query sub-tab was just closed and it was the only tab left. In the second case
+      // there is no view to revert selection to; open a fresh record query so the
+      // Queries tab is never left without a sub-tab.
+
+      if (subCtrlrs.isEmpty())
+      {
+        openNewRecordQueryTab();
+        return;
+      }
+
       // Revert selection to previously active tab; show popup
 
       if (curSubCtrlr != null)
@@ -487,6 +498,12 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     sc.onTabClosing();
     subCtrlrs.remove(sc);
+
+    // The selection change that follows the tab's removal installs the next current
+    // view; until then, curSubCtrlr must not keep referencing the closed one.
+
+    if (curSubCtrlr == sc)
+      curSubCtrlr = null;
   }
 
 //---------------------------------------------------------------------------
