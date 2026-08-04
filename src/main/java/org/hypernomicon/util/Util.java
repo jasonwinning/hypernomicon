@@ -1560,6 +1560,30 @@ public final class Util
 //---------------------------------------------------------------------------
 
   /**
+   * Compact diagnostic summary of the application frames on the current stack,
+   * innermost first: which code path invoked the caller. Frames from this class
+   * and from {@code excluded} (usually the class doing the logging) are omitted
+   * so the chain starts at the interesting caller. Diagnostic use only.
+   *
+   * @param excluded class whose frames to omit, or {@code null} to omit none
+   * @return up to six frames as {@code Class.method:line}, joined with {@code " < "}
+   */
+  public static String appCallChain(Class<?> excluded)
+  {
+    return StackWalker.getInstance().walk(frames -> frames
+      .map(StackWalker.StackFrame::toStackTraceElement)
+      .filter(frame -> frame.getClassName().startsWith("org.hypernomicon."))
+      .filter(frame -> frame.getClassName().equals(Util.class.getName()) == false)
+      .filter(frame -> (excluded == null) || (frame.getClassName().equals(excluded.getName()) == false))
+      .limit(6)
+      .map(frame -> frame.getClassName().substring(frame.getClassName().lastIndexOf('.') + 1) + '.' + frame.getMethodName() + ':' + frame.getLineNumber())
+      .collect(Collectors.joining(" < ")));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Checks if any of the given objects is an instance of the specified class.
    *
    * @param clazz   The class to check against. Must not be {@code null}.

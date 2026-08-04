@@ -18,6 +18,7 @@
 package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.previewWindow.DesiredView.ProgressVariant;
@@ -70,7 +71,7 @@ final class PreviewPaneHost
    * so gated upstream callers (the FTS controller's own settle gate) and
    * deliberate single selections never wait here.
    */
-  private final SettleGate settleGate = new SettleGate(150);
+  private final SettleGate settleGate;
 
   /** The artifact side of the pipeline snapshot; completed artifacts are
    *  leased through the wrapper, which releases its previous lease. */
@@ -111,6 +112,8 @@ final class PreviewPaneHost
   PreviewPaneHost(PreviewWindow.PreviewSource src)
   {
     this.src = src;
+
+    settleGate = new SettleGate(150, src + " intents");
   }
 
 //---------------------------------------------------------------------------
@@ -136,6 +139,16 @@ final class PreviewPaneHost
    */
   void setPreview(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
   {
+    // Intent-source trace: every request to change what this pane shows, with the
+    // code path that made it. Distinguishes a genuinely re-delivered selection
+    // (a second request for the same file arrives, and the chain names its origin)
+    // from gate misbehavior (no new request, yet setPreviewNow runs a stale file).
+
+    if (debugging())
+      System.out.println("PreviewPaneHost[" + src + "].setPreview REQUEST: " + filePath.getNameOnly()
+        + " paged=" + paged + " page=" + pageNum + " highlights=" + wantsHighlights
+        + "; via: " + appCallChain(PreviewPaneHost.class));
+
     // Record the request target before gating, so hits arriving for it while
     // the intent waits in the gate are stashed rather than dropped as stale.
     // A request for a different file invalidates any stash (latest wins, like
@@ -155,6 +168,10 @@ final class PreviewPaneHost
 
   private void setPreviewNow(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
   {
+    if (debugging())
+      System.out.println("PreviewPaneHost[" + src + "].setPreviewNow EXECUTE: " + filePath.getNameOnly()
+        + " (replacing intent=" + (intentFile == null ? "null" : intentFile.getNameOnly()) + ')');
+
     PreviewWrapper wrapper = wrapper();
     if ((wrapper == null) || (wrapper.ensureInitialized() == false)) return;
 
@@ -238,7 +255,7 @@ final class PreviewPaneHost
         // waiting in the settle gate. Stash it for setPreviewNow to consume;
         // dropping it would leave that intent Pending forever.
 
-        if (app.debugging)
+        if (debugging())
           System.out.println("PreviewPaneHost[" + src + "].updateHits: STASHED " + newStatus.getClass().getSimpleName() +
                              " for gated request " + filePath.getNameOnly() +
                              " (intent=" + (intentFile == null ? "null" : intentFile.getNameOnly()) + ')');
@@ -249,14 +266,14 @@ final class PreviewPaneHost
 
       // Stale by value; a different file is intended now
 
-      if (app.debugging)
+      if (debugging())
         System.out.println("PreviewPaneHost[" + src + "].updateHits: DROPPED for " + filePath.getNameOnly() +
                            " (intent=" + (intentFile == null ? "null" : intentFile.getNameOnly()) + ')');
 
       return;
     }
 
-    if (app.debugging)
+    if (debugging())
       System.out.println("PreviewPaneHost[" + src + "].updateHits: " + newStatus.getClass().getSimpleName() + " for " + filePath.getNameOnly());
 
     hitsStatus = newStatus;
@@ -310,6 +327,10 @@ final class PreviewPaneHost
   /** Clears the queries pane's FTS preview (intent = none; the viewer empties). */
   void clear()
   {
+    if (debugging())
+      System.out.println("PreviewPaneHost[" + src + "].clear: (was intent=" + (intentFile == null ? "null" : intentFile.getNameOnly())
+        + "); via: " + appCallChain(PreviewPaneHost.class));
+
     settleGate.cancel();
 
     requestedFile = null;      // the stash dies with the cancelled gate request
@@ -336,7 +357,15 @@ final class PreviewPaneHost
     FilePath sourceFile = intentFile;
     if ((pane == null) || (sourceFile == null)) return;
 
-    pane.updatePipeline(new PipelineSnapshot(sourceFile, artifacts.status(), DocumentArtifactService.converterState(), hitsStatus));
+    PipelineSnapshot newSnapshot = new PipelineSnapshot(sourceFile, artifacts.status(), DocumentArtifactService.converterState(), hitsStatus);
+
+    if (debugging())
+      System.out.println("PreviewPaneHost[" + src + "].pushSnapshot: file=" + sourceFile.getNameOnly()
+        + " artifact=" + (newSnapshot.artifact() == null ? "null" : newSnapshot.artifact().getClass().getSimpleName())
+        + " converter=" + newSnapshot.converterState()
+        + "; via: " + appCallChain(PreviewPaneHost.class));
+
+    pane.updatePipeline(newSnapshot);
   }
 
 //---------------------------------------------------------------------------

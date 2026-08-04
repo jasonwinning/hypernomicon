@@ -17,6 +17,8 @@
 
 package org.hypernomicon.previewWindow;
 
+import static org.hypernomicon.App.*;
+
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -426,6 +428,15 @@ final class PreviewPane
    */
   private void issue(DesiredView desired)
   {
+    // Reconciler decision trace: the source of truth for the order in which the
+    // pane commanded the viewer, and the generation each command carried. Logs
+    // only real transitions (desired != issued), which is exactly where a stale
+    // re-issue of a superseded document would show up.
+
+    if (debugging() && (desired.equals(issuedView) == false))
+      System.out.println("PreviewPane.issue: gen=" + generation + " intent=" + (intent == null ? "null" : intent.sourceFile().getNameOnly())
+        + "; " + viewStr(issuedView) + " -> " + viewStr(desired));
+
     switch (desired)
     {
       case Empty _ ->
@@ -556,6 +567,24 @@ final class PreviewPane
       case PagedDoc  pagedDoc  -> pagedDoc .sourceFile();
       case DirectDoc directDoc -> directDoc.sourceFile();
       case null, default       -> null;
+    };
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Compact one-line rendering of a desired view for the decision trace; omits
+   *  the (potentially huge) hits JSON. Diagnostic only. */
+  private static String viewStr(DesiredView view)
+  {
+    return switch (view)
+    {
+      case null                -> "none";
+      case Empty     _         -> "Empty";
+      case Progress  progress  -> "Progress(" + progress.sourceFile().getNameOnly() + ',' + progress.variant() + ')';
+      case Unable    unable    -> "Unable(" + unable.sourceFile().getNameOnly() + ')';
+      case PagedDoc  pagedDoc  -> "PagedDoc(" + pagedDoc.displayPath().getNameOnly() + ",p" + pagedDoc.pageNum() + ')';
+      case DirectDoc directDoc -> "DirectDoc(" + directDoc.displayPath().getNameOnly() + ')';
     };
   }
 

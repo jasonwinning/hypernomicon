@@ -146,6 +146,12 @@ final class PDFJSWrapper
    */
   private volatile boolean viewerHtmlLoadInFlight = false;
 
+  /** Diagnostic: counts navigations this wrapper has initiated (viewer page loads and
+   *  direct-content loads). Echoed by the load-finished and supersession logs, so a
+   *  trailing viewer-page finish can be classified as a duplicate finish of the same
+   *  navigation (seq unchanged) vs. the finish of a newly initiated one (seq advanced). */
+  private volatile int navSeq = 0;
+
   private FilePath lastDirectFilePath = null;
 
   /** The exact URL the most recent direct-content load was issued under (the
@@ -649,7 +655,8 @@ final class PDFJSWrapper
       if (app.debugging)
         System.out.println("PDFJSWrapper: main frame load finished; isViewerPage=" + isViewerPage +
                            " hadPostLoadCode=" + hadPostLoadCode +
-                           " url=" + (url.length() <= 100 ? url : (url.substring(0, 100) + "...")));
+                           " navSeq=" + navSeq +
+                           " url=" + describeUrl(url));
 
       // A direct-content navigation finishing IS the load confirmation for
       // that content kind (there is no openDone; the document is the content),
@@ -677,7 +684,9 @@ final class PDFJSWrapper
       {
         FilePath releasedFile = openInFlightFile;
 
-        System.out.println("PDFJSWrapper: navigation superseded the in-flight open of " + releasedFile + "; releasing the coordinator");
+        System.out.println("PDFJSWrapper: navigation superseded the in-flight open of " + releasedFile
+          + "; releasing the coordinator. Superseding content: " + describeUrl(url)
+          + "; navSeq=" + navSeq + "; pane " + paneStateStr());
 
         Platform.runLater(() ->
         {
@@ -698,7 +707,13 @@ final class PDFJSWrapper
           // open dispatches directly without another navigation).
 
           if ((openInFlight == false) && (doneHndlr != null))
+          {
+            if (app.debugging)
+              System.out.println("PDFJSWrapper: after supersession release, queue empty; reporting failed open of "
+                + releasedFile.getNameOnly() + "; pane " + paneStateStr());
+
             doneHndlr.handle(PDFJSOperation.pjsOpen, releasedFile, false, "The open was superseded by another navigation");
+          }
         });
       }
 
@@ -843,6 +858,11 @@ final class PDFJSWrapper
     }
 
     cleanupPdfHtml();
+
+    navSeq++;
+
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.loadViewerHtml: initiating viewer navigation navSeq=" + navSeq);
 
     browser.navigation().loadUrl(ResourceServer.viewerUrl());
   }
@@ -1035,6 +1055,14 @@ final class PDFJSWrapper
 
   private void loadFile(FilePath filePath, boolean isHtml) throws IOException
   {
+    navSeq++;
+
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.loadFile: " + (isHtml ? "html" : "direct") + ' ' + filePath.getNameOnly()
+        + " navSeq=" + navSeq
+        + "; supersedes in-flight open=" + (openInFlight ? openInFlightFile : "none")
+        + "; issued via: " + loadCallChain());
+
     switchToPreviewDisplay();
 
     // The navigation below replaces the whole document (viewer.html and the PDF
@@ -1157,6 +1185,55 @@ final class PDFJSWrapper
 //---------------------------------------------------------------------------
 
   /**
+   * Diagnostic rendering of a navigation URL. {@code data:} URLs (minted by
+   * {@code loadFile} for direct HTML content) are otherwise opaque and huge, and
+   * the plain truncation that used to apply hid which content they carried; here
+   * they are summarized by media type, payload byte length, and a stable hash so
+   * two log lines referring to the same content can be correlated. Other URLs are
+   * shown in full (they are short: {@code hnres://}, {@code file://}). Used only
+   * under {@code app.debugging}.
+   */
+  private static String describeUrl(String url)
+  {
+    if (url.startsWith("data:") == false)
+      return url;
+
+    int commaNdx = url.indexOf(',');
+
+    String header  = commaNdx < 0 ? url : url.substring(0, commaNdx),  // e.g. "data:text/html;charset=utf-8;base64"
+           payload = commaNdx < 0 ? "" : url.substring(commaNdx + 1);
+
+    return header + ",<" + payload.length() + " bytes, hash=" + Integer.toHexString(payload.hashCode()) + '>';
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Compact summary of the application frames on the current stack, innermost
+   *  first: which preview code path issued a load. Diagnostic only, for tracing
+   *  the source of a navigation that superseded another. */
+  private static String loadCallChain()
+  {
+    return appCallChain(PDFJSWrapper.class);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Diagnostic snapshot of what the pane has actually settled on, for
+   *  distinguishing a genuinely blank pane from one showing unexpected content. */
+  private String paneStateStr()
+  {
+    return "pdfjsViewerLoaded=" + pdfjsViewerLoaded + " showingAlt=" + showingAlt
+         + " hiding=" + hiding + " opened=" + opened
+         + " browserViewAttached=" + ((browserView != null) && (browserView.getParent() != null))
+         + " lastDirect=" + (lastDirectFilePath == null ? "null" : lastDirectFilePath.getNameOnly());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Loads a file as direct browser content if its kind can be shown that way:
    * HTML is sanitized (scripts and frames stripped); text, images, media,
    * XML/JSON, and other ASCII files load as-is.
@@ -1198,6 +1275,12 @@ final class PDFJSWrapper
 
   void loadPdf(FilePath file, int initialPage)
   {
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.loadPdf: paged " + file.getNameOnly() + " page " + initialPage
+        + "; supersedes in-flight open=" + (openInFlight ? openInFlightFile : "none")
+        + "; lastDirect=" + (lastDirectFilePath == null ? "null" : lastDirectFilePath.getNameOnly())
+        + "; issued via: " + loadCallChain());
+
     // Reset ready synchronously so a cross-thread goToPage call queued before
     // the open actually issues sees a not-ready state and buffers instead of
     // dispatching to the previous page's JS. Mirrors what loadFile does at the

@@ -17,6 +17,8 @@
 
 package org.hypernomicon.util;
 
+import static org.hypernomicon.App.*;
+
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 
@@ -42,6 +44,11 @@ public final class SettleGate
   private final long quietMillis;
   private final PauseTransition timer;
 
+  /** When non-null (and debugging is on), every gate decision is logged under this
+   *  label, so deferred-vs-immediate execution and stale-release ordering can be
+   *  reconstructed from the log. */
+  private final String debugLabel;
+
   private long lastRequestNanos = 0;
   private Runnable pending = null;
 
@@ -49,10 +56,25 @@ public final class SettleGate
 
   public SettleGate(long quietMillis)
   {
+    this(quietMillis, null);
+  }
+
+  public SettleGate(long quietMillis, String debugLabel)
+  {
     this.quietMillis = quietMillis;
+    this.debugLabel = debugLabel;
 
     timer = new PauseTransition(Duration.millis(quietMillis));
     timer.setOnFinished(event -> timerFinished());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void debugLog(String message)
+  {
+    if ((debugLabel != null) && debugging())
+      System.out.println("SettleGate[" + debugLabel + "]: " + message);
   }
 
 //---------------------------------------------------------------------------
@@ -70,9 +92,13 @@ public final class SettleGate
 
     if (quiet && (pending == null))
     {
+      debugLog("quiet; running immediately");
+
       action.run();
       return;
     }
+
+    debugLog("burst (quiet=" + quiet + ", hadPending=" + (pending != null) + "); deferred as latest");
 
     pending = action;
     timer.playFromStart();
@@ -84,6 +110,9 @@ public final class SettleGate
   /** Discards any stored action and stops the timer. */
   public void cancel()
   {
+    if (pending != null)
+      debugLog("cancelled; pending action dropped");
+
     timer.stop();
     pending = null;
   }
@@ -101,9 +130,13 @@ public final class SettleGate
 
     if (((System.nanoTime() - lastRequestNanos) / 1_000_000L) < quietMillis)
     {
+      debugLog("timer fired early relative to last request; rearmed");
+
       timer.playFromStart();
       return;
     }
+
+    debugLog("burst settled; running deferred latest");
 
     Runnable action = pending;
     pending = null;
