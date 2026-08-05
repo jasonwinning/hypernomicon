@@ -295,13 +295,22 @@ public final class FileManager extends NonmodalWindow
 
       if (newValue == oldValue) return;
 
+      // Exactly one preview per selection: record-row selection fires the record-table
+      // listener, whose own preview call is suppressed while the guard is up; the
+      // explicit calls below are the single authoritative preview for this selection.
+
       PreviewWindow.disablePreviewUpdating = true;
+
       updateRecordTable(newValue, false);
+      boolean recordRowSelected = selectNonBlankRecordRow();
+
       PreviewWindow.disablePreviewUpdating = false;
 
       history.updateCurrent(new FolderHistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
 
-      if (selectNonBlankRecordRow() == false)
+      if (recordRowSelected)
+        setPreviewFromRecordTable();
+      else
         PreviewWindow.setPreview(pvsManager, newValue.getFilePath());
     });
 
@@ -1559,10 +1568,15 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /**
-   * Selects an appropriate record row based on the file row selected.
-   * <br>
-   * It will prefer a record with some content in its description.
-   * @return True if the record has a corresponding file (for displaying in the Preview window); false otherwise
+   * Selects an appropriate record row based on the file row selected, preferring a record with
+   * some content in its description. Selection only: this may fire the record-table selection
+   * listener, whose preview call the caller is expected to have suppressed
+   * ({@code PreviewWindow.disablePreviewUpdating}); the caller issues exactly one preview
+   * afterward based on the return value. (Previously this method previewed internally as well,
+   * and one file-table selection could issue two preview requests through the two paths.)
+   *
+   * @return True if the selected row's record has a corresponding file (for displaying in the
+   *         Preview window); false otherwise
    */
   private boolean selectNonBlankRecordRow()
   {
@@ -1577,17 +1591,9 @@ public final class FileManager extends NonmodalWindow
       {
         recordTable.selectRow(row);
 
-        if (record instanceof HDT_RecordWithPath recordWithPath)
-        {
-          FilePath filePath = recordWithPath.filePath();
-          if ((filePath != null) && filePath.isFile())
-          {
-            setPreviewFromRecordTable(); // This gets called by recordTable.selectRow but disablePreviewUpdating may have been true when recordTable.selectRow was first called;
-            return true;                 // the last time it was called, the row selection had not actually changed, so we need to call setPreviewFromRecordTable manually
-          }
-        }
+        FilePath filePath = (record instanceof HDT_RecordWithPath recordWithPath) ? recordWithPath.filePath() : null;
 
-        return false;
+        return (filePath != null) && filePath.isFile();
       }
 
       if ((rowToPick == null) && (record instanceof HDT_RecordWithPath recordWithPath) && recordWithPath.pathNotEmpty())
@@ -1600,13 +1606,7 @@ public final class FileManager extends NonmodalWindow
     recordTable.selectRow(rowToPick);
 
     FilePath filePath = ((HDT_RecordWithPath)rowToPick.getRecord()).filePath();
-    if ((filePath != null) && filePath.isFile())
-    {
-      setPreviewFromRecordTable(); // This gets called by recordTable.selectRow but disablePreviewUpdating may have been true when recordTable.selectRow was first called;
-      return true;                 // the last time it was called, the row selection had not actually changed, so we need to call setPreviewFromRecordTable manually
-    }
-
-    return false;
+    return (filePath != null) && filePath.isFile();
   }
 
 //---------------------------------------------------------------------------
@@ -1767,8 +1767,17 @@ public final class FileManager extends NonmodalWindow
       row.setCellValue(1, relative, displayText);
     }
 
-    if ((hasFileRecord == false) && (selectNonBlankRecordRow() == false))
-      PreviewWindow.clearPreview(pvsManager);
+    if (hasFileRecord == false)
+    {
+      // selectNonBlankRecordRow only selects; issue the preview (or the clear) here.
+      // When this runs under the file-table listener's guard, both calls are
+      // suppressed and the listener issues the single preview itself.
+
+      if (selectNonBlankRecordRow())
+        setPreviewFromRecordTable();
+      else
+        PreviewWindow.clearPreview(pvsManager);
+    }
   }
 
 //---------------------------------------------------------------------------
