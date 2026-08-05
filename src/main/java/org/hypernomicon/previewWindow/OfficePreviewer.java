@@ -17,7 +17,6 @@
 
 package org.hypernomicon.previewWindow;
 
-import org.hypernomicon.previewWindow.DocumentArtifactService.ConverterState;
 import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
@@ -35,10 +34,6 @@ final class OfficePreviewer
 //---------------------------------------------------------------------------
 
   private OfficePreviewer() { throw new UnsupportedOperationException("Instantiation is not allowed."); }
-
-  /** Whether the next conversion is the converter process's first (drives the
-   *  "starting converter" vs "generating preview" progress message). */
-  static boolean getFirstConversion() { return DocumentArtifactService.converterState() != ConverterState.RUNNING; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

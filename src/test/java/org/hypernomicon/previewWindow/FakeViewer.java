@@ -50,9 +50,6 @@ final class FakeViewer implements ViewerPort
 
 //---------------------------------------------------------------------------
 
-  /** All recorded calls, in issue order. */
-  List<Call> calls() { return calls; }
-
   /** Just the method names, in issue order; the cheapest sequence assertion. */
   List<String> methods() { return calls.stream().map(Call::method).toList(); }
 

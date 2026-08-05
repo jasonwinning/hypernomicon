@@ -81,6 +81,120 @@ var convertedMatches = null;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+// Status overlay: an opaque in-page panel covering the whole viewer (chrome
+// included), through which the Java side displays conversion progress and
+// notice states (unable to preview, office installation missing, idle). It
+// replaces the JavaFX panel that was swapped over the BrowserView: the view is
+// a native hardware surface that ignores JavaFX visibility and z-order
+// (observed as a window-scale black rectangle on Linux), so status must render
+// inside the page. Styles live in hypernomicon.css.
+//
+// The Java side is the only writer; these functions hold display state only.
+// showStatusOverlay is idempotent: an identical kind and message leave the DOM
+// alone, so repeated updates never restart the progress animation.
+
+var statusOverlayDiv = null, statusOverlayShownSpec = null;
+
+function buildStatusOverlay() {
+  if (statusOverlayDiv !== null) return;
+
+  statusOverlayDiv = document.createElement('div');
+  statusOverlayDiv.id = 'hnStatusOverlay';
+  statusOverlayDiv.innerHTML =
+    '<div id="hnStatusBox">' +
+      '<div id="hnStatusGlyph">&#9432;</div>' +
+      '<div id="hnStatusMessage"></div>' +
+      '<div id="hnStatusProgress"><div id="hnStatusProgressBar"></div></div>' +
+    '</div>';
+  statusOverlayDiv.style.display = 'none';
+  document.body.appendChild(statusOverlayDiv);
+
+  // While a status shows, the live viewer underneath must not react to the
+  // keyboard; pointer-events blocks only the mouse. Capture phase, so the
+  // viewer's own window-level handlers never see the event.
+
+  ['keydown', 'keyup', 'keypress'].forEach(function (type) {
+    window.addEventListener(type, function (event) {
+      if (statusOverlayDiv.style.display !== 'none') {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+      }
+    }, true);
+  });
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+/**
+ * Shows the status overlay. spec = { kind: 'progress'|'notice', message: s }:
+ * progress adds an indeterminate animation, notice an info glyph. An empty
+ * message shows a bare neutral panel: the idle state of a warmed, empty pane
+ * (never the viewer's own chrome with no document).
+ */
+function showStatusOverlay(spec) {
+
+  // This script runs from <head>, so a call buffered before parsing (or made
+  // between parse and DOMContentLoaded) can arrive before body exists;
+  // re-buffer and the DOMContentLoaded drain below replays it.
+
+  if (document.body === null) {
+    window.__hnPendingStatus = spec;
+    return;
+  }
+
+  buildStatusOverlay();
+
+  // Font size follows the application preference (see execStatusOverlay);
+  // applied before the idempotence check so a preference change takes effect
+  // even when the status text itself is unchanged.
+
+  statusOverlayDiv.style.fontSize =
+    ((typeof spec.fontSize === 'number') && (spec.fontSize >= 1)) ? spec.fontSize + 'px' : '';
+
+  if ((statusOverlayShownSpec !== null) &&
+      (statusOverlayShownSpec.kind === spec.kind) && (statusOverlayShownSpec.message === spec.message))
+    return;
+
+  statusOverlayShownSpec = spec;
+
+  var blank = spec.message === '';
+
+  document.getElementById('hnStatusMessage').textContent = spec.message;
+  document.getElementById('hnStatusGlyph').style.display = ((blank === false) && (spec.kind === 'notice')) ? '' : 'none';
+  document.getElementById('hnStatusProgress').style.display = ((blank === false) && (spec.kind === 'progress')) ? '' : 'none';
+
+  statusOverlayDiv.style.display = '';
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+function hideStatusOverlay() {
+  window.__hnPendingStatus = null;  // also cancels a buffered show that never displayed
+
+  if (statusOverlayDiv === null) return;
+
+  statusOverlayShownSpec = null;
+  statusOverlayDiv.style.display = 'none';
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+function drainPendingStatus() {
+  if (window.__hnPendingStatus) {
+    var pendingStatus = window.__hnPendingStatus;
+    window.__hnPendingStatus = null;
+    showStatusOverlay(pendingStatus);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', drainPendingStatus);
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 // Init-time viewer options must be set on the 'webviewerloaded' event: it fires
 // after the viewer module evaluates (so PDFViewerApplicationOptions exists) but
 // before PDFViewerApplication initializes its components and consumes them.
@@ -567,6 +681,12 @@ function clearAllHits() {
 // If the Java side tried to open a file before this script had parsed (see the
 // typeof guard in PDFJSWrapper.issueOpen), the arguments were buffered; open now.
 // (Function declarations are hoisted, so calling openPdfFile here is safe.)
+
+// A status buffered before parse is drained first (its overlay covers the open
+// that may be about to start); if body does not exist yet, showStatusOverlay
+// re-buffers and the DOMContentLoaded drain replays it.
+
+drainPendingStatus();
 
 // (Bracket access because the property is created by the Java side, never
 // assigned in this file, so the editor's JS type inference does not know it.)

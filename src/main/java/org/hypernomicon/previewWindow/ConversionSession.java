@@ -245,9 +245,9 @@ public final class ConversionSession
    * {@link Platform#runLater}) and the returned {@link Subscription} is still
    * valid (its {@link Subscription#unsubscribe} is a no-op after terminal).
    *
-   * <p>Callers are responsible for any UI side effects (showing altDisplay,
-   * loading the PDF, etc.) via their {@link DisplayCallback}. The session
-   * itself performs no UI-facing calls on the consumer.
+   * <p>Callers are responsible for any UI side effects (showing conversion
+   * progress, loading the PDF, etc.) via their {@link DisplayCallback}. The
+   * session itself performs no UI-facing calls on the consumer.
    */
   public Subscription subscribeDisplay(Object consumerKey, DisplayCallback callback)
   {

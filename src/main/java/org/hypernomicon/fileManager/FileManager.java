@@ -106,6 +106,10 @@ public final class FileManager extends NonmodalWindow
   private HDT_Folder curFolder;
 
   private enum RefreshLevel { NONE, REFRESH, PRUNE_AND_REFRESH }
+
+  /** Guards {@link #pendingRefresh} and {@link #lastRefreshTime}, which the
+   *  refresh-coalescing logic reads and writes from the watcher and FX threads. */
+  private final Object refreshLock = new Object();
   private RefreshLevel pendingRefresh = RefreshLevel.NONE;
 
   private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false, programmaticSelectionChange = false;
@@ -1387,7 +1391,7 @@ public final class FileManager extends NonmodalWindow
       folderTree.prune();
       doRefresh();
 
-      synchronized (this) { lastRefreshTime = System.currentTimeMillis(); }
+      synchronized (refreshLock) { lastRefreshTime = System.currentTimeMillis(); }
 
       if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
     });
@@ -1422,7 +1426,7 @@ public final class FileManager extends NonmodalWindow
 
     boolean executeNow;
 
-    synchronized (this)
+    synchronized (refreshLock)
     {
       if (pendingRefresh != RefreshLevel.NONE)
       {
@@ -1461,7 +1465,7 @@ public final class FileManager extends NonmodalWindow
   {
     RefreshLevel level;
 
-    synchronized (this)
+    synchronized (refreshLock)
     {
       level = pendingRefresh;
       pendingRefresh = RefreshLevel.NONE;

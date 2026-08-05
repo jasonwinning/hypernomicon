@@ -148,6 +148,7 @@ public final class JsonObj
   @SuppressWarnings("unchecked") public void put(String key, String value)     { jObj.put(key, value); }
   @SuppressWarnings("unchecked") public void put(String key, JsonArray value)  { jObj.put(key, value.jArr); }
   @SuppressWarnings("unchecked") public void put(String key, Long value)       { jObj.put(key, value); }
+  @SuppressWarnings("unchecked") public void put(String key, Double value)     { jObj.put(key, value); }
   @SuppressWarnings("unchecked") public void put(String key, Boolean value)    { jObj.put(key, value); }
   @SuppressWarnings("unchecked") public Set<String> keySet()                   { return jObj.keySet(); }
 

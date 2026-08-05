@@ -145,7 +145,9 @@ final class DocumentArtifactService
   /** Production office-home source; tests substitute via {@link #setOfficeHomeSupplierForTesting}. */
   private static Supplier<String> officeHomeSupplier = DesktopUtil::getOfficeHome;
 
-  private static int cacheCap = CACHE_CAP;
+  /** Read under {@code queueLock} by eviction; written only by the test seams, on
+   *  the test thread outside the lock, hence volatile. */
+  private static volatile int cacheCap = CACHE_CAP;
 
   private static volatile ConverterState converterState = ConverterState.STOPPED;
 

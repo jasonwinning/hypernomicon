@@ -90,7 +90,7 @@ public final class BrowserEngine
 //---------------------------------------------------------------------------
 
   /** Whether the engine exists and has not crashed or failed to start. */
-  public static synchronized boolean isInitialized() { return (engine != null) && (jxBrowserDisabled == false); }
+  private static synchronized boolean isInitialized() { return (engine != null) && (jxBrowserDisabled == false); }
 
   /** Whether {@link #initialize()} skipped engine creation because no usable license key was found. */
   public static synchronized boolean licenseKeyIsMissing() { return licenseKeyMissing; }
@@ -207,19 +207,18 @@ public final class BrowserEngine
   {
     // HARDWARE_ACCELERATED is the display pipeline this application has
     // always shipped (JxBrowser 6 ran its heavyweight ancestor by default).
-    // Two of its properties shape the preview display code in PDFJSWrapper:
-    // the view is a native surface that paints over sibling JavaFX nodes
-    // regardless of z-order (so the alt display hides the surface via
-    // setVisible rather than overlaying it), and, observed in 9.3.1, a
-    // document open dispatched in the same pulse as the surface being
-    // re-shown can leave the surface blank while the document renders in
-    // Chromium (mitigated by deferring opens a couple of render pulses; see
-    // PDFJSWrapper.issueOpen). If that mitigation ever proves insufficient,
-    // RenderingMode.OFF_SCREEN eliminates the native surface entirely, at
-    // a cost to interactive rendering feel. But note it is no escape from
-    // the macOS crash primeModalAttach mitigates: both rendering modes share
-    // OffScreenRenderWidget.show, which is what triggers the window-handle
-    // lookup behind that crash.
+    // Its defining property shapes the preview display code in PDFJSWrapper:
+    // the view is a native surface, not a JavaFX node. It paints over sibling
+    // nodes regardless of z-order, ignores JavaFX visibility until its first
+    // real presentation, and can go blank when hidden and re-shown around a
+    // document open. So the surface is never overlaid, hidden, or swapped:
+    // status and progress display live inside the viewer page itself, and the
+    // view stays attached and visible for the life of its browser. If the
+    // native surface ever proves unworkable, RenderingMode.OFF_SCREEN
+    // eliminates it entirely, at a cost to interactive rendering feel. But
+    // note it is no escape from the macOS crash primeModalAttach mitigates:
+    // both rendering modes share OffScreenRenderWidget.show, which is what
+    // triggers the window-handle lookup behind that crash.
 
     EngineOptions.Builder builder = EngineOptions.newBuilder(RenderingMode.HARDWARE_ACCELERATED)
       .licenseKey(licenseKey)

@@ -113,7 +113,7 @@ public final class PreviewWindow extends NonmodalWindow
 
   /** The annotation-navigation buttons' normal graphics (from the FXML),
    *  restored when the scan loading indicator comes down. */
-  private Node hiliteGraphicPrev, hiliteGraphicNext;
+  private final Node hiliteGraphicPrev, hiliteGraphicNext;
 
   /** Batch suppression for initiators: the File Manager sets this around bulk
    *  table updates so the selection churn they cause does not set previews. */
@@ -335,7 +335,10 @@ public final class PreviewWindow extends NonmodalWindow
     {
       if (newValue == null) return;
 
-      tabToWrapper.get(newValue).activate();
+      PreviewWrapper wrapper = tabToWrapper.get(newValue);
+
+      wrapper.warmUp();  // first activation of an unused pane: paint the idle viewer before any intent arrives
+      wrapper.activate();
     });
 
     tfPreviewPage.focusedProperty().addListener((ob, oldValue, newValue) ->
@@ -358,6 +361,8 @@ public final class PreviewWindow extends NonmodalWindow
     onShown = () ->
     {
       srcToWrapper.values().forEach(PreviewWrapper::prepareToShow);
+
+      curWrapper().warmUp();  // the visible pane paints the idle viewer even before its first preview
 
       runDelayedInFXThread(1, 300, () -> curWrapper().activate());
     };

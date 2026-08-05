@@ -30,9 +30,9 @@ import org.hypernomicon.util.file.FilePath;
  * stale viewer events. Commands carry their full target sub-state, so
  * re-issuing any of them is always safe.
  * <p>
- * Production implementations adapt {@code PDFJSWrapper} and the alt-display
- * controller; contract tests substitute a scripted fake that records the
- * command stream.
+ * Production implementations adapt {@code PDFJSWrapper} (documents and the
+ * in-viewer status overlay alike); contract tests substitute a scripted fake
+ * that records the command stream.
  */
 interface ViewerPort
 {

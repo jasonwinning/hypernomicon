@@ -22,6 +22,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import com.teamdev.jxbrowser.browser.Browser;
@@ -37,12 +38,12 @@ import com.teamdev.jxbrowser.view.javafx.BrowserView;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.App;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
@@ -50,13 +51,10 @@ import org.hypernomicon.util.json.JsonObj;
 import org.json.simple.parser.ParseException;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import org.jsoup.nodes.*;
 
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
 
 //---------------------------------------------------------------------------
 
@@ -98,7 +96,6 @@ final class PDFJSWrapper
 
   private final AnchorPane apBrowser;
   private final Consumer<Integer> pageChangeHndlr;
-  private final GridPane gpAltDisplay;
   private final JavascriptToJava javascriptToJava;
   private final PDFJSDoneHandler doneHndlr;
   private final PDFJSRetrievedDataHandler retrievedDataHndlr;
@@ -107,8 +104,20 @@ final class PDFJSWrapper
 
   private Browser browser = null;
   private BrowserView browserView = null;
-  private PreviewAltDisplayCtrlr altDisplay = null;
   private Runnable postBrowserLoadCode = null;
+
+  /** The status kinds the in-viewer overlay can display; see {@link #showStatus}. */
+  private enum StatusKind { PROGRESS, NOTICE }
+
+  /** A status the in-viewer overlay displays: conversion progress, a notice
+   *  (unable to preview, office installation missing), or the bare idle panel
+   *  (NOTICE with an empty message). */
+  private record Status(StatusKind kind, String message) { }
+
+  /** What the status overlay is currently showing, or null when no status is up.
+   *  Writes are FX-confined; volatile because diagnostics read it from browser
+   *  threads. Also the re-issue source after {@link #reloadBrowser}. */
+  private volatile Status currentStatus = null;
 
   /** Guards the {@link #viewerHtmlLoadInFlight}/{@link #postBrowserLoadCode} pair:
    *  chaining work onto an in-flight viewer load (FX thread) and the load-finished
@@ -119,8 +128,9 @@ final class PDFJSWrapper
   /**
    * Whether the content slated for the viewer is direct browser content (HTML, plain text, XML,
    * media loaded straight into the browser). <b>Declared</b> by the load path as intent for what we
-   * are about to show; not read back from the browser. Used to route FTS hits and scroll targets
-   * to the direct-content highlighter rather than the pdf.js one.
+   * are about to show; not read back from the browser. Also declared false by a status display
+   * ({@link #showStatus}), which supersedes any direct declaration. Used to route FTS hits and
+   * scroll targets to the direct-content highlighter rather than the pdf.js one.
    * <p>
    * False means "not direct", which is not the same as "PDF": the alternative is a pdf.js-rendered
    * PDF <i>or</i> nothing (an unpreviewable file). Whether a PDF is actually up is the separate
@@ -150,7 +160,7 @@ final class PDFJSWrapper
    *  direct-content loads). Echoed by the load-finished and supersession logs, so a
    *  trailing viewer-page finish can be classified as a duplicate finish of the same
    *  navigation (seq unchanged) vs. the finish of a newly initiated one (seq advanced). */
-  private volatile int navSeq = 0;
+  private final AtomicInteger navSeq = new AtomicInteger(0);
 
   private FilePath lastDirectFilePath = null;
 
@@ -166,7 +176,7 @@ final class PDFJSWrapper
   private volatile String expectedDirectUrl = null;
 
   private int numPages = -1;
-  private boolean ready = false, hiding = false, showingAlt = false;
+  private boolean ready = false, hiding = false;
 
   private volatile boolean opened = false;
 
@@ -185,22 +195,18 @@ final class PDFJSWrapper
   private volatile FilePath pendingOpenFile = null, openInFlightFile = null;
   private int pendingOpenPage = 1;
 
+  /** True when the status overlay was shown while an open was already in flight:
+   *  that open predates the status, so its completion must not clear the overlay
+   *  (observed on Linux: a superseded slow open finishing stripped the progress
+   *  overlay for the rest of a conversion). Set by {@link #showStatus}, cleared
+   *  when the coordinator issues a new open, which is then newer than any
+   *  displayed status. FX-confined. */
+  private boolean openSupersededByStatus = false;
+
   /** Page correction that arrived while an open was in flight (see
    *  {@link #goToPage(int)}); applied by the coordinator's release, cleared by
    *  each new load. Volatile: written from viewer-driving threads, drained on FX. */
   private volatile int pendingGoToPage = -1;
-
-  /** Identifies the newest issued open (FX-confined); a deferred open dispatch
-   *  (see {@link #issueOpen}) fires only if it is still the newest and nothing
-   *  navigated away during its deferral. */
-  private long issueSeq = 0;
-
-  /** Render pulses between issuing an open and dispatching it to the viewer:
-   *  a document open dispatched in the same pulse that re-shows the
-   *  hardware-accelerated surface (alt display clearing, e.g.) can leave the
-   *  surface blank while the document renders in Chromium; giving the show a
-   *  couple of presented frames first avoids that window. */
-  private static final int OPEN_DEFER_PULSES = 2;
 
 //---------------------------------------------------------------------------
 
@@ -210,19 +216,6 @@ final class PDFJSWrapper
     this.pageChangeHndlr = pageChangeHndlr;
     this.retrievedDataHndlr = retrievedDataHndlr;
     this.apBrowser = apBrowser;
-
-    GridPane tempGridPane = null;
-    FXMLLoader loader = new FXMLLoader(App.class.getResource("previewWindow/PreviewAltDisplay.fxml"));
-    try { tempGridPane = loader.load(); } catch (IOException e) { noOp(); }
-    gpAltDisplay = tempGridPane;
-    altDisplay = loader.getController();
-
-    // The alt display overlays the always-attached browser view (see
-    // switchToAltDisplay), so its root needs an opaque background; in the FXML
-    // only the centered message box has one.
-
-    if (gpAltDisplay != null)
-      gpAltDisplay.setStyle("-fx-background-color: -fx-background;");
 
     javascriptToJava = new JavascriptToJava();
 
@@ -243,10 +236,9 @@ final class PDFJSWrapper
   void prepareToHide()
   {
     if (app.debugging)
-      System.out.println("PDFJSWrapper.prepareToHide: showingAlt=" + showingAlt);
+      System.out.println("PDFJSWrapper.prepareToHide: status=" + currentStatus);
 
     removeFromParent(browserView);
-    removeFromParent(gpAltDisplay);
 
     hiding = true;
   }
@@ -257,15 +249,11 @@ final class PDFJSWrapper
   void prepareToShow()
   {
     if (app.debugging)
-      System.out.println("PDFJSWrapper.prepareToShow: hiding=" + hiding + " showingAlt=" + showingAlt);
+      System.out.println("PDFJSWrapper.prepareToShow: hiding=" + hiding + " status=" + currentStatus);
 
     if (hiding == false) return;
 
     addToParent(browserView, apBrowser);
-    browserView.setVisible(showingAlt == false);
-
-    if (showingAlt)
-      addToParent(gpAltDisplay, apBrowser);  // back on top of the (hidden) browser view
 
     hiding = false;
   }
@@ -273,55 +261,95 @@ final class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // The browser view stays attached while the alt display shows; it is hidden
-  // via setVisible(false) instead. Two constraints force this design: detaching
-  // the view mid-flow (the original design) could leave JxBrowser 9 not
-  // painting after the re-attach (a document would open and render in Chromium
-  // while the re-attached view stayed blank until the next open), and the
-  // hardware-accelerated view is a native surface that paints over sibling
-  // JavaFX nodes regardless of z-order, so an overlay alone never shows. With
-  // the surface hidden, the alt display (attached on top, opaque root) renders.
-  // The view is detached only in prepareToHide (tab-level hide, long-proven).
+  // Status display lives INSIDE the viewer page, as a DOM overlay toggled via
+  // executeJavaScript (javaapp.js showStatusOverlay): the BrowserView is a
+  // native hardware surface that ignores JavaFX visibility and z-order until
+  // its first real presentation (observed on Linux as a window-scale black
+  // rectangle, desynchronized from the node's geometry, while a JavaFX overlay
+  // should have covered it), so no JavaFX node can reliably cover the browser,
+  // and hiding the surface is what desynchronized it in the first place. The
+  // view therefore stays attached and visible at all times, and viewer.html is
+  // the pane's status home: when a status must display and the current page is
+  // direct content (or nothing yet), the wrapper navigates home first.
 
-  private void switchToAltDisplay()
+  private void showStatus(StatusKind kind, String message)
   {
     runInFXThread(() ->
     {
-      if (app.debugging)
-        System.out.println("PDFJSWrapper.switchToAltDisplay: browserView=" + (browserView != null) + " hiding=" + hiding);
+      currentStatus = new Status(kind, message);
 
-      if (browserView == null) return;
+      if (openInFlight)
+        openSupersededByStatus = true;  // that open predates this status; its success must not clear it
 
-      if (hiding == false)
+      if (browser == null) return;  // engine unavailable; the pane shows its static fallback instead
+
+      boolean viewerLoadInFlight;
+
+      synchronized (loadLock) { viewerLoadInFlight = viewerHtmlLoadInFlight; }
+
+      if (pdfjsViewerLoaded && (viewerLoadInFlight == false))
       {
-        addToParent(gpAltDisplay, apBrowser);
-        browserView.setVisible(false);
+        execStatusOverlay(currentStatus);
+        return;
       }
 
-      showingAlt = true;
+      // The current page is not (or is about to stop being) the viewer: make
+      // viewer.html the status home. This supersedes any open whose dispatch is
+      // chained to a pending viewer load (intent has moved to a status), so
+      // release the coordinator the way loadFile's supersession does; a late
+      // openDone report for the superseded open fails the pane's identity gate
+      // (the non-document views null issuedDisplayPath).
+
+      pendingOpenFile = null;
+      openInFlight = false;
+
+      // The status also supersedes any direct-content declaration: what is
+      // about to show is the status home, not direct content. This ordered
+      // FX-side write is what lets a superseded direct load's late finish know
+      // not to clear this status (see the confirmation branch's re-check).
+
+      contentToShowIsDirect = false;
+
+      Status status = currentStatus;
+      loadViewerHtml(() -> execStatusOverlay(status));
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void switchToPreviewDisplay()
+  /** Sends the given status to the overlay. The viewer page buffers a call that
+   *  arrives before javaapp.js has parsed and replays it when ready, so this can
+   *  ride a viewer load as its post-load work. */
+  private void execStatusOverlay(Status status)
   {
-    runInFXThread(() ->
-    {
-      if (app.debugging)
-        System.out.println("PDFJSWrapper.switchToPreviewDisplay: browserView=" + (browserView != null) + " hiding=" + hiding);
+    JsonObj obj = new JsonObj();
+    obj.put("kind", status.kind() == StatusKind.PROGRESS ? "progress" : "notice");
+    obj.put("message", status.message());
 
-      if (browserView == null) return;
+    // The overlay text follows the application font-size preference (same pref,
+    // default, and at-least-1 guard as UIUtil.setFontSize), plus 2: the status
+    // panel is a single short message in a large empty area, and matching the
+    // control-font size exactly reads too small there.
 
-      if (hiding == false)
-      {
-        removeFromParent(gpAltDisplay);
-        browserView.setVisible(true);  // attached all along; just unhide the surface
-      }
+    double fontSize = app.prefs.getDouble(PrefKey.FONT_SIZE, DEFAULT_FONT_SIZE);
+    if (fontSize >= 1)
+      obj.put("fontSize", fontSize + 2);
 
-      showingAlt = false;
-    });
+    execJS("if (typeof showStatusOverlay === 'function') showStatusOverlay(" + obj + "); else window.__hnPendingStatus = " + obj + ';');
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Clears the displayed status. Called only from content-confirmation points
+   *  (a successful document open; a finished direct-content load), never from
+   *  load initiation, so the overlay stays up until real content is visible. */
+  private void clearStatusOverlay()
+  {
+    currentStatus = null;
+
+    execJS("if (typeof hideStatusOverlay === 'function') hideStatusOverlay(); else window.__hnPendingStatus = null;");
   }
 
 //---------------------------------------------------------------------------
@@ -329,56 +357,43 @@ final class PDFJSWrapper
 
   void setGenerating(FilePath filePath)
   {
-    runInFXThread(() ->
-    {
-      altDisplay.setGenerating(filePath);
-      switchToAltDisplay();
-    });
-  }
+    // Dialog previews can show a file being imported from outside the database, which
+    // does not relativize; those fall back to the full path, left in native form so it
+    // can be copied and pasted. Database-relative paths are shown with forward slashes
+    // regardless of platform.
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    FilePath relPath = db.getRootPath().relativize(filePath);
+
+    String pathStr = relPath != null ? relPath.toString().replace('\\', '/') : filePath.toString();
+
+    showStatus(StatusKind.PROGRESS, "Generating preview for file: " + pathStr);
+  }
 
   void setStartingConverter()
   {
-    runInFXThread(() ->
-    {
-      altDisplay.setStartingConverter();
-      switchToAltDisplay();
-    });
+    showStatus(StatusKind.PROGRESS, "Starting office document previewer...");
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public void setUnable(FilePath filePath)
   {
-    runInFXThread(() ->
-    {
-      altDisplay.setUnable(filePath);
-      switchToAltDisplay();
-    });
+    setUnable(filePath.toString());
   }
 
-  public void setUnable(String pathStr)
+  private void setUnable(String pathStr)
   {
-    runInFXThread(() ->
-    {
-      altDisplay.setUnable(pathStr);
-      switchToAltDisplay();
-    });
+    showStatus(StatusKind.NOTICE, "Unable to preview the file: " + pathStr);
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   void setNoOfficeInstallation()
   {
-    runInFXThread(() ->
-    {
-      altDisplay.setNoOfficeInstallation();
-      switchToAltDisplay();
-    });
+    showStatus(StatusKind.NOTICE, "To preview this type of file, enter the installation path for LibreOffice or OpenOffice in the Settings dialog.");
+  }
+
+  /** The idle look of a warmed or emptied pane: the bare neutral panel, never
+   *  the viewer's own chrome with no document. */
+  void showIdle()
+  {
+    showStatus(StatusKind.NOTICE, "");
   }
 
 //---------------------------------------------------------------------------
@@ -386,21 +401,19 @@ final class PDFJSWrapper
 
   void reset()
   {
-    switchToPreviewDisplay();
-
     // Drop any open still waiting its turn; a reset means nothing should load.
     // An in-flight open is left alone: its page survives, so its openDone still
     // arrives and releases the coordinator normally.
 
     runInFXThread(() -> pendingOpenFile = null);
 
-    if (pdfjsViewerLoaded)
-    {
-      if (opened)
-        close();
-    }
-    else
-      loadViewerHtml(null);
+    // The idle overlay goes up first (navigating home if the current page is
+    // direct content), so the document close below happens under it.
+
+    showIdle();
+
+    if (pdfjsViewerLoaded && opened)
+      close();
   }
 
 //---------------------------------------------------------------------------
@@ -446,15 +459,12 @@ final class PDFJSWrapper
 
   void reloadBrowser(Runnable stuffToDoAfterLoadingViewerHtml)
   {
-    switchToPreviewDisplay();
-
     // The browser (and with it any in-flight or waiting PDF open, and any
     // viewer-page load) is being replaced; clear the open coordination and
     // viewer-load state so neither can wedge on completions that never come.
 
     pendingOpenFile = null;
     openInFlight = false;
-    issueSeq++;
 
     synchronized (loadLock)
     {
@@ -655,7 +665,7 @@ final class PDFJSWrapper
       if (app.debugging)
         System.out.println("PDFJSWrapper: main frame load finished; isViewerPage=" + isViewerPage +
                            " hadPostLoadCode=" + hadPostLoadCode +
-                           " navSeq=" + navSeq +
+                           " navSeq=" + navSeq.get() +
                            " url=" + describeUrl(url));
 
       // A direct-content navigation finishing IS the load confirmation for
@@ -668,9 +678,34 @@ final class PDFJSWrapper
       // wrong DOM (0 matches found), and when the intended document finished,
       // the reconciler believed its hits were already applied. A stale finish
       // is dropped; the intended load's own finish arrives later and confirms.
+      //
+      // A matching finish is also a status-clearing point: any overlay died
+      // with the page this navigation replaced. The clear hops to the FX
+      // thread and re-checks the direct declaration there: a status shown
+      // meanwhile has declared the content non-direct (see showStatus), and
+      // that FX-side write is ordered ahead of this runnable, so it cannot
+      // null the very status that superseded it. This also keeps every status
+      // write FX-confined.
 
-      if ((isViewerPage == false) && contentToShowIsDirect && isExpectedDirectUrl(url) && (doneHndlr != null))
-        doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, true, "");
+      if ((isViewerPage == false) && contentToShowIsDirect)
+      {
+        if (isExpectedDirectUrl(url))
+        {
+          Platform.runLater(() ->
+          {
+            if (contentToShowIsDirect)
+              currentStatus = null;
+          });
+
+          if (doneHndlr != null)
+            doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, true, "");
+        }
+        else if (app.debugging)
+        {
+          System.out.println("PDFJSWrapper: stale direct-content finish dropped; finished=" + describeUrl(url)
+            + " expected=" + (expectedDirectUrl == null ? "none" : describeUrl(expectedDirectUrl)));
+        }
+      }
 
       // A finished navigation that neither carries the in-flight open's
       // dispatch nor precedes a viewer load that will (reset's bare viewer
@@ -686,7 +721,7 @@ final class PDFJSWrapper
 
         System.out.println("PDFJSWrapper: navigation superseded the in-flight open of " + releasedFile
           + "; releasing the coordinator. Superseding content: " + describeUrl(url)
-          + "; navSeq=" + navSeq + "; pane " + paneStateStr());
+          + "; navSeq=" + navSeq.get() + "; pane " + paneStateStr());
 
         Platform.runLater(() ->
         {
@@ -727,27 +762,29 @@ final class PDFJSWrapper
 
     addToParent(browserView, apBrowser);
 
-    if (showingAlt)
-    {
-      browserView.setVisible(false);         // the alt display is up; the new view starts hidden
-
-      addToParent(gpAltDisplay, apBrowser);  // no-op if attached; covers a reload while hidden
-      gpAltDisplay.toFront();                // the overlay must stay on top of the just-appended view
-    }
+    // No focus grab while a status shows: the viewer under the overlay must not
+    // gain the keyboard (the overlay also swallows keys JS-side).
 
     apBrowser.setOnMouseEntered(event ->
     {
-      if (showingAlt == false)
+      if (currentStatus == null)
         safeFocus(browserView);
     });
 
     Runnable runnable = () ->
     {
+      // The new browser starts blank; re-show whatever status the old one was
+      // displaying (the caller then re-issues the content display).
+
+      Status status = currentStatus;
+      if (status != null)
+        execStatusOverlay(status);
+
       if (stuffToDoAfterLoadingViewerHtml != null)
         stuffToDoAfterLoadingViewerHtml.run();
     };
 
-    if (pdfjsViewerLoaded)
+    if (pdfjsViewerLoaded || (currentStatus != null))
       loadViewerHtml(runnable);
     else
       runnable.run();
@@ -834,8 +871,6 @@ final class PDFJSWrapper
 
   private void loadViewerHtml(Runnable stuffToDoAfterLoading)
   {
-    switchToPreviewDisplay();
-
     synchronized (loadLock)
     {
       postBrowserLoadCode = stuffToDoAfterLoading;
@@ -859,10 +894,10 @@ final class PDFJSWrapper
 
     cleanupPdfHtml();
 
-    navSeq++;
+    navSeq.incrementAndGet();
 
     if (app.debugging)
-      System.out.println("PDFJSWrapper.loadViewerHtml: initiating viewer navigation navSeq=" + navSeq);
+      System.out.println("PDFJSWrapper.loadViewerHtml: initiating viewer navigation navSeq=" + navSeq.get());
 
     browser.navigation().loadUrl(ResourceServer.viewerUrl());
   }
@@ -974,6 +1009,18 @@ final class PDFJSWrapper
 
       Platform.runLater(() ->
       {
+        // A successful open is a content-confirmation point: the document is
+        // loaded, so the status overlay (conversion progress, typically) comes
+        // down. Only for an open that postdates the status, though: a superseded
+        // open completing late must not strip a newer status (observed as the
+        // progress overlay vanishing for the rest of a conversion when an older
+        // slow open finished). A failed open leaves the overlay up; the
+        // reconciler decides what shows next (a retry re-issue, eventually the
+        // unable notice).
+
+        if (success && (openSupersededByStatus == false))
+          clearStatusOverlay();
+
         openInFlight = false;
         pumpOpenQueue();
 
@@ -1055,15 +1102,13 @@ final class PDFJSWrapper
 
   private void loadFile(FilePath filePath, boolean isHtml) throws IOException
   {
-    navSeq++;
+    navSeq.incrementAndGet();
 
     if (app.debugging)
       System.out.println("PDFJSWrapper.loadFile: " + (isHtml ? "html" : "direct") + ' ' + filePath.getNameOnly()
-        + " navSeq=" + navSeq
+        + " navSeq=" + navSeq.get()
         + "; supersedes in-flight open=" + (openInFlight ? openInFlightFile : "none")
         + "; issued via: " + loadCallChain());
-
-    switchToPreviewDisplay();
 
     // The navigation below replaces the whole document (viewer.html and the PDF
     // open in it included), so there is no need to close the pdf.js app first.
@@ -1085,7 +1130,6 @@ final class PDFJSWrapper
     {
       pendingOpenFile = null;
       openInFlight = false;
-      issueSeq++;  // a deferred open dispatch waiting on pulses must not fire into this navigation
     });
 
     // This navigation also supersedes any viewer-page load still in flight,
@@ -1127,11 +1171,8 @@ final class PDFJSWrapper
 
       doc.outputSettings().charset(StandardCharsets.UTF_8);
 
-      doc.getElementsByTag("meta").forEach(meta ->
-      {
-        if (meta.hasAttr("charset") || "Content-Type".equalsIgnoreCase(meta.attr("http-equiv")))
-          meta.remove();
-      });
+      doc.getElementsByTag("meta").stream().filter(meta -> meta.hasAttr("charset") || "Content-Type".equalsIgnoreCase(meta.attr("http-equiv")))
+                                           .forEach(Node::remove);
 
       // Mint the data URL here rather than through loadHtml (which mints an
       // equivalent one internally) so the exact committed URL is known and the
@@ -1147,6 +1188,9 @@ final class PDFJSWrapper
     }
 
     expectedDirectUrl = url;
+
+    if (app.debugging)
+      System.out.println("PDFJSWrapper.loadFile: issuing direct navigation navSeq=" + navSeq.get() + " url=" + describeUrl(url));
 
     browser.navigation().loadUrl(url);
   }
@@ -1224,7 +1268,7 @@ final class PDFJSWrapper
    *  distinguishing a genuinely blank pane from one showing unexpected content. */
   private String paneStateStr()
   {
-    return "pdfjsViewerLoaded=" + pdfjsViewerLoaded + " showingAlt=" + showingAlt
+    return "pdfjsViewerLoaded=" + pdfjsViewerLoaded + " status=" + currentStatus
          + " hiding=" + hiding + " opened=" + opened
          + " browserViewAttached=" + ((browserView != null) && (browserView.getParent() != null))
          + " lastDirect=" + (lastDirectFilePath == null ? "null" : lastDirectFilePath.getNameOnly());
@@ -1290,8 +1334,6 @@ final class PDFJSWrapper
     ready = false;
     pendingGoToPage = -1;
 
-    switchToPreviewDisplay();
-
     runInFXThread(() ->
     {
       pendingOpenFile = file;  // Latest wins; a request superseded before it issues is never opened
@@ -1331,6 +1373,7 @@ final class PDFJSWrapper
     pendingOpenFile = null;
     openInFlight = true;
     openInFlightFile = file;
+    openSupersededByStatus = false;  // this open is newer than any displayed status
 
     issueOpen(file, initialPage);
   }
@@ -1343,8 +1386,6 @@ final class PDFJSWrapper
    *  {@link #pumpOpenQueue()} so opens never overlap. */
   private void issueOpen(FilePath file, int initialPage)
   {
-    final long mySeq = ++issueSeq;
-
     String fileUrl = ResourceServer.urlForFile(file);
 
     Runnable runnable = () ->
@@ -1385,26 +1426,7 @@ final class PDFJSWrapper
       System.out.println("PDFJSWrapper.loadPdf: " + (chained ? "chained onto in-flight viewer load" : "executing directly"));
 
     if (chained == false)
-    {
-      // Deferred by a couple of render pulses (not dispatched immediately): the
-      // surface un-hide queued by loadPdf's switchToPreviewDisplay then gets
-      // presented frames before the navigation reaches the surface; see
-      // OPEN_DEFER_PULSES. The guard drops the dispatch if something navigated
-      // away (loadFile, browser reload) while it waited.
-
-      runInFXThreadAfterPulses(OPEN_DEFER_PULSES, () ->
-      {
-        if ((mySeq != issueSeq) || (openInFlight == false))
-        {
-          if (app.debugging)
-            System.out.println("PDFJSWrapper.issueOpen: deferred dispatch dropped (superseded=" + (mySeq != issueSeq) + " openInFlight=" + openInFlight + ')');
-
-          return;
-        }
-
-        runnable.run();
-      });
-    }
+      runnable.run();
   }
 
 //---------------------------------------------------------------------------

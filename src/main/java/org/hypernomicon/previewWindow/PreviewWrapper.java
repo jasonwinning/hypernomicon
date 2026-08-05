@@ -324,6 +324,25 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Creates and warms this pane's browser if it has never been initialized: the
+   * surface paints viewer.html with the idle overlay before any preview intent
+   * arrives, so no never-painted (black) surface is ever user-visible. No-op
+   * once initialized, so an active pane's content is never disturbed; browsers
+   * are created only for panes the user actually activates (renderer memory
+   * stays bounded on small machines).
+   */
+  void warmUp()
+  {
+    if (initialized) return;
+
+    if (ensureInitialized())
+      jsWrapper.showIdle();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /** Reloads the embedded browser (recreating the viewer page), then runs
    *  {@code done}; the caller re-issues the display afterward. */
   void reloadViewer(Runnable done)

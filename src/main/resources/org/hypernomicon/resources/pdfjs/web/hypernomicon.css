@@ -6,6 +6,7 @@
  * Hides viewer chrome Hypernomicon doesn't want: file operations (downloads
  * are rejected on the Java side anyway), printing, presentation mode,
  * bookmarking, and the annotation editors (edits could never be saved).
+ * Also styles the status overlay (see javaapp.js showStatusOverlay).
  * Loaded by javaapp.js as a same-origin stylesheet; the viewer page's CSP
  * (style-src 'self') forbids injected inline styles.
  */
@@ -16,4 +17,62 @@
 #editorStampButton, #editorHighlightButton, #editorSignatureButton,
 #editorFreeText, #editorInk, #editorStamp, #editorHighlight, #editorSignature {
   display: none !important;
+}
+
+/*
+ * Status overlay: opaque, above all viewer chrome, neutral background close to
+ * the application theme. An empty message (the idle state) shows the bare
+ * panel: both the glyph and the progress bar are hidden by javaapp.js.
+ */
+
+#hnStatusOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: #f4f4f4;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  /* Fallback size; javaapp.js overrides it inline from the application
+     font-size preference. The box and glyph scale from it. */
+  font: 13px system-ui, sans-serif;
+}
+
+#hnStatusBox {
+  margin-top: 40vh;
+  transform: translateY(-50%);
+
+  max-width: 75%;
+  text-align: center;
+  color: #333;
+  overflow-wrap: anywhere;
+}
+
+#hnStatusGlyph {
+  font-size: 2.2em;
+  color: #4682b4;
+  margin-bottom: 8px;
+}
+
+#hnStatusProgress {
+  margin: 14px auto 0;
+  width: 220px;
+  height: 6px;
+  background: #ddd;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#hnStatusProgressBar {
+  width: 40%;
+  height: 100%;
+  background: #4682b4;
+  border-radius: 3px;
+  animation: hnStatusProgressSlide 1.2s ease-in-out infinite;
+}
+
+@keyframes hnStatusProgressSlide {
+  0%   { margin-left: -40%; }
+  100% { margin-left: 100%; }
 }
