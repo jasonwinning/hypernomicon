@@ -20,7 +20,6 @@ package org.hypernomicon;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.FolderTreeWatcher.WatcherEvent.WatcherEventKind.*;
-import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -218,7 +217,31 @@ public class FolderTreeWatcher
             HDT_Folder folder = watchKeyToDir.get(watchKey);
 
             if (folder == null)
-              watchKeyToDir.put(watchKey, folder = HyperPath.getFolderFromFilePath(FilePath.of((Path)watchKey.watchable()), false));
+            {
+              FilePath dirPath = FilePath.of((Path) watchKey.watchable());
+
+              watchKeyToDir.put(watchKey, folder = HyperPath.getFolderFromFilePath(dirPath, false));
+
+              if (folder == null)
+              {
+                // Still no record: this key's directory is in the gap between
+                // registerTree's walk and its FX-thread record-creation batch, so
+                // the event is dropped below (there is no record to key it to).
+                // Losing a file event in that gap is tolerable (the gap is FX-queue
+                // latency, and the overflow machinery exists because events are
+                // lossy anyway), but dropping a subdirectory's create event would
+                // leave its whole subtree unwatched until something else happened
+                // to re-register it, so register it here.
+
+                FilePath childPath = dirPath.resolve(FilePath.of(watchEvent.context()));
+
+                if ((watchEvent.kind() == ENTRY_CREATE) && childPath.isDirectory())
+                {
+                  try { registerTree(childPath); }
+                  catch (IOException e) { logThrowable(e); }
+                }
+              }
+            }
 
             if ((folder != null) && (folder.getID() > 0))
             {
@@ -612,7 +635,14 @@ public class FolderTreeWatcher
 
             if ((hyperPath != null) && watcherEvent.isDirectory())
             {
-              hyperPath.assign(hyperPath.parentFolder(), newPath.getNameOnly());
+              // Reassigning the record's path mutates folder relations, so it is
+              // FX-thread work like every other record mutation. It is queued
+              // before registerTree queues its FX creation batch, so the batch's
+              // create-if-missing lookup finds the record under its new path
+              // rather than creating a duplicate.
+
+              runInFXThread(() -> hyperPath.assign(hyperPath.parentFolder(), newPath.getNameOnly()));
+
               registerTree(newPath);
             }
 
@@ -677,12 +707,20 @@ public class FolderTreeWatcher
      * {@link WatcherThread#reconcileAfterOverflow reconcileAfterOverflow} to recover
      * from lost {@code OVERFLOW} events. The method is idempotent: directories that
      * already have records and watch keys are left unchanged.
+     * <p>
+     * The walk itself only registers watch keys; directories found without records
+     * get them in one FX-thread batch queued after the walk (see the visitor for why
+     * creation cannot happen on this thread). Until that batch runs, such a
+     * directory's watch key maps to no record and the event loop re-resolves it
+     * lazily.
      *
      * @param rootFilePath the root of the subtree to register
      * @throws IOException if the tree walk encounters an unrecoverable I/O error
      */
     private void registerTree(FilePath rootFilePath) throws IOException
     {
+      List<FilePath> dirsMissingRecords = new ArrayList<>();
+
       Files.walkFileTree(rootFilePath.toPath(), new FileVisitor<>()
       {
         /**
@@ -693,12 +731,23 @@ public class FolderTreeWatcher
           Objects.requireNonNull(path);
           Objects.requireNonNull(attrs);
 
-          if (FilePath.of(path).exists() == false) return FileVisitResult.SKIP_SUBTREE;
+          FilePath filePath = FilePath.of(path);
 
-          HDT_Folder folder = HyperPath.getFolderFromFilePath(FilePath.of(path), true);
+          if (filePath.exists() == false) return FileVisitResult.SKIP_SUBTREE;
+
+          // The record lookup here is read-only on purpose. Creating a missing
+          // folder record on this thread would mutate the parent-folder relation
+          // while the FX thread may be iterating a live childFolders list (the
+          // File Manager's records column walks folder subtrees during layout),
+          // which throws ConcurrentModificationException. Missing records are
+          // created in one FX-thread batch after the walk instead, the same
+          // discipline the deletion path follows. A null map value is fine: the
+          // event loop re-resolves it lazily, by which time the batch has run.
+
+          HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
 
           if (folder == null)
-            throw new IOException(new HDB_InternalError(92733));
+            dirsMissingRecords.add(filePath);
 
           watchKeyToDir.put(path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY), folder);
 
@@ -739,6 +788,18 @@ public class FolderTreeWatcher
 
           return FileVisitResult.CONTINUE;
         }
+      });
+
+      if (dirsMissingRecords.isEmpty() == false) runInFXThread(() ->
+      {
+        // The walk collected these in pre-order, so parents come before children
+        // (and creation fills in any still-missing parents itself)
+
+        dirsMissingRecords.forEach(dir ->
+        {
+          if (dir.exists())
+            HyperPath.getFolderFromFilePath(dir, true);
+        });
       });
     }
 

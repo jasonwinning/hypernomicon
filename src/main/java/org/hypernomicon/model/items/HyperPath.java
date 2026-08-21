@@ -691,8 +691,16 @@ public class HyperPath
     });
 
     if (val.isEmpty() && (getRecordType() == hdtFolder))
-      if (((HDT_Folder) getRecord()).childFolders.stream().anyMatch(subFolder -> subFolder.getPath().isInUseByRecords()))
+    {
+      // Snapshot the child list: this runs during table-cell layout and the
+      // recursion below holds each level's iterator open across the whole
+      // subtree walk, so a relation change landing mid-walk would throw
+      // ConcurrentModificationException from a live HyperSubjList iterator.
+      // (Same defensive copy as HDT_Folder.deleteFolderRecordTree.)
+
+      if (List.copyOf(((HDT_Folder) getRecord()).childFolders).stream().anyMatch(subFolder -> subFolder.getPath().isInUseByRecords()))
         return "(Subfolders have associated records)";
+    }
 
     return val.toString();
   }
