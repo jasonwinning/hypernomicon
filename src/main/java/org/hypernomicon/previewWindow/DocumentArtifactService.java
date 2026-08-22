@@ -18,7 +18,7 @@
 package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.util.DesktopUtil.*;
-import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.TestContext.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.*;

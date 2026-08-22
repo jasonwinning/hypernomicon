@@ -18,7 +18,7 @@
 package org.hypernomicon.util.file;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.TestContext.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.File;

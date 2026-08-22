@@ -48,36 +48,9 @@ public final class StringUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Returns true if the current thread is running in a JUnit test context.
-   */
-  public static boolean isUnitTestThread()
-  {
-    for (StackTraceElement element : Thread.currentThread().getStackTrace())
-      if (element.getClassName().startsWith("org.junit.") || element.getClassName().startsWith("junit."))
-        return true;
-
-    return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Use this in functions that are only supposed to run in a unit test.
-   */
-  public static void assertThatThisIsUnitTestThread()
-  {
-    if (isUnitTestThread() == false)
-      throw new AssertionError("Can only run in unit test.");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   static void clearCollapseBufferForTest()
   {
-    assertThatThisIsUnitTestThread();
+    TestContext.assertThatThisIsUnitTestThread();
 
     COLLAPSE_BUF.remove();
   }

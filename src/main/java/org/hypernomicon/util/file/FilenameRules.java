@@ -20,6 +20,7 @@ package org.hypernomicon.util.file;
 import static org.hypernomicon.Const.FilenameRulesPrefKey.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.TestContext.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.File;

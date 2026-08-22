@@ -19,7 +19,7 @@ package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.DesktopUtil.*;
-import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.TestContext.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 

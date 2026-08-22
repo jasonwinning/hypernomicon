@@ -22,6 +22,7 @@ import static org.hypernomicon.fts.FileIndexEntry.IndexStatus.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.TestContext.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
