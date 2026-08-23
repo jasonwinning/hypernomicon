@@ -1072,8 +1072,12 @@ public class WorkDlgCtrlr extends ModalDialog
 
       if (queryBD == null)
       {
-        if (crossref) lblAutoPopulated.setText("Crossref query yielded no results for doi: " + doi);
-        else          lblAutoPopulated.setText("Library of Congress and Google Books queries yielded no results for isbn: " + isbn);
+        if (crossref)
+          lblAutoPopulated.setText("Crossref query yielded no results for doi: " + doi);
+        else if (GoogleBibData.apiKeyConfigured())
+          lblAutoPopulated.setText("Library of Congress and Google Books queries yielded no results for isbn: " + isbn);
+        else
+          lblAutoPopulated.setText("Library of Congress query yielded no results for isbn: " + isbn);
 
         return;
       }

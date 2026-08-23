@@ -17,12 +17,14 @@
 
 package org.hypernomicon.bib.data;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.TestContext.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
@@ -30,6 +32,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
+
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.zotero.ZoteroDate;
 import org.hypernomicon.model.authors.Author;
@@ -51,9 +55,17 @@ public final class GoogleBibData extends BibDataStandalone
 
   private final String queryIsbn;
 
-  public String getQueryIsbn() { return safeStr(queryIsbn); }
+  private static volatile String apiKeyForTesting = null;
+
+//---------------------------------------------------------------------------
 
   @Override public boolean fromOnlineSource() { return true; }
+
+  public String getQueryIsbn()                { return safeStr(queryIsbn); }
+
+  static void setApiKeyForTesting(String key) { assertThatThisIsUnitTestThread(); apiKeyForTesting = key; }
+
+  public static boolean apiKeyConfigured()    { return apiKey().isBlank() == false; }
 
 //---------------------------------------------------------------------------
 
@@ -162,14 +174,14 @@ public final class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, BibAuthors authors, List<String> authKeywords, CharSequence isbn)
+  static String getQueryUrl(String title, BibAuthors authors, List<String> authKeywords, CharSequence isbn)
   {
     String url = "https://www.googleapis.com/books/v1/volumes?q=";
 
     if (strNotNullOrEmpty(isbn))
-      return url + "isbn:" + isbn;
+      return withApiKey(url + "isbn:" + isbn);
 
-    if (strNullOrBlank(title)) return url;
+    if (strNullOrBlank(title)) return withApiKey(url);
 
     authKeywords.clear();
     List<String> edKeywords = new ArrayList<>();
@@ -209,7 +221,34 @@ public final class GoogleBibData extends BibDataStandalone
       url = url + auths;
     }
 
-    return url;
+    return withApiKey(url);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String withApiKey(String url)
+  {
+    String key = apiKey();
+
+    return key.isBlank() ? url : (url + "&key=" + escapeURL(key, false));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The user's Google Books API key, from preferences; empty when none is configured.
+   * Google retired anonymous Books API access in 2026 (an unkeyed request is billed to a
+   * shared consumer whose daily quota is configured as zero), so without a key every query
+   * fails with HTTP 429, and callers skip the Google stages entirely. There is no settings
+   * UI for the key yet; until one exists, the preference can be set externally.
+   */
+  static String apiKey()
+  {
+    if (apiKeyForTesting != null) return apiKeyForTesting;
+
+    return (app == null) || (app.prefs == null) ? "" : safeStr(app.prefs.get(PrefKey.GOOGLE_BOOKS_API_KEY, ""));
   }
 
 //---------------------------------------------------------------------------

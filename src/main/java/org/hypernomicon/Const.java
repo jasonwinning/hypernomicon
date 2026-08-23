@@ -203,6 +203,7 @@ public final class Const
       BIB_API_KEY = "bibApiKey",
       BIB_USER_ID = "bibUserID",
       BIB_USER_NAME = "bibUserName",
+      GOOGLE_BOOKS_API_KEY = "googleBooksApiKey",
       BIB_UNIT_TEST_USER_ID = "bibUnitTestUserID",
       BIB_ACCESS_TOKEN = "bibAccessToken",
       BIB_REFRESH_TOKEN = "bibRefreshToken",

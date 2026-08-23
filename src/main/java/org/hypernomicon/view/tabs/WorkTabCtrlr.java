@@ -1754,6 +1754,15 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tpBib.getSelectionModel().select(tab);
 
     ta.clear();
+
+    // An explicit Google Books request with no API key would only produce a doomed
+    // request (see GoogleBibData.apiKey), so say why nothing is going to happen
+
+    if ((source == BibSource.googleBooks) && (GoogleBibData.apiKeyConfigured() == false))
+    {
+      ta.setText("Google Books requires an API key, and none is configured.");
+      return;
+    }
     setAllVisible(true, btnStop, progressBar);
 
     tabPane.requestLayout();

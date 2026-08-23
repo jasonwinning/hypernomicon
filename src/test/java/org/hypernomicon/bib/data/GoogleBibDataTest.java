@@ -21,8 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import org.hypernomicon.util.http.AsyncHttpClient;
 
@@ -32,6 +31,42 @@ class GoogleBibDataTest
 {
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @AfterEach
+  void tearDown()
+  {
+    GoogleBibData.setApiKeyForTesting(null);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The API key, when configured, must ride every query URL (Google rejects
+   *  keyless requests outright); when not configured, no key parameter appears. */
+  @Test
+  void apiKeyRidesEveryQueryUrl()
+  {
+    GoogleBibData.setApiKeyForTesting("k3y/+value");
+
+    String isbnUrl = GoogleBibData.getQueryUrl(null, null, new ArrayList<>(), "9780140449266");
+
+    assertTrue(isbnUrl.startsWith("https://www.googleapis.com/books/v1/volumes?q=isbn:9780140449266"), isbnUrl);
+    assertTrue(isbnUrl.contains("&key="), isbnUrl);
+    assertFalse(isbnUrl.contains("k3y/+value"), "the key must be URL-escaped: " + isbnUrl);
+
+    String titleUrl = GoogleBibData.getQueryUrl("Naming and Necessity", null, new ArrayList<>(), null);
+
+    assertTrue(titleUrl.contains("&key="), titleUrl);
+
+  //---------------------------------------------------------------------------
+
+    GoogleBibData.setApiKeyForTesting("");
+
+    assertFalse(GoogleBibData.apiKeyConfigured());
+    assertFalse(GoogleBibData.getQueryUrl(null, null, new ArrayList<>(), "9780140449266").contains("key="),
+                "no key parameter when none is configured");
+  }
+
 //---------------------------------------------------------------------------
 
   /** The dedupe set is keyed by canonical ISBN-13, so the ISBN-10 form of an

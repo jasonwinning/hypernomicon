@@ -226,7 +226,6 @@ public class BibDataRetriever
 //---------------------------------------------------------------------------
 
   private Set<String> checkedIDs(BibSource source) { return alreadyCheckedIDs.computeIfAbsent(source, src -> new HashSet<>()); }
-  private boolean query(BibSource source)          { return enabledSources.contains(source) && ((source != BibSource.libraryOfCongress) || (locBlocked == false)); }
   private boolean bookOrUnknownType()              { return (workTypeEnum == wtNone) || (workTypeEnum == wtBook); }
 
   public void stop()                               { httpClient.stop(); stopped = true; }
@@ -381,6 +380,35 @@ public class BibDataRetriever
       future = future.thenCompose(bd -> ((bd != null) || stopped) ? CompletableFuture.completedFuture(bd) : stage.get());
 
     return future;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether a stage for this source should run: the source must be enabled for this
+   * retrieval, and not known in advance to be pointless. The enabled-sources set itself is
+   * left alone in either case: for the warning in finish(), a skipped source still counts as
+   * having been covered by the cascade.
+   */
+  private boolean query(BibSource source)
+  {
+    if (enabledSources.contains(source) == false) return false;
+
+    return switch (source)
+    {
+      // Keyless Google queries always fail (HTTP 429 by policy; see advanceOnError), so with
+      // no API key configured the Google stages are skipped rather than sending doomed requests
+
+      case googleBooks       -> GoogleBibData.apiKeyConfigured();
+
+      // Once the Library of Congress has answered with its block page, every later LC stage
+      // would get the same page (see advanceOnError, which reports it once)
+
+      case libraryOfCongress -> locBlocked == false;
+
+      default                -> true;
+    };
   }
 
 //---------------------------------------------------------------------------

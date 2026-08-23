@@ -154,6 +154,8 @@ class BibDataRetrieverTest
     fakeSources = new FakeSources();
     BibDataRetriever.setSourcesForTesting(fakeSources);
 
+    GoogleBibData.setApiKeyForTesting("test-key");  // Keyless Google stages are skipped; most tests want them to run
+
     httpClient = new AsyncHttpClient();
   }
 
@@ -163,6 +165,7 @@ class BibDataRetrieverTest
   void tearDown()
   {
     BibDataRetriever.setSourcesForTesting(null);
+    GoogleBibData.setApiKeyForTesting(null);
   }
 
 //---------------------------------------------------------------------------
@@ -403,6 +406,24 @@ class BibDataRetrieverTest
 
     assertEquals(List.of("crossrefTitle"), fakeSources.ops());
     assertEquals(1, PopupRobot.getInvocationCount(), "only the nothing-found warning; the failure itself stays silent");
+    assertEquals(AlertType.WARNING, PopupRobot.getLastType());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** With no Google Books API key, the Google stages are skipped entirely (a keyless
+   *  query always fails with HTTP 429), but the cascade otherwise runs in full and the
+   *  nothing-found warning still fires: Google counts as covered, not as disabled. */
+  @Test void keylessGoogleStagesAreSkipped()
+  {
+    GoogleBibData.setApiKeyForTesting("");
+
+    Result result = new Result();
+    noOp(new BibDataRetriever(httpClient, bookBD(), null, result::handle));
+
+    assertEquals(List.of("crossrefDoi", "locIsbn", "locTitle", "crossrefTitle"), fakeSources.ops());
+    assertNull(result.queryBD);
+    assertTrue(result.messageShown);
     assertEquals(AlertType.WARNING, PopupRobot.getLastType());
   }
 
