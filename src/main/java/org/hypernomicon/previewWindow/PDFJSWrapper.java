@@ -1566,14 +1566,14 @@ final class PDFJSWrapper
       }
     }
 
-    // The JS resource is a function expression "function (data) { ... }" that
-    // we wrap in parens and immediately invoke with the parsed JSON data.
+    // The JS resource is a parenthesized function expression "(function (data) { ... })"
+    // that we immediately invoke with the parsed JSON data.
     // The JSON format is: {"matches":[{"ctx":"...context...","s":20,"e":27},...]}
     // Each entry has context text from stored content, plus the start/end offsets
     // of the matched word within the context. The JS searches for the context in
     // the rendered DOM and wraps the match portion in a highlight span.
 
-    execJS('(' + directContentHighlightJS + ")(" + json + ");");
+    execJS(directContentHighlightJS + '(' + json + ");");
   }
 
 //---------------------------------------------------------------------------

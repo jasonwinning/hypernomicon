@@ -20,11 +20,12 @@
 // Applies FTS hit highlights to the DOM of rendered "direct content" (non-PDF
 // preview pages like HTML notes, Markdown output, etc.).
 //
-// Invoked as a function expression: PDFJSWrapper wraps this body in "(...)(json);"
-// so `data` receives a parsed object of the form:
+// Written as a parenthesized function expression, so the file parses on its own
+// and PDFJSWrapper invokes it by appending "(json);". `data` receives a parsed
+// object of the form:
 //   { "matches": [ { "ctx": "<context>", "s": <start>, "e": <end> }, ... ] }
 
-function (data) {
+(function (data) {
   console.log('FTS-DOM: starting applyDirectContentHits');
 
   var entries = data.matches;
@@ -48,7 +49,7 @@ function (data) {
 
   // Build full text from all text nodes
 
-  var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+  var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
   var nodes = [], nodeStarts = [];
   var fullText = '';
   var n;
@@ -195,4 +196,4 @@ function (data) {
 
   var first = document.querySelector('.fts-highlight');
   if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
+})
