@@ -19,12 +19,17 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
+import static org.hypernomicon.util.TestContext.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
@@ -37,6 +42,19 @@ import org.json.simple.parser.ParseException;
 
 //---------------------------------------------------------------------------
 
+/**
+ * Queries the online bibliographic sources for the best available metadata,
+ * one source at a time, stopping at the first hit: a chain of stages, each a
+ * {@link CompletableFuture} that completes with a result (ending the cascade),
+ * with {@code null} (advancing to the next stage), or exceptionally (ending or
+ * advancing according to that stage's error policy).
+ * <p>
+ * Threading: the constructor runs on the JavaFX thread, and every stage's
+ * future is completed on the JavaFX thread (the HTTP clients marshal their
+ * callbacks there), so chain continuations and all mutable state stay
+ * FX-confined. Under unit tests the substituted {@link Sources} complete their
+ * futures on the test thread and the whole cascade runs there instead.
+ */
 public class BibDataRetriever
 {
 
@@ -53,6 +71,95 @@ public class BibDataRetriever
 
 //---------------------------------------------------------------------------
 
+  /**
+   * The query operations the cascade performs, as futures: completes with the
+   * source's result, with {@code null} for a clean miss, or exceptionally.
+   * Package-private and substitutable so the cascade itself is unit-testable
+   * without the network; the production implementation adapts each source's
+   * callback-based {@code doHttpRequest}.
+   */
+  interface Sources
+  {
+    CompletableFuture<BibDataStandalone> crossrefByDoi(AsyncHttpClient httpClient, String doi, Set<String> alreadyCheckedIDs);
+
+    CompletableFuture<BibDataStandalone> crossrefByTitle(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper,
+                                                         BibAuthors authors, Set<String> alreadyCheckedIDs);
+
+    CompletableFuture<BibDataStandalone> locByIsbns(AsyncHttpClient httpClient, Iterator<String> isbnIt, Set<String> alreadyCheckedIDs);
+
+    CompletableFuture<BibDataStandalone> locByTitle(AsyncHttpClient httpClient, String title, String yearStr, BibAuthors authors, Set<String> alreadyCheckedIDs);
+
+    CompletableFuture<BibDataStandalone> googleByIsbns(AsyncHttpClient httpClient, Iterator<String> isbnIt, Set<String> alreadyCheckedIDs);
+
+    CompletableFuture<BibDataStandalone> googleByTitle(AsyncHttpClient httpClient, String title, BibAuthors authors, Set<String> alreadyCheckedIDs);
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Ends the cascade with no result and no error: the terminal handler treats
+   * this exactly like the last stage completing empty. Thrown, never shown;
+   * carries no stack trace.
+   */
+  private static final class TerminateCascade extends RuntimeException
+  {
+    @Serial private static final long serialVersionUID = 1L;
+
+    private TerminateCascade() { super(null, null, false, false); }
+  }
+
+//---------------------------------------------------------------------------
+
+  private static final Sources PRODUCTION_SOURCES = new Sources()
+  {
+    @Override public CompletableFuture<BibDataStandalone> crossrefByDoi(AsyncHttpClient httpClient, String doi, Set<String> alreadyCheckedIDs)
+    {
+      CompletableFuture<BibDataStandalone> future = new CompletableFuture<>();
+      CrossrefBibData.doHttpRequest(httpClient, doi, alreadyCheckedIDs, future::complete, future::completeExceptionally);
+      return future;
+    }
+
+    @Override public CompletableFuture<BibDataStandalone> crossrefByTitle(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper,
+                                                                          BibAuthors authors, Set<String> alreadyCheckedIDs)
+    {
+      CompletableFuture<BibDataStandalone> future = new CompletableFuture<>();
+      CrossrefBibData.doHttpRequest(httpClient, title, yearStr, isPaper, authors, "", alreadyCheckedIDs, future::complete, future::completeExceptionally);
+      return future;
+    }
+
+    @Override public CompletableFuture<BibDataStandalone> locByIsbns(AsyncHttpClient httpClient, Iterator<String> isbnIt, Set<String> alreadyCheckedIDs)
+    {
+      CompletableFuture<BibDataStandalone> future = new CompletableFuture<>();
+      LibraryOfCongressBibData.doHttpRequest(httpClient, isbnIt, alreadyCheckedIDs, future::complete, future::completeExceptionally);
+      return future;
+    }
+
+    @Override public CompletableFuture<BibDataStandalone> locByTitle(AsyncHttpClient httpClient, String title, String yearStr, BibAuthors authors, Set<String> alreadyCheckedIDs)
+    {
+      CompletableFuture<BibDataStandalone> future = new CompletableFuture<>();
+      LibraryOfCongressBibData.doHttpRequest(httpClient, title, yearStr, authors, null, alreadyCheckedIDs, future::complete, future::completeExceptionally);
+      return future;
+    }
+
+    @Override public CompletableFuture<BibDataStandalone> googleByIsbns(AsyncHttpClient httpClient, Iterator<String> isbnIt, Set<String> alreadyCheckedIDs)
+    {
+      CompletableFuture<BibDataStandalone> future = new CompletableFuture<>();
+      GoogleBibData.doHttpRequest(httpClient, isbnIt, alreadyCheckedIDs, future::complete, future::completeExceptionally);
+      return future;
+    }
+
+    @Override public CompletableFuture<BibDataStandalone> googleByTitle(AsyncHttpClient httpClient, String title, BibAuthors authors, Set<String> alreadyCheckedIDs)
+    {
+      CompletableFuture<BibDataStandalone> future = new CompletableFuture<>();
+      GoogleBibData.doHttpRequest(httpClient, title, authors, null, alreadyCheckedIDs, future::complete, future::completeExceptionally);
+      return future;
+    }
+  };
+
+//---------------------------------------------------------------------------
+
+  private static Sources sourcesOverride = null;
+
   private BibData workBD = null;
   private BibDataStandalone queryBD = null;
   private PDFBibData pdfBD = null;
@@ -62,7 +169,8 @@ public class BibDataRetriever
   private final WorkTypeEnum workTypeEnum;
   private final List<FilePath> pdfFiles;
   private final RetrieveHandler doneHndlr;
-  private final EnumSet<BibSource> sources;
+  private final EnumSet<BibSource> enabledSources;
+  private final Sources sources;
 
   /**
    * Identifiers already queried, tracked separately per source.
@@ -84,7 +192,7 @@ public class BibDataRetriever
 //---------------------------------------------------------------------------
 
   private BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, List<FilePath> pdfFiles,
-                           EnumSet<BibSource> sources, RetrieveHandler doneHndlr)
+                           EnumSet<BibSource> enabledSources, RetrieveHandler doneHndlr)
   {
     this.pdfFiles = pdfFiles;
 
@@ -108,10 +216,24 @@ public class BibDataRetriever
 
     this.httpClient = httpClient;
     this.doneHndlr = doneHndlr;
-    this.sources = sources;
+    this.enabledSources = enabledSources;
 
-    doStage(1);
+    sources = sourcesOverride != null ? sourcesOverride : PRODUCTION_SOURCES;
+
+    runCascade();
   }
+
+//---------------------------------------------------------------------------
+
+  private Set<String> checkedIDs(BibSource source) { return alreadyCheckedIDs.computeIfAbsent(source, src -> new HashSet<>()); }
+  private boolean query(BibSource source)          { return enabledSources.contains(source) && ((source != BibSource.libraryOfCongress) || (locBlocked == false)); }
+  private boolean bookOrUnknownType()              { return (workTypeEnum == wtNone) || (workTypeEnum == wtBook); }
+
+  public void stop()                               { httpClient.stop(); stopped = true; }
+
+  static void setSourcesForTesting(Sources sources) { assertThatThisIsUnitTestThread(); sourcesOverride = sources; }
+
+  private static Throwable causeOf(Throwable throwable) { return ((throwable instanceof CompletionException) && (throwable.getCause() != null)) ? throwable.getCause() : throwable; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -153,21 +275,6 @@ public class BibDataRetriever
   }
 
 //---------------------------------------------------------------------------
-
-  private Set<String> checkedIDs(BibSource source) { return alreadyCheckedIDs.computeIfAbsent(source, src -> new HashSet<>()); }
-  private boolean query(BibSource source)          { return sources.contains(source) && ((source != BibSource.libraryOfCongress) || (locBlocked == false)); }
-  private boolean bookOrUnknownType()              { return (workTypeEnum == wtNone) || (workTypeEnum == wtBook); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void stop()
-  {
-    httpClient.stop();
-    stopped = true;
-  }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void finish(Exception e)
@@ -194,7 +301,7 @@ public class BibDataRetriever
       }
     }
 
-    if ((queryBD == null) && (pdfBD == null) && (messageShown == false) && sources.containsAll(EnumSet.allOf(BibSource.class)))
+    if ((queryBD == null) && (pdfBD == null) && (messageShown == false) && enabledSources.containsAll(EnumSet.allOf(BibSource.class)))
     {
       warningPopup("Unable to find bibliographic information in " +
                    (collEmpty(pdfFiles) ? "" : "work file(s) or ") +
@@ -209,273 +316,242 @@ public class BibDataRetriever
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void doStage(int stage)
+  /**
+   * Builds and runs the whole cascade. Each stage advances by completing with
+   * {@code null}; {@link #chain} skips the remaining stages once a stage has
+   * produced a result (or the retriever has been stopped). The stage order and
+   * every gate are the cascade's contract; see the individual stage methods.
+   */
+  private void runCascade()
   {
-    if (queryBD != null)
-    {
-      finish(null);
-      return;
-    }
+    String workTitle = workBD == null ? "" : workBD.getStr(bfTitle).strip(),
 
-    if (stage < 2)
-    {
-      //   if there is a DOI
-      //     if can get bib info from DOI
-      //       exit
-
-      if (query(BibSource.crossref))
-      {
-        String doi = workBD == null ? "" : workBD.getStr(bfDOI);
-        if (doi.length() > 0)
-        {
-          if (stopped) return;
-
-          CrossrefBibData.doHttpRequest(httpClient, doi, checkedIDs(BibSource.crossref), bd ->
-          {
-            queryBD = bd;
-            doStage(2);
-          }, this::finish);
-
-          return;
-        }
-      }
-    }
-
-    if (stage < 3)
-    {
-      //   if have PDF bib info
-      //     if PDF bib info has DOI
-      //       if can get bib info from DOI
-      //         exit
-
-      if (query(BibSource.crossref))
-      {
-        String doi = pdfBD == null ? "" : pdfBD.getStr(bfDOI);
-        if (doi.length() > 0)
-        {
-          if (stopped) return;
-
-          CrossrefBibData.doHttpRequest(httpClient, doi, checkedIDs(BibSource.crossref), bd ->
-          {
-            if ((HDT_WorkType.getEnumVal(bd == null ? null : bd.getWorkType()) != wtBook) || ((workTypeEnum != wtChapter) && (workTypeEnum != wtPaper)))
-              queryBD = bd;
-
-            doStage(3);
-          }, this::finish);
-
-          return;
-        }
-      }
-    }
-
-    String title = workBD == null ? "" : workBD.getStr(bfTitle).strip();
-    if (title.isBlank())
-      title = pdfBD == null ? "" : pdfBD.getStr(bfTitle).strip();
+           title = workTitle.isBlank() ? (pdfBD == null ? "" : pdfBD.getStr(bfTitle).strip()) : workTitle;
 
     BibAuthors authors = workBD == null ? null : workBD.getAuthors();
 
-    if (stage < 4)
+    CompletableFuture<BibDataStandalone> future = chain(stageCrossrefByWorkDoi(),
+
+      this::stageCrossrefByPdfDoi,
+      () -> stageCrossrefByTitleEarly(title, authors),
+      () -> stageIsbns(BibSource.libraryOfCongress, workBD),
+      () -> stageIsbns(BibSource.googleBooks      , workBD),
+      () -> stageIsbns(BibSource.libraryOfCongress, pdfBD),
+      () -> stageIsbns(BibSource.googleBooks      , pdfBD),
+
+    // With no title there is nothing left to search by; end the cascade here
+    // rather than running the title stages with an empty query
+
+      () -> title.isBlank() ? CompletableFuture.failedFuture(new TerminateCascade()) : CompletableFuture.completedFuture(null),
+
+      () -> stageTitle(BibSource.googleBooks      , title, authors),
+      () -> stageTitle(BibSource.libraryOfCongress, title, authors),
+      () -> stageCrossrefByTitleFinal(authors));
+
+    future.whenComplete((bd, throwable) ->
     {
-      //   if this is a newer book or a non-book
-      //     use title, year, and authors to query Crossref for DOI and bib info
-      //     if got bib info
-      //       exit
-
-      int year = workBD == null ? 0 : workBD.getDate().year.numericValueWhereMinusOneEqualsOneBC();
-
-      if ((year > 0) && query(BibSource.crossref) && (title.length() > 0) && ((workTypeEnum != wtBook) || (year >= 1995)))
-      {
-        if (stopped) return;
-
-        CrossrefBibData.doHttpRequest(httpClient, title, workBD.getYearStr(), workTypeEnum == wtPaper, authors, "", checkedIDs(BibSource.crossref), bd ->
-        {
-          searchedCrossref = true;
-          queryBD = bd;
-          doStage(4);
-
-        }, e ->
-        {
-          if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatusCode.SC_SERVICE_UNAVAILABLE))
-          {
-            searchedCrossref = true;
-            errorPopup(e);
-            doStage(4);
-          }
-          else
-            finish(null);
-        });
-
-        return;
-      }
-    }
-
-    if (stage < 5)
-    {
-      //   if this is a book or there is no work type
-      //     if there are 1 or more ISBNs
-      //       if can use existing ISBNs to get bib info from the Library of Congress
-      //         exit
-
-      if (query(BibSource.libraryOfCongress) && bookOrUnknownType())
-      {
-        List<String> isbns = workBD == null ? null : workBD.getMultiStr(bfISBNs);
-        if (collEmpty(isbns) == false)
-        {
-          if (stopped) return;
-
-          LibraryOfCongressBibData.doHttpRequest(httpClient, isbns.iterator(), checkedIDs(BibSource.libraryOfCongress), bd ->
-          {
-            queryBD = bd;
-            doStage(5);
-          }, advanceOnError(5));
-
-          return;
-        }
-      }
-    }
-
-    if (stage < 6)
-    {
-      //       otherwise try the same ISBNs against Google Books
-
-      if (query(BibSource.googleBooks) && bookOrUnknownType())
-      {
-        List<String> isbns = workBD == null ? null : workBD.getMultiStr(bfISBNs);
-        if (collEmpty(isbns) == false)
-        {
-          if (stopped) return;
-
-          GoogleBibData.doHttpRequest(httpClient, isbns.iterator(), checkedIDs(BibSource.googleBooks), bd ->
-          {
-            queryBD = bd;
-            doStage(6);
-          }, advanceOnError(6));
-
-          return;
-        }
-      }
-    }
-
-    if (stage < 7)
-    {
-      //     if have PDF bib info
-      //       if PDF bib info has ISBN(s)
-      //         if can use existing ISBNs to get bib info
-      //           exit
-
-      if (query(BibSource.libraryOfCongress) && bookOrUnknownType())
-      {
-        List<String> isbns = pdfBD == null ? null : pdfBD.getMultiStr(bfISBNs);
-        if (collEmpty(isbns) == false)
-        {
-          if (stopped) return;
-
-          LibraryOfCongressBibData.doHttpRequest(httpClient, isbns.iterator(), checkedIDs(BibSource.libraryOfCongress), bd ->
-          {
-            queryBD = bd;
-            doStage(7);
-          }, advanceOnError(7));
-
-          return;
-        }
-      }
-    }
-
-    if (stage < 8)
-    {
-      if (query(BibSource.googleBooks) && bookOrUnknownType())
-      {
-        List<String> isbns = pdfBD == null ? null : pdfBD.getMultiStr(bfISBNs);
-        if (collEmpty(isbns) == false)
-        {
-          if (stopped) return;
-
-          GoogleBibData.doHttpRequest(httpClient, isbns.iterator(), checkedIDs(BibSource.googleBooks), bd ->
-          {
-            queryBD = bd;
-            doStage(8);
-          }, advanceOnError(8));
-
-          return;
-        }
-      }
-    }
-
-    if (title.isBlank())
-    {
-      finish(null);
-      return;
-    }
-
-    if (stage < 9)
-    {
-      //     use title and authors to query Google for ISBN and bib info
-      //     if got bib info
-      //       exit
-      //
-      //     Google goes before LoC for title searches: the candidate scoring is tuned against
-      //     Google's relevance ranking, while LoC's title index is sensitive to subtitles and
-      //     punctuation.
-
-      if (query(BibSource.googleBooks) && bookOrUnknownType())
-      {
-        if (stopped) return;
-
-        GoogleBibData.doHttpRequest(httpClient, title, authors, null, checkedIDs(BibSource.googleBooks), bd ->
-        {
-          queryBD = bd;
-          doStage(9);
-        }, advanceOnError(9));
-
-        return;
-      }
-    }
-
-    if (stage < 10)
-    {
-      if (query(BibSource.libraryOfCongress) && bookOrUnknownType())
-      {
-        if (stopped) return;
-
-        LibraryOfCongressBibData.doHttpRequest(httpClient, title, workBD == null ? "" : workBD.getYearStr(), authors, null, checkedIDs(BibSource.libraryOfCongress), bd ->
-        {
-          queryBD = bd;
-          doStage(10);
-        }, advanceOnError(10));
-
-        return;
-      }
-    }
-
-    //   if didn't try to do so earlier,
-    //     use title, year, and authors to query Crossref for DOI and bib info
-
-    if (query(BibSource.crossref) && (searchedCrossref == false))
-    {
-      if (stopped) return;
-
-      title = workBD == null ? "" : workBD.getStr(bfTitle).strip();
-      String yearStr = workBD == null ? "" : workBD.getYearStr();
-
-      CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authors, "", checkedIDs(BibSource.crossref), bd ->
+      if (throwable == null)
       {
         queryBD = bd;
         finish(null);
-      }, this::finish);
+        return;
+      }
 
-      return;
-    }
+      Throwable cause = causeOf(throwable);
 
-    finish(null);
+      if (cause instanceof TerminateCascade)
+        finish(null);
+      else if (cause instanceof Exception e)
+        finish(e);
+      else
+        finish(new RuntimeException(cause));
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Runs each stage in turn, only while the chain so far has produced no result and the
+   *  retriever has not been stopped. (After a stop, completing with {@code null} suffices:
+   *  {@link #finish} ignores everything once stopped.) */
+  @SafeVarargs
+  private final CompletableFuture<BibDataStandalone> chain(CompletableFuture<BibDataStandalone> future, Supplier<CompletableFuture<BibDataStandalone>>... stages)
+  {
+    for (Supplier<CompletableFuture<BibDataStandalone>> stage : stages)
+      future = future.thenCompose(bd -> ((bd != null) || stopped) ? CompletableFuture.completedFuture(bd) : stage.get());
+
+    return future;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  //   if there is a DOI
+  //     if can get bib info from DOI
+  //       exit
+
+  private CompletableFuture<BibDataStandalone> stageCrossrefByWorkDoi()
+  {
+    if (query(BibSource.crossref) == false)
+      return CompletableFuture.completedFuture(null);
+
+    String doi = workBD == null ? "" : workBD.getStr(bfDOI);
+
+    if (doi.isEmpty())
+      return CompletableFuture.completedFuture(null);
+
+    // No error handler: a Crossref DOI failure ends the cascade with an error popup
+
+    return sources.crossrefByDoi(httpClient, doi, checkedIDs(BibSource.crossref));
+  }
+
+//---------------------------------------------------------------------------
+
+  //   if have PDF bib info
+  //     if PDF bib info has DOI
+  //       if can get bib info from DOI
+  //         exit
+
+  private CompletableFuture<BibDataStandalone> stageCrossrefByPdfDoi()
+  {
+    if (query(BibSource.crossref) == false)
+      return CompletableFuture.completedFuture(null);
+
+    String doi = pdfBD == null ? "" : pdfBD.getStr(bfDOI);
+
+    if (doi.isEmpty())
+      return CompletableFuture.completedFuture(null);
+
+    return sources.crossrefByDoi(httpClient, doi, checkedIDs(BibSource.crossref)).thenApply(bd ->
+    {
+      // A DOI scraped out of a PDF that resolves to a whole book, when the user
+      // said this work is a chapter or paper, is almost certainly the containing
+      // volume's DOI rather than this item's; discard it and keep searching
+
+      if ((HDT_WorkType.getEnumVal(bd == null ? null : bd.getWorkType()) == wtBook) && ((workTypeEnum == wtChapter) || (workTypeEnum == wtPaper)))
+        return null;
+
+      return bd;
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  //   if this is a newer book or a non-book
+  //     use title, year, and authors to query Crossref for DOI and bib info
+  //     if got bib info
+  //       exit
+
+  private CompletableFuture<BibDataStandalone> stageCrossrefByTitleEarly(String title, BibAuthors authors)
+  {
+    int year = workBD == null ? 0 : workBD.getDate().year.numericValueWhereMinusOneEqualsOneBC();
+
+    if ((year <= 0) || (query(BibSource.crossref) == false) || title.isEmpty() || ((workTypeEnum == wtBook) && (year < 1995)))
+      return CompletableFuture.completedFuture(null);
+
+    return sources.crossrefByTitle(httpClient, title, workBD.getYearStr(), workTypeEnum == wtPaper, authors, checkedIDs(BibSource.crossref))
+      .thenApply(bd ->
+      {
+        searchedCrossref = true;
+        return bd;
+      })
+      .exceptionallyCompose(throwable ->
+      {
+        Throwable cause = causeOf(throwable);
+
+        if ((cause instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatusCode.SC_SERVICE_UNAVAILABLE))
+        {
+          // Crossref is down for the moment; report it, count Crossref as searched
+          // so the final stage does not retry it, and let the other sources run
+
+          searchedCrossref = true;
+          errorPopup(hre);
+          return CompletableFuture.completedFuture(null);
+        }
+
+        // Any other failure here ends the cascade without an error popup
+
+        return CompletableFuture.failedFuture(new TerminateCascade());
+      });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  //   if this is a book or there is no work type
+  //     if there are 1 or more ISBNs (from the work record, then from the PDF)
+  //       try them against the Library of Congress, then against Google Books,
+  //       which holds more than LoC does
+
+  private CompletableFuture<BibDataStandalone> stageIsbns(BibSource source, BibData bd)
+  {
+    if ((query(source) == false) || (bookOrUnknownType() == false))
+      return CompletableFuture.completedFuture(null);
+
+    List<String> isbns = bd == null ? null : bd.getMultiStr(bfISBNs);
+
+    if (collEmpty(isbns))
+      return CompletableFuture.completedFuture(null);
+
+    CompletableFuture<BibDataStandalone> future = source == BibSource.libraryOfCongress ?
+      sources.locByIsbns   (httpClient, isbns.iterator(), checkedIDs(source))
+    :
+      sources.googleByIsbns(httpClient, isbns.iterator(), checkedIDs(source));
+
+    return advanceOnError(future);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  //     use title and authors to query for ISBN and bib info
+  //     if got bib info
+  //       exit
+  //
+  //     Google goes before LoC for title searches: the candidate scoring is tuned
+  //     against Google's relevance ranking, while LoC's title index is sensitive to
+  //     subtitles and punctuation.
+
+  private CompletableFuture<BibDataStandalone> stageTitle(BibSource source, String title, BibAuthors authors)
+  {
+    if ((query(source) == false) || (bookOrUnknownType() == false))
+      return CompletableFuture.completedFuture(null);
+
+    CompletableFuture<BibDataStandalone> future = source == BibSource.libraryOfCongress ?
+      sources.locByTitle   (httpClient, title, workBD == null ? "" : workBD.getYearStr(), authors, checkedIDs(source))
+    :
+      sources.googleByTitle(httpClient, title, authors, checkedIDs(source));
+
+    return advanceOnError(future);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  //   if didn't try to do so earlier,
+  //     use title, year, and authors to query Crossref for DOI and bib info
+
+  private CompletableFuture<BibDataStandalone> stageCrossrefByTitleFinal(BibAuthors authors)
+  {
+    if ((query(BibSource.crossref) == false) || searchedCrossref)
+      return CompletableFuture.completedFuture(null);
+
+    // Deliberately the work record's own title (no PDF fallback)
+
+    String title   = workBD == null ? "" : workBD.getStr(bfTitle).strip(),
+           yearStr = workBD == null ? "" : workBD.getYearStr();
+
+    return sources.crossrefByTitle(httpClient, title, yearStr, workTypeEnum == wtPaper, authors, checkedIDs(BibSource.crossref));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * Failure handler for stages that have a later stage to fall back to: the error is logged and
-   * the next stage runs, rather than aborting the whole cascade with a popup. A cancellation is
-   * still honored, since that came from the user.
+   * Error policy for stages that have a later stage to fall back to: the error is logged and
+   * the cascade advances, rather than ending with a popup. A cancellation still ends it,
+   * since that came from the user.
    * <p>
    * Every book source needs this, for its own reason. The Library of Congress SRU server is
    * plain HTTP on a nonstandard port, which some networks block outright. Google Books retired
@@ -489,29 +565,28 @@ public class BibDataRetriever
    * skipped for the rest of this retrieval.
    * </p>
    */
-  private Consumer<Exception> advanceOnError(int nextStage)
+  private CompletableFuture<BibDataStandalone> advanceOnError(CompletableFuture<BibDataStandalone> future)
   {
-    return e ->
+    return future.exceptionallyCompose(throwable ->
     {
-      if (e instanceof CancelledTaskException)
-      {
-        finish(e);
-        return;
-      }
+      Throwable cause = causeOf(throwable);
 
-      if (e instanceof LibraryOfCongressBibData.AccessBlockedException)
+      if (cause instanceof CancelledTaskException)
+        return CompletableFuture.failedFuture(cause);
+
+      if (cause instanceof LibraryOfCongressBibData.AccessBlockedException)
       {
         if (locBlocked == false)
         {
           locBlocked = true;
-          errorPopup(e);
+          errorPopup(cause);
         }
       }
       else
-        logThrowable(e);
+        logThrowable(cause);
 
-      doStage(nextStage);
-    };
+      return CompletableFuture.completedFuture(null);
+    });
   }
 
 //---------------------------------------------------------------------------

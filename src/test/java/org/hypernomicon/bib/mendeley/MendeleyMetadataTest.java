@@ -28,6 +28,7 @@ import org.hypernomicon.Const.PrefKey;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 //---------------------------------------------------------------------------
 
@@ -37,7 +38,13 @@ class MendeleyMetadataTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Checks the document types against the Mendeley server, so it runs only when online tests
+   * are enabled with {@code HN_ONLINE_TESTS=true}, and then only if a unit-test user is
+   * configured, since the call needs that user's access token.
+   */
   @Test
+  @EnabledIfEnvironmentVariable(named = "HN_ONLINE_TESTS", matches = "true")
   void documentTypesTest()
   {
     Preferences appPrefs = Preferences.userNodeForPackage(App.class);

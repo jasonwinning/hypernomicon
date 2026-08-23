@@ -35,6 +35,7 @@ import org.hypernomicon.util.json.JsonObj;
 import org.json.simple.parser.ParseException;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 //---------------------------------------------------------------------------
 
@@ -44,7 +45,9 @@ class ZoteroMetadataTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Fetches the item-type templates from the Zotero server, so it runs only when online tests are enabled with {@code HN_ONLINE_TESTS=true} */
   @Test
+  @EnabledIfEnvironmentVariable(named = "HN_ONLINE_TESTS", matches = "true")
   void templatesTest()
   {
     JsonArray jServerTemplatesArr;
