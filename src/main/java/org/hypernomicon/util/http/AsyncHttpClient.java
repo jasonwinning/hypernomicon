@@ -17,6 +17,7 @@
 
 package org.hypernomicon.util.http;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.HyperTask.HyperThread;
@@ -198,7 +199,10 @@ public class AsyncHttpClient
    */
   public static HttpRequest.Builder requestBuilder(String uriStr)
   {
-    return HttpRequest.newBuilder().uri(URI.create(uriStr));
+    // The application identifies itself to every service it talks to; callers that need a
+    // different User-Agent (browser-imitating file downloads) replace it with setHeader
+
+    return HttpRequest.newBuilder().uri(URI.create(uriStr)).setHeader(HttpHeader.User_Agent.toString(), HTTP_USER_AGENT);
   }
 
 //---------------------------------------------------------------------------

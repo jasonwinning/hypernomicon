@@ -188,7 +188,7 @@ public final class FileDownloadUtility
                                                                                    assumeIsImage, httpClient, successHndlr, failHndlr);
 
     HttpRequest request = AsyncHttpClient.requestBuilder(fileURL)
-      .header("User-Agent", MainTextWrapper.getUserAgent())
+      .setHeader(HttpHeader.User_Agent.toString(), MainTextWrapper.getUserAgent())  // Replaces the application's default User-Agent
       .GET()
       .build();
 

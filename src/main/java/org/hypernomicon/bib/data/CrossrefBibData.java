@@ -17,6 +17,7 @@
 
 package org.hypernomicon.bib.data;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.authors.Author.AuthorType.*;
@@ -275,14 +276,17 @@ public final class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, String yearStr, Iterable<Author> authors, boolean engCharForAuthors, CharSequence doi)
+  static String getQueryUrl(String title, String yearStr, Iterable<Author> authors, boolean engCharForAuthors, CharSequence doi)
   {
     String url = "https://api.crossref.org/works", auths = "", eds = "";
 
-    if (strNotNullOrEmpty(doi))
-      return url + '/' + doi;
+    // The mailto parameter (Crossref's own convention, also carried by the User-Agent)
+    // routes the request to Crossref's "polite" service pool
 
-    if (strNullOrBlank(title)) return url;
+    if (strNotNullOrEmpty(doi))
+      return url + '/' + doi + "?mailto=" + APP_CONTACT_EMAIL;
+
+    if (strNullOrBlank(title)) return url + "?mailto=" + APP_CONTACT_EMAIL;
 
     url = url + '?';
 
@@ -332,7 +336,7 @@ public final class CrossrefBibData extends BibDataStandalone
       url = url + "query.title=" + escapeURL(title, false);
     }
 
-    return url;
+    return url + "&mailto=" + APP_CONTACT_EMAIL;
   }
 
 //---------------------------------------------------------------------------

@@ -108,7 +108,9 @@ public final class Const
     BLANK_DB_RESOURCE_NAME = "resources/blank_db.zip",
     EXT_1 = "ext1://",
     LOCK_PROBE_SUFFIX = ".hntmp_",
-    LINK_GEN_FOLDER_NAME = "link-gen";
+    LINK_GEN_FOLDER_NAME = "link-gen",
+    APP_CONTACT_EMAIL = "contact@hypernomicon.org",
+    HTTP_USER_AGENT = "Hypernomicon/" + appVersion + " (https://hypernomicon.org; mailto:" + APP_CONTACT_EMAIL + ')';
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
