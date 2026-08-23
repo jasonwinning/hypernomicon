@@ -214,6 +214,8 @@ public class JsonHttpClient
     headers = response.headers();
     String contentType = headers.firstValue("Content-Type").orElse("");
 
+    boolean parsed = false;
+
     try (InputStream is = response.body())
     {
       if (contentType.toLowerCase().contains("json"))
@@ -223,21 +225,12 @@ public class JsonHttpClient
         if (obj instanceof JSONObject jObj)
         {
           jsonObj = new JsonObj(jObj);
-
-          if (successHndlr != null)
-            runInFXThread(() -> successHndlr.accept(this));
-
-          return true;
+          parsed = true;
         }
-
-        if (obj instanceof JSONArray jArr)
+        else if (obj instanceof JSONArray jArr)
         {
           jsonArray = new JsonArray(jArr);
-
-          if (successHndlr != null)
-            runInFXThread(() -> successHndlr.accept(this));
-
-          return true;
+          parsed = true;
         }
       }
     }
@@ -249,15 +242,28 @@ public class JsonHttpClient
       {
         boolean cancelledByUser = (httpClient != null) && httpClient.wasCancelledByUser();
         runInFXThread(() -> failHndlr.accept(cancelledByUser ? new CancelledTaskException() : e));
+        return false;
       }
     }
 
     if (HttpStatusCode.isError(statusCode))
     {
-      if (failHndlr != null)
-        runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, lastUrl)));
+      // Asynchronous callers get an error status as an exception even when the server
+      // described the error with a JSON body, which Google Books does: parsing that body
+      // as data used to fire the success handler, making a quota-rejected query look
+      // like a clean no-results miss.
 
-      return false;
+      if (failHndlr != null)
+      {
+        runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, lastUrl)));
+        return false;
+      }
+
+      // Synchronous callers (the reference-manager API wrappers) branch on getStatusCode()
+      // themselves and read the parsed error payload, so for them an error status is not a
+      // failure of this method; the result stays whether a JSON body was parsed.
+
+      return parsed;
     }
 
     if (successHndlr != null)
