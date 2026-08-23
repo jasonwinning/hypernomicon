@@ -25,6 +25,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.PersonName;
@@ -60,6 +61,18 @@ public class OmniFinder
   private final RecordType typeFilter;
   private final AtomicBoolean stopRequested = new AtomicBoolean(false);
   private final boolean incremental;
+
+  /**
+   * Search generation: bumped by the finder thread each time it starts over on a
+   * new query, and by {@link #stop()}. Every batch of rows the finder posts to the
+   * FX thread (and the done notification) carries the generation it was computed
+   * under and does nothing if a newer one has begun by the time it runs, so
+   * results of a superseded query never reach the table. This is what lets the
+   * finder move on to the next query without waiting for its pending posts to
+   * run: a wait there would have the finder blocked on the FX thread while
+   * {@code stop()}, on the FX thread, joins the finder.
+   */
+  private final AtomicInteger generation = new AtomicInteger(0);
 
   private volatile String query = "";
   private volatile Iterator<HDT_Record> altSource = null;
@@ -162,7 +175,7 @@ public class OmniFinder
     private Iterator<TierEnum> tierIt;
     private Iterator<? extends HDT_Record> recordIt;
     private Iterator<RecordType> typeIt;
-    private int rowNdx = 0, runLaters = 0;
+    private int rowNdx = 0, curGen = 0;
     private long startTime, nextInterval;
 
     private FinderThread()
@@ -195,8 +208,11 @@ public class OmniFinder
 
       done = false;
 
-      while (runLaters > 0)
-        sleepForMillis(5);
+      // Posts made for the previous query are now stale; they drop themselves
+      // on the FX thread (see generation), so there is nothing to wait for
+      // before the prebuilt rows are reused from the top
+
+      curGen = generation.incrementAndGet();
 
       rowNdx = 0;
       startTime = System.currentTimeMillis();
@@ -522,15 +538,17 @@ public class OmniFinder
 
       buffer.clear();
 
-      runLaters++;
-
       final boolean finalShowingMore = showingMore,
                     finalFirstBuffer = firstBuffer;
+
+      final int gen = curGen;
 
       firstBuffer = false;
 
       Platform.runLater(() ->
       {
+        if (gen != generation.get()) return;  // a newer query (or a stop) superseded this batch
+
         if (finalFirstBuffer == false)
           htFind.addDataRows(curRows);
         else
@@ -544,8 +562,6 @@ public class OmniFinder
         }
         else if (finalFirstBuffer)
           htFind.selectRow(0);
-
-        runLaters--;
       });
     }
 
@@ -575,8 +591,12 @@ public class OmniFinder
 
           if (done)
           {
+            final int gen = curGen;
+
             Platform.runLater(() ->
             {
+              if (gen != generation.get()) return;  // see generation
+
               if (doneHndlr != null)
                 doneHndlr.run();
               else
@@ -669,6 +689,12 @@ public class OmniFinder
     }
 
     finderThread = null;
+
+    // Invalidate any batches the finder posted before it saw the stop request;
+    // otherwise they would run after the clear below and repopulate the table
+
+    generation.incrementAndGet();
+
     runInFXThread(htFind::clear);
   }
 
