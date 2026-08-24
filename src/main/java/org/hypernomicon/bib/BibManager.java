@@ -543,7 +543,7 @@ public final class BibManager extends NonmodalWindow
     else
       pdfFilePaths = Collections.emptyList();
 
-    bibDataRetriever = new BibDataRetriever(httpClient, entry, pdfFilePaths, (pdfBD, queryBD, messageShown) ->
+    bibDataRetriever = new BibDataRetriever(httpClient, entry, pdfFilePaths, (pdfBD, queryBD, supplementBD, messageShown) ->
     {
       stop();
 
@@ -559,7 +559,7 @@ public final class BibManager extends NonmodalWindow
 
       try
       {
-        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(entry, pdfBD, queryBD), entry.getWork(), false, false, Ternary.False);
+        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(entry, pdfBD, queryBD, supplementBD), entry.getWork(), false, false, Ternary.False);
       }
       catch (IOException e)
       {

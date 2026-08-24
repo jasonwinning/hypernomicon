@@ -259,7 +259,7 @@ public class SelectWorkDlgCtrlr extends ModalDialog
     {
       setAllVisible(true, btnStop, progressBar);
 
-      bibDataRetriever = new BibDataRetriever(httpClient, null, safeListOf(filePathToUse), (pdfBD, queryBD, messageShown) ->
+      bibDataRetriever = new BibDataRetriever(httpClient, null, safeListOf(filePathToUse), (pdfBD, queryBD, _, messageShown) ->
       {
         setAllVisible(false, btnStop, progressBar);
 

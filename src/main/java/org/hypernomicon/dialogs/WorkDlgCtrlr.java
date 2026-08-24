@@ -884,7 +884,7 @@ public class WorkDlgCtrlr extends ModalDialog
     {
       changeToStopButton();
 
-      bibDataRetriever = new BibDataRetriever(httpClient, curBD, safeListOf(origFilePath), (pdfBD, queryBD, messageShown) ->
+      bibDataRetriever = new BibDataRetriever(httpClient, curBD, safeListOf(origFilePath), (pdfBD, queryBD, supplementBD, messageShown) ->
       {
         changeToClearButton();
 
@@ -897,7 +897,7 @@ public class WorkDlgCtrlr extends ModalDialog
         }
 
         if (doMerge)
-          doMerge(pdfBD, queryBD);
+          doMerge(pdfBD, queryBD, supplementBD);
         else if ((queryBD != null) && queryBD.fromOnlineSource())
           populateFieldsFromBibData(queryBD, true, true);
         else
@@ -942,7 +942,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     if (doMerge)
     {
-      doMerge(pdfBD, null);
+      doMerge(pdfBD, null, null);
     }
     else
     {
@@ -953,14 +953,14 @@ public class WorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void doMerge(BibData bd1, BibData bd2)
+  private void doMerge(BibData bd1, BibData bd2, BibData bd3)
   {
     getBibDataFromGUI();
     MergeWorksDlgCtrlr mwd = null;
 
     try
     {
-      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(curBD, bd1, bd2), curWork, false, curWork.getBibEntryKey().isBlank(),
+      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(curBD, bd1, bd2, bd3), curWork, false, curWork.getBibEntryKey().isBlank(),
                                    chkCreateBibEntry.isSelected() ? Ternary.True : Ternary.Unset, origFilePath);
     }
     catch (IOException e)
@@ -1082,7 +1082,7 @@ public class WorkDlgCtrlr extends ModalDialog
         return;
       }
 
-      doMerge(queryBD, null);
+      doMerge(queryBD, null, null);
     };
 
     GUIBibData bd = new GUIBibData();

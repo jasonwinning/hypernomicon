@@ -1854,7 +1854,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tabPane.getSelectionModel().select(tabBibDetails);
     setAllVisible(true, btnStop, progressBar);
 
-    bibDataRetriever = new BibDataRetriever(httpClient, workBD, pdfFilePaths, (pdfBD, queryBD, messageShown) ->
+    bibDataRetriever = new BibDataRetriever(httpClient, workBD, pdfFilePaths, (pdfBD, queryBD, supplementBD, messageShown) ->
     {
       setAllVisible(false, btnStop, progressBar);
       if ((pdfBD == null) && (queryBD == null))
@@ -1869,7 +1869,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       try
       {
-        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBD, pdfBD, queryBD), curWork, false, true, Ternary.Unset);
+        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBD, pdfBD, queryBD, supplementBD), curWork, false, true, Ternary.Unset);
       }
       catch (IOException e)
       {

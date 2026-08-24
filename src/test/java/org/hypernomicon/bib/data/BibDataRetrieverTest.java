@@ -19,6 +19,7 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.util.Util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +33,7 @@ import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.items.BibliographicDate;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.PopupRobot;
 import org.hypernomicon.util.http.*;
 
@@ -122,14 +124,15 @@ class BibDataRetrieverTest
   private static final class Result
   {
     private PDFBibData pdfBD;
-    private BibDataStandalone queryBD;
+    private BibDataStandalone queryBD, supplementBD;
     private boolean messageShown;
     private int timesCalled = 0;
 
-    private void handle(PDFBibData pdfBD, BibDataStandalone queryBD, boolean messageShown)
+    private void handle(PDFBibData pdfBD, BibDataStandalone queryBD, BibDataStandalone supplementBD, boolean messageShown)
     {
       this.pdfBD = pdfBD;
       this.queryBD = queryBD;
+      this.supplementBD = supplementBD;
       this.messageShown = messageShown;
       timesCalled++;
     }
@@ -194,9 +197,11 @@ class BibDataRetrieverTest
     Result result = new Result();
     noOp(new BibDataRetriever(httpClient, bookBD(), null, result::handle));
 
-    assertEquals(List.of("crossrefDoi"), fakeSources.ops(), "a hit must prevent every later stage");
+    assertEquals(List.of("crossrefDoi", "locIsbn", "locTitle"), fakeSources.ops(),
+                 "a hit must prevent every later stage; for a Crossref book win, the LC supplement still runs (ISBN, then title on a miss)");
     assertEquals(1, result.timesCalled, "the handler runs exactly once, synchronously here");
     assertSame(found, result.queryBD);
+    assertNull(result.supplementBD, "LC supplement missed here (default scripted misses)");
     assertFalse(result.messageShown);
     assertEquals(0, PopupRobot.getInvocationCount());
   }
@@ -225,7 +230,7 @@ class BibDataRetrieverTest
    *  ran first consume every identifier and leave the next one nothing to query. */
   @Test void dedupeSetsArePerSourceAndStablePerSource()
   {
-    noOp(new BibDataRetriever(httpClient, bookBD(), null, (pdfBD, queryBD, ms) -> { }));
+    noOp(new BibDataRetriever(httpClient, bookBD(), null, (pdfBD, queryBD, supplementBD, ms) -> { }));
 
     Map<String, Set<String>> opToSet = new HashMap<>();
 
@@ -407,6 +412,138 @@ class BibDataRetrieverTest
     assertEquals(List.of("crossrefTitle"), fakeSources.ops());
     assertEquals(1, PopupRobot.getInvocationCount(), "only the nothing-found warning; the failure itself stays silent");
     assertEquals(AlertType.WARNING, PopupRobot.getLastType());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The book supplement: a Crossref win for a book pulls the LC record in alongside it,
+   *  because the two are complementary (Crossref has the DOI, LC the cataloged fields). */
+  @Test void crossrefBookWinFetchesTheLocSupplement()
+  {
+    GUIBibData crossrefHit = hit(), locHit = hit();
+
+    fakeSources.script.add(CompletableFuture.completedFuture(crossrefHit));  // crossrefDoi: hit
+    fakeSources.script.add(CompletableFuture.completedFuture(locHit));       // locIsbn supplement: hit
+
+    Result result = new Result();
+    noOp(new BibDataRetriever(httpClient, bookBD(), null, result::handle));
+
+    assertEquals(List.of("crossrefDoi", "locIsbn"), fakeSources.ops());
+    assertSame(crossrefHit, result.queryBD, "the supplement must not displace the winner");
+    assertSame(locHit, result.supplementBD);
+    assertFalse(result.messageShown);
+    assertEquals(0, PopupRobot.getInvocationCount());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The supplement's ISBN lookup draws on the Crossref record's own ISBNs too,
+   *  which raises LoC's hit rate when the work record lacks one. */
+  @Test void supplementIsbnsIncludeTheCrossrefRecords()
+  {
+    GUIBibData crossrefHit = hit();
+    crossrefHit.setMultiStr(bfISBNs, List.of("9780975229804"));
+
+    fakeSources.script.add(CompletableFuture.completedFuture(crossrefHit));
+
+    noOp(new BibDataRetriever(httpClient, bookBD(), null, (pdfBD, queryBD, supplementBD, ms) -> { }));
+
+    assertEquals("locIsbn", fakeSources.calls.get(1).op());
+    assertEquals(List.of(VALID_ISBN, "9780975229804"), fakeSources.calls.get(1).isbns(),
+                 "work-record ISBNs first, then the Crossref record's");
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The supplement falls back to an LC title search when the ISBN lookup misses. */
+  @Test void supplementFallsBackToTitleSearch()
+  {
+    GUIBibData crossrefHit = hit(), locHit = hit();
+
+    fakeSources.script.add(CompletableFuture.completedFuture(crossrefHit));  // crossrefDoi: hit
+    fakeSources.script.add(CompletableFuture.completedFuture(null));         // locIsbn supplement: miss
+    fakeSources.script.add(CompletableFuture.completedFuture(locHit));       // locTitle supplement: hit
+
+    Result result = new Result();
+    noOp(new BibDataRetriever(httpClient, bookBD(), null, result::handle));
+
+    assertEquals(List.of("crossrefDoi", "locIsbn", "locTitle"), fakeSources.ops());
+    assertSame(crossrefHit, result.queryBD);
+    assertSame(locHit, result.supplementBD);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** No supplement for non-books: LC is a book source, and the complementarity
+   *  argument is about book metadata. */
+  @Test void noSupplementForPapers()
+  {
+    GUIBibData bd = new GUIBibData();
+    bd.setWorkType(HDT_WorkType.get(wtPaper));
+    bd.setTitle("Some Paper");
+    bd.setStr(bfDOI, "10.1234/abc123");
+
+    fakeSources.script.add(CompletableFuture.completedFuture(hit()));
+
+    Result result = new Result();
+    noOp(new BibDataRetriever(httpClient, bd, null, result::handle));
+
+    assertEquals(List.of("crossrefDoi"), fakeSources.ops());
+    assertNull(result.supplementBD);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** No supplement when LC itself won: it only exists to compensate for the
+   *  Crossref stages running first. */
+  @Test void noSupplementWhenLocWasTheWinner()
+  {
+    GUIBibData locHit = hit();
+
+    fakeSources.script.add(CompletableFuture.completedFuture(null));    // crossrefDoi: miss
+    fakeSources.script.add(CompletableFuture.completedFuture(locHit));  // locIsbn: hit (the winner)
+
+    Result result = new Result();
+    noOp(new BibDataRetriever(httpClient, bookBD(), null, result::handle));
+
+    assertEquals(List.of("crossrefDoi", "locIsbn"), fakeSources.ops());
+    assertSame(locHit, result.queryBD);
+    assertNull(result.supplementBD);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** A supplement failure is logged and ignored; it must never disturb the winner. */
+  @Test void supplementFailureKeepsTheWinner()
+  {
+    GUIBibData crossrefHit = hit();
+
+    fakeSources.script.add(CompletableFuture.completedFuture(crossrefHit));                                 // crossrefDoi: hit
+    fakeSources.script.add(CompletableFuture.failedFuture(new HttpResponseException(500, "http://test")));  // locIsbn supplement: fails
+
+    Result result = new Result();
+    noOp(new BibDataRetriever(httpClient, bookBD(), null, result::handle));
+
+    assertSame(crossrefHit, result.queryBD);
+    assertNull(result.supplementBD);
+    assertFalse(result.messageShown);
+    assertEquals(0, PopupRobot.getInvocationCount());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The single-source Crossref factory has LC disabled, so no supplement. */
+  @Test void singleSourceCrossrefDoesNotSupplement()
+  {
+    List<BibDataStandalone> results = new ArrayList<>();
+
+    fakeSources.script.add(CompletableFuture.completedFuture(hit()));
+
+    BibDataRetriever.forCrossref(httpClient, bookBD(), results::add);
+
+    assertEquals(List.of("crossrefDoi"), fakeSources.ops());
+    assertEquals(1, results.size());
+    assertNotNull(results.getFirst());
   }
 
 //---------------------------------------------------------------------------

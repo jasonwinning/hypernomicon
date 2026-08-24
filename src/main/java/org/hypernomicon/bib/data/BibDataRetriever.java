@@ -30,6 +30,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
@@ -66,8 +68,15 @@ public class BibDataRetriever
 
 //---------------------------------------------------------------------------
 
+  /**
+   * Receives the cascade's outcome. {@code supplementBD} is the Library of Congress record
+   * fetched in addition to a Crossref win for a book (see the book-supplement step in the
+   * cascade): the two are complementary for books, Crossref holding the DOI and LoC holding
+   * the cataloged fields, so merge flows present both. It is {@code null} whenever no
+   * supplement applies.
+   */
   @FunctionalInterface
-  public interface RetrieveHandler { void handle(PDFBibData pdfBD, BibDataStandalone queryBD, boolean messageShown); }
+  public interface RetrieveHandler { void handle(PDFBibData pdfBD, BibDataStandalone queryBD, BibDataStandalone supplementBD, boolean messageShown); }
 
 //---------------------------------------------------------------------------
 
@@ -161,9 +170,9 @@ public class BibDataRetriever
   private static Sources sourcesOverride = null;
 
   private BibData workBD = null;
-  private BibDataStandalone queryBD = null;
+  private BibDataStandalone queryBD = null, supplementBD = null;
   private PDFBibData pdfBD = null;
-  private boolean stopped = false, searchedCrossref = false, locBlocked = false;
+  private boolean stopped = false, searchedCrossref = false, locBlocked = false, winnerFromCrossref = false;
 
   private final AsyncHttpClient httpClient;
   private final WorkTypeEnum workTypeEnum;
@@ -225,12 +234,12 @@ public class BibDataRetriever
 
 //---------------------------------------------------------------------------
 
-  private Set<String> checkedIDs(BibSource source) { return alreadyCheckedIDs.computeIfAbsent(source, src -> new HashSet<>()); }
-  private boolean bookOrUnknownType()              { return (workTypeEnum == wtNone) || (workTypeEnum == wtBook); }
+  private Set<String> checkedIDs(BibSource source)      { return alreadyCheckedIDs.computeIfAbsent(source, src -> new HashSet<>()); }
+  private boolean bookOrUnknownType()                   { return (workTypeEnum == wtNone) || (workTypeEnum == wtBook); }
 
-  public void stop()                               { httpClient.stop(); stopped = true; }
+  public void stop()                                    { httpClient.stop(); stopped = true; }
 
-  static void setSourcesForTesting(Sources sources) { assertThatThisIsUnitTestThread(); sourcesOverride = sources; }
+  static void setSourcesForTesting(Sources sources)     { assertThatThisIsUnitTestThread(); sourcesOverride = sources; }
 
   private static Throwable causeOf(Throwable throwable) { return ((throwable instanceof CompletionException) && (throwable.getCause() != null)) ? throwable.getCause() : throwable; }
 
@@ -239,7 +248,7 @@ public class BibDataRetriever
 
   private static BibDataRetriever forSources(AsyncHttpClient httpClient, BibData workBD, EnumSet<BibSource> sources, Consumer<BibDataStandalone> doneHndlr)
   {
-    return new BibDataRetriever(httpClient, workBD, null, sources, (pdfBD, queryBD, ms) -> doneHndlr.accept(queryBD));
+    return new BibDataRetriever(httpClient, workBD, null, sources, (pdfBD, queryBD, supplementBD, ms) -> doneHndlr.accept(queryBD));
   }
 
 //---------------------------------------------------------------------------
@@ -291,6 +300,7 @@ public class BibDataRetriever
       {
         pdfBD = null;
         queryBD = null;
+        supplementBD = null;
         messageShown = true;
       }
       else
@@ -309,7 +319,7 @@ public class BibDataRetriever
       messageShown = true;
     }
 
-    doneHndlr.handle(pdfBD, queryBD, messageShown);
+    doneHndlr.handle(pdfBD, queryBD, supplementBD, messageShown);
   }
 
 //---------------------------------------------------------------------------
@@ -347,6 +357,8 @@ public class BibDataRetriever
       () -> stageTitle(BibSource.libraryOfCongress, title, authors),
       () -> stageCrossrefByTitleFinal(authors));
 
+    future = future.thenCompose(bd -> addBookSupplement(bd, title));
+
     future.whenComplete((bd, throwable) ->
     {
       if (throwable == null)
@@ -370,11 +382,82 @@ public class BibDataRetriever
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Marks the winner as having come from a Crossref stage, which is what makes the
+   *  book-supplement step applicable; see {@link #addBookSupplement}. */
+  private BibDataStandalone markCrossrefWinner(BibDataStandalone bd)
+  {
+    if (bd != null)
+      winnerFromCrossref = true;
+
+    return bd;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The book-supplement step: when the cascade's winner came from Crossref and the work is a
+   * book (or untyped), the Library of Congress is consulted anyway and its record delivered
+   * alongside the winner, because the two are complementary for books. Crossref is the only
+   * source of the DOI, while LoC's hand-cataloged records carry the fields Crossref's book
+   * records lack (publisher, place, edition, series, language, contributor roles); the
+   * Crossref stages run first, so without this step LoC would never be consulted for exactly
+   * the books it describes best. The merge flows present both records; nothing merges them
+   * automatically.
+   * <p>
+   * The ISBN lookup draws on the work's and PDF's ISBNs plus any the Crossref record itself
+   * carries, falling back to a title search. A supplement failure never disturbs the winner:
+   * it is logged and the supplement stays {@code null}, except for a user cancellation,
+   * which ends everything as usual.
+   */
+  private CompletableFuture<BibDataStandalone> addBookSupplement(BibDataStandalone bd, String title)
+  {
+    if ((bd == null) || (winnerFromCrossref == false) || stopped ||
+        (query(BibSource.libraryOfCongress) == false) || (bookOrUnknownType() == false))
+      return CompletableFuture.completedFuture(bd);
+
+    Set<String> isbns = Stream.of(workBD, pdfBD, bd).filter(Objects::nonNull)
+                                                    .flatMap(source -> source.getMultiStr(bfISBNs).stream())
+                                                    .collect(Collectors.toCollection(LinkedHashSet::new));
+
+    if (isbns.isEmpty() && title.isBlank())
+      return CompletableFuture.completedFuture(bd);
+
+    CompletableFuture<BibDataStandalone> suppFuture = isbns.isEmpty() ?
+      CompletableFuture.completedFuture(null)
+    :
+      sources.locByIsbns(httpClient, isbns.iterator(), checkedIDs(BibSource.libraryOfCongress));
+
+    return suppFuture
+      .thenCompose(supp -> ((supp != null) || title.isBlank() || stopped) ?
+        CompletableFuture.completedFuture(supp)
+      :
+        sources.locByTitle(httpClient, title, workBD == null ? "" : workBD.getYearStr(), workBD == null ? null : workBD.getAuthors(), checkedIDs(BibSource.libraryOfCongress)))
+      .exceptionallyCompose(throwable ->
+      {
+        Throwable cause = causeOf(throwable);
+
+        if (cause instanceof CancelledTaskException)
+          return CompletableFuture.failedFuture(cause);
+
+        logThrowable(cause);
+        return CompletableFuture.completedFuture(null);
+      })
+      .thenApply(supp ->
+      {
+        supplementBD = supp;
+        return bd;
+      });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /** Runs each stage in turn, only while the chain so far has produced no result and the
    *  retriever has not been stopped. (After a stop, completing with {@code null} suffices:
    *  {@link #finish} ignores everything once stopped.) */
   @SafeVarargs
-  private final CompletableFuture<BibDataStandalone> chain(CompletableFuture<BibDataStandalone> future, Supplier<CompletableFuture<BibDataStandalone>>... stages)
+  private CompletableFuture<BibDataStandalone> chain(CompletableFuture<BibDataStandalone> future, Supplier<CompletableFuture<BibDataStandalone>>... stages)
   {
     for (Supplier<CompletableFuture<BibDataStandalone>> stage : stages)
       future = future.thenCompose(bd -> ((bd != null) || stopped) ? CompletableFuture.completedFuture(bd) : stage.get());
@@ -402,7 +485,7 @@ public class BibDataRetriever
 
       case googleBooks       -> GoogleBibData.apiKeyConfigured();
 
-      // Once the Library of Congress has answered with its block page, every later LC stage
+      // Once the Library of Congress has answered with its block page, every later LoC stage
       // would get the same page (see advanceOnError, which reports it once)
 
       case libraryOfCongress -> locBlocked == false;
@@ -430,7 +513,7 @@ public class BibDataRetriever
 
     // No error handler: a Crossref DOI failure ends the cascade with an error popup
 
-    return sources.crossrefByDoi(httpClient, doi, checkedIDs(BibSource.crossref));
+    return sources.crossrefByDoi(httpClient, doi, checkedIDs(BibSource.crossref)).thenApply(this::markCrossrefWinner);
   }
 
 //---------------------------------------------------------------------------
@@ -459,7 +542,7 @@ public class BibDataRetriever
       if ((HDT_WorkType.getEnumVal(bd == null ? null : bd.getWorkType()) == wtBook) && ((workTypeEnum == wtChapter) || (workTypeEnum == wtPaper)))
         return null;
 
-      return bd;
+      return markCrossrefWinner(bd);
     });
   }
 
@@ -482,7 +565,7 @@ public class BibDataRetriever
       .thenApply(bd ->
       {
         searchedCrossref = true;
-        return bd;
+        return markCrossrefWinner(bd);
       })
       .exceptionallyCompose(throwable ->
       {
@@ -570,7 +653,7 @@ public class BibDataRetriever
     String title   = workBD == null ? "" : workBD.getStr(bfTitle).strip(),
            yearStr = workBD == null ? "" : workBD.getYearStr();
 
-    return sources.crossrefByTitle(httpClient, title, yearStr, workTypeEnum == wtPaper, authors, checkedIDs(BibSource.crossref));
+    return sources.crossrefByTitle(httpClient, title, yearStr, workTypeEnum == wtPaper, authors, checkedIDs(BibSource.crossref)).thenApply(this::markCrossrefWinner);
   }
 
 //---------------------------------------------------------------------------
