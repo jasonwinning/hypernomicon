@@ -98,7 +98,10 @@ public final class GoogleBibData extends BibDataStandalone
 
       if (jsonArray.isEmpty()) return null;
 
-      if ((jsonArray.size() == 1) || strNullOrBlank(title))
+      // Only an ISBN lookup, which has no title to check against, takes the first result as it
+      // comes; a lone title-search result is checked like any other
+
+      if (strNullOrBlank(title))
         return new GoogleBibData(jsonArray.getObj(0).getObj("volumeInfo"), queryIsbn);
 
       LevenshteinDistance alg = LevenshteinDistance.getDefaultInstance();

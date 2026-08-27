@@ -89,7 +89,12 @@ public final class CrossrefBibData extends BibDataStandalone
       if (jsonArray.isEmpty())
         return null;
 
-      if ((jsonArray.size() == 1) || strNullOrBlank(title))
+      // Only a search with no title to check against takes the first result as it comes. A
+      // lone result is checked like any other: Crossref's relevance search returns whatever
+      // scores best for the words given, so a single hit can be some other work by the same
+      // author, such as an article of theirs when the book being sought is not in Crossref.
+
+      if (strNullOrBlank(title))
         return new CrossrefBibData(jsonArray.getObj(0), queryDoi);
     }
     catch (NullPointerException | IndexOutOfBoundsException e)
@@ -115,7 +120,7 @@ public final class CrossrefBibData extends BibDataStandalone
       }
     }
 
-    // There are multiple matches but no exact year and title match
+    // No exact year and title match
 
     LevenshteinDistance alg = LevenshteinDistance.getDefaultInstance();
     CrossrefBibData bestBD = null;
