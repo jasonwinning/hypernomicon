@@ -1320,6 +1320,41 @@ public final class Util
 //---------------------------------------------------------------------------
 
   /**
+   * Canonicalizes an ISBN for identity comparison: a 10-character ISBN is converted to its
+   * ISBN-13 form (the "978" Bookland prefix plus a recomputed check digit), so the two
+   * printed forms of the same book compare equal; a 13-digit ISBN just has its separators
+   * removed. The conversion is deterministic for any input and does not validate: an
+   * unconvertible string is returned stripped of separators, which is all that identity
+   * comparison needs.
+   *
+   * @param isbn the ISBN in either form, with or without separators
+   * @return the canonical form for identity comparison
+   */
+  public static String convertToISBN13(String isbn)
+  {
+    String cleaned = safeStr(isbn).replaceAll("[^0-9Xx]", "").toUpperCase(Locale.ROOT);
+
+    if (cleaned.length() != 10) return cleaned;
+
+    String base = "978" + cleaned.substring(0, 9);  // The ISBN-10 check digit is dropped; ISBN-13 recomputes its own
+
+    if (base.chars().allMatch(Character::isDigit) == false) return cleaned;
+
+    int sum = 0;
+
+    for (int ndx = 0; ndx < 12; ndx++)
+    {
+      int coeff = ((ndx % 2) * 2) + 1;
+      sum += coeff * parseInt(String.valueOf(base.charAt(ndx)), -1);
+    }
+
+    return base + ((10 - (sum % 10)) % 10);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Detects the charset of the given byte array using the ICU CharsetDetector.
    *
    * <p>This method uses the ICU4J library's CharsetDetector to analyze the given byte array

@@ -229,7 +229,11 @@ public final class GoogleBibData extends BibDataStandalone
       while (isbn.isBlank() && isbnIt.hasNext())
       {
         isbn = isbnIt.next();
-        if (alreadyCheckedIDs.contains(isbn.toLowerCase()))
+
+        // Canonicalized to ISBN-13, so the ISBN-10 and ISBN-13 forms of the same
+        // book (e.g. one from the work record and one from the PDF) dedupe as one
+
+        if (alreadyCheckedIDs.contains(convertToISBN13(isbn)))
           isbn = "";
       }
     }
@@ -240,7 +244,9 @@ public final class GoogleBibData extends BibDataStandalone
       return;
     }
 
-    alreadyCheckedIDs.add(isbn.toLowerCase());
+    if (isbn.isBlank() == false)
+      alreadyCheckedIDs.add(convertToISBN13(isbn));
+
     String finalIsbn = isbn;
     List<String> authKeywords = new ArrayList<>();
     String url = getQueryUrl(title, authors, authKeywords, isbn);

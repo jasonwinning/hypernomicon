@@ -248,6 +248,22 @@ class DocIdentifiersTest
   }
 
 //---------------------------------------------------------------------------
+
+  @Test
+  void testConvertToISBN13()
+  {
+    assertEquals("9780140449266", convertToISBN13("0140449264"), "ISBN-10 converts with a recomputed check digit");
+    assertEquals("9780140449266", convertToISBN13("0-14-044926-4"), "separators are removed before converting");
+    assertEquals("9780975229804", convertToISBN13("097522980X"), "an X check digit is dropped by the conversion");
+    assertEquals("9780975229804", convertToISBN13("097522980x"), "lowercase x");
+    assertEquals("9780140449266", convertToISBN13("9780140449266"), "ISBN-13 passes through");
+    assertEquals("9780140449266", convertToISBN13("978-0-14-044926-6"), "ISBN-13 separators are removed");
+    assertEquals("", convertToISBN13(""), "blank stays blank");
+    assertEquals("", convertToISBN13(null), "null becomes blank");
+    assertEquals("12345", convertToISBN13("12345"), "unconvertible input is returned stripped of separators");
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }
