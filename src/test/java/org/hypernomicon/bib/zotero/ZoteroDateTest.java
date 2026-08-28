@@ -242,6 +242,28 @@ class ZoteroDateTest
 
   //---------------------------------------------------------------------------
 
+    msg = "Should parse circa prefix abbreviated as c or c.";
+
+    bibDate = BibliographicDate.fromUserStr("c1992 BC");
+    assertEquals(0, bibDate.month, msg);
+    assertEquals(0, bibDate.day, msg);
+    assertEquals(-1992, bibDate.year.numericValueWhereMinusOneEqualsOneBC(), msg);
+    assertEquals("c1992 BC", bibDate.year.rawValue, msg);
+
+    bibDate = BibliographicDate.fromUserStr("c400 CE");
+    assertEquals(400, bibDate.year.numericValueWhereMinusOneEqualsOneBC(), msg);
+    assertEquals("c400 CE", bibDate.year.rawValue, msg);
+
+    bibDate = BibliographicDate.fromUserStr("c. 1992 BC");
+    assertEquals(-1992, bibDate.year.numericValueWhereMinusOneEqualsOneBC(), msg);
+    assertEquals("c. 1992 BC", bibDate.year.rawValue, msg);
+
+    bibDate = BibliographicDate.fromUserStr("circa 1992 BC");  // Worked before the fix; guards the sibling prefixes against regression
+    assertEquals(-1992, bibDate.year.numericValueWhereMinusOneEqualsOneBC(), msg);
+    assertEquals("circa 1992 BC", bibDate.year.rawValue, msg);
+
+  //---------------------------------------------------------------------------
+
   }
 
 //---------------------------------------------------------------------------

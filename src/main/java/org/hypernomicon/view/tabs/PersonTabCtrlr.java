@@ -1052,7 +1052,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
   {
     updateWebButtons(node, WebButtonContextPrefKey.PERSON, 2, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
 
-    btnWebSrch2.setText(ui.webButtonMap.get(WebButtonContextPrefKey.PERSON + '2').getCaption());
+    btnWebSrch2.setText(ui.webButtonCaption(WebButtonContextPrefKey.PERSON + '2'));
   }
 
 //---------------------------------------------------------------------------

@@ -48,7 +48,11 @@ public abstract class BibAuthors implements Iterable<Author>
   public boolean isEmpty()                { return iterator().hasNext() == false; }
   public Stream<Author> stream()          { return iterableToStream(this); }
   public String getStr()                  { return Author.getLongAuthorsStr(stream()); }
-  public boolean notAllEngCharLastNames() { return stream().allMatch(author -> author.getName().toEngChar().getLast().equals(author.getName().getLast())); }
+
+  /** Whether at least one author's last name changes under transliteration to English
+   *  characters; callers use this to decide whether re-querying with the untransliterated
+   *  names could produce a different result. */
+  public boolean notAllEngCharLastNames() { return stream().anyMatch(author -> author.getName().toEngChar().getLast().equals(author.getName().getLast()) == false); }
 
   public static boolean isEmpty(BibAuthors bibAuthors) { return (bibAuthors == null) || bibAuthors.isEmpty(); }
 

@@ -198,6 +198,10 @@ public final class CrossrefBibData extends BibDataStandalone
   }
 
 //---------------------------------------------------------------------------
+
+  @Override public boolean fromOnlineSource() { return true; }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void setDateIfPresent(JsonObj jsonObj, DateType dt)
@@ -357,13 +361,16 @@ public final class CrossrefBibData extends BibDataStandalone
   private static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, BibAuthors authors, boolean engCharForAuthors,
                                     String doi, Set<String> alreadyCheckedIDs, Consumer<CrossrefBibData> successHndlr, Consumer<Exception> failHndlr)
   {
-    if (strNotNullOrEmpty(doi) && alreadyCheckedIDs.contains(doi.toLowerCase()))
+    if (strNotNullOrEmpty(doi))
     {
-      successHndlr.accept(null);
-      return;
-    }
+      if (alreadyCheckedIDs.contains(doi.toLowerCase()))
+      {
+        successHndlr.accept(null);
+        return;
+      }
 
-    alreadyCheckedIDs.add(doi.toLowerCase());
+      alreadyCheckedIDs.add(doi.toLowerCase());
+    }
 
     JsonHttpClient.getObjAsync(getQueryUrl(title, yearStr, authors, engCharForAuthors, doi), httpClient, jsonObj ->
     {

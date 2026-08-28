@@ -20,8 +20,7 @@ package org.hypernomicon.settings;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -39,7 +38,20 @@ abstract class WebButtonCtrl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static final String CUSTOM_NAME = "Custom";
+  static final String CUSTOM_NAME = "Custom",
+                      LIBRARY_OF_CONGRESS_NAME = "Library of Congress";
+
+  /**
+   * Presets that have been replaced, mapped to what replaced them.
+   * <p>
+   * Preferences record a non-custom preset only by name, so a name that no longer exists in
+   * the preset list is silently dropped by {@link #loadPref}. For a slot within the defaults
+   * list that means quietly reverting to the default; for a slot beyond it, nothing is put in
+   * the button map at all, and the slot's button ends up with no caption. Remapping the old
+   * name avoids both, and preserves the user's intent of having chosen a library catalog search.
+   * </p>
+   */
+  private static final Map<String, String> LEGACY_PRESET_NAMES = Map.of("WorldCat", LIBRARY_OF_CONGRESS_NAME);
 
   final String prefKey;
   final List<WebButton> webBtnList;
@@ -70,6 +82,14 @@ abstract class WebButtonCtrl
            caption = app.prefs.node("webButtonCaptions").get(prefKey, "");
 
     if (name.isEmpty()) return;
+
+    String replacementName = LEGACY_PRESET_NAMES.get(name);
+
+    if (replacementName != null)
+    {
+      name = replacementName;
+      caption = "";  // The saved caption names the retired service, so let the new preset supply its own
+    }
 
     for (WebButton btn : srchList)
     {

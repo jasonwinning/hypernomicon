@@ -453,6 +453,47 @@ class BibAuthorsTest
   }
 
 //---------------------------------------------------------------------------
+
+  /**
+   * The predicate drives the Crossref retry with untransliterated names: it must be true
+   * exactly when transliteration changes at least one last name, so that the retry can
+   * produce a different query. (It was originally inverted, firing only when every last
+   * name was already English, which re-issued an identical request.)
+   */
+  @Test
+  void notAllEngCharLastNamesTest()
+  {
+    BibAuthorsStandalone authors = new BibAuthorsStandalone();
+
+    assertFalse(authors.notAllEngCharLastNames(), "No authors: nothing to retry with");
+
+  //---------------------------------------------------------------------------
+
+    authors.add(new AuthorStandalone(new PersonName("Saul", "Kripke"), null, false, false));
+
+    assertFalse(authors.notAllEngCharLastNames(), "Already-English last name");
+
+  //---------------------------------------------------------------------------
+
+    authors.add(new AuthorStandalone(new PersonName("José", "Smith"), null, false, false));
+
+    assertFalse(authors.notAllEngCharLastNames(), "Non-English first name alone should not matter; only last names are queried");
+
+  //---------------------------------------------------------------------------
+
+    authors.add(new AuthorStandalone(new PersonName("José", "García"), null, false, false));
+
+    assertTrue(authors.notAllEngCharLastNames(), "One transliteration-changed last name among English ones is enough");
+
+  //---------------------------------------------------------------------------
+
+    authors = new BibAuthorsStandalone();
+    authors.add(new AuthorStandalone(new PersonName("Фіŕşт", "Лàşт"), null, false, false));
+
+    assertTrue(authors.notAllEngCharLastNames(), "Non-English homoglyph last name");
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

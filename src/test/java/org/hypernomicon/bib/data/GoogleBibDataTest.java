@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.hypernomicon.util.http.AsyncHttpClient;
@@ -42,7 +43,7 @@ class GoogleBibDataTest
     Set<String> checkedIDs = new HashSet<>(Set.of("9780140449266"));
     List<GoogleBibData> results = new ArrayList<>();
 
-    GoogleBibData.doHttpRequest(new AsyncHttpClient(), List.of("0140449264").iterator(), checkedIDs, results::add, e -> fail(e));
+    GoogleBibData.doHttpRequest(new AsyncHttpClient(), List.of("0140449264").iterator(), checkedIDs, results::add, Assertions::fail);
 
     assertEquals(1, results.size(), "must complete synchronously with no network involved");
     assertNull(results.getFirst());

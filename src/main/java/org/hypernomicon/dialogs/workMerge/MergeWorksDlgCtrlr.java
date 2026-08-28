@@ -147,7 +147,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
 
     bibDataList = newBibDataStream.filter(Objects::nonNull).toList();
 
-    assert((bibDataList.size() > 1) && (bibDataList.size() < 5));
+    assert((bibDataList.size() > 1) && (bibDataList.size() < 6));
 
     btnLaunch.setOnAction(event ->
     {

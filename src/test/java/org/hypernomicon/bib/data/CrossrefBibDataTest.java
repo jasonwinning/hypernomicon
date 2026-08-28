@@ -18,6 +18,7 @@
 package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.Const.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;

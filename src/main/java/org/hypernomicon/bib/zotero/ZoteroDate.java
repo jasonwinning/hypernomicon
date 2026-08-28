@@ -56,7 +56,7 @@ public final class ZoteroDate
   private static String localeStr = null;
 
   private static final Pattern rawDatePattern = Pattern.compile("^(.*?)\\b([0-9]{1,4})(?:([\\-\\/\\.\\u5e74])([0-9]{1,2}))?(?:([\\-\\/\\.\\u6708])([0-9]{1,4}))?((?:\\b|[^0-9]).*?)$", Pattern.UNICODE_CHARACTER_CLASS),
-                               yearPattern = Pattern.compile("^(.*?)\\b((?:circa |around |about |c\\\\.? ?)?[0-9]{1,4}(?: ?B\\.? ?C\\.?(?: ?E\\.?)?| ?C\\.? ?E\\.?| ?A\\.? ?D\\.?)|[0-9]{3,4})([^A-Za-z0-9].*)?$", Pattern.CASE_INSENSITIVE),
+                               yearPattern = Pattern.compile("^(.*?)\\b((?:circa |around |about |c\\.? ?)?[0-9]{1,4}(?: ?B\\.? ?C\\.?(?: ?E\\.?)?| ?C\\.? ?E\\.?| ?A\\.? ?D\\.?)|[0-9]{3,4})([^A-Za-z0-9].*)?$", Pattern.CASE_INSENSITIVE),
                                parsedDatePattern = Pattern.compile("^\\-?([0-9]{4})(?:\\-(0[1-9]|10|11|12))?(?:\\-(0[1-9]|[1-2][0-9]|30|31))?$");
 
   private static Pattern monthPattern = null,

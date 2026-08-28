@@ -37,8 +37,8 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Exceptions.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import javafx.application.Platform;
@@ -304,7 +304,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
       btn.setVisible(false);
       smb.setVisible(true );
 
-      smb.setText(ui.webButtonMap.get(prefKey + '1').getCaption());
+      smb.setText(ui.webButtonCaption(prefKey + '1'));
 
       smb.getItems().clear();
 
@@ -312,7 +312,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
       {
         String indexedPrefKey = prefKey + ndx;
 
-        MenuItem item = new MenuItem(ui.webButtonMap.get(indexedPrefKey).getCaption());
+        MenuItem item = new MenuItem(ui.webButtonCaption(indexedPrefKey));
         item.setOnAction(eventHndlr.apply(indexedPrefKey));
         smb.getItems().add(item);
       }
@@ -322,7 +322,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
       smb.setVisible(false);
       btn.setVisible(true );
 
-      btn.setText(ui.webButtonMap.get(prefKey + '1').getCaption());
+      btn.setText(ui.webButtonCaption(prefKey + '1'));
     }
   }
 

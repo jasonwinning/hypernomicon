@@ -53,6 +53,8 @@ public final class GoogleBibData extends BibDataStandalone
 
   public String getQueryIsbn() { return safeStr(queryIsbn); }
 
+  @Override public boolean fromOnlineSource() { return true; }
+
 //---------------------------------------------------------------------------
 
   private GoogleBibData(JsonObj jsonObj, String queryIsbn)

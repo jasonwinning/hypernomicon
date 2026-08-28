@@ -201,7 +201,7 @@ public class PictureDlgCtrlr extends ModalDialog
       highlightFileInExplorer(filePath);
     });
 
-    btnWebSrch.setText(ui.webButtonMap.get(WebButtonContextPrefKey.PERSON_IMG).getCaption());
+    btnWebSrch.setText(ui.webButtonCaption(WebButtonContextPrefKey.PERSON_IMG));
 
     setToolTip(btnWebSrch, "Search for image using " + ui.webButtonMap.get(WebButtonContextPrefKey.PERSON_IMG).getName());
 

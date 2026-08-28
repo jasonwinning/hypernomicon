@@ -44,6 +44,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
                                START_PARTICLE_PATTERN       = Pattern.compile("[Vv][ao]n\\h.*"),
                                MID_PARTICLE_PATTERN         = Pattern.compile("\\P{L}[Vv][ao]n\\h.*", Pattern.UNICODE_CHARACTER_CLASS),
                                NORMALIZE_WHITESPACE_PATTERN = Pattern.compile("\\s+"),
+                               TRAILING_COMMA_PATTERN       = Pattern.compile("[,\\h]+$"),
                                SPACE_BEFORE_DOT_PATTERN     = Pattern.compile("\\h+\\."),
                                MULTI_DOTS_PATTERN           = Pattern.compile("\\.{2,}");
 
@@ -75,6 +76,13 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
     name = SPACE_BEFORE_DOT_PATTERN.matcher(name).replaceAll(".");
     name = MULTI_DOTS_PATTERN      .matcher(name).replaceAll(".");
+
+    // A trailing comma is never part of the name; without this, "Dumas, Alexandre," would
+    // yield a first name of "Alexandre," because the split below keeps everything after the
+    // first comma. Sources that terminate names this way include MARC-derived records and
+    // hand-typed semicolon-delimited author lists.
+
+    name = TRAILING_COMMA_PATTERN.matcher(name).replaceAll("");
 
     int ndx = name.indexOf(',');
 

@@ -19,6 +19,7 @@ package org.hypernomicon.settings;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.settings.WebButtonCtrl.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
@@ -264,9 +265,9 @@ public class WebButtonSettingsCtrlr implements SettingsControl
  // ISBN search menu command -----------------------------------------------------------------------------------------
  // ------------------------------------------------------------------------------------------------------------------
 
-    btn = new WebButton("WorldCat", "WorldCat");
+    btn = new WebButton(LIBRARY_OF_CONGRESS_NAME, "LoC Catalog");
 
-    btn.addPattern("https://www.worldcat.org/search?q=bn%3A" + ISBN + "&qt=advanced",
+    btn.addPattern("https://search.catalog.loc.gov/search?query=" + ISBN,
         ISBN);
 
     isbnSrchList.add(btn);
@@ -282,28 +283,58 @@ public class WebButtonSettingsCtrlr implements SettingsControl
  // Work search buttons ----------------------------------------------------------------------------------------------
  // ------------------------------------------------------------------------------------------------------------------
 
-    btn = new WebButton("WorldCat", "WorldCat");
+    // These are plain keyword queries: the catalog ranks rather than filters, so the right book
+    // usually appears near the top even when the record words the title or dates the edition
+    // differently from what Hypernomicon has. The catalog also has a fielded advanced-search
+    // grammar, kept below in case there is ever a reason to switch to it or to offer the user a
+    // choice; in testing it gave worse results overall, because a field that fails to match
+    // returns nothing where a keyword search would still have ranked the book first.
+    //
+    // Pattern order matters: WebButton.getPatternStr takes the first pattern whose required
+    // fields are all populated, so these run most-specific first.
 
-    btn.addPattern("https://www.worldcat.org/search?q=au%3A" + SingleName + "+AND+ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
+    btn = new WebButton(LIBRARY_OF_CONGRESS_NAME, "LoC Catalog");
+
+    btn.addPattern("https://search.catalog.loc.gov/search?query=" + Title + "%20" + SingleName + "%20" + NumericYear,
         Title, NumericYear, SingleName);
 
-    btn.addPattern("https://www.worldcat.org/search?q=au%3A" + SingleName + "+AND+ti%3A" + Title + "&qt=advanced",
+    btn.addPattern("https://search.catalog.loc.gov/search?query=" + Title + "%20" + SingleName,
         Title, SingleName);
 
-    btn.addPattern("https://www.worldcat.org/search?q=ti%3A" + Title + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
+    btn.addPattern("https://search.catalog.loc.gov/search?query=" + Title + "%20" + NumericYear,
         Title, NumericYear);
 
-    btn.addPattern("https://www.worldcat.org/search?q=ti%3A" + Title + "&qt=advanced",
+    btn.addPattern("https://search.catalog.loc.gov/search?query=" + Title,
         Title);
 
-    btn.addPattern("https://www.worldcat.org/search?q=au%3A" + SingleName + "&fq=yr%3A" + NumericYear + ".." + NumericYear + "&qt=advanced&datePublished=" + NumericYear + '-' + NumericYear,
+    btn.addPattern("https://search.catalog.loc.gov/search?query=" + SingleName + "%20" + NumericYear,
         NumericYear, SingleName);
 
-    btn.addPattern("https://www.worldcat.org/search?q=au%3A" + SingleName + "&qt=advanced",
+    btn.addPattern("https://search.catalog.loc.gov/search?query=" + SingleName,
         SingleName);
 
-    btn.addPattern("https://www.worldcat.org/search?q=bn%3A" + ISBN + "&qt=advanced",
+    btn.addPattern("https://search.catalog.loc.gov/search?query=" + ISBN,
         ISBN);
+
+    // The fielded alternative, verified against the catalog in August 2026: the URL grammar the
+    // catalog's own advanced-search page generates, a query of field, operator, and quoted-term
+    // clauses joined by AND, plus a publicationYear range. Working fields are titleAll, titleMain,
+    // contributor (which covers the main entry too), keyword, and isbn; operators are containsAll,
+    // containsAny, exactPhrase, and startsWith. "authorCreator" is rejected as an invalid search
+    // even though the page's dropdown is labeled "Author/creator". The year is a hard filter, so
+    // an edition dated differently from the work record returns nothing.
+    //
+    // String lcStrict = "https://search.catalog.loc.gov/search?option=advanced&query=",
+    //        lcTitle  = "titleAll%20containsAll%20%22" + Title + "%22",
+    //        lcName   = "contributor%20containsAll%20%22" + SingleName + "%22",
+    //        lcYear   = "&publicationYear=maxDate%3D" + NumericYear + "%26minDate%3D" + NumericYear;
+    //
+    // btn.addPattern(lcStrict + lcTitle + "%20AND%20" + lcName + lcYear, Title, NumericYear, SingleName);
+    // btn.addPattern(lcStrict + lcTitle + "%20AND%20" + lcName,          Title, SingleName);
+    // btn.addPattern(lcStrict + lcTitle + lcYear,                        Title, NumericYear);
+    // btn.addPattern(lcStrict + lcTitle,                                 Title);
+    // btn.addPattern(lcStrict + lcName + lcYear,                         NumericYear, SingleName);
+    // btn.addPattern(lcStrict + lcName,                                  SingleName);
 
     workSrchList.add(btn);
     workSrchDefaults.add(btn);

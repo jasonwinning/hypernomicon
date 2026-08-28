@@ -58,6 +58,23 @@ public abstract class Author
 
 //---------------------------------------------------------------------------
 
+  /**
+   * The roles a contributor plays in a work. Editor and translator are independent flags
+   * rather than alternatives: a contributor can be both, as in "translated and edited by".
+   */
+  public record Roles(boolean isEditor, boolean isTrans)
+  {
+    public static final Roles AUTHOR = new Roles(false, false);
+
+    /** The union of these roles with another set; a null argument contributes nothing. */
+    public Roles combinedWith(Roles other)
+    {
+      return other == null ? this : new Roles(isEditor || other.isEditor, isTrans || other.isTrans);
+    }
+  }
+
+//---------------------------------------------------------------------------
+
   private PersonName nameEngChar;
 
   public abstract PersonName getName();

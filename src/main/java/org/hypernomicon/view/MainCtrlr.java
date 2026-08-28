@@ -220,6 +220,13 @@ public final class MainCtrlr
   public Stage getStage()                     { return stage; }
   public boolean isShuttingDown()             { return shuttingDown; }
 
+  /**
+   * The caption of the web button in the given slot, or an empty string if the slot is unpopulated.
+   * A slot can be missing from the map if its saved preference names a preset that no longer
+   * exists and lies beyond the defaults list, since nothing pre-seeds those slots.
+   */
+  public String webButtonCaption(String indexedPrefKey) { return nullSwitch(webButtonMap.get(indexedPrefKey), "", WebButton::getCaption); }
+
   @FXML private void mnuExitClick()           { shutDown(ShutDownMode.Normal      ); }
   @FXML private void mnuExitNoSaveClick()     { shutDown(ShutDownMode.NormalNoSave); }
   @FXML private void mnuOpenClick()           { openDB(null); }

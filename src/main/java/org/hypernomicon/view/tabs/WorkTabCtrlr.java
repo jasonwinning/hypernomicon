@@ -20,6 +20,7 @@ package org.hypernomicon.view.tabs;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.data.*;
+import org.hypernomicon.bib.data.BibDataRetriever.BibSource;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
@@ -109,15 +110,15 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private ComboBox<HyperTableCell> cbLargerWork, cbType;
   @FXML private ComboBox<Month> cbMonth;
   @FXML private Label lblSearchKey, lblTitle;
-  @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
+  @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuFindISBNonLibOfCongress, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
   @FXML private ProgressBar progressBar;
   @FXML private SplitMenuButton btnDOI, smbWebSrch1, btnFolder;
   @FXML private SplitPane spHoriz1, spHoriz2, spVert, spMentioners;
-  @FXML private Tab tabBibDetails, tabCrossref, tabGoogleBooks, tabEntry, tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
+  @FXML private Tab tabBibDetails, tabCrossref, tabGoogleBooks, tabLibOfCongress, tabEntry, tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
   @FXML private TabPane tabPane, tpBib;
   @FXML private TableView<HyperTableRow> tvArguments, tvAuthors, tvISBN, tvKeyMentions,
                                          tvLabels, tvMiscFiles, tvSubworks, tvWorkFiles;
-  @FXML private TextArea taEntry, taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
+  @FXML private TextArea taEntry, taCrossref, taGoogleBooks, taLibOfCongress, taMiscBib, taPdfMetadata;
   @FXML private TextField tfDOI, tfURL, tfSearchKey, tfTitle, tfYear, tfDay;
 
   private final HyperTable htLabels, htSubworks, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
@@ -126,9 +127,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private final DateControlsWrapper dateCtrls;
   private final Map<Tab, String> tabCaptions = new HashMap<>();
   private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
-  private final Property<CrossrefBibData> crossrefBDprop = new SimpleObjectProperty<>();
-  private final Property<PDFBibData>      pdfBDprop      = new SimpleObjectProperty<>();
-  private final Property<GoogleBibData>   googleBDprop   = new SimpleObjectProperty<>();
+  private final Property<CrossrefBibData>          crossrefBDprop = new SimpleObjectProperty<>();
+  private final Property<PDFBibData>               pdfBDprop      = new SimpleObjectProperty<>();
+  private final Property<GoogleBibData>            googleBDprop   = new SimpleObjectProperty<>();
+  private final Property<LibraryOfCongressBibData> locBDprop      = new SimpleObjectProperty<>();
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
   private static final String TOOLTIP_PREFIX = "Search for this work in ";
@@ -389,7 +391,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htISBN.addTextEditCol(hdtWork, true, smTextSimple);
 
-    htISBN.addContextMenuItem(() -> ui.webButtonMap.get(WebButtonContextPrefKey.ISBN).getCaption(),
+    // The first item opens a web page; the other two fetch data into the record. The wording
+    // follows the DOI controls ("Search this DOI using ..." versus "Retrieve bibliographic
+    // information from ...") so the difference is visible in the menu itself.
+
+    htISBN.addContextMenuItem(() -> "Search this ISBN using " + ui.webButtonCaption(WebButtonContextPrefKey.ISBN),
       row ->
       {
         List<String> list = matchISBN(row.getText(0));
@@ -397,13 +403,22 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       },
       row -> ui.webButtonMap.get(WebButtonContextPrefKey.ISBN).first(WebButtonField.ISBN, row.getText(0)).go());
 
-    htISBN.addContextMenuItem("Google Books query",
+    htISBN.addContextMenuItem("Retrieve bibliographic information from the Library of Congress using this ISBN",
       row -> strNotNullOrEmpty(row.getText(0)),
       row ->
       {
         List<String> list = matchISBN(row.getText(0));
         if (collEmpty(list) == false)
-          retrieveBibData(false, "", list);
+          retrieveBibData(BibSource.libraryOfCongress, "", list);
+      });
+
+    htISBN.addContextMenuItem("Retrieve bibliographic information from Google Books using this ISBN",
+      row -> strNotNullOrEmpty(row.getText(0)),
+      row ->
+      {
+        List<String> list = matchISBN(row.getText(0));
+        if (collEmpty(list) == false)
+          retrieveBibData(BibSource.googleBooks, "", list);
       });
 
     htISBN.addRefreshHandler(tabPane::requestLayout);
@@ -422,8 +437,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     btnStop.setOnAction(event -> stopRetrieving());
 
-    mnuFindDOIonCrossref    .setOnAction(event -> retrieveBibData(true , "", null));
-    mnuFindISBNonGoogleBooks.setOnAction(event -> retrieveBibData(false, "", null));
+    mnuFindDOIonCrossref      .setOnAction(event -> retrieveBibData(BibSource.crossref         , "", null));
+    mnuFindISBNonGoogleBooks  .setOnAction(event -> retrieveBibData(BibSource.googleBooks      , "", null));
+    mnuFindISBNonLibOfCongress.setOnAction(event -> retrieveBibData(BibSource.libraryOfCongress, "", null));
 
     mnuGoogle.setOnAction(event ->
     {
@@ -435,7 +451,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     mnuCrossref.setOnAction(event ->
     {
       if (strNotNullOrEmpty(tfDOI.getText()))
-        retrieveBibData(true, tfDOI.getText(), null);
+        retrieveBibData(BibSource.crossref, tfDOI.getText(), null);
     });
 
     mnuShowMetadata.setOnAction(event -> mnuShowMetadataClick());
@@ -563,17 +579,20 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     crossrefBDprop.addListener((ob, oldBD, newBD) -> updateMergeButton());
     pdfBDprop     .addListener((ob, oldBD, newBD) -> updateMergeButton());
     googleBDprop  .addListener((ob, oldBD, newBD) -> updateMergeButton());
+    locBDprop     .addListener((ob, oldBD, newBD) -> updateMergeButton());
 
-    taMiscBib    .textProperty().addListener((ob, ov, nv) -> updateBibButtons());
-    taPdfMetadata.textProperty().addListener((ob, ov, nv) -> updateBibButtons());
-    taCrossref   .textProperty().addListener((ob, ov, nv) -> updateBibButtons());
-    taGoogleBooks.textProperty().addListener((ob, ov, nv) -> updateBibButtons());
+    taMiscBib      .textProperty().addListener((ob, ov, nv) -> updateBibButtons());
+    taPdfMetadata  .textProperty().addListener((ob, ov, nv) -> updateBibButtons());
+    taCrossref     .textProperty().addListener((ob, ov, nv) -> updateBibButtons());
+    taGoogleBooks  .textProperty().addListener((ob, ov, nv) -> updateBibButtons());
+    taLibOfCongress.textProperty().addListener((ob, ov, nv) -> updateBibButtons());
 
     tpBib.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> updateBibButtons());
 
-    tabPdfMetadata.setOnClosed(event -> { taPdfMetadata.clear(); pdfBDprop     .setValue(null); });
-    tabCrossref   .setOnClosed(event -> { taCrossref   .clear(); crossrefBDprop.setValue(null); });
-    tabGoogleBooks.setOnClosed(event -> { taGoogleBooks.clear(); googleBDprop  .setValue(null); });
+    tabPdfMetadata  .setOnClosed(event -> { taPdfMetadata  .clear(); pdfBDprop     .setValue(null); });
+    tabCrossref     .setOnClosed(event -> { taCrossref     .clear(); crossrefBDprop.setValue(null); });
+    tabGoogleBooks  .setOnClosed(event -> { taGoogleBooks  .clear(); googleBDprop  .setValue(null); });
+    tabLibOfCongress.setOnClosed(event -> { taLibOfCongress.clear(); locBDprop     .setValue(null); });
 
     btnMergeBib.setOnAction(event -> btnMergeBibClick());
 
@@ -627,7 +646,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void updateMergeButton()
   {
-    btnMergeBib.setDisable((crossrefBDprop.getValue() == null) && (pdfBDprop.getValue() == null) && (googleBDprop.getValue() == null));
+    btnMergeBib.setDisable((crossrefBDprop.getValue() == null) && (pdfBDprop.getValue() == null) &&
+                           (googleBDprop  .getValue() == null) && (locBDprop.getValue() == null));
 
     tabPane.requestLayout();
   }
@@ -1376,23 +1396,26 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     disableAll(btnUseDOI, btnUseISBN, btnMergeBib);
 
-    taMiscBib    .clear();
-    taEntry      .clear();
-    taCrossref   .clear();
-    taPdfMetadata.clear();
-    taGoogleBooks.clear();
+    taMiscBib      .clear();
+    taEntry        .clear();
+    taCrossref     .clear();
+    taPdfMetadata  .clear();
+    taGoogleBooks  .clear();
+    taLibOfCongress.clear();
 
-    disableCache(taMiscBib    );
-    disableCache(taEntry      );
-    disableCache(taCrossref   );
-    disableCache(taPdfMetadata);
-    disableCache(taGoogleBooks);
+    disableCache(taMiscBib      );
+    disableCache(taEntry        );
+    disableCache(taCrossref     );
+    disableCache(taPdfMetadata  );
+    disableCache(taGoogleBooks  );
+    disableCache(taLibOfCongress);
 
     pdfBDprop     .setValue(null);
     crossrefBDprop.setValue(null);
     googleBDprop  .setValue(null);
+    locBDprop     .setValue(null);
 
-    tpBib.getTabs().removeAll(tabEntry, tabCrossref, tabPdfMetadata, tabGoogleBooks);
+    tpBib.getTabs().removeAll(tabEntry, tabCrossref, tabPdfMetadata, tabGoogleBooks, tabLibOfCongress);
 
     stopRetrieving();
 
@@ -1656,9 +1679,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     Tab curTab = tpBib.getSelectionModel().getSelectedItem();
 
-    if (curTab == tabPdfMetadata) return pdfBDprop     .getValue();
-    if (curTab == tabCrossref   ) return crossrefBDprop.getValue();
-    if (curTab == tabGoogleBooks) return googleBDprop  .getValue();
+    if (curTab == tabPdfMetadata   ) return pdfBDprop     .getValue();
+    if (curTab == tabCrossref      ) return crossrefBDprop.getValue();
+    if (curTab == tabGoogleBooks   ) return googleBDprop  .getValue();
+    if (curTab == tabLibOfCongress ) return locBDprop     .getValue();
 
     return null;
   }
@@ -1704,14 +1728,25 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void retrieveBibData(boolean crossref, String doi, List<String> isbns)
+  private void retrieveBibData(BibSource source, String doi, List<String> isbns)
   {
     stopRetrieving();
 
     if (db.isOffline() || (curWork == null)) return;
 
-    Tab      tab = crossref ? tabCrossref : tabGoogleBooks;
-    TextArea ta  = crossref ? taCrossref  : taGoogleBooks;
+    Tab tab = switch (source)
+    {
+      case crossref          -> tabCrossref;
+      case googleBooks       -> tabGoogleBooks;
+      case libraryOfCongress -> tabLibOfCongress;
+    };
+
+    TextArea ta = switch (source)
+    {
+      case crossref          -> taCrossref;
+      case googleBooks       -> taGoogleBooks;
+      case libraryOfCongress -> taLibOfCongress;
+    };
 
     if (tpBib.getTabs().contains(tab) == false)
       tpBib.getTabs().add(tab);
@@ -1728,8 +1763,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       setAllVisible(false, btnStop, progressBar);
 
-      if (crossref) crossrefBDprop.setValue((CrossrefBibData) queryBD);
-      else          googleBDprop  .setValue((GoogleBibData  ) queryBD);
+      switch (source)
+      {
+        case crossref          -> crossrefBDprop.setValue((CrossrefBibData         ) queryBD);
+        case googleBooks       -> googleBDprop  .setValue((GoogleBibData           ) queryBD);
+        case libraryOfCongress -> locBDprop     .setValue((LibraryOfCongressBibData) queryBD);
+      }
 
       ta.setText("Query URL: " + httpClient.lastUrl() + System.lineSeparator());
 
@@ -1745,7 +1784,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     GUIBibData bd = new GUIBibData();
     bd.setAllAuthorsFromTable(getAuthorGroups());
 
-    if (crossref)
+    if (source == BibSource.crossref)
     {
       if (strNullOrBlank(doi))
       {
@@ -1754,8 +1793,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
       else
         bd.setStr(bfDOI, doi);
-
-      bibDataRetriever = BibDataRetriever.forCrossref(httpClient, bd, doneHndlr);
     }
     else
     {
@@ -1766,9 +1803,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
       else
         bd.setMultiStr(bfISBNs, isbns);
-
-      bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, doneHndlr);
     }
+
+    bibDataRetriever = switch (source)
+    {
+      case crossref          -> BibDataRetriever.forCrossref         (httpClient, bd, doneHndlr);
+      case googleBooks       -> BibDataRetriever.forGoogleBooks      (httpClient, bd, doneHndlr);
+      case libraryOfCongress -> BibDataRetriever.forLibraryOfCongress(httpClient, bd, doneHndlr);
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -1855,7 +1897,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     try
     {
-      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBibData, pdfBDprop.getValue(), crossrefBDprop.getValue(), googleBDprop.getValue()), curWork, false, true, Ternary.Unset);
+      mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBibData, pdfBDprop.getValue(), crossrefBDprop.getValue(), googleBDprop.getValue(), locBDprop.getValue()), curWork, false, true, Ternary.Unset);
     }
     catch (IOException e)
     {
@@ -1926,8 +1968,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     updateWebButtons(node, WebButtonContextPrefKey.WORK, 2, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
 
-    btnWebSrch2.setText(ui.webButtonMap.get(WebButtonContextPrefKey.WORK + '2').getCaption());
-    mnuGoogle  .setText("Search this DOI using " + ui.webButtonMap.get(WebButtonContextPrefKey.DOI).getCaption());
+    btnWebSrch2.setText(ui.webButtonCaption(WebButtonContextPrefKey.WORK + '2'));
+    mnuGoogle  .setText("Search this DOI using " + ui.webButtonCaption(WebButtonContextPrefKey.DOI));
   }
 
 //---------------------------------------------------------------------------

@@ -898,7 +898,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
         if (doMerge)
           doMerge(pdfBD, queryBD);
-        else if ((queryBD instanceof CrossrefBibData) || (queryBD instanceof GoogleBibData))
+        else if ((queryBD != null) && queryBD.fromOnlineSource())
           populateFieldsFromBibData(queryBD, true, true);
         else
         {
@@ -1072,8 +1072,8 @@ public class WorkDlgCtrlr extends ModalDialog
 
       if (queryBD == null)
       {
-        if (crossref) lblAutoPopulated.setText("Crossref query yielded no results for doi: "      + doi);
-        else          lblAutoPopulated.setText("Google Books query yielded no results for isbn: " + isbn);
+        if (crossref) lblAutoPopulated.setText("Crossref query yielded no results for doi: " + doi);
+        else          lblAutoPopulated.setText("Library of Congress and Google Books queries yielded no results for isbn: " + isbn);
 
         return;
       }
@@ -1090,7 +1090,7 @@ public class WorkDlgCtrlr extends ModalDialog
     else
     {
       bd.setMultiStr(bfISBNs, safeListOf(isbn));
-      bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, doneHndlr);
+      bibDataRetriever = BibDataRetriever.forBooks(httpClient, bd, doneHndlr);
     }
   }
 
@@ -1185,7 +1185,15 @@ public class WorkDlgCtrlr extends ModalDialog
         lblAutoPopulated.setText(isbn.isBlank() ?
           "Fields have been auto-populated from Google Books"
         :
-          "Fields auto-populated from Google Books, isbn: " + isbn);
+          "Fields auto-populated from Google Books, ISBN: " + isbn);
+      }
+      else if (bd instanceof LibraryOfCongressBibData locBibData)
+      {
+        String isbn = locBibData.getQueryIsbn();
+        lblAutoPopulated.setText(isbn.isBlank() ?
+          "Fields have been auto-populated from the Library of Congress catalog"
+        :
+          "Fields auto-populated from the Library of Congress catalog, ISBN: " + isbn);
       }
       else if (bd instanceof PDFBibData)
       {

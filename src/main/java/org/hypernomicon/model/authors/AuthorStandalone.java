@@ -82,6 +82,7 @@ public final class AuthorStandalone extends Author implements Cloneable
 //---------------------------------------------------------------------------
 
   public AuthorStandalone(AuthorType type, PersonName name)   { this(type, null, name);   }
+  public AuthorStandalone(Roles roles, PersonName name)       { this(name, null, roles.isEditor(), roles.isTrans()); }
 
 //---------------------------------------------------------------------------
 

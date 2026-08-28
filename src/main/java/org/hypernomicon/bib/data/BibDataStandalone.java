@@ -84,6 +84,12 @@ public abstract class BibDataStandalone extends BibData
   @Override public HDT_WorkType getWorkType()                                  { return EntryType.toWorkType(getEntryType()); }
   @Override protected void setWorkType(HDT_WorkType workType)                  { }
 
+  /**
+   * Whether this data came from an online bibliographic source rather than from a local file
+   * or a UI form. Callers use this to decide whether the data is worth populating fields from.
+   */
+  public boolean fromOnlineSource()                                            { return false; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

@@ -477,9 +477,9 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
   {
     updateWebButtons(node, WebButtonContextPrefKey.GEN, 4, btnWebSrch1, smbWebSrch1, this::searchBtnEvent);
 
-    btnWebSrch2.setText(ui.webButtonMap.get(WebButtonContextPrefKey.GEN + '2').getCaption());
-    btnWebSrch3.setText(ui.webButtonMap.get(WebButtonContextPrefKey.GEN + '3').getCaption());
-    btnWebSrch4.setText(ui.webButtonMap.get(WebButtonContextPrefKey.GEN + '4').getCaption());
+    btnWebSrch2.setText(ui.webButtonCaption(WebButtonContextPrefKey.GEN + '2'));
+    btnWebSrch3.setText(ui.webButtonCaption(WebButtonContextPrefKey.GEN + '3'));
+    btnWebSrch4.setText(ui.webButtonCaption(WebButtonContextPrefKey.GEN + '4'));
   }
 
 //---------------------------------------------------------------------------

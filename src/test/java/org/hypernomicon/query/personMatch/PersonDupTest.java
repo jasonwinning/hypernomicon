@@ -640,6 +640,27 @@ class PersonDupTest
     assertTrue(checkMatch(new PersonName("de Gaulle, Charles"), new PersonName("Charles", "de Gaulle")));
     assertTrue(checkMatch(new PersonName("de la Cruz, Maria"), new PersonName("Maria", "de la Cruz")));
 
+    // A trailing comma must not leak into the first name. MARC-derived records terminate the
+    // name this way when a date subfield follows, e.g. "Dumas, Alexandre," + "1802-1870".
+
+    assertTrue(checkMatch(new PersonName("Dumas, Alexandre,"), new PersonName("Alexandre", "Dumas")));
+    assertEquals("Alexandre", new PersonName("Dumas, Alexandre,").getFirst());
+    assertEquals("Dumas", new PersonName("Dumas, Alexandre,").getLast());
+
+    // The remaining cases must parse exactly as they did before the trailing-comma strip
+
+    assertEquals("", new PersonName("Dumas,").getFirst());
+    assertEquals("Dumas", new PersonName("Dumas,").getLast());
+
+    assertEquals("", new PersonName(",").getFirst());
+    assertEquals("", new PersonName(",").getLast());
+
+    assertEquals("Robin.", new PersonName("Buss, Robin.").getFirst());
+    assertEquals("Buss", new PersonName("Buss, Robin.").getLast());
+
+    assertEquals("Saul A.", new PersonName("Kripke, Saul A.").getFirst());
+    assertEquals("Kripke", new PersonName("Kripke, Saul A.").getLast());
+
     //  Todo: Consider handling other particles
     //
     //  assertTrue(checkMatch(new PersonName("Charles de Gaulle"), new PersonName("Charles", "de Gaulle")));
