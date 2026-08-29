@@ -229,7 +229,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="15">
               <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false"
-                        text="Automatically retrieve bibliographic info for selected file from internet in Work File dialog"/>
+                        text="Automatically retrieve bibliographic info from the internet for a work file being imported or selected"/>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="16">
               <CheckBox fx:id="chkCompDontExpandKeyWorks" layoutY="4.0" mnemonicParsing="false"

@@ -437,6 +437,23 @@ class BibDataRetrieverTest
 
 //---------------------------------------------------------------------------
 
+  /** The files-only retriever: no source is queried, and finding nothing is not
+   *  reported, since nothing online was asked for. (With no files passed in,
+   *  nothing is found; the PDF stage itself is not injectable here.) */
+  @Test void pdfFilesOnlyFactoryQueriesNothingAndStaysQuiet()
+  {
+    Result result = new Result();
+    noOp(BibDataRetriever.forPdfFilesOnly(httpClient, null, result::handle));
+
+    assertEquals(List.of(), fakeSources.ops(), "no online source may be consulted");
+    assertEquals(1, result.timesCalled);
+    assertNull(result.queryBD);
+    assertFalse(result.messageShown, "no nothing-found warning when no source was enabled");
+    assertEquals(0, PopupRobot.getInvocationCount());
+  }
+
+//---------------------------------------------------------------------------
+
   /** The supplement's ISBN lookup draws on the Crossref record's own ISBNs too,
    *  which raises LoC's hit rate when the work record lacks one. */
   @Test void supplementIsbnsIncludeTheCrossrefRecords()

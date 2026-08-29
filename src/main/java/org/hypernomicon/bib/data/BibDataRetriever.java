@@ -283,6 +283,19 @@ public class BibDataRetriever
   }
 
 //---------------------------------------------------------------------------
+
+  /**
+   * Reads the files' own metadata and nothing else: no online source is queried, and since
+   * none was asked for, finding nothing is not reported. For when the user has turned
+   * automatic retrieval off but the metadata a file carries (a DOI, an ISBN) is still wanted,
+   * for example to recognize a file as a work already in the database.
+   */
+  public static BibDataRetriever forPdfFilesOnly(AsyncHttpClient httpClient, List<FilePath> pdfFiles, RetrieveHandler doneHndlr)
+  {
+    return new BibDataRetriever(httpClient, null, pdfFiles, EnumSet.noneOf(BibSource.class), doneHndlr);
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void finish(Exception e)

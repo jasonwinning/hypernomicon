@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.*;
+import org.hypernomicon.bib.data.BibDataRetriever.RetrieveHandler;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.*;
@@ -259,7 +261,7 @@ public class SelectWorkDlgCtrlr extends ModalDialog
     {
       setAllVisible(true, btnStop, progressBar);
 
-      bibDataRetriever = new BibDataRetriever(httpClient, null, safeListOf(filePathToUse), (pdfBD, queryBD, _, messageShown) ->
+      RetrieveHandler doneHndlr = (pdfBD, queryBD, _, messageShown) ->
       {
         setAllVisible(false, btnStop, progressBar);
 
@@ -395,7 +397,18 @@ public class SelectWorkDlgCtrlr extends ModalDialog
         }
 
         updateFields();
-      });
+      };
+
+      // The automatic-retrieval setting decides whether the internet is consulted for a file
+      // being imported. With it off, the file's own metadata is still read, so that a DOI or
+      // ISBN it carries can identify a work already in the database.
+
+      List<FilePath> pdfFiles = safeListOf(filePathToUse);
+
+      bibDataRetriever = app.prefs.getBoolean(PrefKey.AUTO_RETRIEVE_BIB, true) ?
+        new BibDataRetriever(httpClient, null, pdfFiles, doneHndlr)
+      :
+        BibDataRetriever.forPdfFilesOnly(httpClient, pdfFiles, doneHndlr);
     }
     else
     {
