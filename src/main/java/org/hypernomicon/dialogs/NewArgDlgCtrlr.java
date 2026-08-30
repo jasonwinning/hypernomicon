@@ -33,7 +33,9 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Verdict.HDT_ArgumentVerdict;
@@ -41,6 +43,8 @@ import org.hypernomicon.model.records.HDT_Verdict.HDT_PositionVerdict;
 import org.hypernomicon.model.searchKeys.KeywordLinkScanner;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 import org.hypernomicon.settings.ArgumentNamingSettings;
+import org.hypernomicon.testTools.FXTestSequencer;
+import org.hypernomicon.util.PopupRobot;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
@@ -54,6 +58,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 //---------------------------------------------------------------------------
 
 public class NewArgDlgCtrlr extends ModalDialog
@@ -66,7 +72,7 @@ public class NewArgDlgCtrlr extends ModalDialog
   @FXML private ComboBox<HyperTableCell> cbPerson, cbVerdict, cbWork;
   @FXML private ComboBox<Ternary> cbArgOrStance;
   @FXML private Label lblTargetName, lblTargetDesc, lblDoesWhat;
-  @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew;
+  @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew, rbNone;
   @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfTargetName, tfTitle, tfPages;
   @FXML private WebView webView;
 
@@ -218,12 +224,22 @@ public class NewArgDlgCtrlr extends ModalDialog
     {
       if (HyperTableCell.getCellID(oldCell) == HyperTableCell.getCellID(newCell)) return;
 
+      // When the person was filled in automatically because the user chose an existing work, only
+      // refilter the work choices; clearing the work and reverting to "New" should happen only when
+      // the user changed the person directly.
+
+      boolean autoFilledFromWork = programmaticWorkChange;
+
       Platform.runLater(() ->
       {
         ((HybridSubjectPopulator) hcbWork.getPopulator()).setObj(HyperTableCell.getRecord(newCell));
         hcbWork.populate(true);
-        hcbWork.selectID(-1);
-        rbNew.setSelected(true);
+
+        if (autoFilledFromWork == false)
+        {
+          hcbWork.selectID(-1);
+          rbNew.setSelected(true);
+        }
 
         reviseSuggestions(cbArgOrStance.getValue());
       });
@@ -544,6 +560,223 @@ public class NewArgDlgCtrlr extends ModalDialog
     }
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Run an automated test sequence covering the interaction between the work
+   * dropdown, the person dropdown, the New/Existing/None radio buttons, and
+   * the name suggestions. Invoked from the Test Console.
+   */
+  public static void runTests()
+  {
+    if (db.isOffline())
+    {
+      errorPopup("No database is currently loaded.");
+      return;
+    }
+
+    PopupRobot.setActive(true);
+    PopupRobot.clear();
+
+    boolean oldMultAuthPref = db.prefs.getBoolean(PrefKey.ARG_NAMING_MULTIPLE_AUTHORS, false);
+
+    HDT_Position position = db.createNewBlankRecord(hdtPosition);
+    position.setName("Author Was Right");
+
+    HDT_Person personA = db.createNewBlankRecord(hdtPerson),
+               personB = db.createNewBlankRecord(hdtPerson);
+
+    personA.setName(new PersonName("Alice", "Author"));
+    personB.setName(new PersonName("Bob", "Bystander"));
+
+    try
+    {
+      personA.setSearchKey("Author", false);
+    }
+    catch (SearchKeyException e)
+    {
+      PopupRobot.setActive(false);
+
+      db.deleteRecord(personA);
+      db.deleteRecord(personB);
+      db.deleteRecord(position);
+
+      errorPopup("Unable to set search key: " + getThrowableMessage(e));
+      return;
+    }
+
+    HDT_Work authoredWork = db.createNewBlankRecord(hdtWork),
+             editedWork   = db.createNewBlankRecord(hdtWork);
+
+    authoredWork.setName("Authored Work");
+    authoredWork.getAuthors().add(personA);
+    authoredWork.getAuthors().add(personB);
+    authoredWork.setPersonIsEditor(personB, true);
+
+    editedWork.setName("Edited Work");
+    editedWork.getAuthors().add(personB);
+    editedWork.setPersonIsEditor(personB, true);
+
+    NewArgDlgCtrlr dlg = new NewArgDlgCtrlr(position);
+
+    FXTestSequencer seq = new FXTestSequencer();
+
+    seq.setFinalizer(() -> runDelayedInFXThread(1, 200, () ->
+    {
+      if (dlg.stage.isShowing())
+        dlg.btnCancelClick();
+
+      PopupRobot.setActive(false);
+      PopupRobot.clear();
+
+      db.prefs.putBoolean(PrefKey.ARG_NAMING_MULTIPLE_AUTHORS, oldMultAuthPref);
+
+      db.deleteRecord(authoredWork);
+      db.deleteRecord(editedWork);
+      db.deleteRecord(personA);
+      db.deleteRecord(personB);
+      db.deleteRecord(position);
+    }));
+
+    seq.setDelayMS(400)
+
+      .thenRun(() -> Platform.runLater(dlg::showModal))
+
+    //---------------------------------------------------------------------------
+
+      // Ticket #92: with "Lower case position name" checked, words matching person
+      // record search keys keep their capitalization.
+
+      .thenRunAfterDelay(() ->
+      {
+        assertTrue(dlg.stage.isShowing(), "Dialog should be showing.");
+        assertTrue(dlg.rbNew.isSelected(), "\"New\" should be selected initially.");
+
+        dlg.chkLowerCaseTargetName.setSelected(true);
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals("Argument for Author was right", dlg.tfArgName1.getText(), "Lower-casing should preserve the person search key match.");
+
+        dlg.chkLowerCaseTargetName.setSelected(false);
+      })
+
+    //---------------------------------------------------------------------------
+
+      // Ticket #104: choose the work while "New" is selected and the Person field
+      // is blank. The person should be auto-filled from the work's author, and the
+      // radio selection should end up on "Existing".
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals("Argument for Author Was Right", dlg.tfArgName1.getText(), "Suggestion should be restored after unchecking lower-casing.");
+
+        dlg.hcbWork.selectIDofRecord(authoredWork);
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        assertTrue(dlg.rbExisting.isSelected(), "\"Existing\" should be selected after choosing a work.");
+        assertEquals(personA.getID(), dlg.hcbPerson.selectedID(), "Person should be auto-filled from the work's author.");
+        assertEquals(authoredWork.getID(), dlg.hcbWork.selectedID(), "Work should stay selected after the person is auto-filled.");
+      })
+
+    //---------------------------------------------------------------------------
+
+      // Change the person directly. That should clear the work and revert to "New".
+
+      .thenRun(() -> dlg.hcbPerson.selectIDofRecord(personB))
+
+      .thenRunAfterDelay(() ->
+      {
+        assertTrue(dlg.rbNew.isSelected(), "\"New\" should be selected after changing the person directly.");
+        assertEquals(-1, dlg.hcbWork.selectedID(), "Work should be cleared after changing the person directly.");
+      })
+
+    //---------------------------------------------------------------------------
+
+      // Ticket #104: blank the person, select "Existing" explicitly, then choose
+      // the work. The radio selection must survive the auto-fill cascade.
+
+      .thenRun(() -> dlg.hcbPerson.selectID(-1))
+
+      .thenRunAfterDelay(() ->
+      {
+        dlg.rbExisting.setSelected(true);
+        dlg.hcbWork.selectIDofRecord(authoredWork);
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        assertTrue(dlg.rbExisting.isSelected(), "\"Existing\" should stay selected after choosing a work.");
+        assertEquals(personA.getID(), dlg.hcbPerson.selectedID(), "Person should be auto-filled from the work's author.");
+        assertEquals(authoredWork.getID(), dlg.hcbWork.selectedID(), "Work should stay selected after the person is auto-filled.");
+      })
+
+    //---------------------------------------------------------------------------
+
+      // Ticket #98: a manually typed argument name survives switching the Work
+      // setting; blanking the field brings the automatic suggestion back.
+
+      .thenRun(() ->
+      {
+        dlg.tfArgName3.setText("My custom name");
+        dlg.rbNone.setSelected(true);
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals("My custom name", dlg.tfArgName3.getText(), "Typed name should survive switching the work setting to \"None\".");
+
+        dlg.tfArgName3.setText("");
+        dlg.rbExisting.setSelected(true);
+      })
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(dlg.textFieldToLastGen.get(dlg.tfArgName3), dlg.tfArgName3.getText(), "Automatic suggestion should be restored after blanking the field.");
+        assertFalse(dlg.tfArgName3.getText().isBlank(), "Restored suggestion should not be blank.");
+      })
+
+    //---------------------------------------------------------------------------
+
+      // Tickets #78 and #98: with multiple-author naming enabled, suggestions use
+      // author names only; when the work's people are all editors or translators,
+      // editor names are the fallback.
+
+      .thenRun(() ->
+      {
+        db.prefs.putBoolean(PrefKey.ARG_NAMING_MULTIPLE_AUTHORS, true);
+
+        dlg.hcbPerson.selectID(-1);
+      })
+
+      .thenRunAfterDelay(() -> dlg.hcbWork.selectIDofRecord(authoredWork))
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals("Author's argument for Author Was Right", dlg.tfArgName1.getText(), "Suggestion should include the author's name but not the editor's.");
+
+        dlg.hcbPerson.selectID(-1);
+      })
+
+      .thenRunAfterDelay(() -> dlg.hcbWork.selectIDofRecord(editedWork))
+
+      .thenRunAfterDelay(() ->
+      {
+        assertEquals(personB.getID(), dlg.hcbPerson.selectedID(), "Person should be auto-filled from the editor when the work has no authors.");
+        assertEquals("Bystander's argument for Author Was Right", dlg.tfArgName1.getText(), "Editor's name should be the fallback when the work's people are all editors.");
+      })
+
+    //---------------------------------------------------------------------------
+
+      .thenRun(dlg::btnCancelClick)
+
+      .start();
   }
 
 //---------------------------------------------------------------------------

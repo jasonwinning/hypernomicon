@@ -99,14 +99,20 @@
                   text="Show watcher events" AnchorPane.leftAnchor="230.0" AnchorPane.topAnchor="195.0"/>
       </AnchorPane>
     </Tab>
-    <Tab closable="false" text="File Manager">
+    <Tab closable="false" text="UI Tests">
       <AnchorPane>
         <Button fx:id="btnSetupFMTest" layoutX="52.0" layoutY="37.0" mnemonicParsing="false"
-                onAction="#setupFileManagerTest" text="Set Up Test Files"
+                onAction="#setupFileManagerTest" text="Set Up File Manager Test Files"
                 AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="37.0"/>
         <Button fx:id="btnRunFMTest" layoutX="52.0" layoutY="68.0" mnemonicParsing="false"
                 onAction="#fileManagerTest" text="Test File Manager Operations" disable="true"
                 AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="68.0"/>
+        <Button fx:id="btnTermsTabTests" layoutX="52.0" layoutY="115.0" mnemonicParsing="false"
+                onAction="#btnTermsTabTestClick" text="Test Terms Tab" AnchorPane.leftAnchor="52.0"
+                AnchorPane.topAnchor="115.0"/>
+        <Button layoutX="52.0" layoutY="146.0" mnemonicParsing="false"
+                onAction="#btnNewArgDlgTestClick" text="Test New Argument Dialog" AnchorPane.leftAnchor="52.0"
+                AnchorPane.topAnchor="146.0"/>
       </AnchorPane>
     </Tab>
     <Tab closable="false" text="Reference Mgr">
@@ -150,13 +156,6 @@
             </ImageView>
           </graphic>
         </Button>
-      </AnchorPane>
-    </Tab>
-    <Tab text="Terms Tab">
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-        <Button fx:id="btnTermsTabTests" layoutX="33.0" layoutY="30.0" mnemonicParsing="false"
-                onAction="#btnTermsTabTestClick" text="Perform tests" AnchorPane.leftAnchor="52.0"
-                AnchorPane.topAnchor="37.0"/>
       </AnchorPane>
     </Tab>
     <Tab closable="false" text="FTS Diagnostics">

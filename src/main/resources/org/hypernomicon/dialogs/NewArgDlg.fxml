@@ -164,7 +164,7 @@
           </toggleGroup>
         </RadioButton>
         <RadioButton fx:id="rbExisting" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup" GridPane.rowIndex="1" />
-        <RadioButton mnemonicParsing="false" text="None" toggleGroup="$radioGroup" GridPane.rowIndex="2" />
+        <RadioButton fx:id="rbNone" mnemonicParsing="false" text="None" toggleGroup="$radioGroup" GridPane.rowIndex="2" />
         <TextField fx:id="tfTitle" prefWidth="1.0E7" GridPane.columnIndex="1" />
         <ComboBox fx:id="cbWork" editable="true" prefWidth="1.0E7" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
         <TextField fx:id="tfPages" prefWidth="170.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />

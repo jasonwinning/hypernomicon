@@ -53,6 +53,7 @@ import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
+import org.hypernomicon.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.fileManager.FileManagerTestRunner;
 import org.hypernomicon.fts.FullTextIndexer;
@@ -950,6 +951,16 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     stage.hide();
 
     Platform.runLater(() -> ui.termHyperTab().runTests());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnNewArgDlgTestClick()
+  {
+    stage.hide();
+
+    Platform.runLater(NewArgDlgCtrlr::runTests);
   }
 
 //---------------------------------------------------------------------------
