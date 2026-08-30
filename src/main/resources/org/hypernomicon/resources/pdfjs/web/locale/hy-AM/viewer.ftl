@@ -153,6 +153,15 @@ pdfjs-document-properties-linearized = Արագ վեբ դիտում․
 pdfjs-document-properties-linearized-yes = Այո
 pdfjs-document-properties-linearized-no = Ոչ
 pdfjs-document-properties-close-button = Փակել
+# Shown beneath an invalid signature card to explain why verification
+# failed. The text comes from NSS (e.g. "Signature integrity has been
+# compromised", "PKCS#7 signature could not be parsed") and is not
+# itself localized — it is the underlying error message produced by
+# the verification backend.
+# Variables:
+#   $reason (String) - error message describing why the signature
+#                      could not be verified.
+pdfjs-digital-signature-properties-reason = Պատճառը՝ { $reason }
 
 ## Print
 
@@ -214,8 +223,8 @@ pdfjs-find-next-button =
     .title = Գտիր արտահայտության հաջորդ հանդիպումը
 pdfjs-find-next-button-label = Հաջորդը
 pdfjs-find-highlight-checkbox = Գունանշել բոլորը
-pdfjs-find-match-case-checkbox-label = Մեծ(փոքր)ատառ հաշվի առնել
-pdfjs-find-match-diacritics-checkbox-label = Համապատասխանեցնել տարբերիչները
+pdfjs-find-match-case-checkbox-label = Հաշվի առնել մեծ/փոքրատառը
+pdfjs-find-match-diacritics-checkbox-label = Համընկել հնչյունատարբերիչ նշանները
 pdfjs-find-entire-word-checkbox-label = Ամբողջ բառերը
 pdfjs-find-reached-top = Հասել եք փաստաթղթի վերևին, կշարունակվի ներքևից
 pdfjs-find-reached-bottom = Հասել եք փաստաթղթի վերջին, կշարունակվի վերևից

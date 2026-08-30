@@ -22,7 +22,7 @@
 // 2.0.943 era, the viewer files themselves are unpatched: everything the old
 // inline patches did is done here via the viewer's public objects and eventBus.
 //
-// Hit highlighting strategy (validated against pdf.js 6.1.200): Hypernomicon's
+// Hit highlighting strategy (validated against pdf.js 6.3.289): Hypernomicon's
 // Lucene-derived hit offsets are converted from Hypernomicon's extracted-text
 // space to the find controller's raw page-content space, injected into
 // PDFFindController's match arrays (sorted ascending; out-of-order entries are
