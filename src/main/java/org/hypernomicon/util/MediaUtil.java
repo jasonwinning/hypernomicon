@@ -27,12 +27,13 @@ import java.nio.file.*;
 import java.util.Base64;
 
 import org.apache.commons.lang3.Strings;
-import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.DefaultDetector;
+import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.mime.MimeTypeException;
+import org.apache.tika.mime.*;
+import org.apache.tika.parser.ParseContext;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.items.Ternary;
@@ -52,28 +53,29 @@ public final class MediaUtil
 
   private static final Object LOCK = new Object();
 
-  private static volatile TikaConfig tikaConfig;
+  private static volatile Detector detector;
 
   private MediaUtil() { throw new UnsupportedOperationException("Instantiation of utility class is not allowed."); }
 
 //---------------------------------------------------------------------------
 
   /**
-   * Provides access to the singleton TikaConfig instance.
-   * @return the singleton TikaConfig instance
+   * Provides access to the singleton Detector instance: the SPI-discovered
+   * composite detector, built lazily since it loads the whole MIME registry.
+   * @return the singleton Detector instance
    */
-  private static TikaConfig getTikaConfig()
+  private static Detector getDetector()
   {
-    if (tikaConfig == null)
+    if (detector == null)
     {
       synchronized (LOCK)
       {
-        if (tikaConfig == null)
-          tikaConfig = TikaConfig.getDefaultConfig();
+        if (detector == null)
+          detector = new DefaultDetector();
       }
     }
 
-    return tikaConfig;
+    return detector;
   }
 
 //---------------------------------------------------------------------------
@@ -88,7 +90,7 @@ public final class MediaUtil
 
     try (TikaInputStream stream = TikaInputStream.get(filePath.toPath()))
     {
-      return getTikaConfig().getDetector().detect(stream, metadata);
+      return getDetector().detect(stream, metadata, new ParseContext());
     }
     catch (IOException e)
     {
@@ -218,7 +220,7 @@ public final class MediaUtil
 
   public static String getContentTypeExtension(String contentType)
   {
-    try { return getTikaConfig().getMimeRepository().forName(contentType).getExtension(); }
+    try { return MimeTypes.getDefaultMimeTypes().forName(contentType).getExtension(); }
     catch (MimeTypeException e) { return ""; }
   }
 
