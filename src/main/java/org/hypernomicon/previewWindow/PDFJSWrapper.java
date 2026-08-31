@@ -262,15 +262,18 @@ final class PDFJSWrapper
 //---------------------------------------------------------------------------
 
   // Status display lives INSIDE the viewer page, as a DOM overlay toggled via
-  // executeJavaScript (javaapp.js showStatusOverlay): the BrowserView is a
-  // native hardware surface that ignores JavaFX visibility and z-order until
-  // its first real presentation (observed on Linux as a window-scale black
-  // rectangle, desynchronized from the node's geometry, while a JavaFX overlay
-  // should have covered it), so no JavaFX node can reliably cover the browser,
-  // and hiding the surface is what desynchronized it in the first place. The
-  // view therefore stays attached and visible at all times, and viewer.html is
-  // the pane's status home: when a status must display and the current page is
-  // direct content (or nothing yet), the wrapper navigates home first.
+  // executeJavaScript (javaapp.js showStatusOverlay): on Windows and Linux the
+  // BrowserView is a native hardware surface that ignores JavaFX visibility and
+  // z-order until its first real presentation (observed on Linux as a
+  // window-scale black rectangle, desynchronized from the node's geometry,
+  // while a JavaFX overlay should have covered it), so no JavaFX node can
+  // reliably cover the browser, and hiding the surface is what desynchronized
+  // it in the first place. The view therefore stays attached and visible at all
+  // times, and viewer.html is the pane's status home: when a status must
+  // display and the current page is direct content (or nothing yet), the
+  // wrapper navigates home first. macOS renders off-screen (see BrowserEngine),
+  // where a JavaFX overlay would work, but the page-internal display is kept
+  // identical on every platform.
 
   private void showStatus(StatusKind kind, String message)
   {

@@ -202,13 +202,14 @@ public final class DialogPreviewHost
    * the dialogs widen their stage in that same call, and the window resize is
    * asynchronous on Linux.
    * <p>
-   * A {@code HARDWARE_ACCELERATED} browser view is a native window that does not
-   * clip to JavaFX bounds and does not take part in JavaFX z-order (see
-   * {@link BrowserEngine}), so one attached to a detached or sliver-sized pane
-   * never acquires correct geometry: it was observed floating over the whole
-   * dialog at the stage's pre-widen client size, covering the controls behind
-   * it. Waiting for the pane to be real is what keeps the surface confined to
-   * it.
+   * A {@code HARDWARE_ACCELERATED} browser view (Windows and Linux; macOS
+   * renders off-screen, see {@link BrowserEngine}) is a native window that does
+   * not clip to JavaFX bounds and does not take part in JavaFX z-order, so one
+   * attached to a detached or sliver-sized pane never acquires correct
+   * geometry: it was observed floating over the whole dialog at the stage's
+   * pre-widen client size, covering the controls behind it. Waiting for the
+   * pane to be real is what keeps the surface confined to it. An off-screen
+   * view cannot escape its pane, but the wait is kept uniform across platforms.
    */
   private void createViewerWhenPaneIsLaidOut()
   {

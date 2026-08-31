@@ -206,21 +206,33 @@ public final class BrowserEngine
   private static Engine createEngine(String licenseKey, boolean disableSandbox)
   {
     // HARDWARE_ACCELERATED is the display pipeline this application has
-    // always shipped (JxBrowser 6 ran its heavyweight ancestor by default).
-    // Its defining property shapes the preview display code in PDFJSWrapper:
-    // the view is a native surface, not a JavaFX node. It paints over sibling
-    // nodes regardless of z-order, ignores JavaFX visibility until its first
-    // real presentation, and can go blank when hidden and re-shown around a
-    // document open. So the surface is never overlaid, hidden, or swapped:
-    // status and progress display live inside the viewer page itself, and the
-    // view stays attached and visible for the life of its browser. If the
-    // native surface ever proves unworkable, RenderingMode.OFF_SCREEN
-    // eliminates it entirely, at a cost to interactive rendering feel. But
-    // note it is no escape from the macOS crash primeModalAttach mitigates:
-    // both rendering modes share OffScreenRenderWidget.show, which is what
-    // triggers the window-handle lookup behind that crash.
+    // always shipped on Windows and Linux (JxBrowser 6 ran its heavyweight
+    // ancestor by default). Its defining property shapes the preview display
+    // code in PDFJSWrapper: the view is a native surface, not a JavaFX node.
+    // It paints over sibling nodes regardless of z-order, ignores JavaFX
+    // visibility until its first real presentation, and its POSITION is only
+    // ever updated by events (the attach carries a size but no position). So
+    // the surface is never overlaid, hidden, or swapped: status and progress
+    // display live inside the viewer page itself, and the view stays attached
+    // and visible for the life of its browser.
+    //
+    // macOS runs OFF_SCREEN instead: closing the Preview Window
+    // destroys JxBrowser's JavaFX-side widget when the views leave the scene,
+    // but the native surface can survive as an ORPHAN that reappears at the
+    // window origin (over the active pane) when the window is reopened on a
+    // different source tab. No app-side remedy worked: explicit
+    // BrowserView.setVisible(false) has no live widget to act through, and a
+    // direct native BrowserWidget.hide() RPC was a no-op against the orphan
+    // (reproduced on JxBrowser 9.5.0). Off-screen rendering makes
+    // the browser a real JavaFX node. It clips, z-orders, and hides with the
+    // scene graph, eliminating the entire surface-geometry bug class, at some
+    // cost to interactive rendering feel. Note OFF_SCREEN is no escape from
+    // the macOS crash primeModalAttach mitigates (both modes share
+    // OffScreenRenderWidget.show, which triggers the window-handle lookup);
+    // that crash is separately neutralized by the jni.embedding.disabled
+    // property set in initialize().
 
-    EngineOptions.Builder builder = EngineOptions.newBuilder(RenderingMode.HARDWARE_ACCELERATED)
+    EngineOptions.Builder builder = EngineOptions.newBuilder(IS_OS_MAC ? RenderingMode.OFF_SCREEN : RenderingMode.HARDWARE_ACCELERATED)
       .licenseKey(licenseKey)
       .userDataDir(tempDir().resolve(USER_DATA_DIR_PREFIX + InterProcClient.getInstanceID()).toPath())
       .addScheme(Scheme.of(ResourceServer.SCHEME_NAME), ResourceServer.callback());

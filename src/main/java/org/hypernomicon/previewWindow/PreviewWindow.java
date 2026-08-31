@@ -375,9 +375,12 @@ public final class PreviewWindow extends NonmodalWindow
     {
       double deltaY = event.getDeltaY();
 
-      // Ctrl or Cmd, matching the browser-side wheel callback in PDFJSWrapper
-      // (this filter sees only wheel events over the window's own controls;
-      // the browser view's native surface takes its wheel input directly)
+      // Ctrl or Cmd, matching the browser-side wheel callback in PDFJSWrapper.
+      // On Windows and Linux this filter sees only wheel events over the
+      // window's own controls, since the browser view's native surface takes
+      // its wheel input directly. On macOS's off-screen view (see
+      // BrowserEngine) it sees the browser's wheel events too; consuming the
+      // zoom chord here keeps the view from also acting on it.
 
       if (((event.isControlDown() || event.isMetaDown()) == false) || (deltaY == 0)) return;
 
