@@ -18,6 +18,7 @@
 package org.hypernomicon.dialogs.base;
 
 import static org.hypernomicon.App.ui;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import javafx.fxml.FXML;
@@ -46,7 +47,10 @@ public abstract class ModalDialog extends DialogBase
 
   protected ModalDialog(String loc, String title, boolean resizable, boolean fullPath)
   {
-    super(loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL, fullPath);
+    // On macOS, a UTILITY close and zoom buttons do not display correctly: https://bugs.openjdk.org/browse/JDK-8379342
+    // As a workaround, modal dialogs use the DECORATED style on macOS.
+
+    super(loc, title, resizable, IS_OS_MAC ? StageStyle.DECORATED : StageStyle.UTILITY, Modality.APPLICATION_MODAL, fullPath);
   }
 
 //---------------------------------------------------------------------------
