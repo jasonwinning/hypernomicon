@@ -373,9 +373,16 @@ final class PreviewPaneHost
           pane.onViewerError(issuedGen, "The viewer could not open the document");
       }
 
-      @Override public void onPageChanged(int pageNum)
+      @Override public void onPageChanged(FilePath file, int pageNum)
       {
         if (intentFile == null) return;
+
+        // The same identity gate as onOpened. The generation stamped below is the
+        // current one, read at arrival, so it cannot tell a late page event from
+        // the outgoing document apart from one belonging to the document issued
+        // after it; the document named by the event can.
+
+        if ((file == null) || (file.equals(issuedDisplayPath) == false)) return;
 
         pane.onPageChanged(issuedGen, pageNum);
       }

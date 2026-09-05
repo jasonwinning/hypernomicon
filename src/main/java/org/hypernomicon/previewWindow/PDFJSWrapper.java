@@ -22,7 +22,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.browser.callback.*;
@@ -83,18 +83,20 @@ final class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  /** Receives the page-label maps after a document opens. Annotated pages are
-   *  not part of this channel: they are scanned Java-side straight from the
-   *  file ({@link PDFAnnotationScanner}), not collected through the viewer. */
+  /** Receives the page-label maps after a document opens. {@code file} is the
+   *  document the labels belong to; the consumer must match it against what it
+   *  issued, as with every other viewer report. Annotated pages are not part of
+   *  this channel: they are scanned Java-side straight from the file
+   *  ({@link PDFAnnotationScanner}), not collected through the viewer. */
   @FunctionalInterface interface PDFJSRetrievedDataHandler
   {
-    void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel);
+    void handle(FilePath file, Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel);
   }
 
 //---------------------------------------------------------------------------
 
   private final AnchorPane apBrowser;
-  private final Consumer<Integer> pageChangeHndlr;
+  private final BiConsumer<FilePath, Integer> pageChangeHndlr;
   private final JavascriptToJava javascriptToJava;
   private final PDFJSDoneHandler doneHndlr;
   private final PDFJSRetrievedDataHandler retrievedDataHndlr;
@@ -203,7 +205,7 @@ final class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, Consumer<Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
+  PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, BiConsumer<FilePath, Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
   {
     this.doneHndlr = doneHndlr;
     this.pageChangeHndlr = pageChangeHndlr;
@@ -507,18 +509,20 @@ final class PDFJSWrapper
     // Chromium could not display what the pane just navigated to (e.g. a .mov file):
     // the navigation becomes a download instead of committing, so without intervention
     // the previous content would silently stay up. Cancel it and show the unable
-    // display for the file the load path was attempting.
+    // display for the file the load path was attempting. Only the direct load most
+    // recently issued can fail this way, though (the same URL match as the
+    // load-finished handler): a download belonging to anything else, a superseded
+    // navigation whose decision arrived late or a download link inside the displayed
+    // content, is cancelled without disturbing what is showing.
 
     browser.set(StartDownloadCallback.class, (params, tell) ->
     {
       tell.cancel();
 
-      FilePath filePath = lastDirectFilePath;
+      String url = params.download().target().url();
 
-      if (FilePath.isEmpty(filePath))
-        setUnable("");
-      else
-        setUnable(filePath);
+      if ((url != null) && isExpectedDirectUrl(url))
+        setUnable(lastDirectFilePath);
     });
 
     // Navigation policy: the preview pane may only navigate to content this application
@@ -911,10 +915,19 @@ final class PDFJSWrapper
   @JsAccessible
   public class JavascriptToJava
   {
-    public void pageChange(double newPage)
+    /**
+     * Receives the viewer's page changes. {@code url} is the viewer's own URL
+     * at the moment the event fired, naming the document the page belongs to:
+     * the event reaches Java after the fact, by which time a newer open may
+     * have been issued, and only the document identity lets a consumer tell a
+     * superseded document's late page jump from the current document's. Mapped
+     * back to the file the URL was minted for; {@code null} if it is not one of
+     * this application's file URLs.
+     */
+    public void pageChange(double newPage, String url)
     {
       if (pageChangeHndlr != null)
-        pageChangeHndlr.accept((int) newPage);
+        pageChangeHndlr.accept(ResourceServer.fileForUrl(url), (int) newPage);
     }
 
 //---------------------------------------------------------------------------
@@ -927,10 +940,14 @@ final class PDFJSWrapper
 //---------------------------------------------------------------------------
 
     /**
-     * Receives page labels after a document opens.
+     * Receives page labels after a document opens. Like {@link #pageChange},
+     * the report names its document: {@code url} is the viewer's URL when the
+     * labels were requested, since they resolve asynchronously and the viewer
+     * may hold the next document by the time they arrive.
      * @param json {@code {"pageLabels":["i","ii","1",...] or null}}
+     * @param url  the document the labels belong to
      */
-    public void setData(String json)
+    public void setData(String json, String url)
     {
       if (retrievedDataHndlr == null) return;
 
@@ -959,7 +976,7 @@ final class PDFJSWrapper
         return;
       }
 
-      retrievedDataHndlr.handle(labelToPage, pageToLabel);
+      retrievedDataHndlr.handle(ResourceServer.fileForUrl(url), labelToPage, pageToLabel);
     }
 
 //---------------------------------------------------------------------------

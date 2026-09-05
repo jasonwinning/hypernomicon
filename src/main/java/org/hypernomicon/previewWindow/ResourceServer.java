@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.*;
+
 import com.teamdev.jxbrowser.net.*;
 import com.teamdev.jxbrowser.net.callback.InterceptUrlRequestCallback;
 
@@ -94,8 +96,12 @@ public final class ResourceServer
 
   private static final int FILE_CHUNK_SIZE = 16 * 1024 * 1024;
 
-  private static final Map<String, FilePath> tokenToFile = new ConcurrentHashMap<>();
-  private static final Map<FilePath, String> fileToToken = new ConcurrentHashMap<>();
+  /** The registry behind the file URLs; registration goes through the inverse
+   *  view. Synchronized rather than concurrent on purpose: traffic is a few
+   *  lookups per document open, and the bijection is worth having as a
+   *  structural fact rather than as two maps kept in step by hand. */
+  private static final BiMap<String, FilePath> tokenToFile = Maps.synchronizedBiMap(HashBiMap.create());
+
   private static final AtomicInteger nextToken = new AtomicInteger(1);
 
   /** Streams file response bodies off the network callback thread (see
@@ -147,14 +153,45 @@ public final class ResourceServer
    */
   public static String urlForFile(FilePath filePath)
   {
-    String token = fileToToken.computeIfAbsent(filePath, _filePath ->
-    {
-      String newToken = String.valueOf(nextToken.getAndIncrement());
-      tokenToFile.put(newToken, _filePath);
-      return newToken;
-    });
+    String token = tokenToFile.inverse().computeIfAbsent(filePath, _filePath -> String.valueOf(nextToken.getAndIncrement()));
 
     return BASE_URL + FILE_PATH_PREFIX + token + '/' + escapeURL(filePath.getNameOnly().toString(), false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The file a {@link #urlForFile} URL was minted for, or {@code null} if the
+   * URL is not one of this server's file URLs. Lets a viewer event that names
+   * its document by URL be matched against the file the Java side issued.
+   */
+  public static FilePath fileForUrl(String url)
+  {
+    if (url == null) return null;
+
+    URI uri;
+
+    try { uri = URI.create(url); }
+    catch (IllegalArgumentException e) { return null; }
+
+    String urlPath = uri.getPath();
+
+    if ((SCHEME_NAME.equalsIgnoreCase(uri.getScheme()) == false) || (urlPath == null) || (urlPath.startsWith(FILE_PATH_PREFIX) == false))
+      return null;
+
+    return registeredFile(urlPath.substring(FILE_PATH_PREFIX.length()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The registered file named by the {@code <token>/<name>} remainder of a file URL's path, or {@code null}. */
+  private static FilePath registeredFile(String tokenAndName)
+  {
+    int slashNdx = tokenAndName.indexOf('/');
+
+    return tokenToFile.get((slashNdx < 0) ? tokenAndName : tokenAndName.substring(0, slashNdx));
   }
 
 //---------------------------------------------------------------------------
@@ -206,11 +243,7 @@ public final class ResourceServer
 
   private static InterceptUrlRequestCallback.Response serveRegisteredFile(InterceptUrlRequestCallback.Params params, String tokenAndName)
   {
-    int slashNdx = tokenAndName.indexOf('/');
-
-    String token = (slashNdx < 0) ? tokenAndName : tokenAndName.substring(0, slashNdx);
-
-    FilePath filePath = tokenToFile.get(token);
+    FilePath filePath = registeredFile(tokenAndName);
 
     if ((filePath == null) || (filePath.exists() == false))
       return notFound(params, tokenAndName);

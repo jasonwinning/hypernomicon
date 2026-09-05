@@ -54,6 +54,10 @@ window.addEventListener('unhandledrejection', function(event) {
 
 var listenersRegistered = false;
 
+// Counts openPdfFile dispatches, so a per-open listener that outlives its open
+// (see openPdfFile) can recognize that it has been superseded.
+var openSeq = 0;
+
 // Stored hit data for all pages, keyed by 1-based page number:
 // { "1": [[s,e],...], "3": [[s,e],...] } with offsets in Hypernomicon's
 // extracted-text space (column-aware spacing, dehyphenation, collapsed
@@ -234,7 +238,13 @@ function registerListeners() {
 
   var eventBus = PDFViewerApplication.eventBus;
 
-  eventBus.on('pagechanging',       function (e) { javaApp.pageChange(e.pageNumber); });
+  // The page event names its document. The viewer's url is set when an open is
+  // dispatched and cleared by close(), and no page event fires in between, so at
+  // event time it identifies the document the page belongs to. Java receives the
+  // event after the fact, possibly after a newer document was issued, and uses
+  // the URL to attribute the page to the right one.
+
+  eventBus.on('pagechanging',       function (e) { javaApp.pageChange(e.pageNumber, PDFViewerApplication.url || ''); });
   eventBus.on('sidebarviewchanged', function (e) { javaApp.sidebarChange(e.view); });
 }
 
@@ -296,12 +306,19 @@ function openPdfFile(fileUrl, pageNum, sidebarView) {
   // to reset the bookmark internally), and setting the page after 'pagesloaded'
   // overrides both the viewer's default and any stored view history.
 
-  var pagesEventBus = PDFViewerApplication.eventBus;
+  // The listener is registered per open and removes itself when it fires. An open
+  // superseded before its pages load never fires it (the document closes first),
+  // so the listener survives to fire on the NEXT document's pagesloaded, where it
+  // would steer that document to this open's page for an instant before the
+  // document's own listener corrects it. A superseded open's listener stands down.
+
+  var thisOpen = ++openSeq,
+      pagesEventBus = PDFViewerApplication.eventBus;
 
   function onPagesLoaded() {
     pagesEventBus.off('pagesloaded', onPagesLoaded);
 
-    if (pageNum >= 1)
+    if ((thisOpen === openSeq) && (pageNum >= 1))
       PDFViewerApplication.pdfViewer.currentPageNumber = pageNum;
   }
 
@@ -345,8 +362,13 @@ function getPdfData() {
   var pdfDocument = PDFViewerApplication.pdfDocument;
   if (pdfDocument == null) return;
 
+  // Captured now: the labels resolve asynchronously, by which time the viewer
+  // may hold the next document, and the report must name the one they are for.
+
+  var url = PDFViewerApplication.url || '';
+
   pdfDocument.getPageLabels().then(function (pageLabels) {
-    javaApp.setData(JSON.stringify({ pageLabels: pageLabels }));
+    javaApp.setData(JSON.stringify({ pageLabels: pageLabels }), url);
   });
 }
 

@@ -93,6 +93,12 @@ final class PreviewWrapper
    *  appending a new one. See {@link #fileNavClick}. */
   private PreviewFile pendingHistoryNav = null;
 
+  /** The file the viewer was last told to load (the source itself, or the
+   *  converted artifact of an office document): what the viewer's own events
+   *  name their document by. Written by the pane-driven loads on the FX
+   *  thread, read by the page-change callback on a browser thread. */
+  private volatile FilePath displayPath = null;
+
   PreviewSource getSource()             { return src; }
   int getPageNum()                      { return pageNum; }
   int getNumPages()                     { return numPages; }
@@ -157,7 +163,15 @@ final class PreviewWrapper
      */
     void onOpened(FilePath file, boolean success);
 
-    void onPageChanged(int pageNum);
+    /**
+     * The viewer's current page changed (user scrolling, or a page the viewer
+     * was told to show). {@code file} is the document the viewer reported the
+     * page for; the consumer must match it against what it issued, because a
+     * document's page events can still arrive after a newer document was
+     * issued in its place (its pages finished loading and the viewer jumped
+     * to the requested page just as the next selection superseded it).
+     */
+    void onPageChanged(FilePath file, int pageNum);
   }
 
   private PaneEventSink paneEventSink = null;
@@ -176,6 +190,11 @@ final class PreviewWrapper
 
         if (paneEventSink != null)
           paneEventSink.onOpened(file, success);
+
+        // As in pageChangeHndlr: only the displayed document's completion feeds
+        // this pane's bookkeeping (page count, first history entry, controls).
+
+        if ((file == null) || (file.equals(displayPath) == false)) return;
 
         if (curPrevFile == null) return;
 
@@ -203,10 +222,17 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void pageChangeHndlr(int newPageNum)
+  private void pageChangeHndlr(FilePath file, int newPageNum)
   {
     if (paneEventSink != null)
-      paneEventSink.onPageChanged(newPageNum);
+      paneEventSink.onPageChanged(file, newPageNum);
+
+    // Only the displayed document's page events feed this pane's bookkeeping. A
+    // superseded document's late page jump would otherwise be recorded against
+    // the file that replaced it: shown in the page field, entered in its page
+    // history, and offered to the start/end-page buttons.
+
+    if ((file == null) || (file.equals(displayPath) == false)) return;
 
     // A change Java did not already know about is viewer-originated (the user
     // scrolled): it enters the page-nav history here. Java-initiated jumps
@@ -227,8 +253,14 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void retrievedDataHndlr(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel)
+  private void retrievedDataHndlr(FilePath file, Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel)
   {
+    // Labels resolve asynchronously; a superseded document's can arrive after
+    // the next document was tracked (which nulled these maps for it) and would
+    // pass as the new document's until its own arrived, or outlast them.
+
+    if ((file == null) || (file.equals(displayPath) == false)) return;
+
     this.labelToPage = labelToPage;
     this.pageToLabel = pageToLabel;
 
@@ -424,6 +456,7 @@ final class PreviewWrapper
     trackFile(sourceFile, record);
 
     this.pageNum = pageNum;
+    this.displayPath = displayPath;
 
     startAnnotationScan(displayPath);
 
@@ -449,6 +482,7 @@ final class PreviewWrapper
 
     pageNum = 1;
     numPages = 1;
+    this.displayPath = displayPath;
 
     try
     {
@@ -702,6 +736,7 @@ final class PreviewWrapper
     workStartPageNum = -1;
     workEndPageNum = -1;
     curPrevFile = null;
+    displayPath = null;
     pendingHistoryNav = null;
 
     if (window.curSource() == src) window.clearControls();

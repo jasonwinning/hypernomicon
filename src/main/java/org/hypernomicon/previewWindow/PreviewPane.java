@@ -252,6 +252,9 @@ final class PreviewPane
       // hit-derived preview (intent page -1) landing on the previous document's
       // page instead of the first-match page: the stale fold made the intent
       // explicit, which also skipped the withhold-until-hits derivation.
+      // (The other half of a switch, an outgoing document's event arriving after
+      // the new document HAS issued, is caught upstream: the host matches the
+      // event's document against the issued one before stamping the generation.)
 
       if ((intent != null) && intent.sourceFile().equals(sourceFileOf(issuedView)))
         intent = intent.withPage(pageNum);
