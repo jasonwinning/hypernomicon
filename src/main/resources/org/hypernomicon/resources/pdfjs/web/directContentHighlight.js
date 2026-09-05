@@ -26,26 +26,23 @@
 //   { "matches": [ { "ctx": "<context>", "s": <start>, "e": <end> }, ... ] }
 
 (function (data) {
-  console.log('FTS-DOM: starting applyDirectContentHits');
-
   var entries = data.matches;
-  if (!entries || entries.length === 0) { console.log('FTS-DOM: no entries'); return; }
-  console.log('FTS-DOM: ' + entries.length + ' match entries');
+  if ((entries == null) || (entries.length === 0)) return;
 
   // Inject CSS. The color matches pdf.js's stock match highlight
   // (viewer.css --highlight-bg-color), so hits look the same in every
   // preview content kind.
 
-  if (!document.getElementById('fts-hl-style')) {
+  if (document.getElementById('fts-hl-style') == null) {
     var style = document.createElement('style');
     style.id = 'fts-hl-style';
     style.textContent = '.fts-highlight { background-color: rgba(180, 0, 170, 0.25); border-radius: 2px; }';
     var target = document.head || document.body || document.documentElement;
-    if (!target) { console.log('FTS-DOM: no target for CSS'); return; }
+    if (target == null) return;
     target.appendChild(style);
   }
 
-  if (!document.body) { console.log('FTS-DOM: no document.body'); return; }
+  if (document.body == null) return;
 
   // Build full text from all text nodes
 
@@ -58,9 +55,8 @@
     nodeStarts.push(fullText.length);
     fullText += n.textContent;
   }
-  console.log('FTS-DOM: ' + nodes.length + ' text nodes, fullText length=' + fullText.length);
 
-  if (fullText.length === 0) { console.log('FTS-DOM: empty fullText'); return; }
+  if (fullText.length === 0) return;
 
   // Normalize Unicode to ASCII-ish for matching: NFKC decomposition + manual
   // replacements for characters NFKC doesn't simplify.
@@ -92,59 +88,21 @@
     }
   }
   var normTextLower = normText.toLowerCase();
-  console.log('FTS-DOM: normText length=' + normText.length);
 
   // Phase 1: Find positions by searching for context strings
 
   var allPositions = [];  // [origDomStart, origDomEnd, matchIndex] of the matched word
-  var found = 0, notFound = 0, duplicate = 0;
+
+  // Anomaly counts: a context string absent from the page text (the indexed text and
+  // the rendered text disagree), or present more than once (placement is ambiguous)
+
+  var notFound = 0, duplicate = 0;
 
   for (var m = 0; m < entries.length; m++) {
     var ctx = entries[m].ctx.toLowerCase();
     var pos = normTextLower.indexOf(ctx);
-    if (pos < 0) {
-      notFound++;
-      if (notFound <= 3) {
-        console.log('FTS-DOM: not found ctx: [' + ctx.substring(0, 50) + ']');
-        var codes = '';
-        for (var cj = 0; cj < Math.min(ctx.length, 30); cj++) codes += ctx.charCodeAt(cj).toString(16) + ' ';
-        console.log('FTS-DOM: not found hex: ' + codes);
-        // Search for a shorter substring to see if part of it exists
-        var partial = ctx.substring(10, 30);
-        var partialPos = normTextLower.indexOf(partial);
-        console.log('FTS-DOM: partial [' + partial + '] found at ' + partialPos);
-        if (partialPos >= 0) {
-          var domSlice = normTextLower.substring(Math.max(0, partialPos - 15), partialPos + 40);
-          console.log('FTS-DOM: dom around partial: [' + domSlice + ']');
-          var hexSlice = '';
-          for (var hi = Math.max(0, partialPos - 15); hi < Math.min(normTextLower.length, partialPos + 5); hi++)
-            hexSlice += normTextLower.charCodeAt(hi).toString(16) + ' ';
-          console.log('FTS-DOM: dom hex around partial: ' + hexSlice);
-        } else {
-          // Try searching for just the word 'because' near start of context
-          var keyword = ctx.indexOf('because');
-          if (keyword >= 0) {
-            var before = ctx.substring(Math.max(0, keyword - 5), keyword);
-            var bPos = normTextLower.indexOf(before + 'because');
-            console.log('FTS-DOM: keyword search [' + before + 'because] at ' + bPos);
-            if (bPos >= 0) {
-              var bSlice = normTextLower.substring(Math.max(0, bPos - 20), bPos + 30);
-              console.log('FTS-DOM: dom around keyword: [' + bSlice + ']');
-              var bhex = '';
-              for (var bhi = Math.max(0, bPos - 20); bhi < Math.min(normTextLower.length, bPos + 5); bhi++)
-                bhex += normTextLower.charCodeAt(bhi).toString(16) + ' ';
-              console.log('FTS-DOM: dom hex around keyword: ' + bhex);
-            }
-          }
-        }
-      }
-      continue;
-    }
-
-    // Check uniqueness
-
-    var pos2 = normTextLower.indexOf(ctx, pos + 1);
-    if (pos2 >= 0) duplicate++;
+    if (pos < 0) { notFound++; continue; }
+    if (normTextLower.indexOf(ctx, pos + 1) >= 0) duplicate++;
 
     // Map normalized positions back to original positions
 
@@ -157,9 +115,15 @@
     for (var h = 0; h < allPositions.length; h++) {
       if (matchStart < allPositions[h][1] && matchEnd > allPositions[h][0]) { overlap = true; break; }
     }
-    if (!overlap) { allPositions.push([matchStart, matchEnd, m]); found++; }
+    if (overlap === false) allPositions.push([matchStart, matchEnd, m]);
   }
-  console.log('FTS-DOM: found=' + found + ' notFound=' + notFound + ' duplicate=' + duplicate + ' total positions=' + allPositions.length);
+
+  // Anomalies only; a clean run stays silent. Reaches the application log through
+  // the console-message handler, which is registered only when debugging is on.
+
+  if ((notFound > 0) || (duplicate > 0))
+    console.log('FTS-DOM: ' + entries.length + ' match entries; ' + notFound + ' not found in page text, '
+      + duplicate + ' ambiguous (context occurs more than once), ' + allPositions.length + ' placed');
 
   if (allPositions.length === 0) return;
 
@@ -170,6 +134,7 @@
   // Phase 2: Apply highlights in reverse order
 
   var applied = 0;
+
   for (var r = 0; r < allPositions.length; r++) {
     var start = allPositions[r][0], end = allPositions[r][1], mNdx = allPositions[r][2];
     for (var ni = 0; ni < nodes.length; ni++) {
@@ -190,7 +155,9 @@
       break;
     }
   }
-  console.log('FTS-DOM: applied ' + applied + ' highlights');
+
+  if (applied < allPositions.length)
+    console.log('FTS-DOM: ' + (allPositions.length - applied) + ' of ' + allPositions.length + ' placed highlights matched no text node');
 
   // Scroll to first highlight
 

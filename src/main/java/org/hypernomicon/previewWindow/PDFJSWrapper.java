@@ -22,7 +22,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import com.teamdev.jxbrowser.browser.Browser;
@@ -156,12 +155,6 @@ final class PDFJSWrapper
    */
   private volatile boolean viewerHtmlLoadInFlight = false;
 
-  /** Diagnostic: counts navigations this wrapper has initiated (viewer page loads and
-   *  direct-content loads). Echoed by the load-finished and supersession logs, so a
-   *  trailing viewer-page finish can be classified as a duplicate finish of the same
-   *  navigation (seq unchanged) vs. the finish of a newly initiated one (seq advanced). */
-  private final AtomicInteger navSeq = new AtomicInteger(0);
-
   private FilePath lastDirectFilePath = null;
 
   /** The exact URL the most recent direct-content load was issued under (the
@@ -235,9 +228,6 @@ final class PDFJSWrapper
 
   void prepareToHide()
   {
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.prepareToHide: status=" + currentStatus);
-
     removeFromParent(browserView);
 
     hiding = true;
@@ -248,9 +238,6 @@ final class PDFJSWrapper
 
   void prepareToShow()
   {
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.prepareToShow: hiding=" + hiding + " status=" + currentStatus);
-
     if (hiding == false) return;
 
     addToParent(browserView, apBrowser);
@@ -668,7 +655,6 @@ final class PDFJSWrapper
       if (app.debugging)
         System.out.println("PDFJSWrapper: main frame load finished; isViewerPage=" + isViewerPage +
                            " hadPostLoadCode=" + hadPostLoadCode +
-                           " navSeq=" + navSeq.get() +
                            " url=" + describeUrl(url));
 
       // A direct-content navigation finishing IS the load confirmation for
@@ -722,9 +708,10 @@ final class PDFJSWrapper
       {
         FilePath releasedFile = openInFlightFile;
 
-        System.out.println("PDFJSWrapper: navigation superseded the in-flight open of " + releasedFile
-          + "; releasing the coordinator. Superseding content: " + describeUrl(url)
-          + "; navSeq=" + navSeq.get() + "; pane " + paneStateStr());
+        if (app.debugging)
+          System.out.println("PDFJSWrapper: navigation superseded the in-flight open of " + releasedFile
+            + "; releasing the coordinator. Superseding content: " + describeUrl(url)
+            + "; pane " + paneStateStr());
 
         Platform.runLater(() ->
         {
@@ -897,10 +884,8 @@ final class PDFJSWrapper
 
     cleanupPdfHtml();
 
-    navSeq.incrementAndGet();
-
     if (app.debugging)
-      System.out.println("PDFJSWrapper.loadViewerHtml: initiating viewer navigation navSeq=" + navSeq.get());
+      System.out.println("PDFJSWrapper.loadViewerHtml: initiating viewer navigation");
 
     browser.navigation().loadUrl(ResourceServer.viewerUrl());
   }
@@ -982,9 +967,6 @@ final class PDFJSWrapper
     public void openDone(boolean success, double pagesCount, String errMessage)
     {
       ready = true;
-
-      if (app.debugging)
-        System.out.println("PDFJSWrapper.openDone: success=" + success);
 
       if (success)
       {
@@ -1105,13 +1087,10 @@ final class PDFJSWrapper
 
   private void loadFile(FilePath filePath, boolean isHtml) throws IOException
   {
-    navSeq.incrementAndGet();
+    // For the diagnostic line issued once the URL is known (below): the open this
+    // navigation supersedes, read before the coordination state is cleared.
 
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.loadFile: " + (isHtml ? "html" : "direct") + ' ' + filePath.getNameOnly()
-        + " navSeq=" + navSeq.get()
-        + "; supersedes in-flight open=" + (openInFlight ? openInFlightFile : "none")
-        + "; issued via: " + loadCallChain());
+    FilePath supersededOpenFile = openInFlight ? openInFlightFile : null;
 
     // The navigation below replaces the whole document (viewer.html and the PDF
     // open in it included), so there is no need to close the pdf.js app first.
@@ -1193,7 +1172,9 @@ final class PDFJSWrapper
     expectedDirectUrl = url;
 
     if (app.debugging)
-      System.out.println("PDFJSWrapper.loadFile: issuing direct navigation navSeq=" + navSeq.get() + " url=" + describeUrl(url));
+      System.out.println("PDFJSWrapper.loadFile: " + (isHtml ? "html" : "direct") + ' ' + filePath.getNameOnly()
+        + " url=" + describeUrl(url)
+        + "; supersedes in-flight open=" + (supersededOpenFile == null ? "none" : supersededOpenFile));
 
     browser.navigation().loadUrl(url);
   }
@@ -1251,17 +1232,6 @@ final class PDFJSWrapper
            payload = commaNdx < 0 ? "" : url.substring(commaNdx + 1);
 
     return header + ",<" + payload.length() + " bytes, hash=" + Integer.toHexString(payload.hashCode()) + '>';
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /** Compact summary of the application frames on the current stack, innermost
-   *  first: which preview code path issued a load. Diagnostic only, for tracing
-   *  the source of a navigation that superseded another. */
-  private static String loadCallChain()
-  {
-    return appCallChain(PDFJSWrapper.class);
   }
 
 //---------------------------------------------------------------------------
@@ -1325,8 +1295,7 @@ final class PDFJSWrapper
     if (app.debugging)
       System.out.println("PDFJSWrapper.loadPdf: paged " + file.getNameOnly() + " page " + initialPage
         + "; supersedes in-flight open=" + (openInFlight ? openInFlightFile : "none")
-        + "; lastDirect=" + (lastDirectFilePath == null ? "null" : lastDirectFilePath.getNameOnly())
-        + "; issued via: " + loadCallChain());
+        + "; lastDirect=" + (lastDirectFilePath == null ? "null" : lastDirectFilePath.getNameOnly()));
 
     // Reset ready synchronously so a cross-thread goToPage call queued before
     // the open actually issues sees a not-ready state and buffers instead of
@@ -1408,9 +1377,6 @@ final class PDFJSWrapper
 
     if (pdfjsViewerLoaded == false)
     {
-      if (app.debugging)
-        System.out.println("PDFJSWrapper.loadPdf: viewer not loaded; loading viewer first");
-
       loadViewerHtml(runnable);
       return;
     }
@@ -1424,9 +1390,6 @@ final class PDFJSWrapper
       if (chained)
         postBrowserLoadCode = runnable;  // The viewer page is still loading (e.g. right after construction); run this when it finishes
     }
-
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.loadPdf: " + (chained ? "chained onto in-flight viewer load" : "executing directly"));
 
     if (chained == false)
       runnable.run();
@@ -1487,9 +1450,6 @@ final class PDFJSWrapper
       System.out.println("PDFJSWrapper.setAllHits: dropped (ready=" + ready + " opened=" + opened + ')');
       return;
     }
-
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.setAllHits: sending " + allHitsJson.length() + " chars");
 
     execJS("setAllHits('" + allHitsJson.replace("'", "\\'") + "');");
   }

@@ -254,8 +254,8 @@ public final class App extends Application
     // without it, PrintStream buffers up to 8KB, so the log's tail (including shutdown
     // diagnostics) is lost whenever the process is killed rather than exiting normally.
 
-    // Timestamp every line (console and file): open diagnostic questions around the
-    // preview display (viewer warm time, overlay hide timing) are timing questions.
+    // Timestamp every line (console and file), so a log can show the timing and
+    // interleaving of events across threads (viewer, conversions, indexing, FX).
 
     teeOut = new PrintStream(new TimestampedOutputStream(new TeeOutputStream(origOut, logFileOut)), true);
     teeErr = new PrintStream(new TimestampedOutputStream(new TeeOutputStream(origErr, logFileOut)), true);

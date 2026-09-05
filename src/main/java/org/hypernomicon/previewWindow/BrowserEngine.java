@@ -189,8 +189,9 @@ public final class BrowserEngine
       return;
     }
 
-    if (app.debugging == false)
-      Logger.getLogger("com.teamdev.jxbrowser").setLevel(Level.WARNING);
+    // The library's own logger defaults to INFO; keep its output to problems only
+
+    Logger.getLogger("com.teamdev.jxbrowser").setLevel(Level.WARNING);
   }
 
 //---------------------------------------------------------------------------

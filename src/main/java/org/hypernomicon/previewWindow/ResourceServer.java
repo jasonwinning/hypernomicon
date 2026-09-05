@@ -17,7 +17,6 @@
 
 package org.hypernomicon.previewWindow;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -418,9 +417,6 @@ public final class ResourceServer
       // range support (auto-fetch is disabled; see javaapp.js), and it also happens
       // on rapid preview switching. The response is moot; swallow so the exception
       // cannot escape and destabilize the engine.
-
-      if (app.debugging)
-        System.out.println("ResourceServer: connection closed before the response was fully written (request cancelled or superseded)");
     }
   }
 
@@ -444,9 +440,6 @@ public final class ResourceServer
       // write finished (e.g. rapid preview switching). The response is moot;
       // swallow so the exception cannot escape onto the JxBrowser network thread
       // and destabilize the engine.
-
-      if (app.debugging)
-        System.out.println("ResourceServer: connection closed before the response was written (superseded request)");
     }
 
     return InterceptUrlRequestCallback.Response.intercept(job);

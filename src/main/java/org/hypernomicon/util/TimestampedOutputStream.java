@@ -28,9 +28,9 @@ import java.time.format.DateTimeFormatter;
  * Prefixes every line written through it with a wall-clock timestamp
  * ({@code [HH:mm:ss.SSS] }). Inserted between the logging {@code PrintStream}
  * and the console/file tee, so all log output gains timing with no call-site
- * changes. Needed because several open diagnostic questions (viewer warm time,
- * overlay hide timing in the preview overhaul) are timing questions the
- * un-stamped log could not answer.
+ * changes. The stamps are what let a log show the timing and interleaving of
+ * events across threads (viewer, conversions, indexing, FX), which bare lines
+ * cannot.
  * <p>
  * Blank lines are passed through without a stamp. Not thread-safe by itself;
  * the wrapping {@code PrintStream}'s internal synchronization serializes
