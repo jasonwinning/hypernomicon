@@ -29,6 +29,7 @@ import java.util.*;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.previewWindow.DesiredView.ProgressVariant;
 import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSOperation;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.util.file.FilePath;
@@ -110,10 +111,6 @@ final class PreviewWrapper
   void prepareToHide()                  { if (initialized) jsWrapper.prepareToHide(); }
   void prepareToShow()                  { if (initialized) jsWrapper.prepareToShow(); }
   void clearAllHits()                   { if (initialized) jsWrapper.clearAllHits(); }
-  void setNoOfficeInstallation()        { if (initialized) jsWrapper.setNoOfficeInstallation(); }
-  void setStartingConverter()           { if (initialized) jsWrapper.setStartingConverter(); }
-  void setUnable(FilePath filePath)     { if (initialized) jsWrapper.setUnable(filePath); }
-  void setGenerating(FilePath filePath) { if (initialized) jsWrapper.setGenerating(filePath); }
 
   /** Shutdown-only: detach the browser view from the scene graph before the
    *  preview stage closes. See {@link PDFJSWrapper#detachBrowserView()}. */
@@ -410,11 +407,17 @@ final class PreviewWrapper
                             (record.getType() != hdtWorkFile) && (record.getType() != hdtPerson  ))
       record = null;
 
+    // Already the tracked file when a status display preceded its document (a
+    // conversion, an unable notice a refresh then got past) or the same document
+    // was re-issued; its history entry stands rather than repeating.
+
+    boolean alreadyTracked = (curPrevFile != null) && curPrevFile.filePath.equals(sourceFile) && (curPrevFile.record == record);
+
     if ((pendingHistoryNav != null) && pendingHistoryNav.filePath.equals(sourceFile))
     {
       curPrevFile = pendingHistoryNav;  // fileNdx was repositioned by fileNavClick
     }
-    else
+    else if (alreadyTracked == false)
     {
       curPrevFile = new PreviewFile(sourceFile, (HDT_RecordWithPath) record);
 
@@ -487,7 +490,14 @@ final class PreviewWrapper
     try
     {
       if (jsWrapper.loadDirectContent(displayPath))
+      {
+        // The controls follow the issued display, not only the load's completion:
+        // for Chromium's built-in media pages (an mp3 in its audio player) the
+        // completion never brought them up to date.
+
+        refreshControls();
         return true;
+      }
 
       jsWrapper.setContentToShowIsDirect(false);
       jsWrapper.setUnable(sourceFile);
@@ -498,6 +508,63 @@ final class PreviewWrapper
     }
 
     return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Pane-driven progress display for a document on its way (an office
+   * conversion). The pane is about {@code sourceFile} from this moment, so the
+   * window's controls follow it now rather than when its document loads.
+   */
+  void paneShowProgress(FilePath sourceFile, HDT_Record record, ProgressVariant variant)
+  {
+    if (ensureInitialized() == false) return;
+
+    trackStatusFile(sourceFile, record);
+
+    if (variant == ProgressVariant.STARTING_CONVERTER)
+      jsWrapper.setStartingConverter();
+    else
+      jsWrapper.setGenerating(sourceFile);
+
+    refreshControls();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Pane-driven unable display. Nothing loads for {@code sourceFile}, so this
+   * is the only point at which the window's controls can come to name it.
+   */
+  void paneShowUnable(FilePath sourceFile, HDT_Record record, boolean noOfficeInstallation)
+  {
+    if (ensureInitialized() == false) return;
+
+    trackStatusFile(sourceFile, record);
+
+    if (noOfficeInstallation)
+      jsWrapper.setNoOfficeInstallation();
+    else
+      jsWrapper.setUnable(sourceFile);
+
+    refreshControls();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Tracks the file a status display is about: no document, so a single
+   *  notional page and no display path for viewer reports to match. */
+  private void trackStatusFile(FilePath sourceFile, HDT_Record record)
+  {
+    trackFile(sourceFile, record);
+
+    pageNum = 1;
+    numPages = 1;
+    displayPath = null;
   }
 
 //---------------------------------------------------------------------------
@@ -752,7 +819,11 @@ final class PreviewWrapper
   {
     FilePath filePath = getFilePath();
 
-    if ((pageNum <= 0) || FilePath.isEmpty(filePath) || (filePath.exists() == false))
+    // A missing file is no reason to clear: the reconciler owns the display, and
+    // an unable notice for a file that is gone is exactly when the controls
+    // should still name it.
+
+    if ((pageNum <= 0) || FilePath.isEmpty(filePath))
     {
       clearPreview();
       return;

@@ -424,14 +424,17 @@ final class PreviewPaneHost
 
   //---------------------------------------------------------------------------
 
+    // The status displays track the file like the document displays do, so the
+    // window's controls name the intended file from the moment it is issued; a
+    // cleared host drops them the way showDocument does.
+
     @Override public void showProgress(FilePath sourceFile, ProgressVariant variant)
     {
       issuedDisplayPath = null;
 
-      if (variant == ProgressVariant.STARTING_CONVERTER)
-        wrapper().setStartingConverter();
-      else
-        wrapper().setGenerating(sourceFile);
+      if (intentFile == null) return;
+
+      wrapper().paneShowProgress(sourceFile, intentRecord, variant);
     }
 
   //---------------------------------------------------------------------------
@@ -440,10 +443,9 @@ final class PreviewPaneHost
     {
       issuedDisplayPath = null;
 
-      if (artifacts.noOfficeInstallation())
-        wrapper().setNoOfficeInstallation();
-      else
-        wrapper().setUnable(sourceFile);
+      if (intentFile == null) return;
+
+      wrapper().paneShowUnable(sourceFile, intentRecord, artifacts.noOfficeInstallation());
     }
 
   //---------------------------------------------------------------------------
