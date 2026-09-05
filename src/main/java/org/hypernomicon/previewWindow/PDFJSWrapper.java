@@ -97,7 +97,8 @@ final class PDFJSWrapper
 
   private final AnchorPane apBrowser;
   private final BiConsumer<FilePath, Integer> pageChangeHndlr;
-  private final JavascriptToJava javascriptToJava;
+  /** The bridge injected into the current browser; one per browser, see {@link #reloadBrowser}. */
+  private JavascriptToJava javascriptToJava = null;
   private final PDFJSDoneHandler doneHndlr;
   private final PDFJSRetrievedDataHandler retrievedDataHndlr;
 
@@ -211,8 +212,6 @@ final class PDFJSWrapper
     this.pageChangeHndlr = pageChangeHndlr;
     this.retrievedDataHndlr = retrievedDataHndlr;
     this.apBrowser = apBrowser;
-
-    javascriptToJava = new JavascriptToJava();
 
     reloadBrowser(null);
   }
@@ -471,6 +470,8 @@ final class PDFJSWrapper
       Browser toClose = browser;
       browser = null;
 
+      javascriptToJava.retired = true;  // its reports now belong to a browser this wrapper has moved on from
+
       // close() blocks and can need the FX thread (view detachment), so it must not
       // run on it; reloadBrowser is called from FX-thread refresh flows.
 
@@ -492,6 +493,16 @@ final class PDFJSWrapper
     if (browser == null)
       return;
 
+    // A fresh bridge per browser (the previous one was retired above). A replaced
+    // browser keeps running until its close completes, and anything it reports in
+    // that window would otherwise be taken as this browser's: an open completing
+    // would confirm the re-issued document early and release the open coordinator
+    // under the real open. Document identity cannot catch that, since a refresh
+    // re-issues the same document; the retired bridge just drops every later report.
+
+    JavascriptToJava bridge = new JavascriptToJava();
+    javascriptToJava = bridge;
+
     // Inject the bridge before page scripts run, so javaApp already exists when the
     // viewer page's scripts execute.
 
@@ -500,7 +511,7 @@ final class PDFJSWrapper
       JsObject window = params.frame().executeJavaScript("window");
 
       if (window != null)
-        window.putProperty("javaApp", javascriptToJava);
+        window.putProperty("javaApp", bridge);
 
       return InjectJsCallback.Response.proceed();
     });
@@ -911,10 +922,17 @@ final class PDFJSWrapper
    * Bridge object exposed to viewer-page JavaScript as {@code window.javaApp}.
    * JS numbers arrive as double per the JxBrowser type mapping; structured data
    * arrives as JSON strings (walking live JS objects from Java is avoided).
+   * One instance per browser: when the browser it was injected into is
+   * replaced or closed, the instance is retired and drops every report that
+   * still arrives from that browser (see {@link #reloadBrowser}).
    */
   @JsAccessible
   public class JavascriptToJava
   {
+    /** Set when this bridge's browser is replaced or closed; reports arriving
+     *  after that come from a browser this wrapper has moved on from. */
+    private volatile boolean retired = false;
+
     /**
      * Receives the viewer's page changes. {@code url} is the viewer's own URL
      * at the moment the event fired, naming the document the page belongs to:
@@ -926,6 +944,8 @@ final class PDFJSWrapper
      */
     public void pageChange(double newPage, String url)
     {
+      if (retired) return;
+
       if (pageChangeHndlr != null)
         pageChangeHndlr.accept(ResourceServer.fileForUrl(url), (int) newPage);
     }
@@ -934,6 +954,8 @@ final class PDFJSWrapper
 
     public void sidebarChange(double view)
     {
+      if (retired) return;
+
       app.prefs.putInt(PrefKey.PDFJS_SIDEBAR_VIEW, (int) view);
     }
 
@@ -949,7 +971,7 @@ final class PDFJSWrapper
      */
     public void setData(String json, String url)
     {
-      if (retrievedDataHndlr == null) return;
+      if (retired || (retrievedDataHndlr == null)) return;
 
       Map<String, Integer> labelToPage = new HashMap<>();
       Map<Integer, String> pageToLabel = new HashMap<>();
@@ -983,6 +1005,8 @@ final class PDFJSWrapper
 
     public void openDone(boolean success, double pagesCount, String errMessage)
     {
+      if (retired) return;
+
       ready = true;
 
       if (success)
@@ -1045,6 +1069,8 @@ final class PDFJSWrapper
 
     public void closeDone(boolean success, String errMessage)
     {
+      if (retired) return;
+
       ready = true;
 
       if (success)
@@ -1609,6 +1635,9 @@ final class PDFJSWrapper
 
     Browser toClose = browser;
     browser = null;
+
+    if (javascriptToJava != null)
+      javascriptToJava.retired = true;
 
     if (toClose != null)
     {
