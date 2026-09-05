@@ -31,7 +31,7 @@ import com.teamdev.jxbrowser.browser.event.ConsoleMessageReceived;
 import com.teamdev.jxbrowser.js.JsAccessible;
 import com.teamdev.jxbrowser.js.JsObject;
 import com.teamdev.jxbrowser.navigation.callback.StartNavigationCallback;
-import com.teamdev.jxbrowser.navigation.event.FrameLoadFinished;
+import com.teamdev.jxbrowser.navigation.event.*;
 import com.teamdev.jxbrowser.ui.event.MouseWheel;
 import com.teamdev.jxbrowser.view.javafx.BrowserView;
 
@@ -162,14 +162,19 @@ final class PDFJSWrapper
 
   /** The exact URL the most recent direct-content load was issued under (the
    *  self-minted {@code data:} URL for HTML, the file URL otherwise), written
-   *  before the navigation is started. The main-frame load-finished handler
-   *  confirms a direct load only when the finished URL is this one: a
-   *  superseded direct load can finish after its successor was issued, and
-   *  attributing that late finish to {@link #lastDirectFilePath} confirmed the
-   *  new document's load while the old document was still on screen (the FTS
-   *  hits then went into the wrong DOM and were never re-applied). Volatile:
+   *  before the navigation is started. The document-load handler confirms a
+   *  direct load only when the document that loaded is this one: a superseded
+   *  direct load can finish after its successor was issued, and attributing
+   *  that late finish to {@link #lastDirectFilePath} confirmed the new
+   *  document's load while the old document was still on screen (the FTS hits
+   *  then went into the wrong DOM and were never re-applied). Volatile:
    *  written from load paths, read on the browser event thread. */
   private volatile String expectedDirectUrl = null;
+
+  /** The URL of the main frame's most recently committed navigation, recorded
+   *  from the navigation event that carries it for the document-load event
+   *  that follows and carries none. Browser event thread only. */
+  private volatile String committedMainUrl = null;
 
   private int numPages = -1;
   private boolean ready = false, hiding = false;
@@ -672,44 +677,7 @@ final class PDFJSWrapper
                            " hadPostLoadCode=" + hadPostLoadCode +
                            " url=" + describeUrl(url));
 
-      // A direct-content navigation finishing IS the load confirmation for
-      // that content kind (there is no openDone; the document is the content),
-      // but only the finish of the load most recently issued, matched by URL.
-      // A superseded direct load can finish after its successor was issued
-      // (Chromium does not cancel the in-flight one), and reporting that late
-      // finish here confirmed the successor's load while the superseded
-      // document was still on screen: the FTS hits were injected into the
-      // wrong DOM (0 matches found), and when the intended document finished,
-      // the reconciler believed its hits were already applied. A stale finish
-      // is dropped; the intended load's own finish arrives later and confirms.
-      //
-      // A matching finish is also a status-clearing point: any overlay died
-      // with the page this navigation replaced. The clear hops to the FX
-      // thread and re-checks the direct declaration there: a status shown
-      // meanwhile has declared the content non-direct (see showStatus), and
-      // that FX-side write is ordered ahead of this runnable, so it cannot
-      // null the very status that superseded it. This also keeps every status
-      // write FX-confined.
-
-      if ((isViewerPage == false) && contentToShowIsDirect)
-      {
-        if (isExpectedDirectUrl(url))
-        {
-          Platform.runLater(() ->
-          {
-            if (contentToShowIsDirect)
-              currentStatus = null;
-          });
-
-          if (doneHndlr != null)
-            doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, true, "");
-        }
-        else if (app.debugging)
-        {
-          System.out.println("PDFJSWrapper: stale direct-content finish dropped; finished=" + describeUrl(url)
-            + " expected=" + (expectedDirectUrl == null ? "none" : describeUrl(expectedDirectUrl)));
-        }
-      }
+      // Direct content is not confirmed here; see the document-load handler below.
 
       // A finished navigation that neither carries the in-flight open's
       // dispatch nor precedes a viewer load that will (reset's bare viewer
@@ -759,6 +727,72 @@ final class PDFJSWrapper
 
       if (toRun != null)
         toRun.run();
+    });
+
+    // Direct content is confirmed when its document has loaded (the
+    // DOMContentLoaded-level event), not when the page's load event fires: the
+    // document is complete at that point, which is all the hit injection needs,
+    // and Chromium's media pages hold the load event back until the media has
+    // data to render, which with autoplay blocked and only metadata preloaded
+    // is never until the user presses play (observed: no load-finished event at
+    // all for an mp3 or an mp4). The document-load event carries no URL, so the
+    // document is identified by the main frame's most recent commit, taken from
+    // the navigation event that precedes it; both arrive in order on the
+    // browser event thread.
+
+    browser.navigation().on(NavigationFinished.class, event ->
+    {
+      if (event.isInMainFrame() && event.hasCommitted() && (event.isSameDocument() == false))
+        committedMainUrl = event.url();
+    });
+
+    browser.navigation().on(FrameDocumentLoadFinished.class, event ->
+    {
+      if (event.frame().isMain() == false) return;
+
+      String url = committedMainUrl;
+
+      if ((url == null) || (contentToShowIsDirect == false)) return;
+
+      // Only the load most recently issued, matched by URL. A superseded direct
+      // load can finish after its successor was issued (Chromium does not cancel
+      // the in-flight one), and reporting that late finish confirmed the
+      // successor's load while the superseded document was still on screen: the
+      // FTS hits were injected into the wrong DOM (0 matches found), and when
+      // the intended document finished, the reconciler believed its hits were
+      // already applied. A stale finish is dropped; the intended load's own
+      // finish arrives later and confirms.
+
+      if (isExpectedDirectUrl(url) == false)
+      {
+        if (app.debugging)
+          System.out.println("PDFJSWrapper: stale direct-content finish dropped; finished=" + describeUrl(url)
+            + " expected=" + (expectedDirectUrl == null ? "none" : describeUrl(expectedDirectUrl)));
+
+        return;
+      }
+
+      ready = true;
+
+      if (app.debugging)
+        System.out.println("PDFJSWrapper: direct content loaded; url=" + describeUrl(url));
+
+      // A matching finish is also a status-clearing point: any overlay died
+      // with the page this navigation replaced. The clear hops to the FX
+      // thread and re-checks the direct declaration there: a status shown
+      // meanwhile has declared the content non-direct (see showStatus), and
+      // that FX-side write is ordered ahead of this runnable, so it cannot
+      // null the very status that superseded it. This also keeps every status
+      // write FX-confined.
+
+      Platform.runLater(() ->
+      {
+        if (contentToShowIsDirect)
+          currentStatus = null;
+      });
+
+      if (doneHndlr != null)
+        doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, true, "");
     });
 
     browserView = BrowserView.newInstance(browser);
