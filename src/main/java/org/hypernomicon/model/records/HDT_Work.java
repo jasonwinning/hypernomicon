@@ -31,8 +31,8 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.bib.data.WorkBibData;
+import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.data.*;
 import org.hypernomicon.dialogs.UpdateISBNsDlgCtrlr;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Tag;
@@ -524,6 +524,26 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPa
     }
 
     return new WorkBibData(this);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Creates a new entry of the given type in the linked reference manager library and assigns
+   * it to this work. Anything about to write bibliographic data that only an entry can hold
+   * (publisher, journal title, volume, and so on) has to do this first: written to the work's
+   * own bibliographic data, such fields are dropped.
+   * @param entryType The type of the new entry
+   * @return The new entry
+   */
+  public BibEntry<?, ?> assignNewBibEntry(EntryType entryType)
+  {
+    BibEntry<?, ?> entry = db.getBibLibrary().addEntry(entryType);
+
+    setBibEntryKey(entry.getKey());
+
+    return entry;
   }
 
 //---------------------------------------------------------------------------

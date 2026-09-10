@@ -688,7 +688,14 @@ public class WorkDlgCtrlr extends ModalDialog
           authors.add(new FileNameAuthor(row.getText(0), row.getCheckboxValue(3), row.getCheckboxValue(4)));
     });
 
-    String newFileName = "", fileName = HDT_WorkFile.makeFileName(authors, hcbType.selectedRecord(), tfYear.getText(), tfFileTitle.getText(), curBD.getStr(bfContainerTitle), curBD.getStr(bfPublisher), ext);
+    // Only a reference manager entry can store the container title and publisher, so with no
+    // library linked they stay out of the file name rather than naming a file after data that
+    // is not being saved
+
+    String container   = db.bibLibraryIsLinked() ? curBD.getStr(bfContainerTitle) : "",
+           publisher   = db.bibLibraryIsLinked() ? curBD.getStr(bfPublisher     ) : "",
+           newFileName = "",
+           fileName    = HDT_WorkFile.makeFileName(authors, hcbType.selectedRecord(), tfYear.getText(), tfFileTitle.getText(), container, publisher, ext);
 
     if (fileName.isBlank())
     {

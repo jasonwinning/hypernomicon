@@ -71,6 +71,20 @@ public class BibField
     public BibFieldType getType()       { return type; }
     public String getUserFriendlyName() { return userFriendlyName; }
     public boolean isMultiLine()        { return type == bftMultiString; }
+
+    /**
+     * Whether a value for this field can be stored only in a reference manager entry. A work
+     * record holds the other fields itself; a value for one of these has nowhere to go unless
+     * the work is assigned to an entry (see {@link WorkBibData}).
+     */
+    public boolean requiresBibEntry()
+    {
+      return switch (this)
+      {
+        case bfAuthors, bfEditors, bfTranslators, bfTitle, bfDOI, bfISBNs, bfMisc, bfDate, bfWorkType, bfURL -> false;
+        default                                                                                              -> true;
+      };
+    }
   }
 
   public enum BibFieldType { bftString, bftMultiString, bftEntryType, bftWorkType, bftAuthor, bftBibDate }

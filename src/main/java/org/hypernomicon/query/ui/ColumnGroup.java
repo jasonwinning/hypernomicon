@@ -17,7 +17,6 @@
 
 package org.hypernomicon.query.ui;
 
-import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -204,10 +203,11 @@ class ColumnGroup extends AbstractColumnGroup<ColumnGroupItem>
     @Override public void addColumnsToTable(Multimap<RecordType, AbstractColumnGroup<? extends ColumnGroupItem>> recordTypeToColumnGroups,
                                             EnumSet<RelationType> relationsToShow, EnumSet<BibFieldEnum> bibFieldsToShow)
     {
-      List.of(bfEntryType, bfContainerTitle, bfPublisher, bfPubLoc, bfEdition,
-              bfVolume   , bfIssue         , bfLanguage , bfISSNs , bfPages)
+      // Every field that only a reference manager entry can store, in the same order as the
+      // Merge Works dialog shows them
 
-        .forEach(field -> addColumn(new BibFieldColumn(field, false, bibFieldsToShow)));
+      EnumSet.allOf(BibFieldEnum.class).stream().filter(BibFieldEnum::requiresBibEntry)
+                                                .forEach(field -> addColumn(new BibFieldColumn(field, false, bibFieldsToShow)));
     }
   }
 

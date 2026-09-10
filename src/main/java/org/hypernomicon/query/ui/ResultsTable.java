@@ -273,6 +273,9 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
       if (MainText.typeHasKeyWorks(recordType) == false)
         tags.remove(tagKeyWork);
 
+      if (db.bibLibraryIsLinked() == false)
+        tags.remove(tagBibEntryKey);  // Always empty without a library, like the reference manager fields below
+
       NonGeneralColumnGroup colGroup = new RecordTypeColumnGroup(recordType, tags, this);
       recordTypeToColumnGroups.put(recordType, (AbstractColumnGroup<? extends ColumnGroupItem>) colGroup);
 

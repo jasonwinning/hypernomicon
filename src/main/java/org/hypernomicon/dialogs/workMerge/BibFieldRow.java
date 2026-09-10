@@ -21,10 +21,7 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.UIUtil.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.bib.data.BibData;
@@ -38,14 +35,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 
 //---------------------------------------------------------------------------
 
@@ -58,6 +49,7 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
   private final AnchorPane ap;
   final BibFieldEnum bibFieldEnum;
   final List<BibFieldCtrlr_T> ctrlrList;
+  final boolean readOnly;
 
   final AnchorPane getAnchorPane() { return ap; }
 
@@ -70,18 +62,57 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
                               SINGLE_LINE_HEIGHT = 58.0,
                               SINGLE_LINE_HEIGHT_NO_LABEL = 30.0;
 
+  private static final String READ_ONLY_ROW_STYLE_CLASS = "read-only-row",
+                              READ_ONLY_TOOLTIP = "Saving information to this field requires reference manager integration (Tools \u279c Settings \u279c Bibliography Manager).";
+
+  private static final Insets ROW_MARGIN = new Insets(0, 4, 4, 4);
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   BibFieldRow(BibFieldEnum bibFieldEnum, List<BibData> bibDataList, HDT_Work destWork) throws IOException
   {
+    this(bibFieldEnum, bibDataList, destWork, false);
+  }
+
+  /**
+   * @param bibFieldEnum The field this row is for
+   * @param bibDataList The sources; the row shows one per column (the title row stacks them one per line instead)
+   * @param destWork The work being merged into, if any
+   * @param readOnly Whether the row only shows the field's values without offering them for the
+   * merge, because the field can be stored only in a reference manager entry and no library is
+   * linked. The controls are disabled or non-editable, the caption says the values are not
+   * saved, and the row gets a tooltip and a background that set it apart from the rows the user
+   * is choosing from.
+   * @throws IOException if unable to load FXML
+   */
+  BibFieldRow(BibFieldEnum bibFieldEnum, List<BibData> bibDataList, HDT_Work destWork, boolean readOnly) throws IOException
+  {
     this.bibFieldEnum = bibFieldEnum;
+    this.readOnly = readOnly;
 
     ctrlrList = new ArrayList<>();
 
     SimpleObjectProperty<GridPane> gridPaneProp = new SimpleObjectProperty<>();
     ap = initAnchorPane(gridPaneProp);
     GridPane gp = gridPaneProp.get();
+
+    if (readOnly)
+    {
+      ap.getStyleClass().add(READ_ONLY_ROW_STYLE_CLASS);
+
+      // The band should fill the grid cell, so the row's margin becomes padding instead; the
+      // controls stay where they are in the other rows
+
+      GridPane.setMargin(ap, Insets.EMPTY);
+      ap.setPadding(ROW_MARGIN);
+
+      // The tooltip goes on the row rather than on its controls: JavaFX does not deliver mouse
+      // events to disabled nodes, so one on the radio buttons would never show. Hovering over a
+      // disabled control falls through to the row, and hovering over an enabled one bubbles up.
+
+      Tooltip.install(ap, makeTooltip(READ_ONLY_TOOLTIP));
+    }
 
     for (int ndx = 0; ndx < bibDataList.size(); ndx++)
     {
@@ -134,7 +165,7 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
     setAnchors(gp, 0.0, 0.0, 0.0, 0.0);
     AnchorPane newAP = new AnchorPane(gp);
 
-    GridPane.setMargin(newAP, new Insets(0, 4, 4, 4));
+    GridPane.setMargin(newAP, ROW_MARGIN);
 
     return newAP;
   }
@@ -142,9 +173,13 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * @param readOnly See {@link #BibFieldRow(BibFieldEnum, List, HDT_Work, boolean)}; only
+   * meaningful for the fields that can be stored only in a reference manager entry
+   */
   @SuppressWarnings("unchecked")
   public static <BibFieldRow_T extends BibFieldRow<BibFieldCtrlr_T>, BibFieldCtrlr_T extends BibFieldCtrlr>
-    BibFieldRow_T create(BibFieldEnum bibFieldEnum, List<BibData> bibDataList, HDT_Work destWork) throws IOException
+    BibFieldRow_T create(BibFieldEnum bibFieldEnum, List<BibData> bibDataList, HDT_Work destWork, boolean readOnly) throws IOException
   {
     return switch (bibFieldEnum)
     {
@@ -155,7 +190,7 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
       case bfDate      -> (BibFieldRow_T) new DateRow(bibDataList);
 
       case bfISBNs,
-           bfISSNs     -> (BibFieldRow_T) new MultiLineCheckBoxRow(bibFieldEnum, bibDataList);
+           bfISSNs     -> (BibFieldRow_T) new MultiLineCheckBoxRow(bibFieldEnum, bibDataList, readOnly);
 
       case bfTranslators,
            bfEditors -> throw new UnsupportedOperationException("Unimplemented case: " + bibFieldEnum);
@@ -163,9 +198,9 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
       default ->
 
         bibFieldEnum.isMultiLine() ?
-          (BibFieldRow_T) new ToggleRow<MultiLineCtrlr>(bibFieldEnum, bibDataList)
+          (BibFieldRow_T) new ToggleRow<MultiLineCtrlr>(bibFieldEnum, bibDataList, null, readOnly)
         :
-          (BibFieldRow_T) new ToggleRow<SingleLineCtrlr>(bibFieldEnum, bibDataList);
+          (BibFieldRow_T) new ToggleRow<SingleLineCtrlr>(bibFieldEnum, bibDataList, null, readOnly);
     };
   }
 
@@ -174,9 +209,9 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
 
   protected static final class MultiLineCheckBoxRow extends BibFieldRow<MultiLineCheckBoxCtrlr>
   {
-    private MultiLineCheckBoxRow(BibFieldEnum bibFieldEnum, List<BibData> bibDataList) throws IOException
+    private MultiLineCheckBoxRow(BibFieldEnum bibFieldEnum, List<BibData> bibDataList, boolean readOnly) throws IOException
     {
-      super(bibFieldEnum, bibDataList, null);
+      super(bibFieldEnum, bibDataList, null, readOnly);
     }
 
     @Override protected void mergeInto(BibData mergedBD)
@@ -186,7 +221,7 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
 
     @Override protected MultiLineCheckBoxCtrlr addCtrlr(BibData bibData, HDT_Work destWork) throws IOException
     {
-      return new MultiLineCheckBoxCtrlr(bibFieldEnum, bibData);
+      return new MultiLineCheckBoxCtrlr(bibFieldEnum, bibData, readOnly);
     }
 
     @Override protected Double getHeight() { return MULTI_LINE_HEIGHT; }
@@ -202,12 +237,19 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
 
     ToggleRow(BibFieldEnum bibFieldEnum, List<BibData> bibDataList) throws IOException
     {
-      this(bibFieldEnum, bibDataList, null);
+      this(bibFieldEnum, bibDataList, null, false);
     }
 
     ToggleRow(BibFieldEnum bibFieldEnum, List<BibData> bibDataList, HDT_Work destWork) throws IOException
     {
-      super(bibFieldEnum, bibDataList, destWork);
+      this(bibFieldEnum, bibDataList, destWork, false);
+    }
+
+    ToggleRow(BibFieldEnum bibFieldEnum, List<BibData> bibDataList, HDT_Work destWork, boolean readOnly) throws IOException
+    {
+      super(bibFieldEnum, bibDataList, destWork, readOnly);
+
+      if (readOnly) return;  // Nothing is being chosen, so no toggle gets selected
 
       for (ToggleCtrlr_T ctrlr : ctrlrList)
       {
@@ -246,12 +288,12 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
     protected ToggleCtrlr_T createCtrlr(BibData bibData, HDT_Work destWork) throws IOException
     {
       return bibFieldEnum.isMultiLine() ?
-          (ToggleCtrlr_T) new MultiLineCtrlr(bibFieldEnum, bibData)
+          (ToggleCtrlr_T) new MultiLineCtrlr(bibFieldEnum, bibData, readOnly)
         :
-          (ToggleCtrlr_T) new SingleLineCtrlr(bibFieldEnum, bibData);
+          (ToggleCtrlr_T) new SingleLineCtrlr(bibFieldEnum, bibData, readOnly);
     }
 
-    ToggleCtrlr_T selectedCtrlr() { return toggleMap.get(toggleGroup.getSelectedToggle()); }
+    ToggleCtrlr_T selectedCtrlr() { return toggleMap.get(toggleGroup.getSelectedToggle()); }  // null for a read-only row, which has no selection
 
     @Override protected Double getHeight() { return bibFieldEnum.isMultiLine() ? MULTI_LINE_HEIGHT : SINGLE_LINE_HEIGHT; }
   }

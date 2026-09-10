@@ -62,6 +62,9 @@ public class TagItemPopulator extends Populator
 
     removeAll(tags, tagDisplayRecord, tagKeyWork, tagPictureCrop, tagSpokeRecord);
 
+    if (db.bibLibraryIsLinked() == false)
+      tags.remove(tagBibEntryKey);  // Always empty without a library; the bibliographic-field query hides itself the same way
+
     choices = new ArrayList<>();
   }
 

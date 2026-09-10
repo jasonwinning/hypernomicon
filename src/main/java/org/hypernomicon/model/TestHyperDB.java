@@ -390,6 +390,9 @@ public final class TestHyperDB extends AbstractHyperDB
       case ltMendeley -> (T) MendeleyWrapper.createForTesting(userID);
     };
 
+    if (libType == LibraryType.ltZotero)
+      ZoteroWrapper.initTemplatesForTesting();  // as loading a library file would have; entries cannot be created without the templates
+
     linkBibLibraryForUnitTest(libWrapper);
 
     return libWrapper;

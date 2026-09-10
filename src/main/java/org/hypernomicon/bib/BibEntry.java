@@ -237,6 +237,7 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
     setDate(bd.getDate());
     setStr(bfURL, bd.getStr(bfURL));
     setMultiStr(bfISBNs, bd.getMultiStr(bfISBNs));
+    setMultiStr(bfMisc, bd.getMultiStr(bfMisc));
     setTitle(bd.getStr(bfTitle));
 
     setAllAuthors(bd.getAuthors());

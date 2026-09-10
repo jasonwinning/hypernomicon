@@ -19,15 +19,18 @@ package org.hypernomicon.settings;
 
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.settings.SettingsDlgCtrlr.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.*;
 import java.util.stream.*;
 
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
@@ -56,24 +59,71 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
   public enum WorkFileNameComponentType
   {
-    fncBlank          (""                             , 0),
-    fncAuthorLastNames("Author last names"            , 1),
-    fncTitleNoSub     ("Title (no subtitle)"          , 2),
-    fncYear           ("Year"                         , 3),
-    fncTranslators    ("Translators"                  , 4),
-    fncEditors        ("Editors"                      , 5),
-    fncContainerNoSub ("Container title (no subtitle)", 6),
-    fncPublisher      ("Publisher"                    , 7);
+    fncBlank          (""                 , null         , 0, null),
+    fncAuthorLastNames("Author last names", null         , 1, bfAuthors),
+    fncTitleNoSub     ("Title"            , "no subtitle", 2, bfTitle),
+    fncYear           ("Year"             , null         , 3, bfDate),
+    fncTranslators    ("Translators"      , null         , 4, bfTranslators),
+    fncEditors        ("Editors"          , null         , 5, bfEditors),
+    fncContainerNoSub ("Container title"  , "no subtitle", 6, bfContainerTitle),
+    fncPublisher      ("Publisher"        , null         , 7, bfPublisher);
 
-    private final String caption;
+    private final String caption, qualifier;  // The qualifier, if any, follows the caption in parentheses
+    private final BibFieldEnum bibField;      // The bibliographic field the component is drawn from; null for the blank component
     final int prefValue;
 
 //---------------------------------------------------------------------------
 
-    WorkFileNameComponentType(String caption, int prefValue)
+    WorkFileNameComponentType(String caption, String qualifier, int prefValue, BibFieldEnum bibField)
     {
       this.caption = caption;
+      this.qualifier = qualifier;
       this.prefValue = prefValue;
+      this.bibField = bibField;
+    }
+
+//---------------------------------------------------------------------------
+
+    /**
+     * Whether the settings table should point out that this component is drawn from a field
+     * that only a reference manager entry can store. It can still be chosen while no library is
+     * linked, and starts contributing to file names once one is.
+     */
+    private boolean needsRefMgrNote()
+    {
+      return (bibField != null) && bibField.requiresBibEntry() && (db.bibLibraryIsLinked() == false);
+    }
+
+//---------------------------------------------------------------------------
+
+    /**
+     * The caption shown in the settings table: the qualifier and, while it applies, the
+     * reference manager note share one parenthetical
+     */
+    String getCaption()
+    {
+      List<String> qualifiers = new ArrayList<>();
+
+      if (qualifier != null) qualifiers.add(qualifier);
+      if (needsRefMgrNote()) qualifiers.add("requires reference manager");
+
+      return qualifiers.isEmpty() ? caption : caption + " (" + String.join("; ", qualifiers) + ')';
+    }
+
+//---------------------------------------------------------------------------
+
+    /**
+     * Tooltip for the component's cell in the settings table: the cell text, spelling out the
+     * reference manager note while it applies
+     */
+    Tooltip getToolTip()
+    {
+      String plainCaption = qualifier == null ? caption : caption + " (" + qualifier + ')';
+
+      return makeTooltip(needsRefMgrNote() ?
+        plainCaption + "; this requires reference manager integration (e.g., Zotero or Mendeley)"
+      :
+        plainCaption);
     }
 
 //---------------------------------------------------------------------------
@@ -189,9 +239,10 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     hyperTable = new HyperTable(tv, 0, true, "");
 
     Populator pop = Populator.createWithIDMatching(CellValueType.cvtFileNameComponent,
-        EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new GenericNonRecordHTC(type.prefValue, type.caption, hdtNone)).toList());
+        EnumSet.allOf(WorkFileNameComponentType.class).stream().map(type -> new GenericNonRecordHTC(type.prefValue, type.getCaption(), hdtNone)).toList());
 
-    hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableUnlimitedDropDown, pop, (row, _, cellVal, nextColNdx, nextPopulator) -> refreshExample());
+    hyperTable.addColAltPopulatorWithUpdateHandler(hdtNone, ctEditableUnlimitedDropDown, pop, (row, _, cellVal, nextColNdx, nextPopulator) -> refreshExample())
+              .setCellToolTipHndlr(row -> WorkFileNameComponentType.forInteger(row.getID(0)).getToolTip());
 
     hyperTable.addLabelEditCol((row, colNdx) ->
     {
@@ -241,7 +292,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     hyperTable.buildRows(WorkFileNameComponent.loadFromPrefs(), (row, component) ->
     {
-      row.setCellValue(0, new GenericNonRecordHTC(component.type.prefValue, component.type.caption, hdtNone));
+      row.setCellValue(0, new GenericNonRecordHTC(component.type.prefValue, component.type.getCaption(), hdtNone));
 
       setExclWorkTypesCellValue(component.excludedWorkTypes.stream(), row);
 

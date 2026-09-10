@@ -52,6 +52,7 @@ import org.hypernomicon.view.wrappers.*;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 
@@ -85,20 +86,54 @@ public abstract class BibFieldCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Caption for a field's label. A read-only row (see {@link BibFieldRow}) says up front that
+   * its values are not going to be saved.
+   */
+  static String caption(BibFieldEnum bibFieldEnum, boolean readOnly)
+  {
+    return bibFieldEnum.getUserFriendlyName() + (readOnly ? " (not saved)" : "");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Leaves a field's value visible and selectable, so that it can be copied into a field that
+   * is saved, while making it plain that the value is not on offer: the selector is disabled and
+   * the text can be neither edited nor tabbed into.
+   */
+  static void makeReadOnly(Node selector, TextInputControl textCtrl)
+  {
+    selector.setDisable(true);
+
+    textCtrl.setEditable(false);
+    textCtrl.setFocusTraversable(false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static class MultiLineCheckBoxCtrlr extends BibFieldCtrlr
   {
     @FXML private Label label;
     @FXML private CheckBox checkBox;
     @FXML private TextArea ta;
 
-    MultiLineCheckBoxCtrlr(BibFieldEnum bibFieldEnum, BibData bibData) throws IOException
+    MultiLineCheckBoxCtrlr(BibFieldEnum bibFieldEnum, BibData bibData, boolean readOnly) throws IOException
     {
       super("MultiLineCheckBoxCtrl", bibFieldEnum, bibData);
 
-      label.setText(bibFieldEnum.getUserFriendlyName());
+      label.setText(caption(bibFieldEnum, readOnly));
 
       if (bibData.fieldNotEmpty(bibFieldEnum))
         ta.setText(strListToStr(bibData.getMultiStr(bibFieldEnum), true));
+
+      if (readOnly)
+      {
+        checkBox.setSelected(false);
+        makeReadOnly(checkBox, ta);
+      }
     }
 
     Stream<String> getLines() { return checkBox.isSelected() ? convertMultiLineStrToStrList(ta.getText(), true).stream() : Stream.empty(); }
@@ -169,16 +204,22 @@ public abstract class BibFieldCtrlr
     @FXML private RadioButton radioBtn;
     @FXML private TextArea ta;
 
-    MultiLineCtrlr(BibFieldEnum bibFieldEnum, BibData bibData) throws IOException
+    MultiLineCtrlr(BibFieldEnum bibFieldEnum, BibData bibData, boolean readOnly) throws IOException
     {
       super("MultiLineCtrl", bibFieldEnum, bibData);
 
-      label.setText(bibFieldEnum.getUserFriendlyName());
+      label.setText(caption(bibFieldEnum, readOnly));
 
       if (bibData.fieldNotEmpty(bibFieldEnum))
         ta.setText(strListToStr(bibData.getMultiStr(bibFieldEnum), true));
 
-      ta.textProperty().addListener((obs, ov, nv) -> radioBtn.setSelected(true));
+      if (readOnly)
+      {
+        radioBtn.setSelected(false);
+        makeReadOnly(radioBtn, ta);
+      }
+      else
+        ta.textProperty().addListener((obs, ov, nv) -> radioBtn.setSelected(true));
     }
 
     @Override public RadioButton getToggle()             { return radioBtn; }
@@ -195,16 +236,22 @@ public abstract class BibFieldCtrlr
     @FXML private RadioButton radioBtn;
     @FXML private TextField tf;
 
-    SingleLineCtrlr(BibFieldEnum bibFieldEnum, BibData bibData) throws IOException
+    SingleLineCtrlr(BibFieldEnum bibFieldEnum, BibData bibData, boolean readOnly) throws IOException
     {
       super("SingleLineCtrl", bibFieldEnum, bibData);
 
-      label.setText(bibFieldEnum.getUserFriendlyName());
+      label.setText(caption(bibFieldEnum, readOnly));
 
       if (bibData.fieldNotEmpty(bibFieldEnum))
         tf.setText(bibData.getStr(bibFieldEnum));
 
-      tf.textProperty().addListener((obs, ov, nv) -> radioBtn.setSelected(true));
+      if (readOnly)
+      {
+        radioBtn.setSelected(false);
+        makeReadOnly(radioBtn, tf);
+      }
+      else
+        tf.textProperty().addListener((obs, ov, nv) -> radioBtn.setSelected(true));
     }
 
     @Override public RadioButton getToggle()             { return radioBtn; }

@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.data.*;
 import org.hypernomicon.bib.data.BibDataRetriever.BibSource;
@@ -1623,7 +1622,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
 
       if (wdc.getCreateEntry())
-        curWork.setBibEntryKey(db.getBibLibrary().addEntry(wdc.getEntryType()).getKey());
+        curWork.assignNewBibEntry(wdc.getEntryType());
 
       curWork.getBibData().copyAllFieldsFrom(wdc.getBibDataFromGUI(), false, false);
 
@@ -1879,16 +1878,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       if (mwd.showModal() == false) return;
 
-      BibData destBD = workBD;
-
-      if (mwd.creatingNewEntry().isTrue())
-      {
-        BibEntry<?, ?> entry = db.getBibLibrary().addEntry(mwd.getEntryType());
-        curWork.setBibEntryKey(entry.getKey());
-        destBD = entry;
-      }
-
-      mwd.mergeInto(destBD);
+      mwd.mergeIntoWork(curWork);
       BibManager.refresh();
       ui.update();
     });
@@ -1916,14 +1906,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (mwd.showModal() == false) return;
 
-    if (mwd.creatingNewEntry().isTrue())
-    {
-      BibEntry<?, ?> entry = db.getBibLibrary().addEntry(mwd.getEntryType());
-      curWork.setBibEntryKey(entry.getKey());
-      workBibData = entry;
-    }
-
-    mwd.mergeInto(workBibData);
+    mwd.mergeIntoWork(curWork);
     BibManager.refresh();
     ui.update();
   }

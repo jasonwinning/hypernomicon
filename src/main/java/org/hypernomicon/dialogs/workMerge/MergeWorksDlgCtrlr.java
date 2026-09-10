@@ -195,6 +195,11 @@ public class MergeWorksDlgCtrlr extends ModalDialog
       addRow(bfEntryType);
     }
 
+    // Fields that only a reference manager entry can store are still shown when no library is
+    // linked, but read-only (see BibFieldRow) and after the rows the user is choosing from
+
+    List<BibFieldEnum> readOnlyFields = new ArrayList<>();
+
     for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
     {
       switch (bibFieldEnum)
@@ -203,6 +208,14 @@ public class MergeWorksDlgCtrlr extends ModalDialog
           continue;
 
         default : break;
+      }
+
+      if (fieldIsReadOnly(bibFieldEnum))
+      {
+        if (bibDataList.stream().anyMatch(bd -> bd.fieldNotEmpty(bibFieldEnum)))
+          readOnlyFields.add(bibFieldEnum);
+
+        continue;
       }
 
       int cnt = 0;
@@ -258,6 +271,9 @@ public class MergeWorksDlgCtrlr extends ModalDialog
       }
     }
 
+    for (BibFieldEnum bibFieldEnum : readOnlyFields)
+      addRow(bibFieldEnum);
+
     onShown = () -> ((TitleRow)rows.get(bfTitle)).focus();
   }
 
@@ -285,7 +301,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
   @SuppressWarnings("rawtypes")
   private void addRow(BibFieldEnum bibFieldEnum, HDT_Work destWork) throws IOException
   {
-    BibFieldRow row = BibFieldRow.create(bibFieldEnum, bibDataList, destWork);
+    BibFieldRow row = BibFieldRow.create(bibFieldEnum, bibDataList, destWork, fieldIsReadOnly(bibFieldEnum));
     rows.put(bibFieldEnum, row);
     AnchorPane ap = row.getAnchorPane();
 
@@ -297,6 +313,18 @@ public class MergeWorksDlgCtrlr extends ModalDialog
     Double height = row.getHeight();
 
     gpMain.getRowConstraints().add(height == null ? new RowConstraints() : new RowConstraints(height, height, height));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether the row for this field only shows values without offering them for the merge: the
+   * field can be stored only in a reference manager entry, and no library is linked
+   */
+  private static boolean fieldIsReadOnly(BibFieldEnum bibFieldEnum)
+  {
+    return (db.bibLibraryIsLinked() == false) && bibFieldEnum.requiresBibEntry();
   }
 
 //---------------------------------------------------------------------------
@@ -373,7 +401,9 @@ public class MergeWorksDlgCtrlr extends ModalDialog
 
       if (bibFieldRow != null)
       {
-        bibFieldRow.mergeInto(mergedBD); // assign data from bibFieldRow to work and bd
+        if (bibFieldRow.readOnly == false)
+          bibFieldRow.mergeInto(mergedBD); // assign data from bibFieldRow to work and bd
+
         continue;
       }
 
@@ -387,6 +417,25 @@ public class MergeWorksDlgCtrlr extends ModalDialog
           mergedBD.setStr(bibFieldEnum, field.getStr());
       });
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Merges the selected values into the work's bibliographic data. If the user asked for a new
+   * reference manager entry, it is created and assigned first so that the merge goes into the
+   * entry: fields that only an entry can hold would otherwise be dropped on the way to the work.
+   * @param work The work to merge into
+   * @return The bibliographic data that received the merge; the new entry if one was created
+   */
+  public BibData mergeIntoWork(HDT_Work work)
+  {
+    BibData destBD = creatingNewEntry().isTrue() ? work.assignNewBibEntry(getEntryType()) : work.getBibData();
+
+    mergeInto(destBD);
+
+    return destBD;
   }
 
 //---------------------------------------------------------------------------

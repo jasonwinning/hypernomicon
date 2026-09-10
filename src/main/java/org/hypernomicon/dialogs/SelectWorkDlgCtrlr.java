@@ -123,10 +123,10 @@ public class SelectWorkDlgCtrlr extends ModalDialog
     bibEntry = bibEntryToUse;
     work = workToUse;
 
-    lblBibEntry.setText(db.bibLibraryIsLinked() ? "Existing " + db.bibLibraryUserFriendlyName() + " entry:" : "");
-
-    if (db.bibLibraryIsLinked() == false)
-      cbBibEntry.setDisable(true);
+    if (db.bibLibraryIsLinked())
+      lblBibEntry.setText("Existing " + db.bibLibraryUserFriendlyName() + " entry:");
+    else
+      setAllVisible(false, lblBibEntry, cbBibEntry);  // Nothing to choose from without a library
 
     if (includeMiscFileOption == false)
       removeFromParent(btnNewMisc);

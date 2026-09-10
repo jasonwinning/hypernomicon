@@ -143,10 +143,33 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Initializes the item templates the way loading a library file does (see
+   * {@link #loadAllFromJsonFile}), so that a wrapper from {@link #createForTesting()} can create
+   * entries offline. Kept out of createForTesting itself because
+   * {@link #retrieveMetadataAndSaveToFile} has to run while the bundled template file is out of
+   * date, which is exactly when initializing from it would fail.
+   */
+  public static void initTemplatesForTesting() throws HyperDataException
+  {
+    assertThatThisIsUnitTestThread();
+
+    try
+    {
+      initTemplates();
+    }
+    catch (IOException | ParseException e)
+    {
+      throw new HyperDataException(e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   static JsonObj getTemplateInitIfNecessary(EntryType type) throws IOException, ParseException, HDB_InternalError
   {
-    if (templates == null)
-      initTemplates();
+    initTemplates();
 
     return templates.get(type).deepCopy();
   }

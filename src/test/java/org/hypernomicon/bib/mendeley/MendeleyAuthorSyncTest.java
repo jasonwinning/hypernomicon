@@ -34,8 +34,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 //---------------------------------------------------------------------------
 
@@ -57,6 +56,14 @@ class MendeleyAuthorSyncTest
 
     db = TestHyperDB.instance();
     mWrapper = assertDoesNotThrow(() -> db.linkBibLibrary(LibraryType.ltMendeley, ""));
+  }
+
+//---------------------------------------------------------------------------
+
+  @AfterAll
+  static void tearDownOnce()
+  {
+    TestHyperDB.closeIfOpen();  // Leave neither the linked library nor the works created here for the next test class
   }
 
 //---------------------------------------------------------------------------

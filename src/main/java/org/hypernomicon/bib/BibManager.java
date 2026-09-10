@@ -722,9 +722,7 @@ public final class BibManager extends NonmodalWindow
     if (ui.cantSaveRecord()) return;
 
     HDT_Work work = workRecordToAssign.getValue();
-    BibEntry<?, ?> entry = libraryWrapper.addEntry(et);
-
-    work.setBibEntryKey(entry.getKey());
+    BibEntry<?, ?> entry = work.assignNewBibEntry(et);
 
     if (et.isChild() && work.largerWork.isNotNull() && (work.largerWork.get().getBibEntryKey().isBlank() == false))
     {

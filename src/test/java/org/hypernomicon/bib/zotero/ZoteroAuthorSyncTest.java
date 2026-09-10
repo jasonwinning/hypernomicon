@@ -62,6 +62,14 @@ class ZoteroAuthorSyncTest
   }
 
 //---------------------------------------------------------------------------
+
+  @AfterAll
+  static void tearDownOnce()
+  {
+    TestHyperDB.closeIfOpen();  // Leave neither the linked library nor the works created here for the next test class
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private static JsonObj getTemplate(EntryType entryType)

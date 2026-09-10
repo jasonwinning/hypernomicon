@@ -7,9 +7,15 @@
   -fx-font-weight: normal;
 }
 
+.root
+{
+  /* Shared by the unselected tabs and the read-only rows of the Merge Works dialog, so that the two stay identical */
+  -hn-inactive-background: #e4e4e4;
+}
+
 .tab-pane .tab
 {
-  -fx-background-color: #e4e4e4;
+  -fx-background-color: -hn-inactive-background;
 }
 
 #selectorTabPane .tab-header-area .tab-header-background
@@ -19,7 +25,14 @@
 
 #selectorTabPane .tab
 {
-  -fx-background-color: #e4e4e4;
+  -fx-background-color: -hn-inactive-background;
+}
+
+.read-only-row
+{
+  /* GridPane draws its grid lines behind its children, centered on the cell boundaries; the inset keeps the band off them */
+  -fx-background-color: -hn-inactive-background;
+  -fx-background-insets: 1;
 }
 
 .tab-pane .tab:selected

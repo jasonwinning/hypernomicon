@@ -3838,7 +3838,8 @@ public final class MainCtrlr
 
             if (mwd.showModal() == false) return false;
 
-            mwd.mergeInto(workBD);
+            workBD = mwd.mergeIntoWork(work);  // the new entry if the user asked for one; the Import dialog then hides its own entry controls
+            BibManager.refresh();
           }
 
           bdToUse = workBD;
@@ -4023,14 +4024,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (mwd.creatingNewEntry().isTrue())
-    {
-      BibEntry<?, ?> entry = db.getBibLibrary().addEntry(mwd.getEntryType());
-      work.setBibEntryKey(entry.getKey());
-      workBibData = entry;
-    }
-
-    mwd.mergeInto(workBibData);
+    mwd.mergeIntoWork(work);
     BibManager.refresh();
 
     goToRecord(work, false);
