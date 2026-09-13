@@ -43,6 +43,7 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.util.Util;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
@@ -106,7 +107,6 @@ final class PDFJSWrapper
 
   private Browser browser = null;
   private BrowserView browserView = null;
-  private Runnable postBrowserLoadCode = null;
 
   /** The status kinds the in-viewer overlay can display; see {@link #showStatus}. */
   private enum StatusKind { PROGRESS, NOTICE }
@@ -120,12 +120,6 @@ final class PDFJSWrapper
    *  Writes are FX-confined; volatile because diagnostics read it from browser
    *  threads. Also the re-issue source after {@link #reloadBrowser}. */
   private volatile Status currentStatus = null;
-
-  /** Guards the {@link #viewerHtmlLoadInFlight}/{@link #postBrowserLoadCode} pair:
-   *  chaining work onto an in-flight viewer load (FX thread) and the load-finished
-   *  event consuming that work (JxBrowser thread) must be atomic, or a runnable
-   *  chained in the gap is never triggered. */
-  private final Object loadLock = new Object();
 
   /**
    * Whether the content slated for the viewer is direct browser content (HTML, plain text, XML,
@@ -150,14 +144,6 @@ final class PDFJSWrapper
    */
   private volatile boolean pdfjsViewerLoaded = true;
 
-  /** True from the moment loadViewerHtml starts the navigation until the viewer page's
-   *  load-finished event; anything wanting to run JS against the viewer page in that
-   *  window must chain onto {@link #postBrowserLoadCode} instead of executing
-   *  immediately (the script would run in the old or half-loaded document). Cleared
-   *  by the navigations that supersede a pending viewer load (loadFile, reloadBrowser).
-   */
-  private volatile boolean viewerHtmlLoadInFlight = false;
-
   private FilePath lastDirectFilePath = null;
 
   /** The exact URL the most recent direct-content load was issued under (the
@@ -181,28 +167,11 @@ final class PDFJSWrapper
 
   private volatile boolean opened = false;
 
-  /**
-   * Open coordination (writes are FX-confined; volatile because the openDone
-   * bridge callback reads {@link #openInFlightFile} and viewer-driving threads
-   * read the others): at most one {@code openPdfFile} call is in flight at a
-   * time. A request made while one is loading replaces any previously waiting
-   * request (latest wins, never a queue) and is issued when the in-flight open
-   * reports {@code openDone}, success or failure. Concurrent
-   * {@code openPdfFile} calls race inside pdf.js (null-document errors, a
-   * nondeterministic final document) and under rapid selection can destabilize
-   * the engine.
-   */
-  private volatile boolean openInFlight = false;
-  private volatile FilePath pendingOpenFile = null, openInFlightFile = null;
-  private int pendingOpenPage = 1;
-
-  /** True when the status overlay was shown while an open was already in flight:
-   *  that open predates the status, so its completion must not clear the overlay
-   *  (observed on Linux: a superseded slow open finishing stripped the progress
-   *  overlay for the rest of a conversion). Set by {@link #showStatus}, cleared
-   *  when the coordinator issues a new open, which is then newer than any
-   *  displayed status. FX-confined. */
-  private boolean openSupersededByStatus = false;
+  /** Serializes document opens and joins them onto viewer-page loads; the
+   *  {@link OpenAdapter} below supplies its browser-side effects. Its executor
+   *  runs immediately when already on the FX thread, so calls from the load
+   *  paths (FX) act synchronously and reports from browser threads hop. */
+  private final OpenCoordinator opens = new OpenCoordinator(new OpenAdapter(), Util::runInFXThread);
 
   /** Page correction that arrived while an open was in flight (see
    *  {@link #goToPage(int)}); applied by the coordinator's release, cleared by
@@ -274,16 +243,11 @@ final class PDFJSWrapper
     {
       currentStatus = new Status(kind, message);
 
-      if (openInFlight)
-        openSupersededByStatus = true;  // that open predates this status; its success must not clear it
+      opens.statusShown();  // an open already in flight predates this status; its success must not clear it
 
       if (browser == null) return;  // engine unavailable; the pane shows its static fallback instead
 
-      boolean viewerLoadInFlight;
-
-      synchronized (loadLock) { viewerLoadInFlight = viewerHtmlLoadInFlight; }
-
-      if (pdfjsViewerLoaded && (viewerLoadInFlight == false))
+      if (pdfjsViewerLoaded && (opens.viewerLoadInFlight() == false))
       {
         execStatusOverlay(currentStatus);
         return;
@@ -292,12 +256,13 @@ final class PDFJSWrapper
       // The current page is not (or is about to stop being) the viewer: make
       // viewer.html the status home. This supersedes any open whose dispatch is
       // chained to a pending viewer load (intent has moved to a status), so
-      // release the coordinator the way loadFile's supersession does; a late
-      // openDone report for the superseded open fails the pane's identity gate
-      // (the non-document views null issuedDisplayPath).
+      // release the coordinator the way loadFile's supersession does; the
+      // pending viewer load itself survives, and the status work below replaces
+      // the open's dispatch on it. A late openDone report for the superseded
+      // open fails the pane's identity gate (the non-document views null
+      // issuedDisplayPath).
 
-      pendingOpenFile = null;
-      openInFlight = false;
+      opens.supersedeOpens(false);
 
       // The status also supersedes any direct-content declaration: what is
       // about to show is the status home, not direct content. This ordered
@@ -307,7 +272,7 @@ final class PDFJSWrapper
       contentToShowIsDirect = false;
 
       Status status = currentStatus;
-      loadViewerHtml(() -> execStatusOverlay(status));
+      opens.loadViewerPage(() -> execStatusOverlay(status));
     });
   }
 
@@ -398,10 +363,8 @@ final class PDFJSWrapper
   void reset()
   {
     // Drop any open still waiting its turn; a reset means nothing should load.
-    // An in-flight open is left alone: its page survives, so its openDone still
-    // arrives and releases the coordinator normally.
 
-    runInFXThread(() -> pendingOpenFile = null);
+    opens.dropWaiting();
 
     // The idle overlay goes up first (navigating home if the current page is
     // direct content), so the document close below happens under it.
@@ -459,14 +422,7 @@ final class PDFJSWrapper
     // viewer-page load) is being replaced; clear the open coordination and
     // viewer-load state so neither can wedge on completions that never come.
 
-    pendingOpenFile = null;
-    openInFlight = false;
-
-    synchronized (loadLock)
-    {
-      viewerHtmlLoadInFlight = false;
-      postBrowserLoadCode = null;
-    }
+    opens.supersedeOpens(true);
 
     if (browser != null)
     {
@@ -651,82 +607,16 @@ final class PDFJSWrapper
 
       pdfjsViewerLoaded = isViewerPage;
 
-      Runnable toRun = null;
-      boolean viewerLoadStillInFlight, hadPostLoadCode;
-
-      synchronized (loadLock)
-      {
-        // The post-load work belongs to the viewer-page load; a different
-        // navigation finishing must leave it (and the in-flight marker) for
-        // the viewer load still on its way.
-
-        hadPostLoadCode = postBrowserLoadCode != null;
-
-        if (isViewerPage)
-        {
-          viewerHtmlLoadInFlight = false;
-          toRun = postBrowserLoadCode;
-          postBrowserLoadCode = null;
-        }
-
-        viewerLoadStillInFlight = viewerHtmlLoadInFlight;
-      }
-
       if (app.debugging)
-        System.out.println("PDFJSWrapper: main frame load finished; isViewerPage=" + isViewerPage +
-                           " hadPostLoadCode=" + hadPostLoadCode +
-                           " url=" + describeUrl(url));
+        System.out.println("PDFJSWrapper: main frame load finished; isViewerPage=" + isViewerPage
+          + " url=" + describeUrl(url) + "; pane " + paneStateStr());
 
       // Direct content is not confirmed here; see the document-load handler below.
 
-      // A finished navigation that neither carries the in-flight open's
-      // dispatch nor precedes a viewer load that will (reset's bare viewer
-      // reload, an external navigation) has replaced the page that open lived
-      // in, so its openDone can never arrive. Apply the supersession rule
-      // loadFile applies explicitly: release the coordinator, so the newest
-      // waiting open issues instead of every later open wedging behind a
-      // release that never comes.
+      // The coordinator runs the work chained onto the viewer-page load this
+      // finish completes, or releases the open whose page this finish replaced.
 
-      if (openInFlight && (toRun == null) && (viewerLoadStillInFlight == false))
-      {
-        FilePath releasedFile = openInFlightFile;
-
-        if (app.debugging)
-          System.out.println("PDFJSWrapper: navigation superseded the in-flight open of " + releasedFile
-            + "; releasing the coordinator. Superseding content: " + describeUrl(url)
-            + "; pane " + paneStateStr());
-
-        Platform.runLater(() ->
-        {
-          openInFlight = false;
-          pumpOpenQueue();
-
-          // If the pump issued a waiting request, the newest open is now under way and
-          // recovery is unnecessary (latest wins). With nothing waiting, the released
-          // open would otherwise vanish silently: JxBrowser can deliver a duplicate
-          // main-frame load-finished event for the same viewer navigation (observed),
-          // which lands in this branch after the first finish consumed the open's
-          // dispatch; the reconciler still believes the document is issued, so
-          // nothing re-issues and the viewer sits empty until a manual refresh.
-          // Report the released open as a failed open through the normal completion
-          // channel instead: the pane's identity and generation gates drop the report
-          // if intent has moved on, and otherwise its bounded retry re-issues the
-          // document from intent (by then the viewer page is loaded, so the re-issued
-          // open dispatches directly without another navigation).
-
-          if ((openInFlight == false) && (doneHndlr != null))
-          {
-            if (app.debugging)
-              System.out.println("PDFJSWrapper: after supersession release, queue empty; reporting failed open of "
-                + releasedFile.getNameOnly() + "; pane " + paneStateStr());
-
-            doneHndlr.handle(PDFJSOperation.pjsOpen, releasedFile, false, "The open was superseded by another navigation");
-          }
-        });
-      }
-
-      if (toRun != null)
-        toRun.run();
+      opens.navigationFinished(isViewerPage);
     });
 
     // Direct content is confirmed when its document has loaded (the
@@ -824,7 +714,7 @@ final class PDFJSWrapper
     };
 
     if (pdfjsViewerLoaded || (currentStatus != null))
-      loadViewerHtml(runnable);
+      opens.loadViewerPage(runnable);
     else
       runnable.run();
   }
@@ -903,40 +793,6 @@ final class PDFJSWrapper
 
     pdfjsViewerLoaded = false;
     opened = false;  // the page's document goes with it; a stale true here would let setAllHits, scrollToHighlight, and zoom address a document that is gone
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void loadViewerHtml(Runnable stuffToDoAfterLoading)
-  {
-    synchronized (loadLock)
-    {
-      postBrowserLoadCode = stuffToDoAfterLoading;
-
-      if (viewerHtmlLoadInFlight)
-      {
-        // A viewer-page load is already under way (e.g. the constructor's, when
-        // loadPdf arrives during window construction). Navigating again would wipe
-        // whatever the in-flight load's completion is about to do (observed: the
-        // second load blanking a just-opened PDF), so just replace the post-load
-        // work and let the in-flight load deliver it.
-
-        if (app.debugging)
-          System.out.println("PDFJSWrapper.loadViewerHtml: joining in-flight viewer load");
-
-        return;
-      }
-
-      viewerHtmlLoadInFlight = true;
-    }
-
-    cleanupPdfHtml();
-
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.loadViewerHtml: initiating viewer navigation");
-
-    browser.navigation().loadUrl(ResourceServer.viewerUrl());
   }
 
 //---------------------------------------------------------------------------
@@ -1060,43 +916,14 @@ final class PDFJSWrapper
       // newest one.
 
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsOpen, openInFlightFile, success, errMessage);
+        doneHndlr.handle(PDFJSOperation.pjsOpen, opens.lastIssuedFile(), success, errMessage);
 
-      // This open is finished (success or failure); release the coordinator and
-      // issue the latest request that arrived while it was loading, if any. The
-      // coordination state is FX-confined; this callback arrives on a JxBrowser
-      // thread.
+      // This open is finished (success or failure); the coordinator releases
+      // and issues the latest request that arrived while it was loading, if
+      // any. What confirmation and release mean for this wrapper is in
+      // OpenAdapter.
 
-      Platform.runLater(() ->
-      {
-        // A successful open is a content-confirmation point: the document is
-        // loaded, so the status overlay (conversion progress, typically) comes
-        // down. Only for an open that postdates the status, though: a superseded
-        // open completing late must not strip a newer status (observed as the
-        // progress overlay vanishing for the rest of a conversion when an older
-        // slow open finished). A failed open leaves the overlay up; the
-        // reconciler decides what shows next (a retry re-issue, eventually the
-        // unable notice).
-
-        if (success && (openSupersededByStatus == false))
-          clearStatusOverlay();
-
-        openInFlight = false;
-        pumpOpenQueue();
-
-        // Drain a buffered page correction (whether queued during the swap or in
-        // the gap between openDone and this release); if the pump started a
-        // newer open, openInFlight is true again and the newest open's release
-        // drains instead. In the PDF->PDF case there is no browser navigation,
-        // so no load-finished event fires; this is the point where the new PDF
-        // is known ready for the viewer's JS to be called.
-
-        if ((openInFlight == false) && ready && opened && (pendingGoToPage > 0))
-        {
-          goToPage(pendingGoToPage);
-          pendingGoToPage = -1;
-        }
-      });
+      opens.openFinished(success);
     }
 
 //---------------------------------------------------------------------------
@@ -1167,7 +994,7 @@ final class PDFJSWrapper
     // For the diagnostic line issued once the URL is known (below): the open this
     // navigation supersedes, read before the coordination state is cleared.
 
-    FilePath supersededOpenFile = openInFlight ? openInFlightFile : null;
+    FilePath supersededOpenFile = opens.inFlightFile();
 
     // The navigation below replaces the whole document (viewer.html and the PDF
     // open in it included), so there is no need to close the pdf.js app first.
@@ -1182,25 +1009,9 @@ final class PDFJSWrapper
 
     // Navigating away destroys the page any in-flight PDF open lives in (its
     // openDone will never arrive), and this direct content supersedes any PDF
-    // open still waiting its turn; clear the open coordination state so the
-    // coordinator is not wedged and no stale open issues after the navigation.
+    // open still waiting its turn and any viewer-page load still in flight.
 
-    runInFXThread(() ->
-    {
-      pendingOpenFile = null;
-      openInFlight = false;
-    });
-
-    // This navigation also supersedes any viewer-page load still in flight,
-    // along with whatever work was chained onto it: that load either aborts or
-    // its page is immediately replaced, so the chained work must not run, and
-    // a later viewer load must not "join" a navigation that no longer exists.
-
-    synchronized (loadLock)
-    {
-      viewerHtmlLoadInFlight = false;
-      postBrowserLoadCode = null;
-    }
+    opens.supersedeOpens(true);
 
     lastDirectFilePath = filePath;
 
@@ -1371,7 +1182,7 @@ final class PDFJSWrapper
   {
     if (app.debugging)
       System.out.println("PDFJSWrapper.loadPdf: paged " + file.getNameOnly() + " page " + initialPage
-        + "; supersedes in-flight open=" + (openInFlight ? openInFlightFile : "none")
+        + "; supersedes in-flight open=" + (opens.isOpenInFlight() ? opens.inFlightFile() : "none")
         + "; lastDirect=" + (lastDirectFilePath == null ? "null" : lastDirectFilePath.getNameOnly()));
 
     // Reset ready synchronously so a cross-thread goToPage call queued before
@@ -1383,61 +1194,34 @@ final class PDFJSWrapper
     ready = false;
     pendingGoToPage = -1;
 
-    runInFXThread(() ->
-    {
-      pendingOpenFile = file;  // Latest wins; a request superseded before it issues is never opened
-      pendingOpenPage = initialPage;
-
-      pumpOpenQueue();
-    });
+    opens.requestOpen(file, initialPage);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Issues the waiting open request, if there is one and no open is already in
-   * flight; otherwise does nothing (the in-flight open's {@code openDone} pumps
-   * again). FX thread only.
-   */
-  private void pumpOpenQueue()
+  /** The browser side of {@link OpenCoordinator}: navigating to the viewer
+   *  page, dispatching an open against it, and what a settled open means for
+   *  this wrapper. */
+  private final class OpenAdapter implements OpenCoordinator.Adapter
   {
-    if (openInFlight)
+    @Override public boolean viewerPageLoaded() { return pdfjsViewerLoaded; }
+
+//---------------------------------------------------------------------------
+
+    @Override public void navigateToViewerPage()
     {
-      // The waiting request is issued when the in-flight open's openDone
-      // releases the coordinator; if that never happens, every later open
-      // parks here and the viewer sits empty, so make the wait visible.
+      cleanupPdfHtml();
 
-      if (app.debugging && (pendingOpenFile != null))
-        System.out.println("PDFJSWrapper.pumpOpenQueue: waiting on in-flight open of " + openInFlightFile + "; queued " + pendingOpenFile.getNameOnly());
+      if (app.debugging)
+        System.out.println("PDFJSWrapper: initiating viewer navigation");
 
-      return;
+      browser.navigation().loadUrl(ResourceServer.viewerUrl());
     }
 
-    if (pendingOpenFile == null) return;
-
-    FilePath file = pendingOpenFile;
-    int initialPage = pendingOpenPage;
-
-    pendingOpenFile = null;
-    openInFlight = true;
-    openInFlightFile = file;
-    openSupersededByStatus = false;  // this open is newer than any displayed status
-
-    issueOpen(file, initialPage);
-  }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Dispatches an {@code openPdfFile} call for the given file, loading the
-   *  viewer page first if necessary. FX thread only; callers go through
-   *  {@link #pumpOpenQueue()} so opens never overlap. */
-  private void issueOpen(FilePath file, int initialPage)
-  {
-    String fileUrl = ResourceServer.urlForFile(file);
-
-    Runnable runnable = () ->
+    @Override public void dispatchOpen(FilePath file, int initialPage)
     {
       opened = false;
 
@@ -1447,29 +1231,54 @@ final class PDFJSWrapper
       // before javaapp.js has parsed: the arguments are buffered and javaapp.js opens
       // the file as soon as it loads.
 
-      String args = '"' + fileUrl + "\", " + initialPage + ", " + app.prefs.getInt(PrefKey.PDFJS_SIDEBAR_VIEW, SidebarView_NONE);
+      String args = '"' + ResourceServer.urlForFile(file) + "\", " + initialPage + ", " + app.prefs.getInt(PrefKey.PDFJS_SIDEBAR_VIEW, SidebarView_NONE);
 
       execJS("if (typeof openPdfFile === 'function') openPdfFile(" + args + "); else window.__hnPendingOpen = [" + args + "];");
-    };
-
-    if (pdfjsViewerLoaded == false)
-    {
-      loadViewerHtml(runnable);
-      return;
     }
 
-    boolean chained;
+//---------------------------------------------------------------------------
 
-    synchronized (loadLock)
+    /** The document is loaded, so the status overlay (conversion progress,
+     *  typically) comes down. */
+    @Override public void openConfirmed() { clearStatusOverlay(); }
+
+//---------------------------------------------------------------------------
+
+    @Override public void openQueueIdle()
     {
-      chained = viewerHtmlLoadInFlight;
+      // Drain a buffered page correction (whether queued during the swap or in
+      // the gap between openDone and the coordinator's release). In the
+      // PDF-to-PDF case there is no browser navigation, so no load-finished
+      // event fires; this is the point where the new PDF is known ready for
+      // the viewer's JS to be called.
 
-      if (chained)
-        postBrowserLoadCode = runnable;  // The viewer page is still loading (e.g. right after construction); run this when it finishes
+      if (ready && opened && (pendingGoToPage > 0))
+      {
+        goToPage(pendingGoToPage);
+        pendingGoToPage = -1;
+      }
     }
 
-    if (chained == false)
-      runnable.run();
+//---------------------------------------------------------------------------
+
+    @Override public void reportSupersededOpen(FilePath file)
+    {
+      // Reported as a failed open through the normal completion channel: the
+      // pane's identity and generation gates drop the report if intent has
+      // moved on, and otherwise its bounded retry re-issues the document from
+      // intent (by then the viewer page is loaded, so the re-issued open
+      // dispatches directly without another navigation). Without the report
+      // the released open would vanish silently: the reconciler still believes
+      // the document is issued, so nothing re-issues and the viewer sits empty
+      // until a manual refresh.
+
+      if (app.debugging)
+        System.out.println("PDFJSWrapper: after supersession release, queue empty; reporting failed open of "
+          + file.getNameOnly() + "; pane " + paneStateStr());
+
+      if (doneHndlr != null)
+        doneHndlr.handle(PDFJSOperation.pjsOpen, file, false, "The open was superseded by another navigation");
+    }
   }
 
 //---------------------------------------------------------------------------
