@@ -35,7 +35,7 @@ import javafx.util.Duration;
  * FX-thread confined: requests, the timer callback, and the deferred action
  * all run on the JavaFX Application Thread.
  */
-public final class SettleGate
+public final class SettleGate implements RequestGate
 {
 
 //---------------------------------------------------------------------------
@@ -83,7 +83,7 @@ public final class SettleGate
   /** Runs {@code action} now if requests have been quiet and nothing is
    *  pending; otherwise stores it (replacing any stored action; latest wins)
    *  to run once the burst settles. */
-  public void request(Runnable action)
+  @Override public void request(Runnable action)
   {
     long now = System.nanoTime();
     boolean quiet = ((now - lastRequestNanos) / 1_000_000L) >= quietMillis;
@@ -108,7 +108,7 @@ public final class SettleGate
 //---------------------------------------------------------------------------
 
   /** Discards any stored action and stops the timer. */
-  public void cancel()
+  @Override public void cancel()
   {
     if (pending != null)
       debugLog("cancelled; pending action dropped");

@@ -32,6 +32,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.DesiredView.ProgressVariant;
 import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSOperation;
 import org.hypernomicon.previewWindow.PreviewNavHistory.Entry;
+import org.hypernomicon.previewWindow.PreviewPaneHost.PaneViewer;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.previewWindow.ViewerPort.ViewerMeta;
 import org.hypernomicon.util.file.FilePath;
@@ -53,7 +54,7 @@ import javafx.scene.layout.AnchorPane;
  * is the reconciler's job, and setting a pane's intent is the only mutation
  * path.
  */
-final class PreviewWrapper
+final class PreviewWrapper implements PaneViewer
 {
 
 //---------------------------------------------------------------------------
@@ -92,7 +93,7 @@ final class PreviewWrapper
   HDT_RecordWithPath getRecord()        { return history.currentRecord(); }
   void prepareToHide()                  { if (initialized) jsWrapper.prepareToHide(); }
   void prepareToShow()                  { if (initialized) jsWrapper.prepareToShow(); }
-  void clearAllHits()                   { if (initialized) jsWrapper.clearAllHits(); }
+  @Override public void clearAllHits()  { if (initialized) jsWrapper.clearAllHits(); }
 
   /** Shutdown-only: detach the browser view from the scene graph before the
    *  preview stage closes. See {@link PDFJSWrapper#detachBrowserView()}. */
@@ -104,7 +105,7 @@ final class PreviewWrapper
   String getLabelByPage(int page)       { return meta.labelForPage(page); }
   boolean zoom(boolean zoomingIn)       { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }
 
-  void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage) { if (initialized) jsWrapper.scrollToHighlight(matchNdx, pageNum, ndxOnPage); }
+  @Override public void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage) { if (initialized) jsWrapper.scrollToHighlight(matchNdx, pageNum, ndxOnPage); }
   boolean enableFileNavButton(boolean isForward) { return history.canStepFile(isForward); }
   boolean enableNavButton    (boolean isForward) { return history.canStepPage(isForward); }
 
@@ -157,7 +158,7 @@ final class PreviewWrapper
 
   private PaneEventSink paneEventSink = null;
 
-  void setPaneEventSink(PaneEventSink sink) { paneEventSink = sink; }
+  @Override public void setPaneEventSink(PaneEventSink sink) { paneEventSink = sink; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -302,7 +303,7 @@ final class PreviewWrapper
   /** Lazy-initializes the underlying jsWrapper if it hasn't been created yet.
    *  Returns {@code true} if the wrapper is initialized after the call (which
    *  is always the case unless JxBrowser is disabled). */
-  boolean ensureInitialized()
+  @Override public boolean ensureInitialized()
   {
     if (initialized == false)
       initJS();
@@ -334,7 +335,7 @@ final class PreviewWrapper
 
   /** Reloads the embedded browser (recreating the viewer page), then runs
    *  {@code done}; the caller re-issues the display afterward. */
-  void reloadViewer(Runnable done)
+  @Override public void reloadViewer(Runnable done)
   {
     if (initialized)
       jsWrapper.reloadBrowser(done);
@@ -383,7 +384,7 @@ final class PreviewWrapper
    * @param pageNum     1-based page to open at
    * @param record      record associated with the source file, or {@code null}
    */
-  void paneShowPaged(FilePath sourceFile, FilePath displayPath, int pageNum, HDT_Record record)
+  @Override public void paneShowPaged(FilePath sourceFile, FilePath displayPath, int pageNum, HDT_Record record)
   {
     if (ensureInitialized() == false) return;
 
@@ -408,7 +409,7 @@ final class PreviewWrapper
    * @return true if content was loaded; false if the file kind cannot be
    *         previewed or loading failed (the unable indicator is shown)
    */
-  boolean paneShowDirect(FilePath sourceFile, FilePath displayPath, HDT_Record record)
+  @Override public boolean paneShowDirect(FilePath sourceFile, FilePath displayPath, HDT_Record record)
   {
     if (ensureInitialized() == false) return false;
 
@@ -449,7 +450,7 @@ final class PreviewWrapper
    * conversion). The pane is about {@code sourceFile} from this moment, so the
    * window's controls follow it now rather than when its document loads.
    */
-  void paneShowProgress(FilePath sourceFile, HDT_Record record, ProgressVariant variant)
+  @Override public void paneShowProgress(FilePath sourceFile, HDT_Record record, ProgressVariant variant)
   {
     if (ensureInitialized() == false) return;
 
@@ -470,7 +471,7 @@ final class PreviewWrapper
    * Pane-driven unable display. Nothing loads for {@code sourceFile}, so this
    * is the only point at which the window's controls can come to name it.
    */
-  void paneShowUnable(FilePath sourceFile, HDT_Record record, boolean noOfficeInstallation)
+  @Override public void paneShowUnable(FilePath sourceFile, HDT_Record record, boolean noOfficeInstallation)
   {
     if (ensureInitialized() == false) return;
 
@@ -502,7 +503,7 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 
   /** Pane-driven page navigation within the currently-displayed document. */
-  void paneGoToPage(int pageNum)
+  @Override public void paneGoToPage(int pageNum)
   {
     if (initialized == false) return;
 
@@ -516,7 +517,7 @@ final class PreviewWrapper
   /** Push FTS hit JSON to the underlying jsWrapper. The reconciler delivers
    *  hits only after the intended document's load is confirmed, which implies
    *  the wrapper is initialized; a push before then is a caller bug. */
-  void setAllHits(String allHitsJson)
+  @Override public void setAllHits(String allHitsJson)
   {
     if (initialized)
       jsWrapper.setAllHits(allHitsJson);
@@ -667,7 +668,7 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void clearPreview()
+  @Override public void clearPreview()
   {
     pageNum = -1;
     workStartPageNum = -1;
@@ -814,7 +815,7 @@ final class PreviewWrapper
    * it against cache eviction and releasing the lease on whatever artifact this
    * pane displayed before. Called on the FX thread (display callbacks).
    */
-  void leaseArtifact(ConversionSession session)
+  @Override public void leaseArtifact(ConversionSession session)
   {
     if (leasedArtifactSession == session) return;
 

@@ -19,11 +19,16 @@ package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.App.*;
 
+import java.util.concurrent.Executor;
+import java.util.function.Supplier;
+
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.previewWindow.DesiredView.ProgressVariant;
 import org.hypernomicon.previewWindow.PipelineSnapshot.HitsStatus;
 import org.hypernomicon.previewWindow.PreviewIntent.ContentKind;
+import org.hypernomicon.previewWindow.PreviewWrapper.PaneEventSink;
 import org.hypernomicon.previewWindow.ViewerPort.ViewerMeta;
+import org.hypernomicon.util.RequestGate;
 import org.hypernomicon.util.SettleGate;
 import org.hypernomicon.util.file.FilePath;
 
@@ -53,11 +58,51 @@ import javafx.application.Platform;
  * display callbacks, and pane executor tasks all marshal there), except the
  * wrapper's event sink, which arrives on browser threads and only reads the
  * volatile fields before handing off to the pane's own marshalling.
+ * <p>
+ * The gate, the pane's executor, and the viewer surface are collaborators
+ * (the production constructor supplies the settle gate, the FX thread, and the
+ * pane's {@link PreviewWrapper}), so {@code PreviewPaneHostTest} runs the
+ * host's rules with a held gate, a direct executor, and a recording viewer.
  */
 final class PreviewPaneHost
 {
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * What this host drives: the pane's viewer surface, which loads documents
+   * and status displays, applies hits, and reports the viewer's events back
+   * through the sink it is given. {@link PreviewWrapper} in production; a
+   * recording fake in the host's contract tests.
+   */
+  interface PaneViewer
+  {
+    /** Creates the viewer if it does not exist yet; false if it cannot (the browser engine is unavailable). */
+    boolean ensureInitialized();
+
+    void setPaneEventSink(PaneEventSink sink);
+
+    void clearPreview();
+    void paneShowProgress(FilePath sourceFile, HDT_Record record, ProgressVariant variant);
+    void paneShowUnable(FilePath sourceFile, HDT_Record record, boolean noOfficeInstallation);
+    void paneShowPaged(FilePath sourceFile, FilePath displayPath, int pageNum, HDT_Record record);
+
+    /** @return false if the file kind cannot be shown as direct content (nothing was loaded) */
+    boolean paneShowDirect(FilePath sourceFile, FilePath displayPath, HDT_Record record);
+
+    void paneGoToPage(int pageNum);
+    void setAllHits(String hitsJson);
+    void clearAllHits();
+    void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage);
+
+    /** Leases a completed conversion's artifact against cache eviction while displayed. */
+    void leaseArtifact(ConversionSession session);
+
+    /** Reloads the embedded browser, then runs {@code done} (from a browser thread). */
+    void reloadViewer(Runnable done);
+  }
+
 //---------------------------------------------------------------------------
 
   private final PreviewWindow.PreviewSource src;
@@ -70,11 +115,14 @@ final class PreviewPaneHost
    * so gated upstream callers (the FTS controller's own settle gate) and
    * deliberate single selections never wait here.
    */
-  private final SettleGate settleGate;
+  private final RequestGate settleGate;
+
+  private final Executor paneExecutor;
+  private final Supplier<PaneViewer> viewerSupplier;
 
   /** The artifact side of the pipeline snapshot; completed artifacts are
-   *  leased through the wrapper, which releases its previous lease. */
-  private final ArtifactTracker artifacts = new ArtifactTracker(session -> wrapper().leaseArtifact(session), this::pushSnapshot);
+   *  leased through the viewer, which releases its previous lease. */
+  private final ArtifactTracker artifacts = new ArtifactTracker(session -> viewer().leaseArtifact(session), this::pushSnapshot);
 
   private PreviewPane pane = null;
 
@@ -110,14 +158,27 @@ final class PreviewPaneHost
 
   PreviewPaneHost(PreviewWindow.PreviewSource src)
   {
-    this.src = src;
+    this(src, new SettleGate(150), Platform::runLater, () -> PreviewWindow.wrapperForSource(src));
+  }
 
-    settleGate = new SettleGate(150);
+  /**
+   * @param settleGate     gates this pane's intents (see {@link #settleGate})
+   * @param paneExecutor   executor the reconciler runs on: the FX thread in
+   *                       production, a direct executor in tests
+   * @param viewerSupplier the pane's viewer surface, or null while the window
+   *                       that owns it does not exist
+   */
+  PreviewPaneHost(PreviewWindow.PreviewSource src, RequestGate settleGate, Executor paneExecutor, Supplier<PaneViewer> viewerSupplier)
+  {
+    this.src = src;
+    this.settleGate = settleGate;
+    this.paneExecutor = paneExecutor;
+    this.viewerSupplier = viewerSupplier;
   }
 
 //---------------------------------------------------------------------------
 
-  private PreviewWrapper wrapper() { return PreviewWindow.wrapperForSource(src); }
+  private PaneViewer viewer() { return viewerSupplier.get(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -161,8 +222,8 @@ final class PreviewPaneHost
       System.out.println("PreviewPaneHost[" + src + "].setPreviewNow EXECUTE: " + filePath.getNameOnly()
         + " (replacing intent=" + (intentFile == null ? "null" : intentFile.getNameOnly()) + ')');
 
-    PreviewWrapper wrapper = wrapper();
-    if ((wrapper == null) || (wrapper.ensureInitialized() == false)) return;
+    PaneViewer viewer = viewer();
+    if ((viewer == null) || (viewer.ensureInitialized() == false)) return;
 
     ensurePane();
 
@@ -184,7 +245,7 @@ final class PreviewPaneHost
         : null;
 
       suppressSnapshotPush = true;
-      try     { artifacts.trackNewFile(filePath, wrapper); }
+      try     { artifacts.trackNewFile(filePath, viewer); }
       finally { suppressSnapshotPush = false; }
     }
 
@@ -288,7 +349,7 @@ final class PreviewPaneHost
   {
     if ((pane == null) || (intentFile == null)) return;
 
-    wrapper().reloadViewer(() -> Platform.runLater(pane::refreshDisplay));
+    viewer().reloadViewer(() -> paneExecutor.execute(pane::refreshDisplay));
   }
 
 //---------------------------------------------------------------------------
@@ -349,9 +410,9 @@ final class PreviewPaneHost
   {
     if (pane != null) return;
 
-    pane = new PreviewPane(new WrapperPort(), Platform::runLater);
+    pane = new PreviewPane(new WrapperPort(), paneExecutor);
 
-    wrapper().setPaneEventSink(new PreviewWrapper.PaneEventSink()
+    viewer().setPaneEventSink(new PaneEventSink()
     {
       // Arrives on browser threads; the pane marshals and generation-checks
       // everything after the identity gates here.
@@ -393,9 +454,9 @@ final class PreviewPaneHost
 //---------------------------------------------------------------------------
 
   /**
-   * The {@link ViewerPort} over the {@link PreviewWrapper}. Every command
+   * The {@link ViewerPort} over the {@link PaneViewer}. Every command
    * corresponds to the current intent (the pane is single-threaded on the FX
-   * thread), so the wrapper's source-file tracking is read from the host
+   * thread), so the viewer's source-file tracking is read from the host
    * fields.
    * <p>
    * Both load kinds are confirmed by the viewer's real completion events
@@ -419,7 +480,7 @@ final class PreviewPaneHost
     {
       issuedDisplayPath = null;
 
-      wrapper().clearPreview();
+      viewer().clearPreview();
     }
 
   //---------------------------------------------------------------------------
@@ -434,7 +495,7 @@ final class PreviewPaneHost
 
       if (intentFile == null) return;
 
-      wrapper().paneShowProgress(sourceFile, intentRecord, variant);
+      viewer().paneShowProgress(sourceFile, intentRecord, variant);
     }
 
   //---------------------------------------------------------------------------
@@ -445,7 +506,7 @@ final class PreviewPaneHost
 
       if (intentFile == null) return;
 
-      wrapper().paneShowUnable(sourceFile, intentRecord, artifacts.noOfficeInstallation());
+      viewer().paneShowUnable(sourceFile, intentRecord, artifacts.noOfficeInstallation());
     }
 
   //---------------------------------------------------------------------------
@@ -462,7 +523,7 @@ final class PreviewPaneHost
       issuedGen = gen;
       issuedDisplayPath = documentPath;
 
-      wrapper().paneShowPaged(sourceFile, documentPath, pageNum, intentRecord);
+      viewer().paneShowPaged(sourceFile, documentPath, pageNum, intentRecord);
     }
 
   //---------------------------------------------------------------------------
@@ -475,7 +536,7 @@ final class PreviewPaneHost
       issuedGen = gen;
       issuedDisplayPath = contentPath;
 
-      if (wrapper().paneShowDirect(sourceFile, contentPath, intentRecord) == false)
+      if (viewer().paneShowDirect(sourceFile, contentPath, intentRecord) == false)
         pane.onViewerError(gen, "The file kind cannot be shown as direct content");
     }
 
@@ -483,28 +544,28 @@ final class PreviewPaneHost
 
     @Override public void setHits(long gen, String hitsJson)
     {
-      wrapper().setAllHits(hitsJson);
+      viewer().setAllHits(hitsJson);
     }
 
   //---------------------------------------------------------------------------
 
     @Override public void clearHits(long gen)
     {
-      wrapper().clearAllHits();
+      viewer().clearAllHits();
     }
 
   //---------------------------------------------------------------------------
 
     @Override public void goToPage(long gen, int pageNum)
     {
-      wrapper().paneGoToPage(pageNum);
+      viewer().paneGoToPage(pageNum);
     }
 
   //---------------------------------------------------------------------------
 
     @Override public void scrollToMatch(long gen, int matchNdx, int pageNum, int ndxOnPage)
     {
-      wrapper().scrollToHighlight(matchNdx, pageNum, ndxOnPage);
+      viewer().scrollToHighlight(matchNdx, pageNum, ndxOnPage);
     }
   }
 
