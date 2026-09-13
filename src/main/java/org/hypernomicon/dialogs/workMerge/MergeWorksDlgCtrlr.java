@@ -49,6 +49,7 @@ import org.hypernomicon.util.file.FilePath;
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
@@ -143,7 +144,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
     this.creatingNewWork = creatingNewWork;
 
     apPreview = new AnchorPane();
-    spPreview = WorkDlgCtrlr.addPreview(rootPane, apMain, apPreview, btnPreview);
+    spPreview = WorkDlgCtrlr.addPreview(rootPane, apMain, apPreview, btnPreview, Orientation.HORIZONTAL);
 
     bibDataList = newBibDataStream.filter(Objects::nonNull).toList();
 

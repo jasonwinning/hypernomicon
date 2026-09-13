@@ -46,15 +46,17 @@ import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.view.cellValues.HyperTableCell;
+import org.hypernomicon.view.controls.CollapsibleSplitPane;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperCB;
 
 import com.google.common.collect.Lists;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.*;
+import javafx.stage.FileChooser;
 
 //---------------------------------------------------------------------------
 
@@ -80,18 +82,20 @@ public class SelectWorkDlgCtrlr extends ModalDialog
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
   private final BibDataRetriever bibDataRetriever;
+  private final CollapsibleSplitPane spPreview;
+  private final AnchorPane apPreview;
   private final HyperCB hcbAuthor, hcbWork, hcbBibEntry;
   private final boolean bibEntryIsConstant;
 
   private BibData bd = null;
-  private AnchorPane apPreview;
   private FilePath filePath = null;
   private DialogPreviewHost previewHost = null;
   private HDT_Work work;
   private HDT_Person author = null;
   private BibEntry<?, ?> bibEntry;
-  private boolean previewInitialized = false;
   private ButtonClicked buttonClicked = ButtonClicked.None;
+  private double collapsedHeight;  // Stage height to restore when the preview is toggled off
+  private boolean previewInitialized = false;
 
   public ButtonClicked getButtonClicked() { return buttonClicked; }
   public FilePath getFilePath()           { return filePath; }
@@ -165,7 +169,28 @@ public class SelectWorkDlgCtrlr extends ModalDialog
       btnLaunch.setOnAction(event -> launchFile(filePath));
     }
 
-    onShown = this::addPreview; // set anchors after dialog has been rescaled
+    apPreview = new AnchorPane();
+    spPreview = WorkDlgCtrlr.addPreview(rootPane, apMain, apPreview, btnPreview, Orientation.VERTICAL);
+
+    // This dialog is a short strip whose height is locked by its root pane, so
+    // unlike the wide dialogs the stage grows for the preview on every toggle
+    // on and shrinks back to the locked height on every toggle off.
+
+    spPreview.detailShowingProperty().addListener((ob, ov, nv) ->
+    {
+      if (Boolean.TRUE.equals(nv))
+      {
+        collapsedHeight = stage.getHeight();
+        stage.setMaxHeight(Double.MAX_VALUE);
+        WorkDlgCtrlr.accommodatePreview(stage, apMain, spPreview);
+        updatePreview();
+      }
+      else
+      {
+        stage.setHeight   (collapsedHeight);
+        stage.setMaxHeight(collapsedHeight);
+      }
+    });
 
     hcbAuthor = new HyperCB(cbAuthor, ctEditableLimitedDropDown, new StandardPopulator(hdtPerson));
     hcbAuthor.dontCreateNewRecord = true;
@@ -472,57 +497,9 @@ public class SelectWorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addPreview()
-  {
-    apPreview = new AnchorPane();
-
-    setAnchors(apPreview, apMain.getPrefHeight(), 0.0, 0.0, 0.0);
-    setAnchors(apMain, 0.0, null, 0.0, 0.0);
-
-    btnPreview.selectedProperty().addListener((obs, ov, nv) ->
-    {
-      if (ov.equals(Boolean.FALSE) && nv.equals(Boolean.TRUE))
-      {
-        height = stage.getHeight();
-        stage.setMaxHeight(Double.MAX_VALUE);
-        addToParent(apPreview, rootPane);
-        accommodatePreview(stage, apMain);
-        updatePreview();
-      }
-      else if (ov.equals(Boolean.TRUE) && nv.equals(Boolean.FALSE))
-      {
-        removeFromParent(apPreview);
-        stage.setHeight(height);
-        stage.setMaxHeight(height);
-      }
-    });
-  }
-
-  private static Double height;
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void accommodatePreview(Stage stage, AnchorPane apMain)
-  {
-    List<Screen> screens = Screen.getScreensForRectangle(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
-    double minHeight = screens.size() == 1 ? screens.getFirst().getVisualBounds().getHeight() - 60.0 : 900.0;
-
-    if (stage.getHeight() < minHeight)
-    {
-      double diff = minHeight - stage.getHeight();
-      stage.setY(stage.getY() - (diff / 2.0));
-      stage.setHeight(minHeight);
-      ensureVisible(stage, apMain.getPrefWidth(), apMain.getPrefHeight());
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void updatePreview()
   {
-    if ((btnPreview.isSelected() == false) || jxBrowserDisabled) return;
+    if ((spPreview.isDetailShowing() == false) || jxBrowserDisabled) return;
 
     if (previewInitialized == false) previewHost = new DialogPreviewHost(apPreview);
 

@@ -137,13 +137,10 @@ public final class DialogPreviewHost
     // only when a later change event (view transform or size, window location)
     // triggers a bounds recompute. A pane that rejoins at exactly its former
     // position and size fires no such event, stranding the surface at the
-    // origin. WorkDlgCtrlr and MergeWorksDlgCtrlr therefore keep this pane in
-    // the scene permanently (CollapsibleSplitPane, collapsed to a sliver when
-    // toggled off); SelectWorkDlgCtrlr does detach and re-add its pane, but
-    // moves and resizes its stage on every toggle, and the window-location
-    // events from that (applied asynchronously by the window manager, hence
-    // reliably after the native re-attach) push correct bounds. Any future
-    // host must preserve one of those two properties.
+    // origin. All three dialogs therefore keep this pane in the scene
+    // permanently (CollapsibleSplitPane, collapsed to a sliver when toggled
+    // off), so the surface is attached exactly once and only ever resized. Any
+    // future host must preserve that property.
   }
 
 //---------------------------------------------------------------------------
@@ -181,12 +178,10 @@ public final class DialogPreviewHost
    * <p>
    * All three hosting dialogs build the host from a listener that fires the
    * moment the preview is toggled on, but the pane they hand over has no real
-   * size yet: in {@code WorkDlgCtrlr} and {@code MergeWorksDlgCtrlr} it sits in
-   * a {@link CollapsibleSplitPane}, still pinned to its collapsed 1px sliver
-   * until the expansion's layout pass runs, and {@code SelectWorkDlgCtrlr} adds
-   * the pane to its root a layout pass before it has any size. On top of that
-   * the dialogs widen their stage in that same call, and the window resize is
-   * asynchronous on Linux.
+   * size yet: it sits in a {@link CollapsibleSplitPane}, still pinned to its
+   * collapsed 1px sliver until the expansion's layout pass runs. On top of
+   * that the dialogs enlarge their stage in that same call, and the window
+   * resize is asynchronous on Linux.
    * <p>
    * A {@code HARDWARE_ACCELERATED} browser view (Windows and Linux; macOS
    * renders off-screen, see {@link BrowserEngine}) is a native window that does
@@ -240,14 +235,14 @@ public final class DialogPreviewHost
 
   private boolean paneIsLaidOut()
   {
-    // Strictly above the collapsed-sliver width: in WorkDlgCtrlr and
-    // MergeWorksDlgCtrlr the pane sits in a CollapsibleSplitPane, permanently
-    // in the scene and pinned to a 1px sliver while the preview is toggled
-    // off, and a viewer must not be created against that.
+    // Strictly above the collapsed-sliver size in both dimensions: the pane
+    // sits in a CollapsibleSplitPane, permanently in the scene and pinned to a
+    // 1px sliver (wide or tall, depending on the dialog) while the preview is
+    // toggled off, and a viewer must not be created against that.
 
     return (apPreview.getScene() != null)
-        && (apPreview.getWidth() > CollapsibleSplitPane.COLLAPSED_DETAIL_WIDTH)
-        && (apPreview.getHeight() > 0.0);
+        && (apPreview.getWidth () > CollapsibleSplitPane.COLLAPSED_DETAIL_SIZE)
+        && (apPreview.getHeight() > CollapsibleSplitPane.COLLAPSED_DETAIL_SIZE);
   }
 
 //---------------------------------------------------------------------------
@@ -258,9 +253,8 @@ public final class DialogPreviewHost
     if (cleanedUp || (jsWrapper != null)) return;
 
     // The preview can be toggled back off within the pulse this waited out,
-    // collapsing the pane back to its sliver (or detaching it, in
-    // SelectWorkDlgCtrlr); wait for the next time it is real rather than
-    // attaching to nothing.
+    // collapsing the pane back to its sliver; wait for the next time it is
+    // real rather than attaching to nothing.
 
     if (paneIsLaidOut() == false)
     {

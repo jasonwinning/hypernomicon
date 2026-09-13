@@ -74,6 +74,7 @@ import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
+import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -160,7 +161,7 @@ public class WorkDlgCtrlr extends ModalDialog
     dateCtrls = new DateControlsWrapper(tfYear, cbMonth, tfDay);
 
     apPreview = new AnchorPane();
-    spPreview = addPreview(rootPane, apMain, apPreview, btnPreview);
+    spPreview = addPreview(rootPane, apMain, apPreview, btnPreview, Orientation.HORIZONTAL);
 
     spPreview.detailShowingProperty().addListener((ob, ov, nv) ->
     {
@@ -614,7 +615,13 @@ public class WorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static CollapsibleSplitPane addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, Toggle btnPreview)
+  /**
+   * Replaces {@code apMain} in the dialog's root pane with a split pane holding
+   * it and the preview pane, the preview to the right of the main pane in a
+   * horizontal split and below it in a vertical one. Shared by the three
+   * dialogs that host a preview.
+   */
+  public static CollapsibleSplitPane addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, Toggle btnPreview, Orientation orientation)
   {
     stagePane.getChildren().remove(apMain);
 
@@ -623,7 +630,7 @@ public class WorkDlgCtrlr extends ModalDialog
     // view strands the native surface at the window origin (see
     // CollapsibleSplitPane's class comment).
 
-    CollapsibleSplitPane spPreview = new CollapsibleSplitPane(apMain, apPreview);
+    CollapsibleSplitPane spPreview = new CollapsibleSplitPane(apMain, apPreview, orientation);
 
     setAnchors(spPreview, 0.0, 0.0, 0.0, 0.0);
     stagePane.getChildren().add(spPreview);
@@ -636,20 +643,45 @@ public class WorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Enlarges the stage along the split axis to make room for the preview: to
+   * (nearly) the screen's width for a horizontal split, its height for a
+   * vertical one.
+   */
   public static void accommodatePreview(Stage stage, AnchorPane apMain, CollapsibleSplitPane spPreview)
   {
     List<Screen> screens = Screen.getScreensForRectangle(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
-    double minWidth = screens.size() == 1 ? screens.getFirst().getVisualBounds().getWidth() - 60.0 : 1600.0;
 
-    if (stage.getWidth() < minWidth)
+    if (spPreview.getOrientation() == Orientation.HORIZONTAL)
     {
-      double diff = minWidth - stage.getWidth();
-      stage.setX(stage.getX() - (diff / 2.0));
-      stage.setWidth(minWidth);
-      ensureVisible(stage, apMain.getPrefWidth(), apMain.getPrefHeight());
-    }
+      double minWidth = screens.size() == 1 ? screens.getFirst().getVisualBounds().getWidth() - 60.0 : 1600.0;
 
-    spPreview.setExpandedDividerPosition(0.55);
+      if (stage.getWidth() < minWidth)
+      {
+        double diff = minWidth - stage.getWidth();
+        stage.setX(stage.getX() - (diff / 2.0));
+        stage.setWidth(minWidth);
+        ensureVisible(stage, apMain.getPrefWidth(), apMain.getPrefHeight());
+      }
+
+      spPreview.setExpandedDividerPosition(0.55);
+    }
+    else
+    {
+      double minHeight = screens.size() == 1 ? screens.getFirst().getVisualBounds().getHeight() - 60.0 : 900.0;
+
+      if (stage.getHeight() < minHeight)
+      {
+        double diff = minHeight - stage.getHeight();
+        stage.setY(stage.getY() - (diff / 2.0));
+        stage.setHeight(minHeight);
+        ensureVisible(stage, apMain.getPrefWidth(), apMain.getPrefHeight());
+      }
+
+      // No divider position to set: the vertical dialog's main pane has a fixed
+      // height (its max height equals its pref height), so the split pane
+      // clamps the divider there and the preview takes the remaining height.
+    }
   }
 
 //---------------------------------------------------------------------------

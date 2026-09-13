@@ -20,6 +20,7 @@ package org.hypernomicon.view.controls;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.Region;
@@ -27,10 +28,11 @@ import javafx.scene.layout.Region;
 //---------------------------------------------------------------------------
 
 /**
- * A two-item horizontal split pane whose right-hand (detail) node collapses to
- * a {@value #COLLAPSED_DETAIL_WIDTH}px sliver instead of being removed from
- * the scene graph, used by the dialogs that host a preview pane
- * (WorkDlgCtrlr, MergeWorksDlgCtrlr).
+ * A two-item split pane whose second (detail) node collapses to a
+ * {@value #COLLAPSED_DETAIL_SIZE}px sliver instead of being removed from the
+ * scene graph, used by the dialogs that host a preview pane: to the right of
+ * the master in WorkDlgCtrlr and MergeWorksDlgCtrlr, below it in
+ * SelectWorkDlgCtrlr.
  * <p>
  * This replaced ControlsFX's {@code MasterDetailPane}, whose skin removes the
  * detail node from its internal SplitPane when the detail is hidden and
@@ -44,19 +46,19 @@ import javafx.scene.layout.Region;
  * detail node in the scene at all times means the browser view is attached
  * exactly once and only ever resized, which the surface tracks reliably.
  * <p>
- * Collapsing pins the detail node's min/max width to the sliver width rather
- * than zero: JxBrowser ignores bounds updates with a zero dimension, so a
- * zero-width pane would leave the full-size native surface painting over the
- * dialog (the surface does not clip to JavaFX bounds). The pinning also makes
- * the collapsed state stable: layout re-asserts the sliver no matter where the
- * divider is dragged.
+ * Collapsing pins the detail node's min/max size along the split axis to the
+ * sliver size rather than zero: JxBrowser ignores bounds updates with a zero
+ * dimension, so a zero-size pane would leave the full-size native surface
+ * painting over the dialog (the surface does not clip to JavaFX bounds). The
+ * pinning also makes the collapsed state stable: layout re-asserts the sliver
+ * no matter where the divider is dragged.
  * <p>
  * Conceptual cousin of {@link org.hypernomicon.view.wrappers.OneTouchExpandableWrapper},
  * which also collapses by divider position without removing nodes from the
  * scene; that wrapper's state model and machinery are built around the
  * expand/collapse buttons it installs on the divider, whereas this control is
  * driven by an external toggle through {@link #detailShowingProperty()} and
- * enforces its collapsed state through width pinning.
+ * enforces its collapsed state through size pinning.
  */
 public final class CollapsibleSplitPane extends SplitPane
 {
@@ -64,10 +66,11 @@ public final class CollapsibleSplitPane extends SplitPane
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Width in px of the collapsed detail node. Must be nonzero; see the class
-   *  comment. Consumers sizing against the detail pane (DialogPreviewHost)
-   *  treat anything at or below this as not laid out. */
-  public static final double COLLAPSED_DETAIL_WIDTH = 1.0;
+  /** Size in px of the collapsed detail node along the split axis (its width
+   *  in a horizontal split, its height in a vertical one). Must be nonzero;
+   *  see the class comment. Consumers sizing against the detail pane
+   *  (DialogPreviewHost) treat anything at or below this as not laid out. */
+  public static final double COLLAPSED_DETAIL_SIZE = 1.0;
 
   private final Region detailNode;
   private final BooleanProperty detailShowing = new SimpleBooleanProperty(false);
@@ -78,19 +81,30 @@ public final class CollapsibleSplitPane extends SplitPane
 
 //---------------------------------------------------------------------------
 
-  public CollapsibleSplitPane(Node masterNode, Region detailNode)
+  public CollapsibleSplitPane(Node masterNode, Region detailNode, Orientation orientation)
   {
     this.detailNode = detailNode;
+
+    setOrientation(orientation);
 
     getItems().addAll(masterNode, detailNode);
 
     // Both items keep the default resizable-with-parent flag, so a stage
     // resize preserves the divider's relative position rather than the detail
-    // node's width in pixels. That matters because the dialogs widen their
+    // node's size in pixels. That matters because the dialogs enlarge their
     // stage in the same call that first shows the detail node, and the window
     // manager applies the resize asynchronously: a pixel-preserving resize
     // would land after the divider is positioned and pin the detail pane back
-    // to (near) the sliver width it had while collapsed.
+    // to (near) the sliver size it had while collapsed.
+
+    // The sliver size must survive the dialog's DPI rescale (UIUtil's
+    // scaleNodeForDPI, which visits split pane items): rounding it up to 2px
+    // on a high-DPI display would make the collapsed pane pass
+    // DialogPreviewHost's laid-out check and get a viewer created against it.
+    // The detail node has no sizing of its own worth scaling; its content is
+    // created later and fills it.
+
+    detailNode.getStyleClass().add("noScale");
 
     detailShowing.addListener((ob, ov, nv) ->
     {
@@ -136,8 +150,7 @@ public final class CollapsibleSplitPane extends SplitPane
     if (initial == false)
       expandedDividerPosition = getDividerPositions()[0];
 
-    detailNode.setMinWidth(COLLAPSED_DETAIL_WIDTH);
-    detailNode.setMaxWidth(COLLAPSED_DETAIL_WIDTH);
+    pinDetailSize(COLLAPSED_DETAIL_SIZE, COLLAPSED_DETAIL_SIZE);
 
     updateDividerStyle();
   }
@@ -147,8 +160,7 @@ public final class CollapsibleSplitPane extends SplitPane
 
   private void expand()
   {
-    detailNode.setMinWidth(USE_COMPUTED_SIZE);
-    detailNode.setMaxWidth(Double.MAX_VALUE);
+    pinDetailSize(USE_COMPUTED_SIZE, Double.MAX_VALUE);
 
     setDividerPositions(expandedDividerPosition);
 
@@ -158,8 +170,25 @@ public final class CollapsibleSplitPane extends SplitPane
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void pinDetailSize(double min, double max)
+  {
+    if (getOrientation() == Orientation.HORIZONTAL)
+    {
+      detailNode.setMinWidth(min);
+      detailNode.setMaxWidth(max);
+    }
+    else
+    {
+      detailNode.setMinHeight(min);
+      detailNode.setMaxHeight(max);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /**
-   * Hides the divider while collapsed (zero width, no fill): with the detail
+   * Hides the divider while collapsed (zero size, no fill): with the detail
    * node pinned to its sliver there is nothing to drag, and a visible divider
    * reads as a stray bar on the window edge. Restored on expand.
    */
