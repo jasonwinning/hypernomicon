@@ -30,10 +30,12 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Contract tests for {@link OpenCoordinator}: the latest-wins open queue, the
- * viewer-page load join, status supersession, and the release rules for
- * navigations that replace the page an open lives in. Run against a recording
- * adapter on a direct executor (all mutation synchronous, no browser, no
- * JavaFX). These pin the rules the preview's debug traces used to be the only
+ * viewer-page load join, status supersession, the release rules for
+ * navigations that replace the page an open lives in, and the liveness
+ * guarantees (token-attributed reports, undeliverable dispatches, the
+ * no-progress watchdog). Run against a recording adapter, a direct executor,
+ * and hand-driven time (all mutation synchronous; no browser, no JavaFX, no
+ * clock). These pin the rules the preview's debug traces used to be the only
  * record of; a change to any of them updates these tests in the same commit.
  */
 class OpenCoordinatorTest
@@ -47,7 +49,8 @@ class OpenCoordinatorTest
    *  navigation, so the coordinator's decisions can be checked against it. */
   private static final class RecordingAdapter implements OpenCoordinator.Adapter
   {
-    boolean viewerPageLoaded = true;
+    boolean viewerPageLoaded = true, deliverable = true;
+    int lastToken = -1;
 
     final List<String> calls = new ArrayList<>();
 
@@ -55,13 +58,47 @@ class OpenCoordinatorTest
 
     @Override public void navigateToViewerPage() { calls.add("navigate"); }
 
-    @Override public void dispatchOpen(FilePath file, int initialPage) { calls.add("open:" + file.getNameOnly() + '@' + initialPage); }
+    @Override public boolean dispatchOpen(FilePath file, int initialPage, int token)
+    {
+      lastToken = token;
+      calls.add("open:" + file.getNameOnly() + '@' + initialPage);
+      return deliverable;
+    }
+
+    @Override public void openReported(FilePath file, boolean success, int pageCount, String errMessage)
+    {
+      calls.add("reported:" + file.getNameOnly() + ':' + (success ? "ok" : "fail"));
+    }
 
     @Override public void openConfirmed() { calls.add("confirmed"); }
 
     @Override public void openQueueIdle() { calls.add("idle"); }
 
-    @Override public void reportSupersededOpen(FilePath file) { calls.add("superseded:" + file.getNameOnly()); }
+    @Override public void openFailed(FilePath file, String cause) { calls.add("failed:" + file.getNameOnly()); }
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Holds every armed check until the test elapses a window. */
+  private static final class FakeScheduler implements OpenCoordinator.Scheduler
+  {
+    final List<Runnable> armed = new ArrayList<>();
+    long lastDelay = -1;
+
+    @Override public void schedule(Runnable task, long delayMillis)
+    {
+      armed.add(task);
+      lastDelay = delayMillis;
+    }
+
+    /** One full window passes: every check armed so far fires, in order.
+     *  Checks those fires arm stay for the next window. */
+    void elapse()
+    {
+      List<Runnable> due = new ArrayList<>(armed);
+      armed.clear();
+      due.forEach(Runnable::run);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -71,7 +108,8 @@ class OpenCoordinatorTest
                                 C = FilePath.of("c.pdf");
 
   private final RecordingAdapter adapter = new RecordingAdapter();
-  private final OpenCoordinator coordinator = new OpenCoordinator(adapter, Runnable::run);
+  private final FakeScheduler scheduler = new FakeScheduler();
+  private final OpenCoordinator coordinator = new OpenCoordinator(adapter, Runnable::run, scheduler);
 
 //---------------------------------------------------------------------------
 
@@ -81,6 +119,12 @@ class OpenCoordinatorTest
   {
     adapter.viewerPageLoaded = isViewerPage;
     coordinator.navigationFinished(isViewerPage);
+  }
+
+  /** The viewer reports on the most recently dispatched open. */
+  private void finishOpen(boolean success)
+  {
+    coordinator.openFinished(adapter.lastToken, success, 10, success ? "" : "Invalid PDF structure");
   }
 
   private List<String> calls() { return adapter.calls; }
@@ -125,9 +169,9 @@ class OpenCoordinatorTest
     assertEquals(List.of("open:a.pdf@1"), calls());
     assertEquals(A, coordinator.inFlightFile());
 
-    coordinator.openFinished(true);
+    finishOpen(true);
 
-    assertEquals(List.of("open:a.pdf@1", "confirmed", "open:b.pdf@2"), calls());
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "confirmed", "open:b.pdf@2"), calls());
     assertEquals(B, coordinator.inFlightFile());
   }
 
@@ -139,9 +183,9 @@ class OpenCoordinatorTest
     coordinator.requestOpen(B, 2);
     coordinator.requestOpen(C, 3);
 
-    coordinator.openFinished(true);
+    finishOpen(true);
 
-    assertEquals(List.of("open:a.pdf@1", "confirmed", "open:c.pdf@3"), calls());
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "confirmed", "open:c.pdf@3"), calls());
   }
 
 //---------------------------------------------------------------------------
@@ -149,12 +193,11 @@ class OpenCoordinatorTest
   @Test void finishedOpenWithNothingWaitingConfirmsAndReportsIdle()
   {
     coordinator.requestOpen(A, 1);
-    coordinator.openFinished(true);
+    finishOpen(true);
 
-    assertEquals(List.of("open:a.pdf@1", "confirmed", "idle"), calls());
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "confirmed", "idle"), calls());
     assertFalse(coordinator.isOpenInFlight());
     assertNull(coordinator.inFlightFile());
-    assertEquals(A, coordinator.lastIssuedFile());
   }
 
 //---------------------------------------------------------------------------
@@ -162,9 +205,9 @@ class OpenCoordinatorTest
   @Test void failedOpenReleasesWithoutConfirming()
   {
     coordinator.requestOpen(A, 1);
-    coordinator.openFinished(false);
+    finishOpen(false);
 
-    assertEquals(List.of("open:a.pdf@1", "idle"), calls());
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:fail", "idle"), calls());
     assertFalse(coordinator.isOpenInFlight());
 
     coordinator.requestOpen(B, 1);
@@ -178,9 +221,9 @@ class OpenCoordinatorTest
   {
     coordinator.requestOpen(A, 1);
     coordinator.statusShown();
-    coordinator.openFinished(true);
+    finishOpen(true);
 
-    assertEquals(List.of("open:a.pdf@1", "idle"), calls());
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "idle"), calls());
   }
 
 //---------------------------------------------------------------------------
@@ -189,9 +232,9 @@ class OpenCoordinatorTest
   {
     coordinator.statusShown();
     coordinator.requestOpen(A, 1);
-    coordinator.openFinished(true);
+    finishOpen(true);
 
-    assertEquals(List.of("open:a.pdf@1", "confirmed", "idle"), calls());
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "confirmed", "idle"), calls());
   }
 
 //---------------------------------------------------------------------------
@@ -202,13 +245,13 @@ class OpenCoordinatorTest
     coordinator.statusShown();
     coordinator.requestOpen(B, 1);
 
-    coordinator.openFinished(true);   // A: predates the status, must not confirm
+    finishOpen(true);   // A: predates the status, must not confirm
 
-    assertEquals(List.of("open:a.pdf@1", "open:b.pdf@1"), calls());
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "open:b.pdf@1"), calls());
 
-    coordinator.openFinished(true);   // B: newer than the status
+    finishOpen(true);   // B: newer than the status
 
-    assertEquals(List.of("open:a.pdf@1", "open:b.pdf@1", "confirmed", "idle"), calls());
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "open:b.pdf@1", "reported:b.pdf:ok", "confirmed", "idle"), calls());
   }
 
 //---------------------------------------------------------------------------
@@ -239,9 +282,9 @@ class OpenCoordinatorTest
 
     assertTrue(coordinator.isOpenInFlight());
 
-    coordinator.openFinished(true);
+    finishOpen(true);
 
-    assertEquals(List.of("open:a.pdf@1", "confirmed", "idle"), calls());  // A settles normally; B never issues
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "confirmed", "idle"), calls());  // A settles normally; B never issues
   }
 
 //---------------------------------------------------------------------------
@@ -263,18 +306,18 @@ class OpenCoordinatorTest
 
 //---------------------------------------------------------------------------
 
-  @Test void foreignNavigationReleasesTheInFlightOpenAndReportsItWhenNothingWaits()
+  @Test void foreignNavigationFailsTheInFlightOpenWhenNothingWaits()
   {
     coordinator.requestOpen(A, 1);
 
     finishNavigation(false);  // e.g. direct content committed over the viewer page
 
-    assertEquals(List.of("open:a.pdf@1", "superseded:a.pdf"), calls());
+    assertEquals(List.of("open:a.pdf@1", "failed:a.pdf"), calls());
     assertFalse(coordinator.isOpenInFlight());
 
     coordinator.requestOpen(B, 1);  // nothing is wedged; the viewer page is gone, so B navigates first
 
-    assertEquals(List.of("open:a.pdf@1", "superseded:a.pdf", "navigate"), calls());
+    assertEquals(List.of("open:a.pdf@1", "failed:a.pdf", "navigate"), calls());
   }
 
 //---------------------------------------------------------------------------
@@ -315,7 +358,7 @@ class OpenCoordinatorTest
 
 //---------------------------------------------------------------------------
 
-  @Test void duplicateViewerPageFinishReportsTheOpenItsPredecessorDispatched()
+  @Test void duplicateViewerPageFinishFailsTheOpenItsPredecessorDispatched()
   {
     adapter.viewerPageLoaded = false;
 
@@ -323,7 +366,7 @@ class OpenCoordinatorTest
     finishNavigation(true);
     finishNavigation(true);  // JxBrowser can deliver the same finish twice
 
-    assertEquals(List.of("navigate", "open:a.pdf@1", "superseded:a.pdf"), calls());
+    assertEquals(List.of("navigate", "open:a.pdf@1", "failed:a.pdf"), calls());
     assertFalse(coordinator.isOpenInFlight());
   }
 
@@ -407,6 +450,229 @@ class OpenCoordinatorTest
 
     assertEquals(List.of("status"), ran);
     assertEquals(List.of("navigate"), calls());  // the superseded open's dispatch was replaced, and nothing is reported
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Liveness: token-attributed reports
+
+  @Test void eachIssuedOpenGetsAFreshToken()
+  {
+    coordinator.requestOpen(A, 1);
+    int tokenA = adapter.lastToken;
+
+    finishOpen(true);
+    coordinator.requestOpen(B, 1);
+
+    assertNotEquals(tokenA, adapter.lastToken);
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void reportWithAnUnknownTokenIsDropped()
+  {
+    coordinator.requestOpen(A, 1);
+
+    coordinator.openFinished(adapter.lastToken + 100, true, 10, "");
+
+    assertEquals(List.of("open:a.pdf@1"), calls());  // neither forwarded nor released
+    assertTrue(coordinator.isOpenInFlight());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void lateReportForASupersededOpenDoesNotReleaseItsSuccessor()
+  {
+    coordinator.requestOpen(A, 1);
+    int tokenA = adapter.lastToken;
+
+    coordinator.supersedeOpens(false);
+    coordinator.requestOpen(B, 1);
+
+    coordinator.openFinished(tokenA, true, 10, "");  // A's promise settling after all
+
+    assertEquals(List.of("open:a.pdf@1", "open:b.pdf@1"), calls());
+    assertEquals(B, coordinator.inFlightFile());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void duplicateReportForASettledOpenIsDropped()
+  {
+    coordinator.requestOpen(A, 1);
+    finishOpen(true);
+    finishOpen(true);
+
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "confirmed", "idle"), calls());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void reportArrivingAfterTheWatchdogFailedTheOpenIsDropped()
+  {
+    coordinator.requestOpen(A, 1);
+    scheduler.elapse();
+
+    assertEquals(List.of("open:a.pdf@1", "failed:a.pdf"), calls());
+
+    finishOpen(true);  // the viewer got there eventually; its terminal report already went out
+
+    assertEquals(List.of("open:a.pdf@1", "failed:a.pdf"), calls());
+    assertFalse(coordinator.isOpenInFlight());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Liveness: undeliverable dispatch
+
+  @Test void undeliverableDispatchFailsTheOpenAtOnce()
+  {
+    adapter.deliverable = false;
+
+    coordinator.requestOpen(A, 1);
+
+    assertEquals(List.of("open:a.pdf@1", "failed:a.pdf"), calls());
+    assertFalse(coordinator.isOpenInFlight());
+
+    adapter.deliverable = true;
+
+    coordinator.requestOpen(B, 1);
+
+    assertEquals(List.of("open:a.pdf@1", "failed:a.pdf", "open:b.pdf@1"), calls());  // not wedged behind A
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void undeliverableChainedDispatchFailsTheOpenWhenTheLoadFinishes()
+  {
+    adapter.viewerPageLoaded = false;
+    adapter.deliverable = false;
+
+    coordinator.requestOpen(A, 1);
+
+    assertEquals(List.of("navigate"), calls());
+
+    finishNavigation(true);
+
+    assertEquals(List.of("navigate", "open:a.pdf@1", "failed:a.pdf"), calls());
+    assertFalse(coordinator.isOpenInFlight());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Liveness: the no-progress watchdog
+
+  @Test void issuingAnOpenArmsOneCheckForTheTimeoutWindow()
+  {
+    coordinator.requestOpen(A, 1);
+
+    assertEquals(1, scheduler.armed.size());
+    assertEquals(OpenCoordinator.NO_PROGRESS_TIMEOUT_MILLIS, scheduler.lastDelay);
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void openWithNoProgressForAWholeWindowIsFailed()
+  {
+    coordinator.requestOpen(A, 1);
+    scheduler.elapse();
+
+    assertEquals(List.of("open:a.pdf@1", "failed:a.pdf"), calls());
+    assertFalse(coordinator.isOpenInFlight());
+    assertTrue(scheduler.armed.isEmpty());  // nothing left to watch
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void progressWithinTheWindowKeepsTheOpenAliveForAnotherWindow()
+  {
+    coordinator.requestOpen(A, 1);
+    coordinator.progress();
+    scheduler.elapse();
+
+    assertEquals(List.of("open:a.pdf@1"), calls());
+    assertTrue(coordinator.isOpenInFlight());
+    assertEquals(1, scheduler.armed.size());  // re-armed
+
+    scheduler.elapse();  // a full window with no further progress
+
+    assertEquals(List.of("open:a.pdf@1", "failed:a.pdf"), calls());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void theWatchStandsDownWhenTheOpenSettles()
+  {
+    coordinator.requestOpen(A, 1);
+    finishOpen(true);
+    scheduler.elapse();
+
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "confirmed", "idle"), calls());
+    assertTrue(scheduler.armed.isEmpty());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void aCheckArmedForAnEarlierOpenDoesNotJudgeTheCurrentOne()
+  {
+    coordinator.requestOpen(A, 1);
+    finishOpen(true);              // A's check is still armed
+    coordinator.requestOpen(B, 1); // arms B's check
+    coordinator.progress();
+    scheduler.elapse();            // A's check: stale by token; B's check: progress seen, re-arms
+
+    assertEquals(List.of("open:a.pdf@1", "reported:a.pdf:ok", "confirmed", "idle", "open:b.pdf@1"), calls());
+    assertTrue(coordinator.isOpenInFlight());
+    assertEquals(1, scheduler.armed.size());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void aStallWithARequestWaitingIssuesItInsteadOfReporting()
+  {
+    coordinator.requestOpen(A, 1);
+    coordinator.requestOpen(B, 2);
+    scheduler.elapse();
+
+    assertEquals(List.of("open:a.pdf@1", "open:b.pdf@2"), calls());
+    assertEquals(B, coordinator.inFlightFile());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void waitingOnTheUserSuspendsTheWatchUntilProgressResumes()
+  {
+    coordinator.requestOpen(A, 1);
+    coordinator.waitingOnUser();  // a password prompt is up
+    scheduler.elapse();
+
+    assertEquals(List.of("open:a.pdf@1"), calls());  // not a stall
+    assertTrue(scheduler.armed.isEmpty());          // and nothing re-armed: the user takes as long as they take
+
+    coordinator.progress();  // the password was accepted and loading resumed
+
+    assertEquals(1, scheduler.armed.size());
+
+    scheduler.elapse();
+
+    assertEquals(List.of("open:a.pdf@1", "failed:a.pdf"), calls());  // silence after that counts again
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void progressFromABygoneOpenNeverArmsAWatchWhileIdle()
+  {
+    coordinator.requestOpen(A, 1);
+    coordinator.waitingOnUser();
+    finishOpen(false);   // the prompt was cancelled
+    scheduler.elapse();  // the check armed at issue fires on a settled open: no-op
+
+    coordinator.progress();
+
+    assertTrue(scheduler.armed.isEmpty());
   }
 
 //---------------------------------------------------------------------------

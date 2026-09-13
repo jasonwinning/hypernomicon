@@ -246,6 +246,34 @@ function registerListeners() {
 
   eventBus.on('pagechanging',       function (e) { javaApp.pageChange(e.pageNumber, PDFViewerApplication.url || ''); });
   eventBus.on('sidebarviewchanged', function (e) { javaApp.sidebarChange(e.view); });
+
+  // Liveness: the Java side fails an open that goes too long without a sign of
+  // life (OpenCoordinator). Every data-progress callback for the loading
+  // document goes through the application's progress method (the loading bar),
+  // so wrapping it reports each one. The application is a plain object and the
+  // viewer calls the method on it, so an own-property replacement keeps `this`.
+
+  var origProgress = PDFViewerApplication.progress;
+
+  PDFViewerApplication.progress = function (percent) {
+    javaApp.openProgress();
+    return origProgress.call(this, percent);
+  };
+
+  // A password prompt is a wait on the user, not a stall: tell Java to stand
+  // the watch down until progress resumes (the load continues once a password
+  // is entered; cancelling rejects the open, which reports normally).
+
+  var passwordPrompt = PDFViewerApplication.passwordPrompt;
+
+  if (passwordPrompt) {
+    var origPromptOpen = passwordPrompt.open;
+
+    passwordPrompt.open = function () {
+      javaApp.openWaitingOnUser();
+      return origPromptOpen.apply(this, arguments);
+    };
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -256,8 +284,11 @@ function registerListeners() {
  * the given sidebar view (0 = none; values match pdf.js SidebarView).
  * Retries while the viewer finishes initializing (the Java side never polls),
  * but not forever: a stalled initialization is reported as a failed open.
+ * The token identifies this open to the Java side, which issued it; every
+ * openDone report echoes it, so a report from an open that was superseded
+ * (whose promise can still settle, see below) is recognized and dropped.
  */
-function openPdfFile(fileUrl, pageNum, sidebarView) {
+function openPdfFile(fileUrl, pageNum, sidebarView, token) {
 
   if (viewerReady() === false) {
     if (window.__hnRetryCount == null)
@@ -272,14 +303,14 @@ function openPdfFile(fileUrl, pageNum, sidebarView) {
 
     if (++window.__hnRetryCount >= 600) {
       window.__hnRetryCount = null;
-      javaApp.openDone(false, 0, 'The viewer never finished initializing');
+      javaApp.openDone(false, 0, 'The viewer never finished initializing', token);
       return;
     }
 
     if ((window.__hnRetryCount % 100) === 0)
       console.log('openPdfFile still waiting for viewer init after ' + window.__hnRetryCount + ' retries');
 
-    window.setTimeout(openPdfFile, 50, fileUrl, pageNum, sidebarView);
+    window.setTimeout(openPdfFile, 50, fileUrl, pageNum, sidebarView, token);
     return;
   }
 
@@ -329,10 +360,19 @@ function openPdfFile(fileUrl, pageNum, sidebarView) {
     PDFViewerApplicationOptions.set('viewOnLoad', 1);
   }
 
+  // open() resolves, rather than rejects, when a newer open destroys this one's
+  // loading task before it finishes (its rejection handler returns normally
+  // once the task is no longer the application's), so a superseded open can
+  // report success here with no document, or with the newer open's document.
+  // The token lets the Java side drop that report; the null guard keeps the
+  // report itself from throwing (an unhandled rejection reports nothing at all).
+
   PDFViewerApplication.open({ url: fileUrl }).then(function () {
-    javaApp.openDone(true, PDFViewerApplication.pdfDocument.numPages, '');
+    var pdfDocument = PDFViewerApplication.pdfDocument;
+
+    javaApp.openDone(true, pdfDocument ? pdfDocument.numPages : 0, '', token);
   }, function (error) {
-    javaApp.openDone(false, 0, (error && error.message) ? error.message : String(error));
+    javaApp.openDone(false, 0, (error && error.message) ? error.message : String(error), token);
   });
 }
 
@@ -701,8 +741,9 @@ function clearAllHits() {
 //---------------------------------------------------------------------------
 
 // If the Java side tried to open a file before this script had parsed (see the
-// typeof guard in PDFJSWrapper.issueOpen), the arguments were buffered; open now.
-// (Function declarations are hoisted, so calling openPdfFile here is safe.)
+// typeof guard in PDFJSWrapper's open dispatch), the arguments were buffered;
+// open now. (Function declarations are hoisted, so calling openPdfFile here is
+// safe.)
 
 // A status buffered before parse is drained first (its overlay covers the open
 // that may be about to start); if body does not exist yet, showStatusOverlay
@@ -716,7 +757,7 @@ drainPendingStatus();
 if (window['__hnPendingOpen']) {
   var pendingOpen = window['__hnPendingOpen'];
   delete window['__hnPendingOpen'];
-  openPdfFile(pendingOpen[0], pendingOpen[1], pendingOpen[2]);
+  openPdfFile(pendingOpen[0], pendingOpen[1], pendingOpen[2], pendingOpen[3]);
 }
 
 //---------------------------------------------------------------------------

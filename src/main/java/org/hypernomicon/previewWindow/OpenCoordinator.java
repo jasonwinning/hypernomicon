@@ -26,8 +26,8 @@ import org.hypernomicon.util.file.FilePath;
 //---------------------------------------------------------------------------
 
 /**
- * Serializes pdf.js document opens and joins them onto viewer-page loads, on
- * behalf of {@link PDFJSWrapper}.
+ * Serializes pdf.js document opens, joins them onto viewer-page loads, and
+ * guarantees each open a terminal report, on behalf of {@link PDFJSWrapper}.
  * <p>
  * At most one {@code openPdfFile} call is in flight at a time. A request made
  * while one is loading replaces any previously waiting request (latest wins,
@@ -44,6 +44,18 @@ import org.hypernomicon.util.file.FilePath;
  * blanking a just-opened PDF), so a later request just replaces the chained
  * work and lets the in-flight load deliver it.
  * <p>
+ * <b>Liveness.</b> Every issued open reaches exactly one terminal report. The
+ * viewer's own report is the normal one; it carries the token the open was
+ * issued with, and a report for an open this coordinator has already closed
+ * out is dropped (a duplicate terminal report, or one against whatever open
+ * replaced it). Silence is converted into failure here: a dispatch the viewer
+ * page never received fails at once, an open whose page a navigation replaced
+ * fails when that navigation finishes, and an open that stops reporting
+ * progress fails after {@link #NO_PROGRESS_TIMEOUT_MILLIS} of silence. The
+ * watchdog is progress-based, never a bound on total time: a huge document on
+ * a slow machine takes as long as it takes and reports progress all the
+ * while, and a viewer waiting on the user (a password prompt) is not stalled.
+ * <p>
  * Threading: the open state is confined to {@code fxExecutor} tasks (the FX
  * thread in production, a direct executor in tests); reports that arrive on
  * browser threads hop there. The viewer-load pair is guarded by its own lock
@@ -51,8 +63,9 @@ import org.hypernomicon.util.file.FilePath;
  * load-finished event consuming that work (JxBrowser thread) must be atomic,
  * or a runnable chained in the gap is never triggered.
  * <p>
- * Every browser-side effect goes through {@link Adapter}, so the rules here
- * run without a browser; {@code OpenCoordinatorTest} pins them.
+ * Every browser-side effect goes through {@link Adapter} and every delay
+ * through {@link Scheduler}, so the rules here run without a browser or a
+ * clock; {@code OpenCoordinatorTest} pins them.
  */
 final class OpenCoordinator
 {
@@ -70,10 +83,21 @@ final class OpenCoordinator
      *  request arriving while that load is in flight joins it instead. */
     void navigateToViewerPage();
 
-    /** Runs the {@code openPdfFile} dispatch for the file against the viewer
-     *  page. Runs on the FX thread when the page is up, otherwise on the
-     *  load-finished thread of the viewer-page load it was chained onto. */
-    void dispatchOpen(FilePath file, int initialPage);
+    /**
+     * Runs the {@code openPdfFile} dispatch for the file against the viewer
+     * page. Runs on the FX thread when the page is up, otherwise on the
+     * load-finished thread of the viewer-page load it was chained onto.
+     * @param token identifies this open; the viewer echoes it in its report
+     * @return false if the dispatch could not be delivered (no page to run it
+     *         in); no report will ever come for it, so the coordinator fails
+     *         the open at once
+     */
+    boolean dispatchOpen(FilePath file, int initialPage, int token);
+
+    /** The viewer's own terminal report for the in-flight open, forwarded on
+     *  the thread it arrived on before the coordinator releases. Never called
+     *  for an open already closed out (see the class comment). */
+    void openReported(FilePath file, boolean success, int pageCount, String errMessage);
 
     /** A successful open that postdates every displayed status finished: a
      *  content-confirmation point. Not called for a failed open, nor for a
@@ -85,16 +109,33 @@ final class OpenCoordinator
      *  document that just finished. */
     void openQueueIdle();
 
-    /** A navigation replaced the page the in-flight open lived in, nothing
-     *  was waiting to issue in its place, and the open's own completion can
-     *  therefore never arrive; see {@link #navigationFinished(boolean)}. */
-    void reportSupersededOpen(FilePath file);
+    /** The coordinator's synthesized terminal report for an open the viewer
+     *  will never report on: its dispatch was undeliverable, a navigation
+     *  replaced its page, or it stopped reporting progress. Only made when no
+     *  newer request issued in the open's place (latest wins). */
+    void openFailed(FilePath file, String cause);
   }
 
 //---------------------------------------------------------------------------
 
+  /** Runs a task after a delay: the watchdog's one need from the clock,
+   *  injected so the timeout rules run in tests against hand-driven time. */
+  @FunctionalInterface interface Scheduler
+  {
+    void schedule(Runnable task, long delayMillis);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** How long the in-flight open may go without a progress report before it
+   *  is failed as stalled; see the class comment. Measured from the last
+   *  report (or from the issue, for an open that never reports), never from
+   *  the open's start. */
+  static final long NO_PROGRESS_TIMEOUT_MILLIS = 30_000;
+
   private final Adapter adapter;
   private final Executor fxExecutor;
+  private final Scheduler scheduler;
 
   /** Guards the {@link #viewerLoadInFlight}/{@link #postLoadWork} pair; see the class comment. */
   private final Object loadLock = new Object();
@@ -108,23 +149,26 @@ final class OpenCoordinator
   private Runnable postLoadWork = null;
 
   /**
-   * Open coordination (writes are FX-confined; volatile because the openDone
-   * bridge callback reads {@link #lastIssuedFile} and viewer-driving threads
-   * read the others). {@code inFlightFile} is the file of the open in flight,
-   * or null when none is; whether an open is in flight is read from it and
-   * recorded nowhere else. {@code waitingFile} is the request that issues when
-   * the in-flight open finishes, or null when none is waiting.
-   * {@code lastIssuedFile} is never cleared: an open can be released before its
-   * done report arrives, and the late report still has to be attributed.
+   * Open coordination (writes are FX-confined; volatile because the viewer's
+   * report reads {@link #inFlightToken} and {@link #inFlightFile} on its
+   * arrival thread, and viewer-driving threads read the others).
+   * {@code inFlightFile} is the file of the open in flight, or null when none
+   * is; whether an open is in flight is read from it and recorded nowhere
+   * else. {@code waitingFile} is the request that issues when the in-flight
+   * open finishes, or null when none is waiting. The token is fresh per issued
+   * open: the viewer echoes it, and a report whose token is not the in-flight
+   * one describes an open already closed out.
    * <p>
    * Code that only needs to know whether an open is in flight asks
-   * {@link #isOpenInFlight()}. Code that also uses the file, off the FX thread,
-   * reads {@code inFlightFile} once into a local and tests the local: asking
-   * first and reading afterward would pair an answer with a file from a
-   * different moment.
+   * {@link #isOpenInFlight()}, or {@link #isInFlight(int)} when it holds the
+   * open's token. Code that also uses the file, off the FX thread, reads
+   * {@code inFlightFile} once into a local and tests the local: asking first
+   * and reading afterward would pair an answer with a file from a different
+   * moment.
    */
-  private volatile FilePath waitingFile = null, inFlightFile = null, lastIssuedFile = null;
-  private int waitingPage = 1;
+  private volatile FilePath waitingFile = null, inFlightFile = null;
+  private volatile int inFlightToken = 0;
+  private int waitingPage = 1, nextToken = 0;
 
   /** True when a status was shown while an open was already in flight: that
    *  open predates the status, so its completion must not clear the overlay
@@ -134,6 +178,15 @@ final class OpenCoordinator
    *  status. FX-confined. */
   private boolean inFlightPredatesStatus = false;
 
+  /** Watchdog state, FX-confined. A check armed for the in-flight open fires
+   *  after the timeout and compares {@link #progressCount} with its value at
+   *  arming: unchanged means a whole window of silence. {@link #armCount}
+   *  identifies the latest armed check so an older one that fires no-ops;
+   *  {@link #waitingOnUser} suspends the watch until progress resumes. */
+  private long progressCount = 0;
+  private int armCount = 0;
+  private boolean waitingOnUser = false;
+
 //---------------------------------------------------------------------------
 
   /**
@@ -141,11 +194,13 @@ final class OpenCoordinator
    * @param fxExecutor executor the open state is confined to; the FX thread
    *                   in production (run immediately when already on it), a
    *                   direct executor in tests
+   * @param scheduler  runs the watchdog's delayed checks
    */
-  OpenCoordinator(Adapter adapter, Executor fxExecutor)
+  OpenCoordinator(Adapter adapter, Executor fxExecutor, Scheduler scheduler)
   {
     this.adapter = adapter;
     this.fxExecutor = fxExecutor;
+    this.scheduler = scheduler;
   }
 
 //---------------------------------------------------------------------------
@@ -153,14 +208,13 @@ final class OpenCoordinator
   /** Whether an open is in flight. */
   boolean isOpenInFlight() { return inFlightFile != null; }
 
+  /** Whether the open issued under the token is the one in flight: false once
+   *  that open has been closed out, whatever is in flight now. FX thread only,
+   *  where the pair it reads cannot change between the reads. */
+  private boolean isInFlight(int token) { return isOpenInFlight() && (token == inFlightToken); }
+
   /** The file of the in-flight open, or null when none is in flight. */
   FilePath inFlightFile() { return inFlightFile; }
-
-  /** The file of the most recently issued open, in flight or not: what an
-   *  {@code openDone} report describes. A newer request may already be waiting
-   *  (latest-wins coalescing), in which case the report describes a superseded
-   *  document and consumers must not treat it as confirming the newest one. */
-  FilePath lastIssuedFile() { return lastIssuedFile; }
 
   /** Whether a viewer-page load is in flight. */
   boolean viewerLoadInFlight() { synchronized (loadLock) { return viewerLoadInFlight; } }
@@ -172,6 +226,10 @@ final class OpenCoordinator
    *  its page survives, so its completion still arrives and releases the
    *  coordinator normally. */
   void dropWaiting() { fxExecutor.execute(() -> waitingFile = null); }
+
+  /** The viewer is waiting on the user (a password prompt) for the in-flight
+   *  open: not a stall. Suspends the watchdog until progress resumes. Any thread. */
+  void waitingOnUser() { fxExecutor.execute(() -> { if (isOpenInFlight()) waitingOnUser = true; }); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -193,14 +251,59 @@ final class OpenCoordinator
 //---------------------------------------------------------------------------
 
   /**
-   * Called when the in-flight open reports done (success or failure), from
-   * the browser thread the report arrives on: releases the coordinator and
-   * issues the latest request that arrived while the open was loading, if any.
+   * The viewer reported progress on the loading document: a sign of life for
+   * the watchdog. Any thread.
    */
-  void openFinished(boolean success)
+  void progress()
   {
     fxExecutor.execute(() ->
     {
+      progressCount++;
+
+      if (waitingOnUser && isOpenInFlight())
+      {
+        waitingOnUser = false;
+        armWatchdog();
+      }
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The viewer's report that an open finished (success or failure), from the
+   * browser thread the report arrives on. The token says which open: a report
+   * for any open but the in-flight one is dropped, because that open has
+   * already been closed out (it settled through an earlier report, this
+   * coordinator failed it, or a navigation superseded it) and its terminal
+   * report, if one was due, went out then. Otherwise the report is forwarded,
+   * the coordinator releases, and the latest request that arrived while the
+   * open was loading issues, if any.
+   */
+  void openFinished(int token, boolean success, int pageCount, String errMessage)
+  {
+    // Read once each, file first: this runs on the report's arrival thread, and
+    // the FX thread can release or replace the in-flight open between the
+    // reads. The pump writes the token before the file, so a token that still
+    // matches after the file was read means that file is this open's.
+
+    FilePath file = inFlightFile;
+
+    if ((file == null) || (token != inFlightToken))
+    {
+      if (debugging())
+        System.out.println("OpenCoordinator.openFinished: dropped report for closed-out open (token " + token + ", success=" + success + ')');
+
+      return;
+    }
+
+    adapter.openReported(file, success, pageCount, errMessage);
+
+    fxExecutor.execute(() ->
+    {
+      if (isInFlight(token) == false) return;  // closed out between the report's arrival and this hop
+
       // A successful open is a content-confirmation point. Only for an open
       // that postdates the displayed status, though: a superseded open
       // completing late must not strip a newer status. A failed open leaves
@@ -210,7 +313,7 @@ final class OpenCoordinator
       if (success && (inFlightPredatesStatus == false))
         adapter.openConfirmed();
 
-      inFlightFile = null;
+      release();
       pump();
 
       // If the pump issued a waiting request, the newest open is now under way
@@ -242,7 +345,7 @@ final class OpenCoordinator
     fxExecutor.execute(() ->
     {
       waitingFile = null;
-      inFlightFile = null;
+      release();
     });
 
     if (alsoViewerLoad == false) return;
@@ -297,13 +400,13 @@ final class OpenCoordinator
    * nor precedes a viewer load that will (a bare viewer reload, an external
    * navigation) has replaced the page that open lived in, so its completion
    * can never arrive. The rule {@link #supersedeOpens} applies explicitly
-   * applies here too: release the coordinator, so the newest waiting
-   * open issues instead of every later open wedging behind a release that
-   * never comes. With nothing waiting, the released open would otherwise
-   * vanish silently: JxBrowser can deliver a duplicate main-frame load-finished
-   * event for the same viewer navigation (observed), which lands here after the
-   * first finish consumed the open's dispatch, and nothing would re-issue the
-   * document. It is reported to the adapter as a superseded open instead.
+   * applies here too: release the coordinator, so the newest waiting open
+   * issues instead of every later open wedging behind a release that never
+   * comes, and fail the released open if nothing was waiting. JxBrowser can
+   * deliver a duplicate main-frame load-finished event for the same viewer
+   * navigation (observed), which lands here after the first finish consumed
+   * the open's dispatch; without the failure report nothing would re-issue
+   * the document.
    */
   void navigationFinished(boolean isViewerPage)
   {
@@ -327,23 +430,24 @@ final class OpenCoordinator
     if (debugging())
       System.out.println("OpenCoordinator.navigationFinished: isViewerPage=" + isViewerPage + " hadPostLoadWork=" + hadPostLoadWork);
 
-    // Read once: this runs on a browser thread, and the FX thread can release
-    // or replace the in-flight open between two reads.
+    // Read once each, token first: this runs on a browser thread, and the FX
+    // thread can release or replace the in-flight open between the reads. A
+    // token read first can only be stale, and a stale token fails nothing; a
+    // token read after the file could belong to a newer open, which would then
+    // be failed in the superseded open's place.
 
-    FilePath releasedFile = inFlightFile;
+    int token = inFlightToken;
+    FilePath supersededFile = inFlightFile;
 
-    if ((releasedFile != null) && (toRun == null) && (viewerLoadStillInFlight == false))
+    if ((supersededFile != null) && (toRun == null) && (viewerLoadStillInFlight == false))
     {
       if (debugging())
-        System.out.println("OpenCoordinator: navigation superseded the in-flight open of " + releasedFile + "; releasing the coordinator");
+        System.out.println("OpenCoordinator: navigation superseded the in-flight open of " + supersededFile + "; releasing the coordinator");
 
       fxExecutor.execute(() ->
       {
-        inFlightFile = null;
-        pump();
-
-        if (isOpenInFlight() == false)
-          adapter.reportSupersededOpen(releasedFile);
+        if (isInFlight(token))
+          failInFlightOpen("The open was superseded by another navigation");
       });
     }
 
@@ -380,14 +484,16 @@ final class OpenCoordinator
 
     waitingFile = null;
 
-    // The in-flight write goes last: it alone publishes the open to the
-    // browser-thread readers, so what they pair with it is already in place.
+    // The file write goes last: it alone publishes the open to the
+    // browser-thread readers, so a reader that sees this file is guaranteed
+    // this token or a newer one, never an older one.
 
-    lastIssuedFile = file;
+    inFlightToken = ++nextToken;
     inFlightFile = file;
     inFlightPredatesStatus = false;  // this open is newer than any displayed status
 
-    issue(file, initialPage);
+    armWatchdog();
+    issue(file, initialPage, inFlightToken);
   }
 
 //---------------------------------------------------------------------------
@@ -395,9 +501,21 @@ final class OpenCoordinator
 
   /** Dispatches the open, loading the viewer page first if necessary. FX
    *  thread only; callers go through {@link #pump()} so opens never overlap. */
-  private void issue(FilePath file, int initialPage)
+  private void issue(FilePath file, int initialPage, int token)
   {
-    Runnable dispatch = () -> adapter.dispatchOpen(file, initialPage);
+    Runnable dispatch = () ->
+    {
+      if (adapter.dispatchOpen(file, initialPage, token)) return;
+
+      // The viewer page never received the open, so nothing will ever report
+      // on it; fail it now rather than leave it to the watchdog.
+
+      fxExecutor.execute(() ->
+      {
+        if (isInFlight(token))
+          failInFlightOpen("The open could not be delivered to the viewer");
+      });
+    };
 
     if (adapter.viewerPageLoaded() == false)
     {
@@ -417,6 +535,69 @@ final class OpenCoordinator
 
     if (chained == false)
       dispatch.run();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Takes the in-flight open out of flight, standing its watchdog down. FX thread only. */
+  private void release()
+  {
+    inFlightFile = null;
+    waitingOnUser = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Closes out the in-flight open with a synthesized failure: releases the
+   * coordinator, issues the latest waiting request if any, and otherwise
+   * reports the failure, so the open cannot vanish silently (the reconciler
+   * would still believe the document issued, nothing would re-issue it, and
+   * the viewer would sit empty until a manual refresh). FX thread only.
+   */
+  private void failInFlightOpen(String cause)
+  {
+    FilePath file = inFlightFile;
+
+    release();
+    pump();
+
+    if (isOpenInFlight() == false)
+      adapter.openFailed(file, cause);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Arms a liveness check for the in-flight open one timeout from now. FX thread only. */
+  private void armWatchdog()
+  {
+    int token = inFlightToken, arm = ++armCount;
+    long progressAtArm = progressCount;
+
+    scheduler.schedule(() -> fxExecutor.execute(() -> checkLiveness(token, arm, progressAtArm)), NO_PROGRESS_TIMEOUT_MILLIS);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void checkLiveness(int token, int arm, long progressAtArm)
+  {
+    if ((isInFlight(token) == false) || (arm != armCount)) return;  // that open is closed out, or a newer check took over
+
+    if (waitingOnUser) return;  // a wait on the user; the next progress report re-arms
+
+    if (progressCount != progressAtArm)
+    {
+      armWatchdog();  // alive; watch the next window
+      return;
+    }
+
+    System.out.println("OpenCoordinator: no progress reported for " + (NO_PROGRESS_TIMEOUT_MILLIS / 1000) + " seconds on the open of " + inFlightFile + "; failing it");
+
+    failInFlightOpen("The viewer stopped reporting progress");
   }
 
 //---------------------------------------------------------------------------

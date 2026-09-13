@@ -30,6 +30,13 @@ import org.hypernomicon.util.file.FilePath;
  * stale viewer events. Commands carry their full target sub-state, so
  * re-issuing any of them is always safe.
  * <p>
+ * <b>Liveness.</b> Every issued document command reaches a terminal report
+ * in bounded time: a load confirmation or a viewer error. The adapter owns
+ * converting silence into failure (a dispatch the viewer never received, an
+ * open that stops reporting progress, a navigation that commits the browser's
+ * error page in place of the content), so the pane never waits on a report
+ * that is not coming; see {@code OpenCoordinator}.
+ * <p>
  * Production implementations adapt {@code PDFJSWrapper} (documents and the
  * in-viewer status overlay alike); contract tests substitute a scripted fake
  * that records the command stream.

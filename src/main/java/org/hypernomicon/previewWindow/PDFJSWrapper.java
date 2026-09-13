@@ -22,6 +22,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 
 import com.teamdev.jxbrowser.browser.Browser;
@@ -43,6 +44,7 @@ import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -104,6 +106,15 @@ final class PDFJSWrapper
   private final PDFJSRetrievedDataHandler retrievedDataHndlr;
 
   private static String directContentHighlightJS = null;
+
+  /** One daemon thread serving every pane's open watchdog; each check is a
+   *  rare, cheap hop to the FX thread (see {@link OpenCoordinator}). */
+  private static final ScheduledExecutorService watchdogScheduler = Executors.newSingleThreadScheduledExecutor(runnable ->
+  {
+    HyperThread hyperThread = new HyperThread("Preview-OpenWatchdog", runnable);
+    hyperThread.setDaemon(true);
+    return hyperThread;
+  });
 
   private Browser browser = null;
   private BrowserView browserView = null;
@@ -171,7 +182,8 @@ final class PDFJSWrapper
    *  {@link OpenAdapter} below supplies its browser-side effects. Its executor
    *  runs immediately when already on the FX thread, so calls from the load
    *  paths (FX) act synchronously and reports from browser threads hop. */
-  private final OpenCoordinator opens = new OpenCoordinator(new OpenAdapter(), Util::runInFXThread);
+  private final OpenCoordinator opens = new OpenCoordinator(new OpenAdapter(), Util::runInFXThread,
+    (task, delayMillis) -> watchdogScheduler.schedule(task, delayMillis, TimeUnit.MILLISECONDS));
 
   /** Page correction that arrived while an open was in flight (see
    *  {@link #goToPage(int)}); applied by the coordinator's release, cleared by
@@ -632,8 +644,38 @@ final class PDFJSWrapper
 
     browser.navigation().on(NavigationFinished.class, event ->
     {
-      if (event.isInMainFrame() && event.hasCommitted() && (event.isSameDocument() == false))
-        committedMainUrl = event.url();
+      if ((event.isInMainFrame() == false) || (event.hasCommitted() == false) || event.isSameDocument()) return;
+
+      String url = event.url();
+
+      if (event.isErrorPage() == false)
+      {
+        committedMainUrl = url;
+        return;
+      }
+
+      // Chromium committed its own error page in place of the content (the file
+      // unreadable, or gone by the time it was fetched). That page is a document
+      // too, and since the finished URL is still the content's, its document-load
+      // event would confirm the direct load as a success with a browser error on
+      // screen. Withhold it from the document-load handler and fail the load
+      // instead: this is its terminal report (see the liveness clause in
+      // ViewerPort).
+
+      committedMainUrl = null;
+
+      if ((contentToShowIsDirect == false) || (isExpectedDirectUrl(url) == false))
+      {
+        if (app.debugging)
+          System.out.println("PDFJSWrapper: error page for a navigation other than the expected direct load: " + event.error() + "; url=" + describeUrl(url));
+
+        return;
+      }
+
+      System.out.println("PDFJSWrapper: direct content failed to load: " + event.error() + "; url=" + describeUrl(url));
+
+      if (doneHndlr != null)
+        doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, false, "The browser could not load the file (" + event.error() + ')');
     });
 
     browser.navigation().on(FrameDocumentLoadFinished.class, event ->
@@ -757,8 +799,12 @@ final class PDFJSWrapper
    * (a document open, a close) complete asynchronously in pdf.js, long after
    * the statement evaluates to {@code undefined}. Script errors are not lost
    * either; they surface through the {@code ConsoleMessageReceived} handler.
+   *
+   * @return whether the script was handed to a page. The one caller that
+   *         needs to know is the open dispatch: an open no page received
+   *         will never be reported on, so it must be failed at once.
    */
-  private void execJS(String script)
+  private boolean execJS(String script)
   {
     Browser curBrowser = browser;
 
@@ -767,12 +813,19 @@ final class PDFJSWrapper
       if (app.debugging)
         System.out.println("PDFJSWrapper.execJS dropped (browser closed): " + scriptHead(script));
 
-      return;
+      return false;
     }
 
-    curBrowser.mainFrame().ifPresentOrElse(
-      frame -> frame.executeJavaScript(script, result -> {}),
-      ()    -> System.out.println("PDFJSWrapper.execJS dropped (no main frame): " + scriptHead(script)));
+    var frame = curBrowser.mainFrame();
+
+    if (frame.isEmpty())
+    {
+      System.out.println("PDFJSWrapper.execJS dropped (no main frame): " + scriptHead(script));
+      return false;
+    }
+
+    frame.get().executeJavaScript(script, result -> {});
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -893,37 +946,38 @@ final class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-    public void openDone(boolean success, double pagesCount, String errMessage)
+    /**
+     * The viewer's report that an open finished. {@code token} names the open
+     * (see {@link OpenCoordinator}): the coordinator drops reports for opens
+     * it has already closed out and forwards the rest to
+     * {@link OpenAdapter#openReported}, then releases and issues the latest
+     * request that arrived while the open was loading, if any.
+     */
+    public void openDone(boolean success, double pagesCount, String errMessage, double token)
     {
       if (retired) return;
 
-      ready = true;
+      opens.openFinished((int) token, success, (int) pagesCount, errMessage);
+    }
 
-      if (success)
-      {
-        numPages = (int) pagesCount;
-        execJS("getPdfData();");
-        opened = true;
-      }
-      else
-      {
-        System.out.println("PDFJSWrapper: open failed: " + errMessage);
-      }
+//---------------------------------------------------------------------------
 
-      // The file identifies which open this was: a newer request may already be
-      // waiting (latest-wins coalescing), in which case this event describes a
-      // superseded document and consumers must not treat it as confirming the
-      // newest one.
+    /** A data-progress callback for the loading document; see {@link OpenCoordinator#progress()}. */
+    public void openProgress()
+    {
+      if (retired) return;
 
-      if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsOpen, opens.lastIssuedFile(), success, errMessage);
+      opens.progress();
+    }
 
-      // This open is finished (success or failure); the coordinator releases
-      // and issues the latest request that arrived while it was loading, if
-      // any. What confirmation and release mean for this wrapper is in
-      // OpenAdapter.
+//---------------------------------------------------------------------------
 
-      opens.openFinished(success);
+    /** The viewer put up its password prompt; see {@link OpenCoordinator#waitingOnUser()}. */
+    public void openWaitingOnUser()
+    {
+      if (retired) return;
+
+      opens.waitingOnUser();
     }
 
 //---------------------------------------------------------------------------
@@ -1221,7 +1275,7 @@ final class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-    @Override public void dispatchOpen(FilePath file, int initialPage)
+    @Override public boolean dispatchOpen(FilePath file, int initialPage, int token)
     {
       opened = false;
 
@@ -1231,9 +1285,35 @@ final class PDFJSWrapper
       // before javaapp.js has parsed: the arguments are buffered and javaapp.js opens
       // the file as soon as it loads.
 
-      String args = '"' + ResourceServer.urlForFile(file) + "\", " + initialPage + ", " + app.prefs.getInt(PrefKey.PDFJS_SIDEBAR_VIEW, SidebarView_NONE);
+      String args = '"' + ResourceServer.urlForFile(file) + "\", " + initialPage + ", " + app.prefs.getInt(PrefKey.PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ", " + token;
 
-      execJS("if (typeof openPdfFile === 'function') openPdfFile(" + args + "); else window.__hnPendingOpen = [" + args + "];");
+      return execJS("if (typeof openPdfFile === 'function') openPdfFile(" + args + "); else window.__hnPendingOpen = [" + args + "];");
+    }
+
+//---------------------------------------------------------------------------
+
+    @Override public void openReported(FilePath file, boolean success, int pageCount, String errMessage)
+    {
+      ready = true;
+
+      if (success)
+      {
+        numPages = pageCount;
+        execJS("getPdfData();");
+        opened = true;
+      }
+      else
+      {
+        System.out.println("PDFJSWrapper: open failed: " + errMessage);
+      }
+
+      // The file identifies which open this was: a newer request may already be
+      // waiting (latest-wins coalescing), in which case this report describes a
+      // superseded document and consumers must not treat it as confirming the
+      // newest one.
+
+      if (doneHndlr != null)
+        doneHndlr.handle(PDFJSOperation.pjsOpen, file, success, errMessage);
     }
 
 //---------------------------------------------------------------------------
@@ -1261,23 +1341,19 @@ final class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-    @Override public void reportSupersededOpen(FilePath file)
+    @Override public void openFailed(FilePath file, String cause)
     {
       // Reported as a failed open through the normal completion channel: the
       // pane's identity and generation gates drop the report if intent has
       // moved on, and otherwise its bounded retry re-issues the document from
-      // intent (by then the viewer page is loaded, so the re-issued open
-      // dispatches directly without another navigation). Without the report
-      // the released open would vanish silently: the reconciler still believes
-      // the document is issued, so nothing re-issues and the viewer sits empty
-      // until a manual refresh.
+      // intent (for a superseded open the viewer page is loaded by then, so the
+      // re-issued open dispatches directly without another navigation).
 
       if (app.debugging)
-        System.out.println("PDFJSWrapper: after supersession release, queue empty; reporting failed open of "
-          + file.getNameOnly() + "; pane " + paneStateStr());
+        System.out.println("PDFJSWrapper: reporting failed open of " + file.getNameOnly() + " (" + cause + "); pane " + paneStateStr());
 
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsOpen, file, false, "The open was superseded by another navigation");
+        doneHndlr.handle(PDFJSOperation.pjsOpen, file, false, cause);
     }
   }
 
