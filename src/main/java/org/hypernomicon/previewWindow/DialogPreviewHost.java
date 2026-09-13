@@ -17,7 +17,6 @@
 
 package org.hypernomicon.previewWindow;
 
-import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -55,9 +54,11 @@ import javafx.stage.WindowEvent;
  * {@link #createViewerWhenPaneIsLaidOut}), and a file set as intent before then
  * is held until it is.
  * <p>
- * The artifact side (conversion session subscription mapped to
- * {@link ArtifactStatus}) is shared with {@link PreviewPaneHost} through
- * {@link ArtifactTracker}, as is the settle gate.
+ * The reconciler, the settle gate, the artifact side (conversion session
+ * subscription mapped to {@link ArtifactStatus}), and the attribution of the
+ * viewer's reports are the {@link PreviewHostCore} shared with
+ * {@link PreviewPaneHost}; this host adds the deferred viewer creation and
+ * the port over its own viewer.
  * <p>
  * Threading: dialog calls and session display callbacks arrive on the FX
  * thread; the viewer's done handler arrives on a browser thread and only reads
@@ -70,7 +71,14 @@ public final class DialogPreviewHost
 //---------------------------------------------------------------------------
 
   private final AnchorPane apPreview;
-  private final PreviewPane pane;
+
+  /** The reconciler, gate, artifact tracking, and report attribution shared
+   *  with {@link PreviewPaneHost}. The gate matters here too: dialogs preview
+   *  a single file, so there is no selection to burst through, but repeated
+   *  updatePreview calls (dialog setup, the preview pane being toggled visible,
+   *  WorkDlg's source file changing) coalesce so only the file they settle on
+   *  loads or converts. A quiet single call proceeds immediately. */
+  private final PreviewHostCore core;
 
   /**
    * The dialog's viewer, created only once {@link #apPreview} is in a scene and
@@ -82,16 +90,6 @@ public final class DialogPreviewHost
    */
   private PDFJSWrapper jsWrapper = null;
 
-  /** The artifact side of the pipeline snapshot; completed artifacts are
-   *  leased through the dialog's own viewer. */
-  private final ArtifactTracker artifacts;
-
-  private volatile FilePath intentFile = null, issuedDisplayPath = null;
-
-  /** See {@code PreviewPaneHost.suppressSnapshotPush}. FX-confined. */
-  private boolean suppressSnapshotPush = false;
-  private volatile long issuedGen = 0;
-
   /** The file the dialog asked for before the viewer existed; the newest one
    *  wins and becomes intent as soon as it does. FX-confined. */
   private FilePath pendingFile = null;
@@ -99,16 +97,6 @@ public final class DialogPreviewHost
   /** Whether the dialog closed before the viewer was ever created, which cancels
    *  the pending creation (there is nothing to display into). FX-confined. */
   private boolean cleanedUp = false;
-
-  /**
-   * Settle gate for this dialog's intents, the same pattern as
-   * {@link PreviewPaneHost}. Dialogs preview a single file, so there is no
-   * selection to burst through; the gate coalesces repeated updatePreview
-   * calls (dialog setup, the preview pane being toggled visible, WorkDlg's
-   * source file changing) so only the file they settle on loads or converts.
-   * A quiet single call proceeds immediately.
-   */
-  private final SettleGate settleGate = new SettleGate(150);
 
 //---------------------------------------------------------------------------
 
@@ -121,13 +109,11 @@ public final class DialogPreviewHost
 
     BrowserEngine.noteModalAttach();
 
-    pane = new PreviewPane(new Port(), Platform::runLater);
-
     // Deliberately a lambda, not jsWrapper::leaseArtifact: a method reference
     // would capture the field eagerly, and it is null until the deferred
     // viewer creation runs. The lambda reads it at lease time, after that.
 
-    artifacts = new ArtifactTracker(session -> jsWrapper.leaseArtifact(session), this::pushSnapshot);
+    core = new PreviewHostCore(new Port(), Platform::runLater, new SettleGate(150), session -> jsWrapper.leaseArtifact(session), () -> null);
 
     createViewerWhenPaneIsLaidOut();
 
@@ -308,12 +294,12 @@ public final class DialogPreviewHost
   {
     if (FilePath.isEmpty(filePath))
     {
-      settleGate.cancel();
+      core.gate().cancel();
       clearNow();
       return;
     }
 
-    settleGate.request(() -> setPreviewNow(filePath));
+    core.gate().request(() -> setPreviewNow(filePath));
   }
 
 //---------------------------------------------------------------------------
@@ -327,10 +313,8 @@ public final class DialogPreviewHost
     apPreview.layoutBoundsProperty().removeListener(paneReadyHndlr);
     apPreview.sceneProperty       ().removeListener(paneReadyHndlr);
 
-    settleGate.cancel();
-    artifacts.drop();
-    intentFile = null;
-    issuedDisplayPath = null;
+    core.gate().cancel();
+    core.drop();
     pendingFile = null;
 
     if (jsWrapper != null)
@@ -343,13 +327,11 @@ public final class DialogPreviewHost
   private void clearNow()
   {
     pendingFile = null;
-    artifacts.drop();
-    intentFile = null;
-    issuedDisplayPath = null;
 
-    if (jsWrapper == null) return;  // nothing was ever issued; see the field's note
-
-    pane.setIntent(null);
+    if (jsWrapper == null)
+      core.drop();   // nothing was ever issued; see the field's note
+    else
+      core.clear();
   }
 
 //---------------------------------------------------------------------------
@@ -363,60 +345,19 @@ public final class DialogPreviewHost
       return;
     }
 
-    boolean sameFile = filePath.equals(intentFile);
-
-    intentFile = filePath;
-
-    if (sameFile == false)
-    {
-      // Suppress the subscription's immediate display callback; see
-      // PreviewPaneHost.suppressSnapshotPush (the atomic set below carries the state)
-
-      suppressSnapshotPush = true;
-
-      try     { artifacts.trackNewFile(filePath, this); }
-      finally { suppressSnapshotPush = false; }
-    }
-
-    // Intent and snapshot together in a single reconcile, like the pane hosts:
-    // an instant-ready file goes straight to its document.
-
-    pane.setIntentAndPipeline(
-      new PreviewIntent(filePath, PreviewIntent.kindFor(filePath), 1, false, null),
-      new PipelineSnapshot(filePath, artifacts.status(), DocumentArtifactService.converterState(), null));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void pushSnapshot()
-  {
-    if (suppressSnapshotPush || (jsWrapper == null)) return;  // see setPreviewNow
-
-    FilePath sourceFile = intentFile;
-    if (sourceFile == null) return;
-
-    pane.updatePipeline(new PipelineSnapshot(sourceFile, artifacts.status(), DocumentArtifactService.converterState(), null));
+    core.setIntent(new PreviewIntent(filePath, PreviewIntent.kindFor(filePath), 1, false, null), this);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /** The viewer's load-completion event (a pdf.js open, or a direct navigation
-   *  finishing); the pane confirms or fails the current generation from it.
-   *  Matched by document identity: a superseded open's completion can arrive
-   *  after a newer document was issued and must not confirm it. */
+   *  finishing); the core confirms or fails the current generation from it,
+   *  matched by document identity. */
   @SuppressWarnings("unused")
   private void onViewerDone(PDFJSOperation operation, FilePath file, boolean success, String errMessage, ViewerMeta meta)
   {
-    if (intentFile == null) return;
-
-    if ((file == null) || (file.equals(issuedDisplayPath) == false)) return;
-
-    if (success)
-      pane.onDocumentLoaded(issuedGen, meta);
-    else
-      pane.onViewerError(issuedGen, strNullOrBlank(errMessage) ? "The viewer could not open the document" : errMessage);
+    core.onOpened(file, success, meta, errMessage);
   }
 
 //---------------------------------------------------------------------------
@@ -430,20 +371,20 @@ public final class DialogPreviewHost
    */
   private final class Port implements ViewerPort
   {
-    // The non-document views clear issuedDisplayPath; see PreviewPaneHost.WrapperPort
-    // (a stale path would let a late event for the previous document pass the
-    // identity gate).
+    // The non-document views tell the core no document is issued (see
+    // PreviewHostCore.issuingStatus); the status displays themselves go up
+    // whether or not the host still has an intent.
 
     @Override public void showEmpty()
     {
-      issuedDisplayPath = null;
+      core.issuingStatus();
 
       jsWrapper.reset();
     }
 
     @Override public void showProgress(FilePath sourceFile, ProgressVariant variant)
     {
-      issuedDisplayPath = null;
+      core.issuingStatus();
 
       if (variant == ProgressVariant.STARTING_CONVERTER)
         jsWrapper.setStartingConverter();
@@ -453,9 +394,9 @@ public final class DialogPreviewHost
 
     @Override public void showUnable(FilePath sourceFile)
     {
-      issuedDisplayPath = null;
+      core.issuingStatus();
 
-      if (artifacts.noOfficeInstallation())
+      if (core.noOfficeInstallation())
         jsWrapper.setNoOfficeInstallation();
       else
         jsWrapper.setUnable(sourceFile);
@@ -463,10 +404,7 @@ public final class DialogPreviewHost
 
     @Override public void showDocument(long gen, FilePath documentPath, int pageNum)
     {
-      if (intentFile == null) return;  // cleared after the command was queued; a setIntent(null) is right behind
-
-      issuedGen = gen;
-      issuedDisplayPath = documentPath;
+      if (core.issuingDocument(gen, documentPath) == false) return;  // cleared after the command was queued; a setIntent(null) is right behind
 
       jsWrapper.setContentToShowIsDirect(false);
       jsWrapper.loadPdf(documentPath, pageNum);
@@ -474,19 +412,16 @@ public final class DialogPreviewHost
 
     @Override public void showContent(long gen, FilePath contentPath)
     {
-      if (intentFile == null) return;  // see showDocument
-
-      issuedGen = gen;
-      issuedDisplayPath = contentPath;
+      if (core.issuingDocument(gen, contentPath) == false) return;  // see showDocument
 
       try
       {
         if (jsWrapper.loadDirectContent(contentPath) == false)
-          pane.onViewerError(gen, "The file kind cannot be shown as direct content");
+          core.pane().onViewerError(gen, "The file kind cannot be shown as direct content");
       }
       catch (IllegalStateException | IOException e)
       {
-        pane.onViewerError(gen, "The file could not be loaded");
+        core.pane().onViewerError(gen, "The file could not be loaded");
       }
     }
 

@@ -253,7 +253,7 @@ class PreviewPaneHostTest
     host.clear();
     gate.release();
 
-    assertTrue(calls().isEmpty());
+    assertEquals(List.of("clear"), calls(), "the viewer is emptied; the held request never issues");
     assertNull(host.confirmedFile());
   }
 

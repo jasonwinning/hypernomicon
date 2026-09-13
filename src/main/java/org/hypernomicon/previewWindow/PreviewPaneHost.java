@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 Jason Winning
+ * Copyright 2015-2026 Jason Winning
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,12 +39,12 @@ import javafx.application.Platform;
 /**
  * Hosts the {@link PreviewPane} reconciler for one preview pane; one
  * instance per {@link PreviewWindow.PreviewSource}, obtained via
- * {@link PreviewWindow#hostFor}. This host supplies the reconciler's inputs
- * (the artifact side of the {@link PipelineSnapshot}, observed from the
- * conversion session, and viewer lifecycle events forwarded by the wrapper)
- * and implements the {@link ViewerPort} over the {@link PreviewWrapper},
- * whose load methods keep the window controls, nav history, and work-page
- * bookkeeping fed.
+ * {@link PreviewWindow#hostFor}. The reconciler, the settle gate, the artifact
+ * tracking, and the attribution of viewer reports are the {@link PreviewHostCore}
+ * this host owns; what it adds is the record behind the intent, the FTS hit
+ * flow, and the {@link ViewerPort} over the pane's {@link PaneViewer} (the
+ * {@link PreviewWrapper}, whose load methods keep the window controls, nav
+ * history, and work-page bookkeeping fed).
  * <p>
  * Record-navigation panes use {@link #setPreviewAuto} (no highlighting, content
  * kind derived from the mimetype). The queries pane additionally drives the FTS
@@ -56,8 +56,8 @@ import javafx.application.Platform;
  * <p>
  * Threading: everything here runs on the FX thread (controller calls, session
  * display callbacks, and pane executor tasks all marshal there), except the
- * wrapper's event sink, which arrives on browser threads and only reads the
- * volatile fields before handing off to the pane's own marshalling.
+ * viewer's event sink, which arrives on browser threads and hands straight to
+ * the core's identity gate.
  * <p>
  * The gate, the pane's executor, and the viewer surface are collaborators
  * (the production constructor supplies the settle gate, the FX thread, and the
@@ -106,28 +106,9 @@ final class PreviewPaneHost
 //---------------------------------------------------------------------------
 
   private final PreviewWindow.PreviewSource src;
-
-  /**
-   * Settle gate for this pane's intents: rapid intent changes (key-repeat
-   * selection reaching this host per selection) must not each set an intent,
-   * subscribe to a conversion, and cycle the display; only the file the
-   * selection settles on does. A quiet-selection intent proceeds immediately,
-   * so gated upstream callers (the FTS controller's own settle gate) and
-   * deliberate single selections never wait here.
-   */
-  private final RequestGate settleGate;
-
+  private final PreviewHostCore core;
   private final Executor paneExecutor;
   private final Supplier<PaneViewer> viewerSupplier;
-
-  /** The artifact side of the pipeline snapshot; completed artifacts are
-   *  leased through the viewer, which releases its previous lease. */
-  private final ArtifactTracker artifacts = new ArtifactTracker(session -> viewer().leaseArtifact(session), this::pushSnapshot);
-
-  private PreviewPane pane = null;
-
-  private volatile FilePath intentFile = null, issuedDisplayPath = null;
-  private volatile long issuedGen = 0;
 
   private HDT_Record intentRecord = null;
   private HitsStatus hitsStatus = null;
@@ -137,22 +118,23 @@ final class PreviewPaneHost
    * the settle gate, and hit results that arrived for it while its intent was
    * still gated. The FTS initiator pushes hits synchronously right after
    * requesting an intent, so when the gate defers that intent, the hits reach
-   * {@link #updateHits} while {@link #intentFile} still names the previous
-   * file; they are early, not stale, and dropping them left the deferred
-   * intent stuck on a Pending hit status forever (nothing re-pushes).
-   * {@link #setPreviewNow} consumes the stash in place of Pending. Both
-   * FX-confined, like the gate that makes them necessary.
+   * {@link #updateHits} while the intent still names the previous file; they
+   * are early, not stale, and dropping them left the deferred intent stuck on
+   * a Pending hit status forever (nothing re-pushes). {@link #setPreviewNow}
+   * consumes the stash in place of Pending. Both FX-confined, like the gate
+   * that makes them necessary.
    */
   private FilePath requestedFile = null;
   private HitsStatus requestedFileHits = null;
 
-  /** True while {@code trackNewFile} runs inside {@code setPreviewNow}: the new
-   *  subscription's immediate display callback would otherwise queue a pipeline
-   *  update built against the PREVIOUS intent one pane-executor task ahead of the
-   *  atomic {@code setIntentAndPipeline} (observed as a spurious Empty/Progress
-   *  issue plus a wasted viewer reset at first preview). The atomic set that
-   *  follows carries the same artifact state, so nothing is lost. FX-confined. */
-  private boolean suppressSnapshotPush = false;
+  /** The viewer's events, handed to the core's identity gate. Installed on
+   *  the viewer at every intent set: cheap, and a viewer that the window
+   *  replaced gets it too. */
+  private final PaneEventSink eventSink = new PaneEventSink()
+  {
+    @Override public void onOpened(FilePath file, boolean success, ViewerMeta meta) { core.onOpened(file, success, meta, null); }
+    @Override public void onPageChanged(FilePath file, int pageNum)                 { core.onPageChanged(file, pageNum); }
+  };
 
 //---------------------------------------------------------------------------
 
@@ -162,7 +144,14 @@ final class PreviewPaneHost
   }
 
   /**
-   * @param settleGate     gates this pane's intents (see {@link #settleGate})
+   * @param settleGate     gates this pane's intents: rapid intent changes
+   *                       (key-repeat selection reaching this host per
+   *                       selection) must not each set an intent, subscribe to
+   *                       a conversion, and cycle the display; only the file
+   *                       the selection settles on does. A quiet-selection
+   *                       intent proceeds immediately, so gated upstream
+   *                       callers (the FTS controller's own settle gate) and
+   *                       deliberate single selections never wait here
    * @param paneExecutor   executor the reconciler runs on: the FX thread in
    *                       production, a direct executor in tests
    * @param viewerSupplier the pane's viewer surface, or null while the window
@@ -171,14 +160,19 @@ final class PreviewPaneHost
   PreviewPaneHost(PreviewWindow.PreviewSource src, RequestGate settleGate, Executor paneExecutor, Supplier<PaneViewer> viewerSupplier)
   {
     this.src = src;
-    this.settleGate = settleGate;
     this.paneExecutor = paneExecutor;
     this.viewerSupplier = viewerSupplier;
+
+    core = new PreviewHostCore(new WrapperPort(), paneExecutor, settleGate, session -> viewer().leaseArtifact(session), () -> hitsStatus);
   }
 
 //---------------------------------------------------------------------------
 
   private PaneViewer viewer() { return viewerSupplier.get(); }
+
+  /** The file whose load the viewer last confirmed for this pane, or
+   *  {@code null}; the sanctioned read of "what is this pane showing". */
+  FilePath confirmedFile() { return core.confirmedFile(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -210,7 +204,7 @@ final class PreviewPaneHost
       requestedFileHits = null;
     }
 
-    settleGate.request(() -> setPreviewNow(filePath, record, paged, pageNum, wantsHighlights, scrollTarget));
+    core.gate().request(() -> setPreviewNow(filePath, record, paged, pageNum, wantsHighlights, scrollTarget));
   }
 
 //---------------------------------------------------------------------------
@@ -220,12 +214,12 @@ final class PreviewPaneHost
   {
     if (debugging())
       System.out.println("PreviewPaneHost[" + src + "].setPreviewNow EXECUTE: " + filePath.getNameOnly()
-        + " (replacing intent=" + (intentFile == null ? "null" : intentFile.getNameOnly()) + ')');
+        + " (replacing intent=" + (core.intentFile() == null ? "null" : core.intentFile().getNameOnly()) + ')');
 
     PaneViewer viewer = viewer();
     if ((viewer == null) || (viewer.ensureInitialized() == false)) return;
 
-    ensurePane();
+    viewer.setPaneEventSink(eventSink);
 
     // Hits that arrived while this intent was gated; only meaningful for the
     // execution of the request they were stashed under, so always consumed
@@ -233,31 +227,12 @@ final class PreviewPaneHost
     HitsStatus earlyHits = filePath.equals(requestedFile) ? requestedFileHits : null;
     requestedFileHits = null;
 
-    boolean sameFile = filePath.equals(intentFile);
-
-    intentFile = filePath;
     intentRecord = record;
 
-    if (sameFile == false)
-    {
-      hitsStatus = wantsHighlights
-        ? (earlyHits != null ? earlyHits : HitsStatus.PENDING)
-        : null;
+    if (filePath.equals(core.intentFile()) == false)
+      hitsStatus = wantsHighlights ? (earlyHits != null ? earlyHits : HitsStatus.PENDING) : null;
 
-      suppressSnapshotPush = true;
-      try     { artifacts.trackNewFile(filePath, viewer); }
-      finally { suppressSnapshotPush = false; }
-    }
-
-    // Set intent and snapshot atomically: an instant-ready file (native PDF,
-    // direct content) then goes straight to its document instead of flashing a
-    // one-cycle Progress from the staleness guard scoring the new intent against
-    // the previous file's snapshot. Later conversion-state changes still arrive
-    // as separate pushSnapshot() updates.
-
-    pane.setIntentAndPipeline(
-      new PreviewIntent(filePath, paged ? ContentKind.PAGED : ContentKind.DIRECT, pageNum, wantsHighlights, scrollTarget),
-      new PipelineSnapshot(filePath, artifacts.status(), DocumentArtifactService.converterState(), hitsStatus));
+    core.setIntent(new PreviewIntent(filePath, paged ? ContentKind.PAGED : ContentKind.DIRECT, pageNum, wantsHighlights, scrollTarget), viewer);
   }
 
 //---------------------------------------------------------------------------
@@ -297,6 +272,8 @@ final class PreviewPaneHost
 
   private void updateHits(FilePath filePath, HitsStatus newStatus)
   {
+    FilePath intentFile = core.intentFile();
+
     if (filePath.equals(intentFile) == false)
     {
       if (filePath.equals(requestedFile))
@@ -324,17 +301,7 @@ final class PreviewPaneHost
     }
 
     hitsStatus = newStatus;
-    pushSnapshot();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /** The file whose load the viewer last confirmed for this pane, or
-   *  {@code null}; the sanctioned read of "what is this pane showing". */
-  FilePath confirmedFile()
-  {
-    return pane == null ? null : pane.currentFile();
+    core.pushSnapshot();
   }
 
 //---------------------------------------------------------------------------
@@ -347,9 +314,9 @@ final class PreviewPaneHost
    */
   void refresh()
   {
-    if ((pane == null) || (intentFile == null)) return;
+    if (core.intentFile() == null) return;
 
-    viewer().reloadViewer(() -> paneExecutor.execute(pane::refreshDisplay));
+    viewer().reloadViewer(() -> paneExecutor.execute(core.pane()::refreshDisplay));
   }
 
 //---------------------------------------------------------------------------
@@ -363,91 +330,25 @@ final class PreviewPaneHost
    */
   void navigateToPage(int pageNum)
   {
-    if ((pane == null) || (intentFile == null) || (pageNum < 1)) return;
+    if ((core.intentFile() == null) || (pageNum < 1)) return;
 
-    pane.setIntentPage(pageNum);
+    core.pane().setIntentPage(pageNum);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Clears the queries pane's FTS preview (intent = none; the viewer empties). */
+  /** Clears the pane's preview (intent = none; the viewer empties). */
   void clear()
   {
-    settleGate.cancel();
+    core.gate().cancel();
 
     requestedFile = null;      // the stash dies with the cancelled gate request
     requestedFileHits = null;
-
-    if (pane == null) return;
-
-    artifacts.drop();
     hitsStatus = null;
-    intentFile = null;
     intentRecord = null;
-    issuedDisplayPath = null;
 
-    pane.setIntent(null);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void pushSnapshot()
-  {
-    if (suppressSnapshotPush) return;  // the atomic setIntentAndPipeline immediately after trackNewFile carries this state
-
-    FilePath sourceFile = intentFile;
-    if ((pane == null) || (sourceFile == null)) return;
-
-    pane.updatePipeline(new PipelineSnapshot(sourceFile, artifacts.status(), DocumentArtifactService.converterState(), hitsStatus));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void ensurePane()
-  {
-    if (pane != null) return;
-
-    pane = new PreviewPane(new WrapperPort(), paneExecutor);
-
-    viewer().setPaneEventSink(new PaneEventSink()
-    {
-      // Arrives on browser threads; the pane marshals and generation-checks
-      // everything after the identity gates here.
-
-      @Override public void onOpened(FilePath file, boolean success, ViewerMeta meta)
-      {
-        if (intentFile == null) return;
-
-        // Confirm by document identity, not arrival order: the open
-        // coordinator's latest-wins coalescing means a superseded document's
-        // open can complete (and report here) after a newer document was
-        // issued, and it must not confirm the newer generation.
-
-        if ((file == null) || (file.equals(issuedDisplayPath) == false)) return;
-
-        if (success)
-          pane.onDocumentLoaded(issuedGen, meta);
-        else
-          pane.onViewerError(issuedGen, "The viewer could not open the document");
-      }
-
-      @Override public void onPageChanged(FilePath file, int pageNum)
-      {
-        if (intentFile == null) return;
-
-        // The same identity gate as onOpened. The generation stamped below is the
-        // current one, read at arrival, so it cannot tell a late page event from
-        // the outgoing document apart from one belonging to the document issued
-        // after it; the document named by the event can.
-
-        if ((file == null) || (file.equals(issuedDisplayPath) == false)) return;
-
-        pane.onPageChanged(issuedGen, pageNum);
-      }
-    });
+    core.clear();
   }
 
 //---------------------------------------------------------------------------
@@ -461,39 +362,38 @@ final class PreviewPaneHost
    * <p>
    * Both load kinds are confirmed by the viewer's real completion events
    * (openDone for paged documents, the direct navigation finishing for direct
-   * content), matched by document identity in the pane event sink; hits and
-   * scroll targets are then pushed by the reconciler observing the
-   * confirmation, and apply directly (the JS injection is render-idempotent,
-   * so hits arriving after pages render still highlight).
+   * content), matched by document identity in the core; hits and scroll
+   * targets are then pushed by the reconciler observing the confirmation, and
+   * apply directly (the JS injection is render-idempotent, so hits arriving
+   * after pages render still highlight).
    */
   private final class WrapperPort implements ViewerPort
   {
 
   //---------------------------------------------------------------------------
 
-    // The non-document views clear issuedDisplayPath: once no document is issued, a
-    // late completion (or supersession report) for the previously issued document
-    // must fail the identity gate in the pane event sink rather than matching a
-    // stale path and landing as a confirmation or viewer error.
+    // The non-document views tell the core no document is issued (see
+    // PreviewHostCore.issuingStatus), and a cleared host drops them like the
+    // document views: the intent fields are already null and a setIntent(null)
+    // is queued right behind. The status displays track the file like the
+    // document displays do, so the window's controls name the intended file
+    // from the moment it is issued.
 
     @Override public void showEmpty()
     {
-      issuedDisplayPath = null;
+      core.issuingStatus();
 
-      viewer().clearPreview();
+      PaneViewer viewer = viewer();  // a host cleared before its window ever existed has nothing to empty
+
+      if (viewer != null)
+        viewer.clearPreview();
     }
 
   //---------------------------------------------------------------------------
 
-    // The status displays track the file like the document displays do, so the
-    // window's controls name the intended file from the moment it is issued; a
-    // cleared host drops them the way showDocument does.
-
     @Override public void showProgress(FilePath sourceFile, ProgressVariant variant)
     {
-      issuedDisplayPath = null;
-
-      if (intentFile == null) return;
+      if (core.issuingStatus() == false) return;
 
       viewer().paneShowProgress(sourceFile, intentRecord, variant);
     }
@@ -502,42 +402,28 @@ final class PreviewPaneHost
 
     @Override public void showUnable(FilePath sourceFile)
     {
-      issuedDisplayPath = null;
+      if (core.issuingStatus() == false) return;
 
-      if (intentFile == null) return;
-
-      viewer().paneShowUnable(sourceFile, intentRecord, artifacts.noOfficeInstallation());
+      viewer().paneShowUnable(sourceFile, intentRecord, core.noOfficeInstallation());
     }
 
   //---------------------------------------------------------------------------
 
     @Override public void showDocument(long gen, FilePath documentPath, int pageNum)
     {
-      // The host may have been cleared after the pane task that
-      // issues this command was queued; the intent fields are already null and
-      // a setIntent(null) is queued right behind. Drop the command.
+      if (core.issuingDocument(gen, documentPath) == false) return;
 
-      FilePath sourceFile = intentFile;
-      if (sourceFile == null) return;
-
-      issuedGen = gen;
-      issuedDisplayPath = documentPath;
-
-      viewer().paneShowPaged(sourceFile, documentPath, pageNum, intentRecord);
+      viewer().paneShowPaged(core.intentFile(), documentPath, pageNum, intentRecord);
     }
 
   //---------------------------------------------------------------------------
 
     @Override public void showContent(long gen, FilePath contentPath)
     {
-      FilePath sourceFile = intentFile;  // See showDocument; a cleared host drops the command
-      if (sourceFile == null) return;
+      if (core.issuingDocument(gen, contentPath) == false) return;
 
-      issuedGen = gen;
-      issuedDisplayPath = contentPath;
-
-      if (viewer().paneShowDirect(sourceFile, contentPath, intentRecord) == false)
-        pane.onViewerError(gen, "The file kind cannot be shown as direct content");
+      if (viewer().paneShowDirect(core.intentFile(), contentPath, intentRecord) == false)
+        core.pane().onViewerError(gen, "The file kind cannot be shown as direct content");
     }
 
   //---------------------------------------------------------------------------
