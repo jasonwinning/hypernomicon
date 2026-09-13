@@ -31,6 +31,7 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.DesiredView.ProgressVariant;
 import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSOperation;
+import org.hypernomicon.previewWindow.PreviewNavHistory.Entry;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.previewWindow.ViewerPort.ViewerMeta;
 import org.hypernomicon.util.file.FilePath;
@@ -58,24 +59,7 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final class PreviewFile
-  {
-    private final FilePath filePath;
-    private final HDT_RecordWithPath record;
-    private final List<Integer> navList = new ArrayList<>();
-    private int navNdx = -1;
-
-    private PreviewFile(FilePath filePath, HDT_RecordWithPath record)
-    {
-      this.filePath = filePath;
-      this.record = record;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private int fileNdx = -1, pageNum = -1, workStartPageNum = -1, workEndPageNum = -1;
+  private int pageNum = -1, workStartPageNum = -1, workEndPageNum = -1;
   private final PreviewSource src;
   private final PreviewWindow window;
   private final Tab tab;
@@ -88,16 +72,9 @@ final class PreviewWrapper
   private ViewerMeta meta = ViewerMeta.PAGELESS;
 
   private List<Integer> hilitePages;
-  private final List<PreviewFile> fileList = new ArrayList<>();
-  private PreviewFile curPrevFile;
+  private final PreviewNavHistory history = new PreviewNavHistory();
   private final ToggleButton btn;
   private final AnchorPane ap;
-
-  /** File-history entry a back/forward file navigation is returning to;
-   *  consumed by the next pane-driven load of that file, which then reuses the
-   *  entry (keeping its page history and the forward file history) instead of
-   *  appending a new one. See {@link #fileNavClick}. */
-  private PreviewFile pendingHistoryNav = null;
 
   /** The file the viewer was last told to load (the source itself, or the
    *  converted artifact of an office document): what the viewer's own events
@@ -109,10 +86,10 @@ final class PreviewWrapper
   int getPageNum()                      { return pageNum; }
   int getNumPages()                     { return meta.pageCount(); }
   Tab getTab()                          { return tab; }
-  FilePath getFilePath()                { return curPrevFile == null ? null : curPrevFile.filePath; }
+  FilePath getFilePath()                { return history.currentFile(); }
   int getWorkStartPageNum()             { return workStartPageNum; }
   int getWorkEndPageNum()               { return workEndPageNum; }
-  HDT_RecordWithPath getRecord()        { return curPrevFile == null ? null : curPrevFile.record; }
+  HDT_RecordWithPath getRecord()        { return history.currentRecord(); }
   void prepareToHide()                  { if (initialized) jsWrapper.prepareToHide(); }
   void prepareToShow()                  { if (initialized) jsWrapper.prepareToShow(); }
   void clearAllHits()                   { if (initialized) jsWrapper.clearAllHits(); }
@@ -128,7 +105,8 @@ final class PreviewWrapper
   boolean zoom(boolean zoomingIn)       { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }
 
   void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage) { if (initialized) jsWrapper.scrollToHighlight(matchNdx, pageNum, ndxOnPage); }
-  boolean enableFileNavButton(boolean isForward) { return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1; }
+  boolean enableFileNavButton(boolean isForward) { return history.canStepFile(isForward); }
+  boolean enableNavButton    (boolean isForward) { return history.canStepPage(isForward); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -197,15 +175,20 @@ final class PreviewWrapper
 
     if ((file == null) || (file.equals(displayPath) == false)) return;
 
-    if (curPrevFile == null) return;
+    if (history.current() == null) return;
 
     if (success)
       this.meta = meta;
 
     Platform.runLater(() ->
     {
-      if ((curPrevFile != null) && (curPrevFile.navNdx == -1))
-        incrementNav();
+      // The first page of a freshly tracked file enters its page history on
+      // load; later pages enter through the page-change event or a chrome jump.
+
+      Entry entry = history.current();
+
+      if ((entry != null) && (entry.hasPages() == false))
+        history.recordPage(pageNum);
 
       refreshControls();
     });
@@ -232,10 +215,10 @@ final class PreviewWrapper
     // (which do not enter history) pre-set pageNum, so they only refresh the
     // window controls.
 
-    if ((curPrevFile != null) && (pageNum != newPageNum))
+    if ((history.current() != null) && (pageNum != newPageNum))
     {
       pageNum = newPageNum;
-      incrementNav();
+      history.recordPage(pageNum);
     }
 
     if (window.curSource() == src)
@@ -372,41 +355,13 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 
   /**
-   * Records {@code sourceFile} as the file this pane is showing: reuses the
-   * file-history entry a back/forward navigation is returning to (keeping its
-   * page history and the forward file history), else appends a new entry,
-   * truncating any forward history. Also resets the per-document metadata the
+   * Records {@code sourceFile} as the file this pane is showing (see
+   * {@link PreviewNavHistory#track}) and resets the per-document metadata the
    * previous document left behind.
    */
   private void trackFile(FilePath sourceFile, HDT_Record record)
   {
-    if ((record != null) && (record.getType() != hdtWork    ) && (record.getType() != hdtMiscFile) &&
-                            (record.getType() != hdtWorkFile) && (record.getType() != hdtPerson  ))
-      record = null;
-
-    // Already the tracked file when a status display preceded its document (a
-    // conversion, an unable notice a refresh then got past) or the same document
-    // was re-issued; its history entry stands rather than repeating.
-
-    boolean alreadyTracked = (curPrevFile != null) && curPrevFile.filePath.equals(sourceFile) && (curPrevFile.record == record);
-
-    if ((pendingHistoryNav != null) && pendingHistoryNav.filePath.equals(sourceFile))
-    {
-      curPrevFile = pendingHistoryNav;  // fileNdx was repositioned by fileNavClick
-    }
-    else if (alreadyTracked == false)
-    {
-      curPrevFile = new PreviewFile(sourceFile, (HDT_RecordWithPath) record);
-
-      fileNdx++;
-
-      while (fileList.size() > fileNdx)
-        fileList.remove(fileNdx);
-
-      fileList.add(curPrevFile);
-    }
-
-    pendingHistoryNav = null;
+    history.track(sourceFile, record);
 
     meta = ViewerMeta.PAGELESS;  // until the newly tracked file's load confirms
     hilitePages = null;
@@ -581,62 +536,13 @@ final class PreviewWrapper
 
   void go()
   {
-    if (curPrevFile == null) return;
+    Entry entry = history.current();
+    if (entry == null) return;
 
-    if (curPrevFile.record != null)
-      ui.goToRecord(curPrevFile.record, true);
-    else if (FilePath.isEmpty(curPrevFile.filePath) == false)
-      ui.goToRecord(HyperPath.getRecordFromFilePath(curPrevFile.filePath), true);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  boolean enableNavButton(boolean isForward)
-  {
-    if (curPrevFile == null) return false;
-
-    return isForward ?
-      (curPrevFile.navNdx + 1) < curPrevFile.navList.size()
-    :
-      curPrevFile.navNdx >= 1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private int getPreviousFileNdx()
-  {
-    for (int ndx = fileNdx - 1; ndx >= 0; ndx--)
-      if (useFileNavNdx(ndx)) return ndx;
-
-    return -1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean useFileNavNdx(int ndx)
-  {
-    PreviewFile file = fileList.get(ndx);
-    if ((file == null) || FilePath.isEmpty(file.filePath))
-      return false;
-
-    if ((curPrevFile == null) || FilePath.isEmpty(curPrevFile.filePath))
-      return true;
-
-    return curPrevFile.filePath.equals(file.filePath) == false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private int getNextFileNdx()
-  {
-    for (int ndx = fileNdx + 1; ndx < fileList.size(); ndx++)
-      if (useFileNavNdx(ndx)) return ndx;
-
-    return -1;
+    if (entry.record() != null)
+      ui.goToRecord(entry.record(), true);
+    else if (FilePath.isEmpty(entry.filePath()) == false)
+      ui.goToRecord(HyperPath.getRecordFromFilePath(entry.filePath()), true);
   }
 
 //---------------------------------------------------------------------------
@@ -655,16 +561,18 @@ final class PreviewWrapper
   void refreshNavMenu(List<MenuItem> menu, boolean isForward)
   {
     menu.clear();
-    if (curPrevFile == null) return;
+
+    Entry entry = history.current();
+    if (entry == null) return;
 
     if (isForward)
     {
-      for (int ndx = curPrevFile.navNdx + 1; ndx < curPrevFile.navList.size(); ndx++)
+      for (int ndx = entry.pageNdx() + 1; ndx < entry.pages().size(); ndx++)
         if (addMenuItem(menu, ndx)) return;
     }
     else
     {
-      for (int ndx = curPrevFile.navNdx - 1; ndx >= 0; ndx--)
+      for (int ndx = entry.pageNdx() - 1; ndx >= 0; ndx--)
         if (addMenuItem(menu, ndx)) return;
     }
   }
@@ -674,16 +582,12 @@ final class PreviewWrapper
 
   private MenuItem getMenuItemForNavNdx(int ndx)
   {
-    int page = curPrevFile.navList.get(ndx);
+    int page = history.current().pages().get(ndx);
     String pageLabel = safeStr(getLabelByPage(page)), pageStr = String.valueOf(page);
 
     MenuItem item = new MenuItem("Page " + (pageLabel.isEmpty() || pageLabel.equals(pageStr) ? pageStr : (pageLabel + " (" + pageStr + ')')));
 
-    item.setOnAction(event ->
-    {
-      curPrevFile.navNdx = ndx;
-      jumpToHistoryPage(page);
-    });
+    item.setOnAction(event -> jumpToHistoryPage(history.selectPage(ndx)));
 
     return item;
   }
@@ -693,11 +597,10 @@ final class PreviewWrapper
 
   void navClick(boolean isForward)
   {
-    if (enableNavButton(isForward) == false) return;
+    int page = history.stepPage(isForward);
 
-    curPrevFile.navNdx += (isForward ? 1 : -1);
-
-    jumpToHistoryPage(curPrevFile.navList.get(curPrevFile.navNdx));
+    if (page > 0)
+      jumpToHistoryPage(page);
   }
 
 //---------------------------------------------------------------------------
@@ -728,36 +631,28 @@ final class PreviewWrapper
    */
   void recordChromePageNav(int page)
   {
-    if (curPrevFile == null) return;
+    if (history.current() == null) return;
 
     pageNum = page;
-    incrementNav();
+    history.recordPage(page);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * Back/forward file navigation: repositions the file history and re-previews
-   * that entry through the pane's intent. The entry itself is reused by the
-   * resulting load (see {@link #trackFile}), preserving its page history and
-   * the forward file history.
+   * Back/forward file navigation: steps the file history (the target entry is
+   * current from this moment, so the controls, launch, and go reflect it) and
+   * re-previews the entry through the pane's intent. The resulting load tracks
+   * the entry's own file and record, which keeps the entry with its page
+   * history and the forward file history (see {@link PreviewNavHistory#track}).
    */
   void fileNavClick(boolean isForward)
   {
-    int newNdx = isForward ? getNextFileNdx() : getPreviousFileNdx();
-    if (newNdx < 0) return;
+    Entry entry = history.stepFile(isForward);
+    if (entry == null) return;
 
-    fileNdx = newNdx;
-
-    PreviewFile prevFile = fileList.get(fileNdx);
-
-    int newPageNum = prevFile.navNdx < 0 ? 1 : prevFile.navList.get(prevFile.navNdx);
-
-    curPrevFile = prevFile;        // reflect the target immediately (controls, launch, go)
-    pendingHistoryNav = prevFile;  // the load that follows reuses this entry
-
-    PreviewWindow.hostFor(src).setPreviewAuto(prevFile.filePath, prevFile.record, newPageNum);
+    PreviewWindow.hostFor(src).setPreviewAuto(entry.filePath(), entry.record(), entry.currentPage());
   }
 
 //---------------------------------------------------------------------------
@@ -766,8 +661,7 @@ final class PreviewWrapper
   void reset()
   {
     clearPreview();
-    fileList.clear();
-    fileNdx = -1;
+    history.clear();
   }
 
 //---------------------------------------------------------------------------
@@ -778,9 +672,8 @@ final class PreviewWrapper
     pageNum = -1;
     workStartPageNum = -1;
     workEndPageNum = -1;
-    curPrevFile = null;
     displayPath = null;
-    pendingHistoryNav = null;
+    history.clearCurrent();
 
     if (window.curSource() == src) window.clearControls();
 
@@ -821,7 +714,7 @@ final class PreviewWrapper
   {
     btn.setSelected(true);
 
-    if (curPrevFile == null)
+    if (history.current() == null)
       window.clearControls();
     else
       refreshControls();
@@ -832,40 +725,6 @@ final class PreviewWrapper
     // what is displayed.
 
     PreviewWindow.fireActivation(getSource());
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private void incrementNav()
-  {
-    curPrevFile.navNdx++;
-
-    while (curPrevFile.navList.size() > curPrevFile.navNdx)
-      curPrevFile.navList.remove(curPrevFile.navNdx);
-
-    curPrevFile.navList.add(pageNum);
-
-    // Now remove adjacent duplicates
-
-    Iterator<Integer> it = curPrevFile.navList.iterator();
-    int ndx = 0, prevPage = -1;
-
-    while (it.hasNext())
-    {
-      int page = it.next();
-      if (page == prevPage)
-      {
-        it.remove();
-        if (curPrevFile.navNdx >= ndx)
-          curPrevFile.navNdx--;
-      }
-      else
-      {
-        ndx++;
-        prevPage = page;
-      }
-    }
   }
 
   //---------------------------------------------------------------------------
@@ -884,7 +743,9 @@ final class PreviewWrapper
 
   boolean setCurPageAsWorkPage(boolean isStart)
   {
-    if ((curPrevFile == null) || (curPrevFile.record == null) || (curPrevFile.record.getType() != hdtWork))
+    Entry entry = history.current();
+
+    if ((entry == null) || (entry.record() == null) || (entry.record().getType() != hdtWork))
       return false;
 
     if (isStart)
@@ -892,8 +753,8 @@ final class PreviewWrapper
     else
       workEndPageNum = pageNum;
 
-    HDT_Work work = (HDT_Work) curPrevFile.record;
-    HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getRecordFromFilePath(curPrevFile.filePath);
+    HDT_Work work = (HDT_Work) entry.record();
+    HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getRecordFromFilePath(entry.filePath());
 
     if (isStart)
       work.setStartPageNum(workFile, pageNum);
@@ -904,7 +765,7 @@ final class PreviewWrapper
       ui.workHyperTab().setPageNum(workFile, pageNum, isStart);
 
     if (workFile == null)
-      ContentsWindow.instance().update(curPrevFile.filePath, pageNum);
+      ContentsWindow.instance().update(entry.filePath(), pageNum);
     else
       ContentsWindow.instance().update(workFile, pageNum);
 
