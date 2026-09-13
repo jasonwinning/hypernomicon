@@ -406,9 +406,10 @@ public final class DialogPreviewHost
    *  finishing); the pane confirms or fails the current generation from it.
    *  Matched by document identity: a superseded open's completion can arrive
    *  after a newer document was issued and must not confirm it. */
+  @SuppressWarnings("unused")
   private void onViewerDone(PDFJSOperation operation, FilePath file, boolean success, String errMessage)
   {
-    if ((operation == PDFJSOperation.pjsClose) || (intentFile == null)) return;
+    if (intentFile == null) return;
 
     if ((file == null) || (file.equals(issuedDisplayPath) == false)) return;
 

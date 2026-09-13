@@ -181,39 +181,26 @@ final class PreviewWrapper
   @SuppressWarnings("unused")
   private void doneHndlr(PDFJSOperation operation, FilePath file, boolean success, String errMessage)
   {
-    switch (operation)
+    if (paneEventSink != null)
+      paneEventSink.onOpened(file, success);
+
+    // As in pageChangeHndlr: only the displayed document's completion feeds
+    // this pane's bookkeeping (page count, first history entry, controls).
+
+    if ((file == null) || (file.equals(displayPath) == false)) return;
+
+    if (curPrevFile == null) return;
+
+    if (operation == PDFJSOperation.pjsOpen)
+      numPages = jsWrapper.getNumPages();
+
+    Platform.runLater(() ->
     {
-      case pjsOpen: case pjsDirectLoad:
+      if ((curPrevFile != null) && (curPrevFile.navNdx == -1))
+        incrementNav();
 
-        if (paneEventSink != null)
-          paneEventSink.onOpened(file, success);
-
-        // As in pageChangeHndlr: only the displayed document's completion feeds
-        // this pane's bookkeeping (page count, first history entry, controls).
-
-        if ((file == null) || (file.equals(displayPath) == false)) return;
-
-        if (curPrevFile == null) return;
-
-        if (operation == PDFJSOperation.pjsOpen)
-          numPages = jsWrapper.getNumPages();
-
-        Platform.runLater(() ->
-        {
-          if ((curPrevFile != null) && (curPrevFile.navNdx == -1))
-            incrementNav();
-
-          refreshControls();
-        });
-
-        break;
-
-      case pjsClose:
-
-        break;
-
-      default :
-    }
+      refreshControls();
+    });
   }
 
 //---------------------------------------------------------------------------

@@ -66,20 +66,22 @@ final class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  enum PDFJSOperation { pjsOpen, pjsDirectLoad, pjsClose }
+  enum PDFJSOperation { pjsOpen, pjsDirectLoad }
 
 //---------------------------------------------------------------------------
 
+  /** Receives the terminal report of each document load. A document close
+   *  reports through the future {@link #close()} returns instead. */
   @FunctionalInterface interface PDFJSDoneHandler
   {
     /**
-     * @param operation which viewer operation completed: a pdf.js document open,
-     *                  a direct-content navigation finishing, or a document close
+     * @param operation which viewer operation completed: a pdf.js document open
+     *                  or a direct-content navigation finishing
      * @param file      the file the operation was for (open: the file whose open
      *                  completed, which may already be superseded by a newer
-     *                  request; direct load: the navigated file; close: null).
-     *                  Consumers confirming loads must match this against what
-     *                  they issued rather than trusting arrival order.
+     *                  request; direct load: the navigated file). Consumers
+     *                  confirming loads must match this against what they
+     *                  issued rather than trusting arrival order.
      */
     void handle(PDFJSOperation operation, FilePath file, boolean success, String errMessage);
   }
@@ -177,6 +179,15 @@ final class PDFJSWrapper
   private boolean ready = false, hiding = false;
 
   private volatile boolean opened = false;
+
+  /** How long a document close may go without the viewer's report before it
+   *  is given up on; see {@link #close()}. */
+  private static final long CLOSE_TIMEOUT_MILLIS = 5_000;
+
+  /** The document close awaiting the viewer's report, or null. Issued on the
+   *  FX thread, completed on the bridge thread; volatile for that handoff.
+   *  Cleared once it settles, whichever way. */
+  private volatile CompletableFuture<Boolean> pendingClose = null;
 
   /** Serializes document opens and joins them onto viewer-page loads; the
    *  {@link OpenAdapter} below supplies its browser-side effects. Its executor
@@ -384,7 +395,16 @@ final class PDFJSWrapper
     showIdle();
 
     if (pdfjsViewerLoaded && opened)
-      close();
+    {
+      // Nothing waits on the close (the idle overlay is already up, and the next
+      // open replaces the document regardless); only its silence is worth noting.
+
+      close().whenComplete((success, e) ->
+      {
+        if (e != null)
+          System.out.println("PDFJSWrapper: no report of the document close within " + (CLOSE_TIMEOUT_MILLIS / 1000) + " seconds; the document may still be open");
+      });
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -444,6 +464,8 @@ final class PDFJSWrapper
       browser = null;
 
       javascriptToJava.retired = true;  // its reports now belong to a browser this wrapper has moved on from
+
+      settlePendingClose();  // the document goes with the browser; no report is coming
 
       // close() blocks and can need the FX thread (view detachment), so it must not
       // run on it; reloadBrowser is called from FX-thread refresh flows.
@@ -998,29 +1020,64 @@ final class PDFJSWrapper
         System.out.println("PDFJSWrapper: close failed: " + errMessage);
       }
 
-      if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsClose, null, success, "");
+      CompletableFuture<Boolean> pending = pendingClose;
+
+      if (pending != null)
+        pending.complete(success);
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void close()
+  /**
+   * Closes the open document. The returned future completes with the viewer's
+   * report (true: closed; false: the viewer reported a failure, already
+   * logged), or exceptionally with a {@link TimeoutException} if no report
+   * arrives within {@link #CLOSE_TIMEOUT_MILLIS}: the same conversion of
+   * silence into failure the open coordinator applies to opens. A close
+   * already under way is shared, and with no document open the result is an
+   * already-completed true. Never blocks: the previous implementation polled
+   * {@link #opened} on the FX thread for up to half a second, freezing the UI
+   * for every reset that closed a document.
+   */
+  private CompletableFuture<Boolean> close()
   {
     if (opened == false)
+      return CompletableFuture.completedFuture(Boolean.TRUE);
+
+    CompletableFuture<Boolean> pending = pendingClose;
+
+    if (pending != null)
+      return pending;
+
+    CompletableFuture<Boolean> issued = new CompletableFuture<Boolean>().orTimeout(CLOSE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+
+    pendingClose = issued;
+
+    issued.whenComplete((success, e) ->
     {
-      if (doneHndlr != null) doneHndlr.handle(PDFJSOperation.pjsClose, null, false, "Unable to close because the viewer is already closed.");
-      return;
-    }
+      if (pendingClose == issued)
+        pendingClose = null;
+    });
 
-    execJS("closePdfFile();");
+    if (execJS("closePdfFile();") == false)
+      issued.complete(Boolean.FALSE);  // no page to close in; execJS logged it
 
-    for (int ndx = 0; (ndx < 5) && opened; ndx++)
-      sleepForMillis(100);
+    return issued;
+  }
 
-    if (opened)
-      errorPopup("An error occurred while closing the PDF file preview.");
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Settles a pending close as done: the page the document lived in is gone,
+   *  so the document is closed and no report is coming. */
+  private void settlePendingClose()
+  {
+    CompletableFuture<Boolean> pending = pendingClose;
+
+    if (pending != null)
+      pending.complete(Boolean.TRUE);
   }
 
 //---------------------------------------------------------------------------
@@ -1557,6 +1614,8 @@ final class PDFJSWrapper
 
     if (javascriptToJava != null)
       javascriptToJava.retired = true;
+
+    settlePendingClose();
 
     if (toClose != null)
     {
