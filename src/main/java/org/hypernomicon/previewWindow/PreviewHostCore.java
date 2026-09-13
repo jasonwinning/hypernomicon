@@ -104,6 +104,10 @@ final class PreviewHostCore
 
   boolean noOfficeInstallation()  { return artifacts.noOfficeInstallation(); }
 
+  /** Whether a viewer report naming {@code file} describes the issued document (the identity gate the
+   *  report handlers apply, exposed for the host's own per-document bookkeeping). Any thread. */
+  boolean isIssuedDocument(FilePath file) { return (intentFile != null) && (file != null) && file.equals(issuedDisplayPath); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

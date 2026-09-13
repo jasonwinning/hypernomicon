@@ -1751,7 +1751,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     }
 
     CompletableFuture<FilePath> extractionFuture = session.subscribeExtraction();
-    PreviewWindow.enqueueForConversion(pvsQueriesTab, session);
+    PreviewWindow.enqueueForConversion(session);
 
     HitSetService.QueryDescriptor query = hitSetService.query();
 

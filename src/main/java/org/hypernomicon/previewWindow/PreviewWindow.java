@@ -76,24 +76,20 @@ public final class PreviewWindow extends NonmodalWindow
                               TEXT_TO_SHOW_IF_NONE = "(none)";
 
   private static final Object LOCK = new Object();
-  private static final Map<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
 
   /**
-   * One reconciler host per preview source, created on first use (which can be
-   * before the window exists: the search flow sets intent without opening it).
-   * Per-source state is thereby split between the hosts and the wrappers, which
-   * are created with the window: the host decides what a pane shows (intent and
-   * pipeline state, through its reconciler); the wrapper owns the viewer and
-   * still holds the chrome's metadata (labels, page counts, work pages) and the
-   * navigation history, which is why {@link #getFilePath} answers from the
-   * wrapper while the lock gate asks the host. Collapsing the two into one
-   * per-source object waits on chrome metadata moving into the typed viewer
-   * protocol and the navigation history being redesigned behind the host; until
-   * then the wrapper is the only home for both.
+   * One pane per preview source, created on first use (which can be before
+   * the window exists: the search flow sets intent without opening it) and
+   * living on across the window's lifetime; the window attaches each pane's
+   * viewer and tab when it is created. The pane owns everything about its
+   * source but the viewer: see {@link PreviewPaneHost}.
    */
   private static final Map<PreviewSource, PreviewPaneHost> srcToHost = new EnumMap<>(PreviewSource.class);
 
-  private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new EnumMap<>(PreviewSource.class);
+  /** The panes' viewers, for the window's own lifecycle duties (scene attach/detach, disposal). */
+  private final List<PreviewWrapper> wrappers = new ArrayList<>();
+
+  private final Map<Tab, PreviewSource> tabToSource = new HashMap<>();
 
   /** Previews requested while the Lock button deferred them, one replay per
    *  source (latest wins); run and cleared on unlock. Initiators with pipeline
@@ -119,7 +115,7 @@ public final class PreviewWindow extends NonmodalWindow
    *  table updates so the selection churn they cause does not set previews. */
   public static boolean disablePreviewUpdating = false;
 
-  /** Re-entrancy guard: true while {@link #refreshControls(int, int, PreviewWrapper)}
+  /** Re-entrancy guard: true while {@link #refreshControls(int, int, PreviewPaneHost)}
    *  updates the window's controls (and the ContentsWindow) programmatically, so
    *  their change listeners do not navigate or write back. */
   private boolean refreshingControls = false;
@@ -132,9 +128,10 @@ public final class PreviewWindow extends NonmodalWindow
 
 //---------------------------------------------------------------------------
 
-  public FilePath getFilePath(PreviewSource src) { return srcToWrapper.get(src).getFilePath(); }
-  private PreviewWrapper curWrapper()            { return tabToWrapper.get(tpPreview.getSelectionModel().getSelectedItem()); }
-  PreviewSource curSource()                      { return curWrapper().getSource(); }
+  /** The file the pane for {@code src} is about (see {@link PreviewPaneHost#intendedFile}). */
+  public FilePath getFilePath(PreviewSource src) { return hostFor(src).intendedFile(); }
+  PreviewSource curSource()                      { return tabToSource.get(tpPreview.getSelectionModel().getSelectedItem()); }
+  private PreviewPaneHost curHost()              { return hostFor(curSource()); }
   int curPage()                                  { return (int) sldPreview.getValue(); }
   int getMax()                                   { return (int) sldPreview.getMax(); }
 
@@ -172,10 +169,10 @@ public final class PreviewWindow extends NonmodalWindow
 
     forceToggleSelection(btnPerson.getToggleGroup());
 
-    tabToWrapper.values().forEach(PreviewWrapper::clearPreview);
+    clearControls();  // the panes themselves keep whatever they hold; a pane that outlived a previous window shows it once activated
 
-    lblRecord.setOnMouseClicked(event -> curWrapper().go());
-    paneType.setOnMouseClicked (event -> curWrapper().go());
+    lblRecord.setOnMouseClicked(event -> curHost().go());
+    paneType.setOnMouseClicked (event -> curHost().go());
 
     btnGoToMain   .setOnAction(event -> ui.windows.focusStage(ui.getStage()));
     btnGoToManager.setOnAction(event -> FileManager.show());
@@ -184,10 +181,10 @@ public final class PreviewWindow extends NonmodalWindow
 
     btnLaunch.setOnAction(event ->
     {
-      FilePath filePath = curWrapper().getFilePath();
+      FilePath filePath = curHost().intendedFile();
 
       if (FilePath.isEmpty(filePath) == false)
-        launchWorkFile(filePath, curWrapper().getPageNum());
+        launchWorkFile(filePath, curHost().pageNum());
     });
 
     btnLock.selectedProperty().addListener((ob, oldValue, newValue) ->
@@ -208,9 +205,9 @@ public final class PreviewWindow extends NonmodalWindow
     {
       if (tfPreviewPage.isDisabled() == false)
       {
-        tfPreviewPage.setText(curWrapper().getLabelByPage(newValue.intValue()));
+        tfPreviewPage.setText(curHost().labelForPage(newValue.intValue()));
 
-        lblPreviewPages.setText(newValue.intValue() + " / " + curWrapper().getNumPages());
+        lblPreviewPages.setText(newValue.intValue() + " / " + curHost().numPages());
 
         if (sldPreview.isValueChanging() == false)
           navigateToPage(newValue.intValue());
@@ -229,33 +226,33 @@ public final class PreviewWindow extends NonmodalWindow
     btnHilitePrev.setOnAction(event ->
     {
       if (tfPreviewPage.isDisabled() == false)
-        navigateToPage(curWrapper().getPrevHilite((int) sldPreview.getValue()));
+        navigateToPage(curHost().getPrevHilite((int) sldPreview.getValue()));
     });
 
     btnHiliteNext.setOnAction(event ->
     {
       if (tfPreviewPage.isDisabled() == false)
-        navigateToPage(curWrapper().getNextHilite((int) sldPreview.getValue()));
+        navigateToPage(curHost().getNextHilite((int) sldPreview.getValue()));
     });
 
     ClickHoldButton chbBack    = new ClickHoldButton(btnPreviewBack   , Side.BOTTOM);
     ClickHoldButton chbForward = new ClickHoldButton(btnPreviewForward, Side.BOTTOM);
 
-    chbBack   .setMenuFactory(menu -> curWrapper().refreshNavMenu(menu, false));
-    chbForward.setMenuFactory(menu -> curWrapper().refreshNavMenu(menu, true ));
+    chbBack   .setMenuFactory(menu -> curHost().refreshNavMenu(menu, false));
+    chbForward.setMenuFactory(menu -> curHost().refreshNavMenu(menu, true ));
 
     chbBack.setOnAction(event ->
     {
       if (tfPreviewPage.isDisabled()) return;
 
-      curWrapper().navClick(false);
+      curHost().navClick(false);
     });
 
     chbForward.setOnAction(event ->
     {
       if (tfPreviewPage.isDisabled()) return;
 
-      curWrapper().navClick(true);
+      curHost().navClick(true);
     });
 
     setToolTip(btnPerson        , "Preview content selected on Persons tab");
@@ -284,8 +281,8 @@ public final class PreviewWindow extends NonmodalWindow
     setToolTip(btnSetEnd        , "Set end page to page currently showing");
     setToolTip(sldPreview       , "Navigate to different page");
 
-    btnFileBack   .setOnAction(event -> curWrapper().fileNavClick(false));
-    btnFileForward.setOnAction(event -> curWrapper().fileNavClick(true ));
+    btnFileBack   .setOnAction(event -> curHost().fileNavClick(false));
+    btnFileForward.setOnAction(event -> curHost().fileNavClick(true ));
 
     btnPreviewPrev.setOnAction(event ->
     {
@@ -305,7 +302,7 @@ public final class PreviewWindow extends NonmodalWindow
     {
       if (tfPreviewPage.isDisabled()) return;
 
-      int workPage = curWrapper().getWorkStartPageNum();
+      int workPage = curHost().workStartPageNum();
 
       navigateToPage(workPage < 0 ? 1 : workPage);
     });
@@ -314,41 +311,41 @@ public final class PreviewWindow extends NonmodalWindow
     {
       if (tfPreviewPage.isDisabled()) return;
 
-      int workPage = curWrapper().getWorkEndPageNum();
+      int workPage = curHost().workEndPageNum();
 
       navigateToPage(workPage < 0 ? (int) sldPreview.getMax() : workPage);
     });
 
     btnSetStart.setOnAction(event ->
     {
-      if (curWrapper().setCurPageAsWorkPage(true))
-        updateStartBtn(curWrapper().getWorkStartPageNum());
+      if (curHost().setCurPageAsWorkPage(true))
+        updateStartBtn(curHost().workStartPageNum());
     });
 
     btnSetEnd.setOnAction(event ->
     {
-      if (curWrapper().setCurPageAsWorkPage(false))
-        updateEndBtn(curWrapper().getWorkEndPageNum());
+      if (curHost().setCurPageAsWorkPage(false))
+        updateEndBtn(curHost().workEndPageNum());
     });
 
     tpPreview.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 
-      PreviewWrapper wrapper = tabToWrapper.get(newValue);
+      PreviewPaneHost host = hostFor(tabToSource.get(newValue));
 
-      wrapper.warmUp();  // first activation of an unused pane: paint the idle viewer before any intent arrives
-      wrapper.activate();
+      host.warmUp();  // first activation of an unused pane: paint the idle viewer before any intent arrives
+      host.activate();
     });
 
     tfPreviewPage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      int pageNum = curWrapper().getPageNum();
+      int pageNum = curHost().pageNum();
 
-      tfPreviewPage.setText(Boolean.TRUE.equals(newValue) ? "" : (pageNum == -1 ? "" : curWrapper().getLabelByPage(pageNum)));
+      tfPreviewPage.setText(Boolean.TRUE.equals(newValue) ? "" : (pageNum == -1 ? "" : curHost().labelForPage(pageNum)));
     });
 
-    tfPreviewPage.setOnAction(event -> navigateToPage(curWrapper().getPageByLabel(tfPreviewPage.getText())));
+    tfPreviewPage.setOnAction(event -> navigateToPage(curHost().pageForLabel(tfPreviewPage.getText())));
 
     // The browser views are detached from the scene graph while this window is hidden, and
     // re-attached only once it is showing again. Both halves must straddle the stage's native
@@ -360,14 +357,14 @@ public final class PreviewWindow extends NonmodalWindow
 
     onShown = () ->
     {
-      srcToWrapper.values().forEach(PreviewWrapper::prepareToShow);
+      wrappers.forEach(PreviewWrapper::prepareToShow);
 
-      curWrapper().warmUp();  // the visible pane paints the idle viewer even before its first preview
+      curHost().warmUp();  // the visible pane paints the idle viewer even before its first preview
 
-      runDelayedInFXThread(1, 300, () -> curWrapper().activate());
+      runDelayedInFXThread(1, 300, () -> curHost().activate());
     };
 
-    stage.setOnHiding(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToHide));
+    stage.setOnHiding(event -> wrappers.forEach(PreviewWrapper::prepareToHide));
 
     btnContents.setOnAction(event -> ContentsWindow.show());
 
@@ -384,7 +381,7 @@ public final class PreviewWindow extends NonmodalWindow
 
       if (((event.isControlDown() || event.isMetaDown()) == false) || (deltaY == 0)) return;
 
-      if (curWrapper().zoom(deltaY > 0))
+      if (curHost().zoom(deltaY > 0))
         event.consume();
     });
 
@@ -398,7 +395,7 @@ public final class PreviewWindow extends NonmodalWindow
             (event.getCode() == KeyCode.SUBTRACT) ||
             (event.getCode() == KeyCode.ADD)    )
         {
-          if (curWrapper().zoom((event.getCode() != KeyCode.MINUS) && (event.getCode() != KeyCode.SUBTRACT)))
+          if (curHost().zoom((event.getCode() != KeyCode.MINUS) && (event.getCode() != KeyCode.SUBTRACT)))
             event.consume();
         }
       }
@@ -453,13 +450,13 @@ public final class PreviewWindow extends NonmodalWindow
   {
     if (disablePreviewUpdating || refreshingControls) return;
 
-    PreviewWrapper wrapper = curWrapper();
+    PreviewPaneHost host = curHost();
 
-    if ((pageNum < 1) || (pageNum > wrapper.getNumPages()) || FilePath.isEmpty(wrapper.getFilePath()) || (pageNum == wrapper.getPageNum()))
+    if ((pageNum < 1) || (pageNum > host.numPages()) || FilePath.isEmpty(host.intendedFile()) || (pageNum == host.pageNum()))
       return;
 
-    wrapper.recordChromePageNav(pageNum);
-    hostFor(wrapper.getSource()).navigateToPage(pageNum);
+    host.recordChromePageNav(pageNum);
+    host.navigateToPage(pageNum);
   }
 
 //---------------------------------------------------------------------------
@@ -467,10 +464,12 @@ public final class PreviewWindow extends NonmodalWindow
 
   private void addWrapper(PreviewSource src, AnchorPane ap, Tab tab, ToggleButton btn)
   {
-    PreviewWrapper wrapper = new PreviewWrapper(src, ap, tab, btn, this);
+    PreviewWrapper wrapper = new PreviewWrapper(ap, tab, btn, this);
 
-    srcToWrapper.put(src, wrapper);
-    tabToWrapper.put(tab, wrapper);
+    wrappers.add(wrapper);
+    tabToSource.put(tab, src);
+
+    hostFor(src).attach(wrapper, tab);
   }
 
 //---------------------------------------------------------------------------
@@ -627,7 +626,7 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /** Runs and clears the action deferred for {@code src} via {@link #runWhenSourceActivates}, if any.
-   *  Called from {@link PreviewWrapper#activate()} once {@code src} is the active, showing source. */
+   *  Called from {@link PreviewPaneHost#activate()} once {@code src} is the active, showing source. */
   static void fireActivation(PreviewSource src)
   {
     nullSwitch(pendingActivation.remove(src), Runnable::run);
@@ -636,20 +635,34 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // The FTS-driven preview flow of the queries tab runs through its
-  // reconciler host (see PreviewPaneHost): the FTS controller sets intent and
-  // pushes hit results; the display is derived, never commanded directly.
-
-  /** The wrapper for {@code src}, or {@code null} if the preview system is
-   *  unavailable; the pane's {@link PreviewPaneHost} drives it as the ViewerPort. */
-  static PreviewWrapper wrapperForSource(PreviewSource src)
+  /** Whether the window exists and {@code src} is the pane it is showing. */
+  static boolean isShowingSource(PreviewSource src)
   {
-    return (jxBrowserDisabled || (instance == null)) ? null : instance.srcToWrapper.get(src);
+    return (instance != null) && (instance.curSource() == src);
+  }
+
+  /** Empties the controls if {@code src} is the pane the window is showing. */
+  static void clearControlsIfShowing(PreviewSource src)
+  {
+    if (isShowingSource(src))
+      instance.clearControls();
+  }
+
+  /** Brings the controls up to date with {@code host} if it is the pane the window is showing. */
+  static void refreshControlsIfShowing(PreviewPaneHost host, int pageNum, int numPages)
+  {
+    if (isShowingSource(host.source()))
+      instance.refreshControls(pageNum, numPages, host);
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  /** The reconciler host for {@code src} (one per pane), created on first use. */
+  // The FTS-driven preview flow of the queries tab runs through its pane (see
+  // PreviewPaneHost): the FTS controller sets intent and pushes hit results;
+  // the display is derived, never commanded directly.
+
+  /** The pane for {@code src}, created on first use. */
   static PreviewPaneHost hostFor(PreviewSource src)
   {
     return srcToHost.computeIfAbsent(src, PreviewPaneHost::new);
@@ -703,8 +716,9 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /**
-   * Find or create the {@link ConversionSession} for the given source wrapper
-   * and file. Returns {@code null} if the preview system is unavailable.
+   * Find or create the {@link ConversionSession} for the given file, on behalf
+   * of the pane for {@code src}. Returns {@code null} if the preview system is
+   * unavailable or that pane has no viewer.
    *
    * <p>The caller attaches display or extraction subscribers to the returned
    * session to drive the UI and/or receive the converted path, and should call
@@ -715,10 +729,7 @@ public final class PreviewWindow extends NonmodalWindow
   {
     if (jxBrowserDisabled || (instance == null)) return null;
 
-    PreviewWrapper wrapper = instance.srcToWrapper.get(src);
-    if (wrapper == null) return null;
-
-    if (wrapper.ensureInitialized() == false) return null;
+    if (hostFor(src).viewerReady() == false) return null;
 
     return OfficePreviewer.getOrCreateSession(filePath, mimetypeStr);
   }
@@ -732,12 +743,11 @@ public final class PreviewWindow extends NonmodalWindow
    * then enqueue (ensuring no state transition fires before the subscriber
    * is ready to receive it).
    */
-  public static void enqueueForConversion(PreviewSource src, ConversionSession session)
+  public static void enqueueForConversion(ConversionSession session)
   {
     if ((instance == null) || (session == null)) return;
 
-    nullSwitch(instance.srcToWrapper.get(src), _ ->
-      OfficePreviewer.enqueueForConversion(session));
+    OfficePreviewer.enqueueForConversion(session);
   }
 
 //---------------------------------------------------------------------------
@@ -759,12 +769,12 @@ public final class PreviewWindow extends NonmodalWindow
       return;
     }
 
-    // Every pane routes through its reconciler host as intent: the host is that
-    // source's single decision layer, deriving the display rather than being
-    // commanded directly. Work-page numbers stay on the wrapper for the
-    // Set-start/end chrome and the ContentsWindow.
+    // Every pane routes through its host as intent: the host is that source's
+    // single decision layer, deriving the display rather than being commanded
+    // directly. Work-page numbers ride beside the intent, for the Set-start/end
+    // chrome and the ContentsWindow.
 
-    srcToWrapper.get(src).setWorkPageNums(startPageNum, endPageNum);
+    hostFor(src).setWorkPageNums(startPageNum, endPageNum);
 
     // Directories clear the pane like empty paths do: nothing can preview a
     // folder (the File Manager passes one when a folder row is selected), and
@@ -797,14 +807,14 @@ public final class PreviewWindow extends NonmodalWindow
 
   void updatePageNumber(HDT_Work work, FilePath filePath, int pageNum, boolean isStart)
   {
-    srcToWrapper.values().forEach(wrapper ->
+    srcToHost.values().forEach(host ->
     {
-      if (FilePath.isEmpty(wrapper.getFilePath()) == false)
-        if (wrapper.getFilePath().equals(filePath) && (wrapper.getRecord() == work))
+      if (FilePath.isEmpty(host.intendedFile()) == false)
+        if (host.intendedFile().equals(filePath) && (host.intendedRecord() == work))
         {
-          wrapper.setWorkPageFromContentsWindow(pageNum, isStart);
+          host.setWorkPageFromContentsWindow(pageNum, isStart);
 
-          if (wrapper.getSource() == curSource())
+          if (host.source() == curSource())
           {
             if (isStart)
               updateStartBtn(pageNum);
@@ -822,17 +832,17 @@ public final class PreviewWindow extends NonmodalWindow
   {
     if (curSource() == src) return;
 
-    tpPreview.getSelectionModel().select(srcToWrapper.get(src).getTab());
+    tpPreview.getSelectionModel().select(hostFor(src).tab());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** The database is closing: every pane forgets its preview and its history (see {@link PreviewPaneHost#reset}). */
   public static void clearAll()
   {
-    srcToHost.values().forEach(PreviewPaneHost::clear);
+    srcToHost.values().forEach(PreviewPaneHost::reset);
     pendingActivation.clear();
-    tabToWrapper.values().forEach(PreviewWrapper::reset);
     instance().clearControls();
   }
 
@@ -907,29 +917,30 @@ public final class PreviewWindow extends NonmodalWindow
 
   private void updateFileNavButtons()
   {
-    btnFileBack   .setDisable(curWrapper().enableFileNavButton(false) == false);
-    btnFileForward.setDisable(curWrapper().enableFileNavButton(true ) == false);
+    btnFileBack   .setDisable(curHost().canStepFile(false) == false);
+    btnFileForward.setDisable(curHost().canStepFile(true ) == false);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Brings the controls up to date with the pane for {@code src}, if it is the one showing. */
   public void refreshControls(PreviewSource src)
   {
     if (curSource() == src)
-      curWrapper().refreshControls();
+      hostFor(src).refreshControls();
   }
 
-  void refreshControls(int pageNum, int numPages, PreviewWrapper previewWrapper)
+  private void refreshControls(int pageNum, int numPages, PreviewPaneHost host)
   {
-    if (curWrapper() != previewWrapper) return;
+    if (curHost() != host) return;
 
-    FilePath filePath = previewWrapper.getFilePath();
-    HDT_RecordWithPath record = previewWrapper.getRecord();
+    FilePath filePath = host.intendedFile();
+    HDT_RecordWithPath record = host.intendedRecord();
 
     refreshingControls = true;
 
-    tfPreviewPage.setText(previewWrapper.getLabelByPage(pageNum));
+    tfPreviewPage.setText(host.labelForPage(pageNum));
 
     tfPreviewPage.setDisable(false);
 
@@ -961,13 +972,13 @@ public final class PreviewWindow extends NonmodalWindow
 
         enableAll(btnSetStart, btnStartPage, btnSetEnd, btnEndPage);
 
-        updateStartBtn(previewWrapper.getWorkStartPageNum());
-        updateEndBtn  (previewWrapper.getWorkEndPageNum  ());
+        updateStartBtn(host.workStartPageNum());
+        updateEndBtn  (host.workEndPageNum  ());
 
         btnContents.setDisable(true);
         btnContents.setText("No other records...");
 
-        HDT_RecordWithPath showingFile = HyperPath.getRecordFromFilePath(previewWrapper.getFilePath());
+        HDT_RecordWithPath showingFile = HyperPath.getRecordFromFilePath(filePath);
 
         if (showingFile == null) // External file (specified in URL field) is being previewed
         {
@@ -1006,12 +1017,12 @@ public final class PreviewWindow extends NonmodalWindow
     btnPreviewPrev.setDisable(pageNum == 1);
     btnPreviewNext.setDisable(pageNum == numPages);
 
-    btnPreviewBack   .setDisable(previewWrapper.enableNavButton(false) == false);
-    btnPreviewForward.setDisable(previewWrapper.enableNavButton(true ) == false);
+    btnPreviewBack   .setDisable(host.canStepPage(false) == false);
+    btnPreviewForward.setDisable(host.canStepPage(true ) == false);
 
     updateFileNavButtons();
 
-    if (previewWrapper.annotScanInProgress())
+    if (host.annotScanInProgress())
     {
       setHiliteScanningIndicator(true);
 
@@ -1022,7 +1033,7 @@ public final class PreviewWindow extends NonmodalWindow
     {
       setHiliteScanningIndicator(false);
 
-      int lowest = previewWrapper.lowestHilitePage();
+      int lowest = host.lowestHilitePage();
 
       if (lowest < 0)
       {
@@ -1032,7 +1043,7 @@ public final class PreviewWindow extends NonmodalWindow
       else
       {
         btnHilitePrev.setDisable(pageNum <= lowest);
-        btnHiliteNext.setDisable(pageNum >= previewWrapper.highestHilitePage());
+        btnHiliteNext.setDisable(pageNum >= host.highestHilitePage());
       }
     }
 
@@ -1122,7 +1133,7 @@ public final class PreviewWindow extends NonmodalWindow
     // are closed later by the cleanup() dispose chain.
 
     if (exitingApp && (instance != null))
-      tabToWrapper.values().forEach(PreviewWrapper::detachBrowserView);
+      instance.wrappers.forEach(PreviewWrapper::detachBrowserView);
 
     close(instance, exitingApp);
   }
@@ -1142,7 +1153,9 @@ public final class PreviewWindow extends NonmodalWindow
     // so blocking it there can deadlock). The chain's final step hops back onto the FX
     // thread itself for the window close.
 
-    runOutsideFXThread(getDisposeHandler(tabToWrapper.values().iterator()));
+    List<PreviewWrapper> toDispose = instance == null ? List.of() : instance.wrappers;
+
+    runOutsideFXThread(getDisposeHandler(toDispose.iterator()));
   }
 
 //---------------------------------------------------------------------------
