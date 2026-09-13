@@ -23,8 +23,7 @@ import static org.hypernomicon.settings.WebButtonCtrl.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.WebButton.WebButtonField.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -62,6 +61,29 @@ public class WebButtonSettingsCtrlr implements SettingsControl
                                        personSrchDefaults = new ArrayList<>(),
                                        workSrchDefaults   = new ArrayList<>(),
                                        genSrchDefaults    = new ArrayList<>();
+
+  /** The buttons offered for each context (the presets, plus any custom buttons
+   *  loaded from preferences), keyed by {@link WebButtonContextPrefKey}. */
+  private static final Map<String, List<WebButton>> buttonsByContext = Map.of
+  (
+    WebButtonContextPrefKey.PERSON    , personSrchList,
+    WebButtonContextPrefKey.PERSON_IMG, personImgSrchList,
+    WebButtonContextPrefKey.INST      , instSrchList,
+    WebButtonContextPrefKey.INST_MAP  , instMapSrchList,
+    WebButtonContextPrefKey.DOI       , doiSrchList,
+    WebButtonContextPrefKey.ISBN      , isbnSrchList,
+    WebButtonContextPrefKey.WORK      , workSrchList,
+    WebButtonContextPrefKey.GEN       , genSrchList
+  );
+
+//---------------------------------------------------------------------------
+
+  /** The buttons offered for a context, in the order Settings lists them; for
+   *  the Test Console's Web Buttons tab. */
+  public static List<WebButton> buttonsFor(String contextPrefKey)
+  {
+    return Collections.unmodifiableList(buttonsByContext.get(contextPrefKey));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -153,10 +153,17 @@ public class WebButton
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void go()
+  /**
+   * Builds the URL for the values supplied through {@link #first}/{@link #next}:
+   * the first pattern whose required fields are all present, with each field
+   * substituted (the QueryTitle and QueryName fields first ask the user how to
+   * phrase the title or name).
+   * @return the URL, or null if no pattern applies or the user cancelled a prompt
+   */
+  public String buildUrl()
   {
     String str = getPatternStr();
-    if (str == null) return;
+    if (str == null) return null;
 
     boolean isScholar = str.toLowerCase().contains("scholar") && str.toLowerCase().contains("google");
 
@@ -221,7 +228,7 @@ public class WebButton
             case mrYes : value = first1; break;
             case mrNo  : value = first2; break;
             case mrOk  : value = first3; break;
-            default    : return;
+            default    : return null;
           }
         }
         else
@@ -232,7 +239,19 @@ public class WebButton
         str = str.replace(field.key, escapeURL(value, field != WebButtonField.doi));
     }
 
-    DesktopUtil.openWebLink(str);
+    return str;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Opens {@link #buildUrl()} in the system browser, if there is a URL to open. */
+  public void go()
+  {
+    String url = buildUrl();
+
+    if (url != null)
+      DesktopUtil.openWebLink(url);
   }
 
 //---------------------------------------------------------------------------

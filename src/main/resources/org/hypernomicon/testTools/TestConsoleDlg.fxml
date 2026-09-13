@@ -16,6 +16,7 @@
    limitations under the License.
 -->
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -136,6 +137,37 @@
         <Button fx:id="btnZoteroCreatorTypes" layoutX="52.0" layoutY="213.0" mnemonicParsing="false" prefHeight="25.0"
                 prefWidth="190.0" text="Retrieve Zotero Creator Types" AnchorPane.leftAnchor="52.0"
                 AnchorPane.topAnchor="213.0"/>
+      </AnchorPane>
+    </Tab>
+    <Tab closable="false" text="Web Buttons">
+      <AnchorPane>
+        <Label text="Context:" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="10.0"/>
+        <ComboBox fx:id="cbWebBtnContext" prefWidth="260.0" AnchorPane.leftAnchor="75.0" AnchorPane.topAnchor="7.0"/>
+        <Label text="Every button offered in Settings for the context, including custom ones. Open opens it in the system browser with the sample values on the right; blank a value to try a fallback pattern."
+               wrapText="true" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="38.0"/>
+        <TableView fx:id="tvWebBtnPresets" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="14.0"
+                   AnchorPane.rightAnchor="365.0" AnchorPane.topAnchor="78.0">
+          <columns>
+            <TableColumn fx:id="colWebBtnName" prefWidth="160.0" text="Button"/>
+            <TableColumn fx:id="colWebBtnCaption" prefWidth="85.0" text="Caption"/>
+            <TableColumn fx:id="colWebBtnPatterns" prefWidth="60.0" text="Patterns"/>
+          </columns>
+        </TableView>
+        <ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="335.0"
+                    AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="78.0">
+          <GridPane fx:id="gpWebBtnFields" hgap="8.0" vgap="6.0">
+            <padding>
+              <Insets bottom="6.0" left="6.0" right="6.0" top="6.0"/>
+            </padding>
+          </GridPane>
+        </ScrollPane>
+        <Button mnemonicParsing="false" onAction="#btnWebBtnOpenClick" prefHeight="25.0" text="Open selected"
+                AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="14.0"/>
+        <Button mnemonicParsing="false" onAction="#btnWebBtnOpenAllClick" prefHeight="25.0" text="Open all"
+                AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="130.0"/>
+        <Label text="Last URL:" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0"/>
+        <TextField fx:id="tfWebBtnLastUrl" editable="false" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
+                   AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="14.0"/>
       </AnchorPane>
     </Tab>
     <Tab fx:id="tabLinkGen" closable="false" text="Link Generation">
