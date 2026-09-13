@@ -235,6 +235,34 @@ public final class Util
 //---------------------------------------------------------------------------
 
   /**
+   * A JavaScript expression that calls a global function only if the page
+   * defines it, for scripts sent to a web page whose own script may not have
+   * loaded (or may not be part of the document at all). Calling an undefined
+   * function throws a ReferenceError instead of failing quietly.
+   * <p>
+   * The result is an expression, not an {@code if} statement, so it can also be
+   * evaluated for its value: it yields the function's return value when the
+   * function exists, and otherwise the value of {@code fallback}, or
+   * {@code null} when there is none. (A statement whose branch is not taken
+   * evaluates to {@code undefined}, which a JavaFX WebEngine hands back as the
+   * string "undefined".)
+   *
+   * @param function name of the global function
+   * @param args     its arguments as JavaScript source, comma-separated; may be empty
+   * @param fallback a JavaScript expression to evaluate in place of the call
+   *                 when the function is not defined, typically an assignment
+   *                 that buffers the arguments for the page's script to pick up
+   *                 once it loads; null to do nothing
+   */
+  public static String jsCallWhenDefined(String function, String args, String fallback)
+  {
+    return "typeof " + function + " === 'function' ? " + function + '(' + args + ") : " + (fallback == null ? "null" : ('(' + fallback + ')')) + ';';
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Parses a boolean value from the given string. Recognizes various true and false representations.
    *
    * @param s the string to parse

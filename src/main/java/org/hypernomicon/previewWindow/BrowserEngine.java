@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.teamdev.jxbrowser.Closeable;
 import com.teamdev.jxbrowser.browser.Browser;
 import com.teamdev.jxbrowser.engine.*;
 import com.teamdev.jxbrowser.engine.event.EngineCrashed;
@@ -361,18 +362,7 @@ public final class BrowserEngine
         removeFromParent(browserView);  // never let a window hide with a BrowserView still in its scene
         stage.hide();
 
-        runDelayedInFXThread(1, 1000, () -> runOutsideFXThread(() ->
-        {
-          try
-          {
-            if (toClose.isClosed() == false)
-              toClose.close();
-          }
-          catch (RuntimeException e)
-          {
-            System.out.println("BrowserEngine: error closing priming browser: " + getThrowableMessage(e));
-          }
-        }));
+        runDelayedInFXThread(1, 1000, () -> runOutsideFXThread(() -> closeQuietly(toClose, "the priming browser")));
       });
     }
     catch (RuntimeException e)
@@ -380,7 +370,31 @@ public final class BrowserEngine
       System.out.println("BrowserEngine.primeModalAttach: " + getThrowableMessage(e));
 
       if (browser != null)
-        try { browser.close(); } catch (RuntimeException e2) { noOp(); }
+        closeQuietly(browser, "the priming browser after a failed attach");
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Closes a browser or the engine unless it is already closed, logging rather
+   * than throwing on failure: every caller is a teardown path (a replaced or
+   * disposed preview browser, the priming browser, shutdown) where nothing can
+   * be done about a close error except note it. Blocking; a browser whose view
+   * is still in a scene must not be closed on the FX thread.
+   * @param context names the closeable in the log line
+   */
+  static void closeQuietly(Closeable closeable, String context)
+  {
+    try
+    {
+      if (closeable.isClosed() == false)
+        closeable.close();
+    }
+    catch (RuntimeException e)
+    {
+      System.out.println("BrowserEngine: error closing " + context + ": " + getThrowableMessage(e));
     }
   }
 
@@ -423,15 +437,7 @@ public final class BrowserEngine
     Engine toClose = engine;
     engine = null;
 
-    try
-    {
-      if (toClose.isClosed() == false)
-        toClose.close();
-    }
-    catch (RuntimeException e)
-    {
-      System.out.println("Shutdown: error closing browser engine: " + getThrowableMessage(e));
-    }
+    closeQuietly(toClose, "the browser engine at shutdown");
   }
 
 //---------------------------------------------------------------------------

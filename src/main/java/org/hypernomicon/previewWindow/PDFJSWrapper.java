@@ -320,7 +320,7 @@ final class PDFJSWrapper
     if (fontSize >= 1)
       obj.put("fontSize", fontSize + 2);
 
-    execJS("if (typeof showStatusOverlay === 'function') showStatusOverlay(" + obj + "); else window.__hnPendingStatus = " + obj + ';');
+    execJS(jsCallWhenDefined("showStatusOverlay", obj.toString(), "window.__hnPendingStatus = " + obj));
   }
 
 //---------------------------------------------------------------------------
@@ -333,7 +333,7 @@ final class PDFJSWrapper
   {
     currentStatus = null;
 
-    execJS("if (typeof hideStatusOverlay === 'function') hideStatusOverlay(); else window.__hnPendingStatus = null;");
+    execJS(jsCallWhenDefined("hideStatusOverlay", "", "window.__hnPendingStatus = null"));
   }
 
 //---------------------------------------------------------------------------
@@ -470,18 +470,7 @@ final class PDFJSWrapper
       // close() blocks and can need the FX thread (view detachment), so it must not
       // run on it; reloadBrowser is called from FX-thread refresh flows.
 
-      runOutsideFXThread(() ->
-      {
-        try
-        {
-          if (toClose.isClosed() == false)
-            toClose.close();
-        }
-        catch (RuntimeException e)
-        {
-          System.out.println("PDFJSWrapper: error closing browser during reload: " + getThrowableMessage(e));
-        }
-      });
+      runOutsideFXThread(() -> BrowserEngine.closeQuietly(toClose, "the replaced preview browser"));
     }
 
     browser = BrowserEngine.newBrowser();
@@ -1338,13 +1327,13 @@ final class PDFJSWrapper
 
       // javaapp.js's openPdfFile retries internally until PDFViewerApplication finishes
       // initializing, so no Java-side polling is needed once the viewer page's scripts
-      // have parsed. The typeof guard covers the residual case where this executes
-      // before javaapp.js has parsed: the arguments are buffered and javaapp.js opens
-      // the file as soon as it loads.
+      // have parsed. jsCallWhenDefined's guard covers the residual case where this
+      // executes before javaapp.js has parsed: the arguments are buffered and
+      // javaapp.js opens the file as soon as it loads.
 
       String args = '"' + ResourceServer.urlForFile(file) + "\", " + initialPage + ", " + app.prefs.getInt(PrefKey.PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ", " + token;
 
-      return execJS("if (typeof openPdfFile === 'function') openPdfFile(" + args + "); else window.__hnPendingOpen = [" + args + "];");
+      return execJS(jsCallWhenDefined("openPdfFile", args, "window.__hnPendingOpen = [" + args + ']'));
     }
 
 //---------------------------------------------------------------------------
@@ -1525,7 +1514,7 @@ final class PDFJSWrapper
       return;
     }
 
-    execJS("if (typeof clearAllHits === 'function') clearAllHits();");
+    execJS(jsCallWhenDefined("clearAllHits", "", null));
   }
 
 //---------------------------------------------------------------------------
@@ -1618,17 +1607,7 @@ final class PDFJSWrapper
     settlePendingClose();
 
     if (toClose != null)
-    {
-      try
-      {
-        if (toClose.isClosed() == false)
-          toClose.close();
-      }
-      catch (RuntimeException e)
-      {
-        System.out.println("PDFJSWrapper: error closing browser: " + getThrowableMessage(e));
-      }
-    }
+      BrowserEngine.closeQuietly(toClose, "the preview browser");
 
     if (disposeHndlr != null)
       disposeHndlr.run();
