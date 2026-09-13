@@ -260,7 +260,7 @@ public class MainTextCtrlr
 
     webView.setOnContextMenuRequested(contextMenuEvent ->
     {
-      HTMLAnchorElement anchor = (HTMLAnchorElement) engine.executeScript("getAnchorAtCursor()");
+      HTMLAnchorElement anchor = anchorAtCursor();
 
       MenuItem mnuPaste                  = createPasteMenuItem                 (shortcutKey),
                mnuPastePlain             = createPastePlainMenuItem            (shortcutKey),
@@ -817,9 +817,23 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * The anchor element the caret is in, or null if it is not in one. Also null
+   * when the document does not carry the editing script (the editor's own
+   * initial document, before any content has been set), rather than a
+   * ReferenceError thrown on the FX thread.
+   */
+  private HTMLAnchorElement anchorAtCursor()
+  {
+    return (HTMLAnchorElement) engine.executeScript(jsCallWhenDefined("getAnchorAtCursor", "", null));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void btnLinkClick()
   {
-    HTMLAnchorElement anchor = (HTMLAnchorElement) engine.executeScript("getAnchorAtCursor()");
+    HTMLAnchorElement anchor = anchorAtCursor();
 
     if (anchor != null)
     {

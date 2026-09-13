@@ -30,6 +30,8 @@ import static org.hypernomicon.util.Util.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.text.StringEscapeUtils.*;
@@ -75,7 +77,13 @@ public final class MainTextUtil
 
   private static String       editingScriptContent,
                               hiliteStyles,
-                              editingStyles;
+                              editingStyles,
+                              editingHeadContent;
+
+  /** Marks the style element {@link #prepHtmlForEditing} adds, so {@link #getHtmlFromEditor} can remove exactly it. */
+  private static final String EDITING_STYLES_ID = "hnEditingStyles";
+
+  private static final Pattern HEAD_TAG = Pattern.compile("<head[^>]*>", Pattern.CASE_INSENSITIVE);
 
   /* *********************************************************** */
   /*                                                             */
@@ -129,6 +137,8 @@ public final class MainTextUtil
     hiliteStyles = ".hypernomiconHilite { background-color: yellow; } .hypernomiconHilite.hypernomiconHiliteCurrent { background-color: orange; }";
 
     editingStyles = "a { pointer-events: none; } " + hiliteStyles;
+
+    editingHeadContent = editingScriptContent + "<style id=\"" + EDITING_STYLES_ID + "\">" + editingStyles + "</style>";
 
     headContent = scriptContent +
 
@@ -962,11 +972,24 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * The HTML the editor loads: the stored document (or the one built for plain
+   * text) with the editing script and styles inserted at the start of its head,
+   * as elements of their own. They used to be spliced into the document's own
+   * bare {@code <style>} tag, so a stored document without one (a head built
+   * with a typed style tag, or pasted whole) was edited without the script, and
+   * the first link-aware action threw a ReferenceError on the FX thread.
+   */
   public static String prepHtmlForEditing(String hyperText)
   {
     hyperText = prepHtmlForDisplay(hyperText, true);
 
-    return hyperText.replace("<style>", editingScriptContent + "<style>" + editingStyles);
+    Matcher matcher = HEAD_TAG.matcher(hyperText);
+
+    if (matcher.find())
+      return hyperText.substring(0, matcher.end()) + editingHeadContent + hyperText.substring(matcher.end());
+
+    return editingHeadContent + hyperText;  // No head element; the parser puts head content that precedes the body into the implied head
   }
 
 //---------------------------------------------------------------------------
@@ -978,8 +1001,9 @@ public final class MainTextUtil
 
     doc.getElementsByTag("script").forEach(Element::remove);
     doc.getElementsByAttributeValue("id", "key_works").forEach(Element::remove);
+    doc.getElementsByAttributeValue("id", EDITING_STYLES_ID).forEach(Element::remove);
 
-    return doc.html().replace(editingStyles, "");
+    return doc.html();
   }
 
 //---------------------------------------------------------------------------
