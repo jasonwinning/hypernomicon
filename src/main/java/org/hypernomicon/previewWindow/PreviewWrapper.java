@@ -32,6 +32,7 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.DesiredView.ProgressVariant;
 import org.hypernomicon.previewWindow.PDFJSWrapper.PDFJSOperation;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
+import org.hypernomicon.previewWindow.ViewerPort.ViewerMeta;
 import org.hypernomicon.util.file.FilePath;
 
 import javafx.application.Platform;
@@ -74,14 +75,18 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int fileNdx = -1, pageNum = -1, workStartPageNum = -1, workEndPageNum = -1, numPages = 0;
+  private int fileNdx = -1, pageNum = -1, workStartPageNum = -1, workEndPageNum = -1;
   private final PreviewSource src;
   private final PreviewWindow window;
   private final Tab tab;
   private boolean initialized = false;
   private PDFJSWrapper jsWrapper;
-  private Map<String, Integer> labelToPage;
-  private Map<Integer, String> pageToLabel;
+
+  /** The displayed document's metadata (page count, labels), taken from its
+   *  load confirmation; {@link ViewerMeta#PAGELESS} for direct content, for a
+   *  status display, and for a document whose load has not confirmed yet. */
+  private ViewerMeta meta = ViewerMeta.PAGELESS;
+
   private List<Integer> hilitePages;
   private final List<PreviewFile> fileList = new ArrayList<>();
   private PreviewFile curPrevFile;
@@ -102,7 +107,7 @@ final class PreviewWrapper
 
   PreviewSource getSource()             { return src; }
   int getPageNum()                      { return pageNum; }
-  int getNumPages()                     { return numPages; }
+  int getNumPages()                     { return meta.pageCount(); }
   Tab getTab()                          { return tab; }
   FilePath getFilePath()                { return curPrevFile == null ? null : curPrevFile.filePath; }
   int getWorkStartPageNum()             { return workStartPageNum; }
@@ -118,8 +123,8 @@ final class PreviewWrapper
 
   int lowestHilitePage()                { return collEmpty(hilitePages) ? -1 : hilitePages.getFirst(); }
   int highestHilitePage()               { return collEmpty(hilitePages) ? -1 : hilitePages.getLast(); }
-  int getPageByLabel(String label)      { return collEmpty(labelToPage) ? parseInt(label, -1) : labelToPage.getOrDefault(label, -1); }
-  String getLabelByPage(int page)       { return collEmpty(pageToLabel) ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
+  int getPageByLabel(String label)      { return meta.pageForLabel(label); }
+  String getLabelByPage(int page)       { return meta.labelForPage(page); }
   boolean zoom(boolean zoomingIn)       { return (jsWrapper != null) && jsWrapper.zoom(zoomingIn); }
 
   void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage) { if (initialized) jsWrapper.scrollToHighlight(matchNdx, pageNum, ndxOnPage); }
@@ -156,9 +161,10 @@ final class PreviewWrapper
      * A document load completed (a pdf.js open, or a direct-content navigation
      * finishing). {@code file} is the document the load was for; the consumer
      * must match it against what it issued, because a superseded open still
-     * reports here before the newest request's load has run.
+     * reports here before the newest request's load has run. {@code meta}
+     * describes the loaded document on success and is null on failure.
      */
-    void onOpened(FilePath file, boolean success);
+    void onOpened(FilePath file, boolean success, ViewerMeta meta);
 
     /**
      * The viewer's current page changed (user scrolling, or a page the viewer
@@ -179,20 +185,22 @@ final class PreviewWrapper
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
-  private void doneHndlr(PDFJSOperation operation, FilePath file, boolean success, String errMessage)
+  private void doneHndlr(PDFJSOperation operation, FilePath file, boolean success, String errMessage, ViewerMeta meta)
   {
     if (paneEventSink != null)
-      paneEventSink.onOpened(file, success);
+      paneEventSink.onOpened(file, success, meta);
 
     // As in pageChangeHndlr: only the displayed document's completion feeds
-    // this pane's bookkeeping (page count, first history entry, controls).
+    // this pane's bookkeeping (metadata, first history entry, controls). The
+    // metadata is the report's own: attributing it by reading the viewer's
+    // current state here would race the next document's load.
 
     if ((file == null) || (file.equals(displayPath) == false)) return;
 
     if (curPrevFile == null) return;
 
-    if (operation == PDFJSOperation.pjsOpen)
-      numPages = jsWrapper.getNumPages();
+    if (success)
+      this.meta = meta;
 
     Platform.runLater(() ->
     {
@@ -229,24 +237,6 @@ final class PreviewWrapper
       pageNum = newPageNum;
       incrementNav();
     }
-
-    if (window.curSource() == src)
-      Platform.runLater(this::refreshControls);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void retrievedDataHndlr(FilePath file, Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel)
-  {
-    // Labels resolve asynchronously; a superseded document's can arrive after
-    // the next document was tracked (which nulled these maps for it) and would
-    // pass as the new document's until its own arrived, or outlast them.
-
-    if ((file == null) || (file.equals(displayPath) == false)) return;
-
-    this.labelToPage = labelToPage;
-    this.pageToLabel = pageToLabel;
 
     if (window.curSource() == src)
       Platform.runLater(this::refreshControls);
@@ -316,7 +306,7 @@ final class PreviewWrapper
 
     BrowserEngine.primeModalAttach();
 
-    jsWrapper = new PDFJSWrapper(ap, this::doneHndlr, this::pageChangeHndlr, this::retrievedDataHndlr);
+    jsWrapper = new PDFJSWrapper(ap, this::doneHndlr, this::pageChangeHndlr);
 
     if (jxBrowserDisabled) return;
 
@@ -418,8 +408,7 @@ final class PreviewWrapper
 
     pendingHistoryNav = null;
 
-    labelToPage = null;
-    pageToLabel = null;
+    meta = ViewerMeta.PAGELESS;  // until the newly tracked file's load confirms
     hilitePages = null;
 
     annotScanSeq++;               // a scan of the previous file must not deliver into this one
@@ -471,7 +460,7 @@ final class PreviewWrapper
     trackFile(sourceFile, record);
 
     pageNum = 1;
-    numPages = 1;
+    meta = ViewerMeta.PAGELESS;
     this.displayPath = displayPath;
 
     try
@@ -550,7 +539,7 @@ final class PreviewWrapper
     trackFile(sourceFile, record);
 
     pageNum = 1;
-    numPages = 1;
+    meta = ViewerMeta.PAGELESS;
     displayPath = null;
   }
 
@@ -816,7 +805,7 @@ final class PreviewWrapper
       return;
     }
 
-    window.refreshControls(pageNum, numPages, this);
+    window.refreshControls(pageNum, getNumPages(), this);
   }
 
 //---------------------------------------------------------------------------
@@ -945,7 +934,7 @@ final class PreviewWrapper
   {
     if (collEmpty(hilitePages)) return -1;
 
-    int newPage = numPages + 1;
+    int numPages = getNumPages(), newPage = numPages + 1;
 
     for (Integer page : hilitePages)
       if ((page > curPage) && (page < newPage))

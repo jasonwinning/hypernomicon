@@ -282,7 +282,7 @@ public final class DialogPreviewHost
       return;
     }
 
-    jsWrapper = new PDFJSWrapper(apPreview, this::onViewerDone, null, null);
+    jsWrapper = new PDFJSWrapper(apPreview, this::onViewerDone, null);
 
     // Whatever the dialog asked for while the viewer did not exist becomes intent now
 
@@ -407,14 +407,14 @@ public final class DialogPreviewHost
    *  Matched by document identity: a superseded open's completion can arrive
    *  after a newer document was issued and must not confirm it. */
   @SuppressWarnings("unused")
-  private void onViewerDone(PDFJSOperation operation, FilePath file, boolean success, String errMessage)
+  private void onViewerDone(PDFJSOperation operation, FilePath file, boolean success, String errMessage, ViewerMeta meta)
   {
     if (intentFile == null) return;
 
     if ((file == null) || (file.equals(issuedDisplayPath) == false)) return;
 
     if (success)
-      pane.onDocumentLoaded(issuedGen, new ViewerMeta(-1));
+      pane.onDocumentLoaded(issuedGen, meta);
     else
       pane.onViewerError(issuedGen, strNullOrBlank(errMessage) ? "The viewer could not open the document" : errMessage);
   }

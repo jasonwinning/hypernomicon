@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hypernomicon.previewWindow.ViewerPort.ViewerMeta;
 import org.hypernomicon.util.file.FilePath;
 
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,7 @@ class OpenCoordinatorTest
       return deliverable;
     }
 
-    @Override public void openReported(FilePath file, boolean success, int pageCount, String errMessage)
+    @Override public void openReported(FilePath file, boolean success, ViewerMeta meta, String errMessage)
     {
       calls.add("reported:" + file.getNameOnly() + ':' + (success ? "ok" : "fail"));
     }
@@ -124,7 +125,7 @@ class OpenCoordinatorTest
   /** The viewer reports on the most recently dispatched open. */
   private void finishOpen(boolean success)
   {
-    coordinator.openFinished(adapter.lastToken, success, 10, success ? "" : "Invalid PDF structure");
+    coordinator.openFinished(adapter.lastToken, success, success ? ViewerMeta.withPageCount(10) : null, success ? "" : "Invalid PDF structure");
   }
 
   private List<String> calls() { return adapter.calls; }
@@ -474,7 +475,7 @@ class OpenCoordinatorTest
   {
     coordinator.requestOpen(A, 1);
 
-    coordinator.openFinished(adapter.lastToken + 100, true, 10, "");
+    coordinator.openFinished(adapter.lastToken + 100, true, ViewerMeta.withPageCount(10), "");
 
     assertEquals(List.of("open:a.pdf@1"), calls());  // neither forwarded nor released
     assertTrue(coordinator.isOpenInFlight());
@@ -490,7 +491,7 @@ class OpenCoordinatorTest
     coordinator.supersedeOpens(false);
     coordinator.requestOpen(B, 1);
 
-    coordinator.openFinished(tokenA, true, 10, "");  // A's promise settling after all
+    coordinator.openFinished(tokenA, true, ViewerMeta.withPageCount(10), "");  // A's promise settling after all
 
     assertEquals(List.of("open:a.pdf@1", "open:b.pdf@1"), calls());
     assertEquals(B, coordinator.inFlightFile());

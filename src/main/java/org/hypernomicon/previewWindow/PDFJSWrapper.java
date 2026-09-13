@@ -45,6 +45,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.previewWindow.ViewerPort.ViewerMeta;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -82,20 +83,11 @@ final class PDFJSWrapper
      *                  request; direct load: the navigated file). Consumers
      *                  confirming loads must match this against what they
      *                  issued rather than trusting arrival order.
+     * @param meta      the document's metadata on a successful load (page count
+     *                  and labels; the pageless shape for direct content); null
+     *                  on failure
      */
-    void handle(PDFJSOperation operation, FilePath file, boolean success, String errMessage);
-  }
-
-//---------------------------------------------------------------------------
-
-  /** Receives the page-label maps after a document opens. {@code file} is the
-   *  document the labels belong to; the consumer must match it against what it
-   *  issued, as with every other viewer report. Annotated pages are not part of
-   *  this channel: they are scanned Java-side straight from the file
-   *  ({@link PDFAnnotationScanner}), not collected through the viewer. */
-  @FunctionalInterface interface PDFJSRetrievedDataHandler
-  {
-    void handle(FilePath file, Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel);
+    void handle(PDFJSOperation operation, FilePath file, boolean success, String errMessage, ViewerMeta meta);
   }
 
 //---------------------------------------------------------------------------
@@ -105,7 +97,6 @@ final class PDFJSWrapper
   /** The bridge injected into the current browser; one per browser, see {@link #reloadBrowser}. */
   private JavascriptToJava javascriptToJava = null;
   private final PDFJSDoneHandler doneHndlr;
-  private final PDFJSRetrievedDataHandler retrievedDataHndlr;
 
   private static String directContentHighlightJS = null;
 
@@ -175,7 +166,6 @@ final class PDFJSWrapper
    *  that follows and carries none. Browser event thread only. */
   private volatile String committedMainUrl = null;
 
-  private int numPages = -1;
   private boolean ready = false, hiding = false;
 
   private volatile boolean opened = false;
@@ -203,19 +193,16 @@ final class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, BiConsumer<FilePath, Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
+  PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, BiConsumer<FilePath, Integer> pageChangeHndlr)
   {
     this.doneHndlr = doneHndlr;
     this.pageChangeHndlr = pageChangeHndlr;
-    this.retrievedDataHndlr = retrievedDataHndlr;
     this.apBrowser = apBrowser;
 
     reloadBrowser(null);
   }
 
 //---------------------------------------------------------------------------
-
-  int getNumPages() { return numPages; }
 
   /** Declares whether the content for the next preview is direct browser content; set by the load
    *  path. See {@link #contentToShowIsDirect}. */
@@ -686,7 +673,7 @@ final class PDFJSWrapper
       System.out.println("PDFJSWrapper: direct content failed to load: " + event.error() + "; url=" + describeUrl(url));
 
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, false, "The browser could not load the file (" + event.error() + ')');
+        doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, false, "The browser could not load the file (" + event.error() + ')', null);
     });
 
     browser.navigation().on(FrameDocumentLoadFinished.class, event ->
@@ -735,7 +722,7 @@ final class PDFJSWrapper
       });
 
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, true, "");
+        doneHndlr.handle(PDFJSOperation.pjsDirectLoad, lastDirectFilePath, true, "", ViewerMeta.PAGELESS);
     });
 
     browserView = BrowserView.newInstance(browser);
@@ -916,59 +903,20 @@ final class PDFJSWrapper
 //---------------------------------------------------------------------------
 
     /**
-     * Receives page labels after a document opens. Like {@link #pageChange},
-     * the report names its document: {@code url} is the viewer's URL when the
-     * labels were requested, since they resolve asynchronously and the viewer
-     * may hold the next document by the time they arrive.
-     * @param json {@code {"pageLabels":["i","ii","1",...] or null}}
-     * @param url  the document the labels belong to
-     */
-    public void setData(String json, String url)
-    {
-      if (retired || (retrievedDataHndlr == null)) return;
-
-      Map<String, Integer> labelToPage = new HashMap<>();
-      Map<Integer, String> pageToLabel = new HashMap<>();
-
-      try
-      {
-        JsonObj obj = JsonObj.parseJsonObj(json);
-
-        JsonArray pageLabels = obj.getArray("pageLabels");
-
-        if (pageLabels != null)
-        {
-          for (int page = 1; page <= pageLabels.size(); page++)
-          {
-            String label = pageLabels.getStr(page - 1);
-            labelToPage.put(label, page);
-            pageToLabel.put(page, label);
-          }
-        }
-      }
-      catch (ParseException e)
-      {
-        System.out.println("PDFJSWrapper.setData: malformed data from viewer: " + getThrowableMessage(e));
-        return;
-      }
-
-      retrievedDataHndlr.handle(ResourceServer.fileForUrl(url), labelToPage, pageToLabel);
-    }
-
-//---------------------------------------------------------------------------
-
-    /**
      * The viewer's report that an open finished. {@code token} names the open
      * (see {@link OpenCoordinator}): the coordinator drops reports for opens
      * it has already closed out and forwards the rest to
      * {@link OpenAdapter#openReported}, then releases and issues the latest
      * request that arrived while the open was loading, if any.
+     * @param labelsJson on success, {@code {"pageLabels":["i","ii","1",...]}}
+     *                   (the array null for a document without labels), or null
+     *                   if the labels could not be read
      */
-    public void openDone(boolean success, double pagesCount, String errMessage, double token)
+    public void openDone(boolean success, double pagesCount, String errMessage, double token, String labelsJson)
     {
       if (retired) return;
 
-      opens.openFinished((int) token, success, (int) pagesCount, errMessage);
+      opens.openFinished((int) token, success, success ? parseMeta((int) pagesCount, labelsJson) : null, errMessage);
     }
 
 //---------------------------------------------------------------------------
@@ -1000,20 +948,54 @@ final class PDFJSWrapper
       ready = true;
 
       if (success)
-      {
-        numPages = -1;
         opened = false;
-      }
       else
-      {
         System.out.println("PDFJSWrapper: close failed: " + errMessage);
-      }
 
       CompletableFuture<Boolean> pending = pendingClose;
 
       if (pending != null)
         pending.complete(success);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds a load confirmation's metadata from the viewer's report. Malformed
+   * label data is logged and treated as no labels; it is not a failure of the
+   * open.
+   */
+  private static ViewerMeta parseMeta(int pageCount, String labelsJson)
+  {
+    if (labelsJson == null)
+      return ViewerMeta.withPageCount(pageCount);
+
+    Map<String, Integer> labelToPage = new HashMap<>();
+    Map<Integer, String> pageToLabel = new HashMap<>();
+
+    try
+    {
+      JsonArray pageLabels = JsonObj.parseJsonObj(labelsJson).getArray("pageLabels");
+
+      if (pageLabels != null)
+      {
+        for (int page = 1; page <= pageLabels.size(); page++)
+        {
+          String label = pageLabels.getStr(page - 1);
+          labelToPage.put(label, page);
+          pageToLabel.put(page, label);
+        }
+      }
+    }
+    catch (ParseException e)
+    {
+      System.out.println("PDFJSWrapper: malformed page-label data from viewer: " + getThrowableMessage(e));
+      return ViewerMeta.withPageCount(pageCount);
+    }
+
+    return new ViewerMeta(pageCount, Collections.unmodifiableMap(labelToPage), Collections.unmodifiableMap(pageToLabel));
   }
 
 //---------------------------------------------------------------------------
@@ -1338,20 +1320,14 @@ final class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-    @Override public void openReported(FilePath file, boolean success, int pageCount, String errMessage)
+    @Override public void openReported(FilePath file, boolean success, ViewerMeta meta, String errMessage)
     {
       ready = true;
 
       if (success)
-      {
-        numPages = pageCount;
-        execJS("getPdfData();");
         opened = true;
-      }
       else
-      {
         System.out.println("PDFJSWrapper: open failed: " + errMessage);
-      }
 
       // The file identifies which open this was: a newer request may already be
       // waiting (latest-wins coalescing), in which case this report describes a
@@ -1359,7 +1335,7 @@ final class PDFJSWrapper
       // newest one.
 
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsOpen, file, success, errMessage);
+        doneHndlr.handle(PDFJSOperation.pjsOpen, file, success, errMessage, meta);
     }
 
 //---------------------------------------------------------------------------
@@ -1399,7 +1375,7 @@ final class PDFJSWrapper
         System.out.println("PDFJSWrapper: reporting failed open of " + file.getNameOnly() + " (" + cause + "); pane " + paneStateStr());
 
       if (doneHndlr != null)
-        doneHndlr.handle(PDFJSOperation.pjsOpen, file, false, cause);
+        doneHndlr.handle(PDFJSOperation.pjsOpen, file, false, cause, null);
     }
   }
 

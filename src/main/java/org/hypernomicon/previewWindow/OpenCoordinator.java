@@ -21,6 +21,7 @@ import static org.hypernomicon.App.*;
 
 import java.util.concurrent.Executor;
 
+import org.hypernomicon.previewWindow.ViewerPort.ViewerMeta;
 import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
@@ -95,9 +96,10 @@ final class OpenCoordinator
     boolean dispatchOpen(FilePath file, int initialPage, int token);
 
     /** The viewer's own terminal report for the in-flight open, forwarded on
-     *  the thread it arrived on before the coordinator releases. Never called
+     *  the thread it arrived on before the coordinator releases; {@code meta}
+     *  describes the document on success and is null on failure. Never called
      *  for an open already closed out (see the class comment). */
-    void openReported(FilePath file, boolean success, int pageCount, String errMessage);
+    void openReported(FilePath file, boolean success, ViewerMeta meta, String errMessage);
 
     /** A successful open that postdates every displayed status finished: a
      *  content-confirmation point. Not called for a failed open, nor for a
@@ -281,7 +283,7 @@ final class OpenCoordinator
    * the coordinator releases, and the latest request that arrived while the
    * open was loading issues, if any.
    */
-  void openFinished(int token, boolean success, int pageCount, String errMessage)
+  void openFinished(int token, boolean success, ViewerMeta meta, String errMessage)
   {
     // Read once each, file first: this runs on the report's arrival thread, and
     // the FX thread can release or replace the in-flight open between the
@@ -298,7 +300,7 @@ final class OpenCoordinator
       return;
     }
 
-    adapter.openReported(file, success, pageCount, errMessage);
+    adapter.openReported(file, success, meta, errMessage);
 
     fxExecutor.execute(() ->
     {

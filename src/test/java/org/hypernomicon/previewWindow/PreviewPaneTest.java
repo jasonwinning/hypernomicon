@@ -20,6 +20,7 @@ package org.hypernomicon.previewWindow;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+import java.util.Map;
 
 import org.hypernomicon.previewWindow.DesiredView.ProgressVariant;
 import org.hypernomicon.previewWindow.DocumentArtifactService.ConverterState;
@@ -71,7 +72,7 @@ class PreviewPaneTest
 
   private void confirmLoad()
   {
-    pane.onDocumentLoaded(viewer.lastShownGen(), new ViewerMeta(10));
+    pane.onDocumentLoaded(viewer.lastShownGen(), ViewerMeta.withPageCount(10));
   }
 
   private long countCalls(String method)
@@ -326,11 +327,11 @@ class PreviewPaneTest
 
     // A late confirmation for the superseded document must not unlock hit delivery
 
-    pane.onDocumentLoaded(firstGen, new ViewerMeta(10));
+    pane.onDocumentLoaded(firstGen, ViewerMeta.withPageCount(10));
 
     assertNull(viewer.last("setHits"), "stale-generation confirmation must be dropped");
 
-    pane.onDocumentLoaded(secondGen, new ViewerMeta(10));
+    pane.onDocumentLoaded(secondGen, ViewerMeta.withPageCount(10));
 
     assertEquals(HITS_B, viewer.last("setHits").hitsJson());
   }
@@ -442,6 +443,29 @@ class PreviewPaneTest
 
     assertEquals(PDF, pane.currentFile());
     assertEquals(7, pane.currentPage());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void readBackReflectsConfirmedMetadata()
+  {
+    assertNull(pane.currentMeta());
+
+    pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false, null));
+    pane.updatePipeline(readySnapshot(PDF, PDF, null));
+
+    assertNull(pane.currentMeta(), "metadata is read back from the confirmation, not the issued command");
+
+    ViewerMeta meta = new ViewerMeta(12, Map.of("iii", 3), Map.of(3, "iii"));
+
+    pane.onDocumentLoaded(viewer.lastShownGen(), meta);
+
+    assertSame(meta, pane.currentMeta());
+    assertEquals(3, meta.pageForLabel("iii"));
+    assertEquals("iii", meta.labelForPage(3));
+    assertEquals("", meta.labelForPage(4), "a labeled document reports no label for a page without one");
+    assertEquals(5, ViewerMeta.withPageCount(9).pageForLabel("5"), "an unlabeled document reads a label as a page number");
+    assertEquals("5", ViewerMeta.withPageCount(9).labelForPage(5));
   }
 
 //---------------------------------------------------------------------------
@@ -670,7 +694,7 @@ class PreviewPaneTest
 
     assertNull(viewer.last("scrollToMatch"), "nothing has confirmed yet");
 
-    pane.onDocumentLoaded(pdfGen, new ViewerMeta(10));  // late confirmation of the superseded generation
+    pane.onDocumentLoaded(pdfGen, ViewerMeta.withPageCount(10));  // late confirmation of the superseded generation
 
     assertNull(viewer.last("scrollToMatch"), "a superseded generation's confirmation must not release a target");
 

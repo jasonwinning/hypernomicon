@@ -17,6 +17,10 @@
 
 package org.hypernomicon.previewWindow;
 
+import static org.hypernomicon.util.Util.*;
+
+import java.util.Map;
+
 import org.hypernomicon.previewWindow.DesiredView.ProgressVariant;
 import org.hypernomicon.util.file.FilePath;
 
@@ -47,9 +51,29 @@ interface ViewerPort
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Metadata delivered with a load confirmation; built out as the protocol
-   *  grows (page labels, annotation pages). */
-  record ViewerMeta(int pageCount) { }
+  /**
+   * Metadata delivered with a load confirmation: what the window chrome is
+   * built on. The page labels ride the confirmation itself (the viewer resolves
+   * them before reporting the open), so the document's description arrives in
+   * one event under one identity rather than through a second round trip with
+   * its own attribution. Direct content is {@link #PAGELESS}: one notional
+   * page, no labels. Annotated pages are not part of this channel; they come
+   * from a Java-side scan of the file that runs alongside the load.
+   */
+  record ViewerMeta(int pageCount, Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel)
+  {
+    static final ViewerMeta PAGELESS = withPageCount(1);
+
+    static ViewerMeta withPageCount(int pageCount) { return new ViewerMeta(pageCount, Map.of(), Map.of()); }
+
+    /** The page a label names, or the label read as a page number when the
+     *  document has no labels; -1 if neither. */
+    int pageForLabel(String label) { return labelToPage.isEmpty() ? parseInt(label, -1) : labelToPage.getOrDefault(label, -1); }
+
+    /** A page's label, or the page number itself when the document has no
+     *  labels; empty if the document has labels but none for this page. */
+    String labelForPage(int page) { return pageToLabel.isEmpty() ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
+  }
 
 //---------------------------------------------------------------------------
 

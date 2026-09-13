@@ -86,7 +86,7 @@ final class PreviewPane
   private final ViewerPort viewer;
   private final Executor paneExecutor;
 
-  // All fields below are confined to paneExecutor tasks, except the two
+  // All fields below are confined to paneExecutor tasks, except the three
   // volatile read-back fields.
 
   private PreviewIntent intent = null;
@@ -103,6 +103,7 @@ final class PreviewPane
 
   private volatile FilePath confirmedFile = null;
   private volatile int confirmedPage = -1;
+  private volatile ViewerMeta confirmedMeta = null;
 
 //---------------------------------------------------------------------------
 
@@ -123,8 +124,12 @@ final class PreviewPane
   // Read-back API: the sanctioned way features read viewer state (launch at
   // current page, ContentsWindow Set button). Reads never mutate.
 
-  FilePath currentFile()   { return confirmedFile; }
-  int      currentPage()   { return confirmedPage; }
+  FilePath   currentFile() { return confirmedFile; }
+  int        currentPage() { return confirmedPage; }
+
+  /** The metadata the confirmed document's load delivered (page count and
+   *  labels); null until a load has confirmed. */
+  ViewerMeta currentMeta() { return confirmedMeta; }
 
   private void reconcile() { issue(derive()); }
 
@@ -212,12 +217,8 @@ final class PreviewPane
   // input. Any event whose generation is not the current one is stale by
   // definition and dropped.
 
-  @SuppressWarnings("unused")
   void onDocumentLoaded(long gen, ViewerMeta meta)
   {
-    // meta (page count, labels, hilite pages) is reserved for the window-chrome
-    // metadata channel, wired in a later phase; not consumed here yet.
-
     paneExecutor.execute(() ->
     {
       if (gen != generation) return;
@@ -226,6 +227,7 @@ final class PreviewPane
 
       confirmedFile = sourceFileOf(issuedView);
       confirmedPage = (issuedView instanceof PagedDoc pagedDoc) ? pagedDoc.pageNum() : -1;
+      confirmedMeta = meta;
 
       reconcile();
     });

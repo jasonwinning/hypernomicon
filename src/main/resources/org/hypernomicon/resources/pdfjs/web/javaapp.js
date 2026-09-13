@@ -303,7 +303,7 @@ function openPdfFile(fileUrl, pageNum, sidebarView, token) {
 
     if (++window.__hnRetryCount >= 600) {
       window.__hnRetryCount = null;
-      javaApp.openDone(false, 0, 'The viewer never finished initializing', token);
+      javaApp.openDone(false, 0, 'The viewer never finished initializing', token, null);
       return;
     }
 
@@ -370,9 +370,28 @@ function openPdfFile(fileUrl, pageNum, sidebarView, token) {
   PDFViewerApplication.open({ url: fileUrl }).then(function () {
     var pdfDocument = PDFViewerApplication.pdfDocument;
 
-    javaApp.openDone(true, pdfDocument ? pdfDocument.numPages : 0, '', token);
+    if (pdfDocument == null) {
+      javaApp.openDone(true, 0, '', token, null);
+      return;
+    }
+
+    // The page labels ride the report: the Java side then receives the whole
+    // document description in one event under one identity, instead of through
+    // a second round trip with its own attribution. Labels come from the
+    // catalog and resolve quickly; failing to read them is not a failure of the
+    // open. Annotated pages are deliberately NOT collected through the viewer:
+    // walking every page dictionary through the worker's single thread competes
+    // with page rendering (over a minute on a 10,000-page document, even
+    // batched), so the Java side reads them straight from the file instead
+    // (PDFAnnotationScanner), which takes seconds regardless of document size.
+
+    pdfDocument.getPageLabels().then(function (pageLabels) {
+      javaApp.openDone(true, pdfDocument.numPages, '', token, JSON.stringify({ pageLabels: pageLabels }));
+    }, function () {
+      javaApp.openDone(true, pdfDocument.numPages, '', token, null);
+    });
   }, function (error) {
-    javaApp.openDone(false, 0, (error && error.message) ? error.message : String(error), token);
+    javaApp.openDone(false, 0, (error && error.message) ? error.message : String(error), token, null);
   });
 }
 
@@ -384,31 +403,6 @@ function closePdfFile() {
     javaApp.closeDone(true, '');
   }, function (error) {
     javaApp.closeDone(false, (error && error.message) ? error.message : String(error));
-  });
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-/**
- * Reports the document's page labels to Java as JSON. Annotated pages are
- * deliberately not collected here: doing it through the viewer forces every
- * page dictionary through the worker's single thread, where the walk competes
- * with page rendering (over a minute on a 10,000-page document, even batched).
- * The Java side reads them straight from the file instead
- * (PDFAnnotationScanner), which takes seconds regardless of document size.
- */
-function getPdfData() {
-  var pdfDocument = PDFViewerApplication.pdfDocument;
-  if (pdfDocument == null) return;
-
-  // Captured now: the labels resolve asynchronously, by which time the viewer
-  // may hold the next document, and the report must name the one they are for.
-
-  var url = PDFViewerApplication.url || '';
-
-  pdfDocument.getPageLabels().then(function (pageLabels) {
-    javaApp.setData(JSON.stringify({ pageLabels: pageLabels }), url);
   });
 }
 

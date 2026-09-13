@@ -356,7 +356,7 @@ final class PreviewPaneHost
       // Arrives on browser threads; the pane marshals and generation-checks
       // everything after the identity gates here.
 
-      @Override public void onOpened(FilePath file, boolean success)
+      @Override public void onOpened(FilePath file, boolean success, ViewerMeta meta)
       {
         if (intentFile == null) return;
 
@@ -368,7 +368,7 @@ final class PreviewPaneHost
         if ((file == null) || (file.equals(issuedDisplayPath) == false)) return;
 
         if (success)
-          pane.onDocumentLoaded(issuedGen, new ViewerMeta(-1));
+          pane.onDocumentLoaded(issuedGen, meta);
         else
           pane.onViewerError(issuedGen, "The viewer could not open the document");
       }
