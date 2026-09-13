@@ -49,7 +49,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" stylesheets="@../resources/css.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
+<BorderPane styleClass="childrenOnly" prefHeight="746.0" prefWidth="1253.0" stylesheets="@../resources/css.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
   <top>
     <HBox fx:id="topHBox" style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
       <MenuBar fx:id="menuBar" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">

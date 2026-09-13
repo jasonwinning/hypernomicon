@@ -207,10 +207,12 @@ public class ComboBoxCell extends CursorAwareCell<HyperTableRow, HyperTableCell>
   private void createComboBox(int colNdx)
   {
     cb = new ComboBox<>();
+
+    setHeights(cb, 18);
+    scaleNodeForDPI(cb);  // Created after the window's DPI rescale, like HyperTableColumn.makeButton's button
+
     cb.setMaxWidth(Double.MAX_VALUE);
     cb.setPrefWidth(getWidth() - getGraphicTextGap() * 2);
-
-    setHeights(cb, scalePropertyValueForDPI(18));
 
     HyperTableRow row = getTableRow().getItem();
 

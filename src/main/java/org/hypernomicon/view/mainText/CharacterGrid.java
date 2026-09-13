@@ -291,6 +291,13 @@ class CharacterGrid
         symbolCtrl = new SymbolCtrl(newValue, col, row);
         symbolCtrl.setText(str);
         addToParent(symbolCtrl, ap);
+
+        // The saved font is applied a pulse after the window is shown, which is
+        // after the window's DPI rescale ran; a replacement cell added to an
+        // already scaled parent has to be scaled on its own.
+
+        if (getIsScaled(ap))
+          scaleNodeForDPI(symbolCtrl);
       }
 
     if (programmaticFontChange == false)

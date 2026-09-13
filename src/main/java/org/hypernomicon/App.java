@@ -307,6 +307,9 @@ public final class App extends Application
 
     shortcuts.setValue(Shortcut.loadFromPrefs());
 
+    if (debugging)
+      DPIScaleAudit.install();
+
     try
     {
       initMainWindows(stage, prefs);

@@ -672,6 +672,18 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Multiplies the explicit geometry of a node and everything it holds by the
+   * display scale, once per node (the scaled marker makes repeat calls no-ops).
+   * <p>
+   * Descent goes through {@code Parent.getChildrenUnmodifiable()}, which for a
+   * {@code Control} yields only what its skin has created, and skins are usually
+   * created after this runs. Content a control holds through its own API must
+   * therefore be reached through an explicit branch below (JavaFX and
+   * third-party types) or through {@link DPIScalableContainer} (house
+   * composites, checked first). A container with neither is missed silently;
+   * {@link DPIScaleAudit} reports such misses when running under a debugger.
+   */
   public static void scaleNodeForDPI(Node node)
   {
     if ((node == null) || getIsScaled(node)) return;
@@ -727,7 +739,9 @@ public final class UIUtil
       gridPane.getRowConstraints   ().forEach(rc -> scalePropertiesForDPI(rc.maxHeightProperty(), rc.minHeightProperty(), rc.prefHeightProperty()));
     }
 
-    if ((node instanceof TreeTableView) || (node instanceof TableView))
+    if (node instanceof DPIScalableContainer container)
+      container.dpiScalableChildren().forEach(UIUtil::scaleNodeForDPI);
+    else if ((node instanceof TreeTableView) || (node instanceof TableView))
     {
       (node instanceof TreeTableView ? ((TreeTableView<?>)node).getColumns() : ((TableView<?>)node).getColumns()).forEach(column ->
         scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty()));
@@ -740,6 +754,8 @@ public final class UIUtil
       tabPane.getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
     else if (node instanceof SplitPane splitPane)
       splitPane.getItems().forEach(UIUtil::scaleNodeForDPI);
+    else if (node instanceof ScrollPane scrollPane)
+      scaleNodeForDPI(scrollPane.getContent());
     else if (node instanceof Parent parent)
       parent.getChildrenUnmodifiable().forEach(UIUtil::scaleNodeForDPI);
   }

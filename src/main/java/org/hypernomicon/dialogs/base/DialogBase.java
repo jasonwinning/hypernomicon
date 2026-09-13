@@ -94,6 +94,11 @@ public abstract class DialogBase
       Scene scene = new Scene(tmpRootPane);
       tmpStage.setScene(scene);
 
+      // A SpecialUI root keeps its own look: no application stylesheet and no
+      // font-size preference (see rescale). DPI scaling is opted out of
+      // separately, by the noScale style class, which the scaling walk honors
+      // on any node.
+
       if (tmpRootPane.getStyleClass().contains("SpecialUI") == false)
         scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
@@ -171,10 +176,12 @@ public abstract class DialogBase
 
   private void rescale()
   {
-    if ((shownAlready == false) && (rootPane.getStyleClass().contains("SpecialUI") == false))
+    if (shownAlready == false)
     {
-      scaleNodeForDPI(rootPane);
-      setFontSize(rootPane);
+      scaleNodeForDPI(rootPane);  // returns at once for a noScale root
+
+      if (rootPane.getStyleClass().contains("SpecialUI") == false)
+        setFontSize(rootPane);
     }
 
     double diff = stage.getHeight() - rootPane.getHeight();

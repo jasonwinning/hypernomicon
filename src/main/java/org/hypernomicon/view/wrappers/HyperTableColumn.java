@@ -429,7 +429,13 @@ public class HyperTableColumn
   {
     Button cellButton = new Button();
 
-    setHeights(cellButton, scalePropertyValueForDPI(18));
+    // Cell content is created by the cell factory after the window's DPI
+    // rescale, so the button is scaled here; going through scaleNodeForDPI
+    // (rather than scaling the value by hand) also marks it as scaled.
+
+    setHeights(cellButton, 18);
+    scaleNodeForDPI(cellButton);
+
     cellButton.setPadding(new Insets(0.0, 7.0, 0.0, 7.0));
 
     tableCell.emptyProperty().addListener((ob, oldValue, newValue) -> cellButton.setVisible(Boolean.FALSE.equals(newValue)));

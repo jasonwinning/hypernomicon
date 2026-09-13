@@ -39,5 +39,6 @@
    <styleClass>
       <String fx:value="anchor-pane" />
       <String fx:value="SpecialUI" />
+      <String fx:value="noScale" />
    </styleClass>
 </AnchorPane>

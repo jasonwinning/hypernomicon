@@ -17,7 +17,13 @@
 
 package org.hypernomicon.view.controls;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.hypernomicon.util.DPIScalableContainer;
+
 import javafx.geometry.Side;
+import javafx.scene.Node;
 
 //---------------------------------------------------------------------------
 
@@ -28,7 +34,7 @@ import javafx.geometry.Side;
  * @author  Jason Winning
  * @since   1.0
  */
-public class HiddenSidesPane extends org.controlsfx.control.HiddenSidesPane
+public class HiddenSidesPane extends org.controlsfx.control.HiddenSidesPane implements DPIScalableContainer
 {
 
 //---------------------------------------------------------------------------
@@ -38,6 +44,12 @@ public class HiddenSidesPane extends org.controlsfx.control.HiddenSidesPane
 
   @Override public void hide()                     { ((HiddenSidesPaneSkin) getSkin()).hide(); }
   public void show(Side side, boolean noInterrupt) { ((HiddenSidesPaneSkin) getSkin()).show(side, noInterrupt); }
+
+  // The content and side nodes are held through this control's own properties;
+  // declaring them keeps the DPI rescale independent of whether the skin (set
+  // eagerly above) has built its children yet.
+
+  @Override public List<Node> dpiScalableChildren() { return Arrays.asList(getContent(), getTop(), getRight(), getBottom(), getLeft()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
