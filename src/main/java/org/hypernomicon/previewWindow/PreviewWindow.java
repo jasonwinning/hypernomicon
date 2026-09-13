@@ -97,6 +97,15 @@ public final class PreviewWindow extends NonmodalWindow
    *  record navigation is stashed internally by {@link #doSetPreview}. */
   private final Map<PreviewSource, Runnable> srcToLockedReplay = new EnumMap<>(PreviewSource.class);
 
+  /** An initiator's most recent request for a pane, as {@link #doSetPreview} received it ({@code filePath} null for a clear). */
+  private record Selection(FilePath filePath, int startPageNum, int endPageNum, HDT_Record record) { }
+
+  /** Each pane's initiator selection, so {@link #show(PreviewSource)} can bring
+   *  a pane back to it after the window's file history stepped away from it.
+   *  Absent for the queries pane while the search flow drives it (that flow
+   *  re-issues its own intent). */
+  private final Map<PreviewSource, Selection> srcToSelection = new EnumMap<>(PreviewSource.class);
+
   // Work deferred by a caller that declined to generate a preview while its source was not the active,
   // showing one (see isSourceActiveAndShowing / runWhenSourceActivates). Keyed by source, at most one
   // entry each; fired and removed by fireActivation when that source next activates. Static so it can be
@@ -675,6 +684,9 @@ public final class PreviewWindow extends NonmodalWindow
   {
     if (jxBrowserDisabled || (instance == null)) return;
 
+    instance.srcToSelection.remove(pvsQueriesTab);  // the search flow's intent is not a record selection to come back to
+
+    hostFor(pvsQueriesTab).setWorkPageNumsFrom(filePath, record);
     hostFor(pvsQueriesTab).setPreview(filePath, record, paged, pageNum, wantsHighlights, scrollTarget);
   }
 
@@ -709,6 +721,9 @@ public final class PreviewWindow extends NonmodalWindow
   /** Clears the queries pane's FTS preview (intent = none). */
   public static void clearQueriesFtsPreview()
   {
+    if (instance != null)
+      instance.srcToSelection.remove(pvsQueriesTab);
+
     hostFor(pvsQueriesTab).clear();
   }
 
@@ -761,6 +776,14 @@ public final class PreviewWindow extends NonmodalWindow
                             (record.getType () != hdtWorkFile) && (record.getType() != hdtPerson  ))
       record = null;
 
+    // Directories clear the pane like empty paths do: nothing can preview a
+    // folder (the File Manager passes one when a folder row is selected), and
+    // the pre-host refresh path cleared the preview for them as well.
+
+    boolean clearing = FilePath.isEmpty(filePath) || filePath.isDirectory();
+
+    srcToSelection.put(src, new Selection(clearing ? null : filePath, startPageNum, endPageNum, record));
+
     if (btnLock.isSelected() && (curSource() == src) && (hostFor(src).confirmedFile() != null))
     {
       HDT_Record lockedRecord = record;
@@ -776,11 +799,7 @@ public final class PreviewWindow extends NonmodalWindow
 
     hostFor(src).setWorkPageNums(startPageNum, endPageNum);
 
-    // Directories clear the pane like empty paths do: nothing can preview a
-    // folder (the File Manager passes one when a folder row is selected), and
-    // the pre-host refresh path cleared the preview for them as well.
-
-    if (FilePath.isEmpty(filePath) || filePath.isDirectory())
+    if (clearing)
     {
       hostFor(src).clear();
       return;
@@ -1111,14 +1130,37 @@ public final class PreviewWindow extends NonmodalWindow
     show((PreviewSource) null);
   }
 
+  /**
+   * Shows the window on the pane for {@code src}, previewing that pane's
+   * initiator selection: this is what an initiator's Preview button does, so
+   * the pane comes back to the selection if the window's file back/forward
+   * buttons had stepped away from it.
+   */
   public static void show(PreviewSource src)
   {
     if ((instance == null) || jxBrowserDisabled) return;
 
     if (src != null)
+    {
       instance.switchTo(src);
+      instance.reassertSelection(src);
+    }
 
     show(instance);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Re-previews the initiator's selection for {@code src} if the pane has moved
+   *  away from it (a file-history step); a no-op when they already agree. */
+  private void reassertSelection(PreviewSource src)
+  {
+    Selection selection = srcToSelection.get(src);
+
+    if ((selection == null) || Objects.equals(selection.filePath(), hostFor(src).intendedFile())) return;
+
+    doSetPreview(src, selection.filePath(), selection.startPageNum(), selection.endPageNum(), selection.record());
   }
 
 //---------------------------------------------------------------------------

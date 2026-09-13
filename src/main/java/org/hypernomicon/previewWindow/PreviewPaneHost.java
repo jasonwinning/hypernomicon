@@ -785,7 +785,36 @@ final class PreviewPaneHost
     Entry entry = history.stepFile(isForward);
     if (entry == null) return;
 
+    // A history step is a re-preview without an initiator, so the work pages
+    // the initiator would have passed in come from the entry's record instead
+
+    setWorkPageNumsFrom(entry.filePath(), entry.record());
+
     setPreviewAuto(entry.filePath(), entry.record(), entry.currentPage());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Sets the work start/end pages from the record itself, for previews that
+   * arrive without an initiator supplying them (the search flow, a file
+   * history step): per work file when the file is one of the work's, the
+   * work's own otherwise, none for any other record. The window's own request
+   * path derives them the same way, except that a record tab may pass its
+   * unsaved values instead.
+   */
+  void setWorkPageNumsFrom(FilePath filePath, HDT_Record record)
+  {
+    if (record instanceof HDT_Work work)
+    {
+      if (HyperPath.getRecordFromFilePath(filePath) instanceof HDT_WorkFile workFile)
+        setWorkPageNums(work.getStartPageNum(workFile), work.getEndPageNum(workFile));
+      else
+        setWorkPageNums(work.getStartPageNum(), work.getEndPageNum());
+    }
+    else
+      setWorkPageNums(-1, -1);
   }
 
 //---------------------------------------------------------------------------
