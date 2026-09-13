@@ -16,7 +16,6 @@
    limitations under the License.
 -->
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -83,23 +82,7 @@
                 prefWidth="190.0" text="Run Ad Hoc Test"/>
       </AnchorPane>
     </Tab>
-    <Tab closable="false" text="Deletion">
-      <AnchorPane>
-        <Button fx:id="btnNukeTest" layoutX="52.0" layoutY="68.0" mnemonicParsing="false" onAction="#nukeTest"
-                text="Test Mass Record Deletion" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="68.0"/>
-        <Button layoutX="52.0" layoutY="37.0" mnemonicParsing="false" onAction="#copyForNukeTest"
-                text="Copy current DB without user files to transient folder" AnchorPane.leftAnchor="52.0"
-                AnchorPane.topAnchor="37.0"/>
-        <Button fx:id="btnFolderBypassTest" layoutX="52.0" layoutY="99.0" mnemonicParsing="false" onAction="#folderBypassTest"
-                text="Test Folder Deletion Bypass" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="99.0"/>
-        <CheckBox fx:id="chkFolderBypass" layoutX="230.0" layoutY="103.0" mnemonicParsing="false" selected="true"
-                  text="Enable folder deletion bypass" AnchorPane.leftAnchor="230.0" AnchorPane.topAnchor="103.0"/>
-        <Button layoutX="52.0" layoutY="160.0" mnemonicParsing="false" onAction="#fileDeletionTest"
-                text="Test File Deletion API" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="191.0"/>
-        <CheckBox fx:id="chkWatcherEvents" layoutX="230.0" layoutY="195.0" mnemonicParsing="false" selected="true"
-                  text="Show watcher events" AnchorPane.leftAnchor="230.0" AnchorPane.topAnchor="195.0"/>
-      </AnchorPane>
-    </Tab>
+    <Tab fx:id="tabDeletion" closable="false" text="Deletion"/>
     <Tab closable="false" text="UI Tests">
       <AnchorPane>
         <Button fx:id="btnSetupFMTest" layoutX="52.0" layoutY="37.0" mnemonicParsing="false"
@@ -139,37 +122,7 @@
                 AnchorPane.topAnchor="213.0"/>
       </AnchorPane>
     </Tab>
-    <Tab closable="false" text="Web Buttons">
-      <AnchorPane>
-        <Label text="Context:" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="10.0"/>
-        <ComboBox fx:id="cbWebBtnContext" prefWidth="260.0" AnchorPane.leftAnchor="75.0" AnchorPane.topAnchor="7.0"/>
-        <Label text="Every button offered in Settings for the context, including custom ones. Open opens it in the system browser with the sample values on the right; blank a value to try a fallback pattern."
-               wrapText="true" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="38.0"/>
-        <TableView fx:id="tvWebBtnPresets" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="14.0"
-                   AnchorPane.rightAnchor="365.0" AnchorPane.topAnchor="78.0">
-          <columns>
-            <TableColumn fx:id="colWebBtnName" prefWidth="160.0" text="Button"/>
-            <TableColumn fx:id="colWebBtnCaption" prefWidth="85.0" text="Caption"/>
-            <TableColumn fx:id="colWebBtnPatterns" prefWidth="60.0" text="Patterns"/>
-          </columns>
-        </TableView>
-        <ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="335.0"
-                    AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="78.0">
-          <GridPane fx:id="gpWebBtnFields" hgap="8.0" vgap="6.0">
-            <padding>
-              <Insets bottom="6.0" left="6.0" right="6.0" top="6.0"/>
-            </padding>
-          </GridPane>
-        </ScrollPane>
-        <Button mnemonicParsing="false" onAction="#btnWebBtnOpenClick" prefHeight="25.0" text="Open selected"
-                AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="14.0"/>
-        <Button mnemonicParsing="false" onAction="#btnWebBtnOpenAllClick" prefHeight="25.0" text="Open all"
-                AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="130.0"/>
-        <Label text="Last URL:" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0"/>
-        <TextField fx:id="tfWebBtnLastUrl" editable="false" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
-                   AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="14.0"/>
-      </AnchorPane>
-    </Tab>
+    <Tab fx:id="tabWebButtons" closable="false" text="Web Buttons"/>
     <Tab fx:id="tabLinkGen" closable="false" text="Link Generation">
       <AnchorPane>
         <Label text="Before.csv / After.csv are written to the &quot;test/link-gen&quot; folder under the app data directory. Click the rocket to open it." wrapText="true"
@@ -190,107 +143,8 @@
         </Button>
       </AnchorPane>
     </Tab>
-    <Tab closable="false" text="FTS Diagnostics">
-      <AnchorPane>
-        <Label text="Source file:" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="10.0"/>
-        <TextField fx:id="tfFtsDiagPath" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
-                   AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="270.0" AnchorPane.topAnchor="7.0"/>
-        <Button mnemonicParsing="false" onAction="#btnFtsDiagBrowseClick"
-                prefHeight="25.0" text="..." AnchorPane.rightAnchor="235.0" AnchorPane.topAnchor="7.0"/>
-        <Button fx:id="btnFtsDiagConvert" mnemonicParsing="false" onAction="#btnFtsDiagConvertClick"
-                prefHeight="25.0" text="Convert" AnchorPane.rightAnchor="165.0" AnchorPane.topAnchor="7.0"/>
-        <Button mnemonicParsing="false" onAction="#btnFtsDiagShowConvertedClick"
-                prefHeight="25.0" text="Show Converted" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="7.0"/>
-        <Label fx:id="lblFtsDiagConvertedPath" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="35.0"
-               AnchorPane.rightAnchor="14.0"/>
-        <Label text="Query:" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="58.0"/>
-        <TextField fx:id="tfFtsDiagQuery" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
-                   prefWidth="300.0" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="55.0"/>
-        <Button fx:id="btnFtsDiagExtract" mnemonicParsing="false" onAction="#btnFtsDiagExtractClick"
-                prefHeight="25.0" text="Extract &amp; Search" AnchorPane.leftAnchor="400.0" AnchorPane.topAnchor="55.0"/>
-        <Button mnemonicParsing="false" onAction="#btnFtsDiagExportClick"
-                prefHeight="25.0" text="Export" AnchorPane.leftAnchor="530.0" AnchorPane.topAnchor="55.0"/>
-        <Label fx:id="lblFtsDiagStatus" AnchorPane.leftAnchor="590.0" AnchorPane.topAnchor="58.0"
-               AnchorPane.rightAnchor="14.0"/>
-        <SplitPane orientation="VERTICAL" dividerPositions="0.6"
-                   AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0"
-                   AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="85.0">
-          <SplitPane dividerPositions="0.5">
-            <VBox>
-              <Label text="Tika extraction (normalized)" style="-fx-font-weight: bold;"/>
-              <TextArea fx:id="taFtsDiagTika" editable="false" wrapText="true" VBox.vgrow="ALWAYS"
-                        style="-fx-font-family: monospace;"/>
-            </VBox>
-            <VBox>
-              <Label text="pdf.js extraction (normalized)" style="-fx-font-weight: bold;"/>
-              <TextArea fx:id="taFtsDiagPdfJS" editable="false" wrapText="true" VBox.vgrow="ALWAYS"
-                        style="-fx-font-family: monospace;"/>
-            </VBox>
-          </SplitPane>
-          <TableView fx:id="tvFtsDiagMatches" prefHeight="150.0">
-            <columns>
-              <TableColumn fx:id="colFtsDiagNdx" prefWidth="40.0" text="#"/>
-              <TableColumn fx:id="colFtsDiagTikaOffset" text="Tika Offset"/>
-              <TableColumn fx:id="colFtsDiagTikaNormOffset" prefWidth="90.0" text="Tika Norm Pos"/>
-              <TableColumn fx:id="colFtsDiagTikaSnippet" prefWidth="180.0" text="Tika Snippet"/>
-              <TableColumn fx:id="colFtsDiagPdfPage" prefWidth="60.0" text="PDF Page"/>
-              <TableColumn fx:id="colFtsDiagPdfNormOffset" prefWidth="90.0" text="PDF Norm Pos"/>
-              <TableColumn fx:id="colFtsDiagPdfSnippet" prefWidth="180.0" text="PDF Snippet"/>
-            </columns>
-          </TableView>
-        </SplitPane>
-      </AnchorPane>
-    </Tab>
-    <Tab closable="false" text="PDF Extraction">
-      <AnchorPane>
-        <Label text="File 1" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="7.0"/>
-        <TextField fx:id="tfPdfPath" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
-                   AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="4.0"/>
-        <Button mnemonicParsing="false" onAction="#btnPdfBrowseClick" prefHeight="25.0" text="..."
-                AnchorPane.rightAnchor="104.0" AnchorPane.topAnchor="4.0"/>
-        <Button fx:id="btnPdfExtract" mnemonicParsing="false" onAction="#btnPdfExtractClick" prefHeight="25.0"
-                prefWidth="55.0" text="Extract" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="4.0"/>
-        <Button mnemonicParsing="false" onAction="#btnPdfShowClick" prefHeight="25.0"
-                prefWidth="40.0" text="Show" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="4.0"/>
-
-        <Label text="File 2" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="35.0"/>
-        <TextField fx:id="tfPdfPath2" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
-                   AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="32.0"/>
-        <Button mnemonicParsing="false" onAction="#btnPdfBrowse2Click" prefHeight="25.0" text="..."
-                AnchorPane.rightAnchor="104.0" AnchorPane.topAnchor="32.0"/>
-        <Button fx:id="btnPdfExtract2" mnemonicParsing="false" onAction="#btnPdfExtract2Click" prefHeight="25.0"
-                prefWidth="55.0" text="Extract" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="32.0"/>
-        <Button mnemonicParsing="false" onAction="#btnPdfShow2Click" prefHeight="25.0"
-                prefWidth="40.0" text="Show" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="32.0"/>
-
-        <Label text="File 3" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="63.0"/>
-        <TextField fx:id="tfPdfPath3" maxHeight="25.0" minHeight="25.0" prefHeight="25.0"
-                   AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="60.0"/>
-        <Button mnemonicParsing="false" onAction="#btnPdfBrowse3Click" prefHeight="25.0" text="..."
-                AnchorPane.rightAnchor="104.0" AnchorPane.topAnchor="60.0"/>
-        <Button fx:id="btnPdfExtract3" mnemonicParsing="false" onAction="#btnPdfExtract3Click" prefHeight="25.0"
-                prefWidth="55.0" text="Extract" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="60.0"/>
-        <Button mnemonicParsing="false" onAction="#btnPdfShow3Click" prefHeight="25.0"
-                prefWidth="40.0" text="Show" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="60.0"/>
-
-        <Label text="Page" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="96.0"/>
-        <TextField fx:id="tfPdfPage" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="60.0"
-                   text="1" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="93.0"/>
-        <RadioButton fx:id="rbPdfJS" mnemonicParsing="false" selected="true" text="pdf.js"
-                     AnchorPane.leftAnchor="128.0" AnchorPane.topAnchor="96.0">
-          <toggleGroup>
-            <ToggleGroup fx:id="tgPdfExtractor"/>
-          </toggleGroup>
-        </RadioButton>
-        <RadioButton fx:id="rbPDFBox" mnemonicParsing="false" text="PDFBox" toggleGroup="$tgPdfExtractor"
-                     AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="96.0"/>
-        <CheckBox fx:id="chkPdfDebug" text="Debug items" AnchorPane.leftAnchor="290.0" AnchorPane.topAnchor="96.0"/>
-        <Label fx:id="lblPdfTime" AnchorPane.leftAnchor="400.0" AnchorPane.topAnchor="96.0"/>
-        <TextArea fx:id="taPdfResult" editable="false" wrapText="true"
-                  AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0"
-                  AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="120.0"/>
-      </AnchorPane>
-    </Tab>
+    <Tab fx:id="tabFtsDiagnostics" closable="false" text="FTS Diagnostics"/>
+    <Tab fx:id="tabPdfExtraction" closable="false" text="PDF Extraction"/>
   </TabPane>
   <BorderPane prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0"
               AnchorPane.rightAnchor="0.0">

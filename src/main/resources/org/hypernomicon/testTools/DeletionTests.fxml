@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2026 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25"
+            fx:controller="org.hypernomicon.testTools.DeletionTestsCtrlr">
+  <Button fx:id="btnNukeTest" layoutX="52.0" layoutY="68.0" mnemonicParsing="false" onAction="#nukeTest"
+          text="Test Mass Record Deletion" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="68.0"/>
+  <Button layoutX="52.0" layoutY="37.0" mnemonicParsing="false" onAction="#copyForNukeTest"
+          text="Copy current DB without user files to transient folder" AnchorPane.leftAnchor="52.0"
+          AnchorPane.topAnchor="37.0"/>
+  <Button fx:id="btnFolderBypassTest" layoutX="52.0" layoutY="99.0" mnemonicParsing="false" onAction="#folderBypassTest"
+          text="Test Folder Deletion Bypass" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="99.0"/>
+  <CheckBox fx:id="chkFolderBypass" layoutX="230.0" layoutY="103.0" mnemonicParsing="false" selected="true"
+            text="Enable folder deletion bypass" AnchorPane.leftAnchor="230.0" AnchorPane.topAnchor="103.0"/>
+  <Button layoutX="52.0" layoutY="160.0" mnemonicParsing="false" onAction="#fileDeletionTest"
+          text="Test File Deletion API" AnchorPane.leftAnchor="52.0" AnchorPane.topAnchor="191.0"/>
+  <CheckBox fx:id="chkWatcherEvents" layoutX="230.0" layoutY="195.0" mnemonicParsing="false" selected="true"
+            text="Show watcher events" AnchorPane.leftAnchor="230.0" AnchorPane.topAnchor="195.0"/>
+</AnchorPane>

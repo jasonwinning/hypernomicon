@@ -20,35 +20,21 @@ package org.hypernomicon.testTools;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.LibraryWrapper.LibraryType.*;
-import static org.hypernomicon.fts.FTSUtil.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
-import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.lucene.search.Query;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 
-import org.hypernomicon.FolderTreeWatcher;
-import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.App;
 import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.*;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
@@ -56,74 +42,50 @@ import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.fileManager.FileManagerTestRunner;
-import org.hypernomicon.fts.FullTextIndexer;
-import org.hypernomicon.fts.PDFJSTextExtractor;
-import org.hypernomicon.model.records.*;
-import org.hypernomicon.previewWindow.BrowserEngine;
-import org.hypernomicon.settings.WebButtonSettingsCtrlr;
-import org.hypernomicon.util.StopWatch;
-import org.hypernomicon.util.WebButton;
-import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.deletion.FileDeletion;
 import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
-import org.jodconverter.core.office.OfficeUtils;
-import org.jodconverter.local.LocalConverter;
-import org.jodconverter.local.office.LocalOfficeManager;
-
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 
 //---------------------------------------------------------------------------
 
+/**
+ * The Test Console: the launch surface for the in-app test tooling, opened
+ * from a main-window menu item visible only when the application is running
+ * under a debugger. This controller owns the window and the tabs that share
+ * the transient test database's location (DB Creation, UI Tests) plus a few
+ * small ones; the larger tools are tabs loaded from their own FXML files, each
+ * with its own {@link TestConsoleTab} controller, the way the Settings dialog
+ * loads its pages.
+ */
 public class TestConsoleDlgCtrlr extends ModalDialog
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID, btnNukeTest,
-                       btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter, btnTermsTabTests, btnFolderBypassTest,
-                       btnSetupFMTest, btnRunFMTest, btnPdfExtract, btnPdfExtract2, btnPdfExtract3, btnFtsDiagConvert, btnFtsDiagExtract;
-  @FXML private CheckBox chkFolderBypass, chkPdfDebug, chkWatcherEvents;
-  @FXML private ComboBox<WebBtnContext> cbWebBtnContext;
-  @FXML private GridPane gpWebBtnFields;
-  @FXML private Label lblPdfTime, lblFtsDiagConvertedPath, lblFtsDiagStatus;
-  @FXML private RadioButton rbZotero, rbMendeley, rbPdfJS, rbPDFBox;
-  @FXML private Tab tabLinkGen;
-  @FXML private TableColumn<FtsDiagMatch, String> colFtsDiagNdx, colFtsDiagTikaOffset, colFtsDiagTikaNormOffset, colFtsDiagTikaSnippet,
-                                                  colFtsDiagPdfPage, colFtsDiagPdfNormOffset, colFtsDiagPdfSnippet;
-  @FXML private TableColumn<WebButton, String> colWebBtnName, colWebBtnCaption, colWebBtnPatterns;
-  @FXML private TableView<FtsDiagMatch> tvFtsDiagMatches;
-  @FXML private TableView<WebButton> tvWebBtnPresets;
-  @FXML private TextArea taPdfResult, taFtsDiagTika, taFtsDiagPdfJS;
-  @FXML private TextField tfParent, tfFolderName, tfRefMgrUserID, tfPdfPath, tfPdfPath2, tfPdfPath3, tfPdfPage,
-                          tfFtsDiagPath, tfFtsDiagQuery, tfWebBtnLastUrl;
+  /** A tab of the console loaded from its own FXML file. The console calls
+   *  {@code init} once the controls are injected; a tab that needs the
+   *  console (the transient-database helpers) keeps the reference. */
+  interface TestConsoleTab { void init(TestConsoleDlgCtrlr console); }
+
+//---------------------------------------------------------------------------
+
+  @FXML private Button btnFromExisting, btnClose, btnCloseDB, btnSaveRefMgrSecrets, btnRemoveRefMgrSecrets, btnUseMendeleyID,
+                       btnZoteroItemTemplates, btnZoteroCreatorTypes, btnLinkGenBefore, btnLinkGenAfter, btnTermsTabTests,
+                       btnSetupFMTest, btnRunFMTest;
+  @FXML private RadioButton rbZotero, rbMendeley;
+  @FXML private Tab tabDeletion, tabWebButtons, tabLinkGen, tabFtsDiagnostics, tabPdfExtraction;
+  @FXML private TextField tfParent, tfFolderName, tfRefMgrUserID;
   @FXML private ToggleGroup tgLink;
 
   private final Map<Toggle, LibraryType> toggleToLibraryType;
-
-  private List<String> cachedPdfJSPages = null, cachedPDFBoxPages = null;
-  private FilePath ftsDiagConvertedPath;
-
-  // Per-slot caches for multi-instance pdf.js testing
-  private final String[] cachedPdfJSPaths = new String[3];
-  private final List<?>[] cachedPdfJSSlotPages = new List<?>[3];
-
-  // Tracks number of concurrent extractions; overall stopwatch runs while > 0
-  private int activeExtractions = 0;
-
-  // Times the overall extraction shown in lblPdfTime. Deliberately not one of Util's
-  // shared stopWatch1-6, which are reserved for temporary debugging; a lasting use of
-  // one would collide with whatever a debugging session assigns it to.
-  private final StopWatch extractionStopWatch = new StopWatch();
 
 //---------------------------------------------------------------------------
 
@@ -134,11 +96,8 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
     initTextField(app.prefs, tfParent    , PrefKey.TRANSIENT_TEST_PARENT_PATH, "", null);
     initTextField(app.prefs, tfFolderName, PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
-    initTextField(app.prefs, tfPdfPath   , PrefKey.PDF_EXTRACTION_TEST_PATH  , "", null);
-    initTextField(app.prefs, tfPdfPath2  , PrefKey.PDF_EXTRACTION_TEST_PATH_2, "", null);
-    initTextField(app.prefs, tfPdfPath3  , PrefKey.PDF_EXTRACTION_TEST_PATH_3, "", null);
 
-    enableAllIff(db.isOnline(), btnFromExisting, btnCloseDB, btnZoteroItemTemplates, btnZoteroCreatorTypes, btnNukeTest, btnTermsTabTests, btnFolderBypassTest, tabLinkGen);
+    enableAllIff(db.isOnline(), btnFromExisting, btnCloseDB, btnZoteroItemTemplates, btnZoteroCreatorTypes, btnTermsTabTests, tabLinkGen);
 
     toggleToLibraryType = Map.of(rbZotero, ltZotero, rbMendeley, ltMendeley);
 
@@ -159,31 +118,13 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     btnLinkGenBefore      .setOnAction(event -> db.rebuildMentions("Before.csv"));
     btnLinkGenAfter       .setOnAction(event -> db.rebuildMentions("After.csv" ));
 
-    chkFolderBypass.setSelected(db.folderDeletionBypassEnabled);
-    chkFolderBypass.selectedProperty().addListener((ob, oldVal, newVal) -> db.folderDeletionBypassEnabled = newVal);
-
-    chkWatcherEvents.setSelected(FolderTreeWatcher.consoleLogging);
-    chkWatcherEvents.selectedProperty().addListener((ob, oldVal, newVal) -> FolderTreeWatcher.consoleLogging = newVal);
-
     if (db.bibLibraryIsLinked())
       tfRefMgrUserID.setText(db.getBibLibrary().getUserID());
 
-    initWebButtonsTab();
-
-    if (jxBrowserDisabled)
-    {
-      // pdf.js extraction runs in the browser engine; without it (missing JxBrowser license
-      // key or engine startup failure), these controls could only produce null results, and
-      // the FTS Diagnostics extraction would stall waiting for an extractor pool that can
-      // never be populated. The PDFBox and Tika sides need no engine and stay usable.
-
-      disableAll(rbPdfJS, btnPdfExtract2, btnPdfExtract3, btnFtsDiagConvert, btnFtsDiagExtract);
-
-      rbPDFBox.setSelected(true);
-
-      lblFtsDiagStatus.setText("Extraction unavailable: browser engine not initialized" +
-        (BrowserEngine.licenseKeyIsMissing() ? " (no JxBrowser license key)" : "") + '.');
-    }
+    initTab(tabDeletion      , "DeletionTests"    );
+    initTab(tabWebButtons    , "WebButtonsTest"   );
+    initTab(tabFtsDiagnostics, "FtsDiagnostics"   );
+    initTab(tabPdfExtraction , "PdfExtractionTest");
   }
 
 //---------------------------------------------------------------------------
@@ -192,6 +133,25 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   @FXML private void btnFromExistingClick() { createTransientTestDB(false); }
 
   @Override protected boolean isValid() { return true; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initTab(Tab tab, String fxmlName)
+  {
+    try
+    {
+      FXMLLoader loader = new FXMLLoader(App.class.getResource("testTools/" + fxmlName + ".fxml"));
+      AnchorPane ap = loader.load();
+      tab.setContent(ap);
+      TestConsoleTab ctrlr = loader.getController();
+      ctrlr.init(this);
+    }
+    catch (IOException e)
+    {
+      logThrowable(e);
+    }
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -222,7 +182,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void initTextField(Preferences prefs, TextField tf, String prefKey, String defValue, Consumer<String> handler)
+  /** Binds a text field to a preference: shows the stored value and stores
+   *  every edit. Shared with the tab controllers. */
+  static void initTextField(Preferences prefs, TextField tf, String prefKey, String defValue, Consumer<String> handler)
   {
     tf.setText(prefs.get(prefKey, defValue));
 
@@ -427,7 +389,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean clearTransientDB()
+  /** Empties the transient test folder after confirmation.
+   *  @return false if the folder could not be validated, the user declined, or the deletion was aborted */
+  boolean clearTransientDB()
   {
     MutableBoolean nonEmptyWithNoHdbFile = new MutableBoolean(false);
 
@@ -505,7 +469,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
    * with no HDB file. Can be set to null if you don't need that information.
    * @return FilePath object
    */
-  private FilePath getTransientDBFilePath(boolean modifying, boolean deleting, MutableBoolean nonEmptyWithNoHdbFile)
+  FilePath getTransientDBFilePath(boolean modifying, boolean deleting, MutableBoolean nonEmptyWithNoHdbFile)
   {
     FilePath parentFilePath = getParentFilePath();
 
@@ -570,6 +534,29 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Whether the database in the transient test folder is the loaded one, which
+   * the tests that modify the loaded database require. Explains why not when it
+   * is not (a folder that fails validation has already been explained); silent
+   * when no database is loaded, since those tests' buttons are disabled then.
+   */
+  boolean requireTransientDBLoaded()
+  {
+    if (db.isOffline()) return false;
+
+    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
+
+    if (FilePath.isEmpty(transientDBFilePath)) return false;
+
+    if (db.getRootPath().equals(transientDBFilePath)) return true;
+
+    errorPopup("This can only be done when the transient DB is loaded.");
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static void useCurrentMendeleyUserIDforUnitTests()
   {
     if (db.isOffline() || (db.bibLibraryIsLinked() == false)) return;
@@ -587,261 +574,9 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void nukeTest()
-  {
-    if (db.isOffline()) return;
-
-    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
-
-    if (db.getRootPath().equals(transientDBFilePath) == false)
-    {
-      errorPopup("This can only be done when the transient DB is loaded.");
-      return;
-    }
-
-    if (confirmDialog("This will delete most of the records in the entire database. Proceed?", false) == false)
-      return;
-
-    db.recordDeletionTestInProgress = true;
-
-    Random random = new Random();
-
-    EnumSet<RecordType> types = EnumSet.allOf(RecordType.class);
-    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub, hdtFolder));  // Folders deleted last
-    List<RecordType> typeList = List.copyOf(types);
-
-    int deleteCtr = 0;
-
-    while (types.stream().anyMatch(recordType -> (nextRecordToDelete(recordType) > 0)))
-    {
-      RecordType randomType;
-      int randomID;
-
-      do
-      {
-        randomType = typeList.get(random.nextInt(typeList.size()));
-
-        randomID = db.records(randomType).getRandomUsedID(random);
-      }
-      while (randomID < 1);
-
-      HDT_Record record = db.records(randomType).getByID(randomID);
-
-      boolean doDelete = (HDT_Record.isEmpty(record, false) == false) && (db.isProtectedRecord(record, true) == false);
-
-      // Glossary should only be deleted if it has no concepts
-      if (doDelete && (randomType == hdtGlossary))
-      {
-        HDT_Glossary glossary = (HDT_Glossary) record;
-
-        if (glossary.concepts.isEmpty() == false)
-          doDelete = false;
-      }
-
-      if (doDelete)
-      {
-        db.deleteRecord(record);
-        deleteCtr++;
-
-        if ((deleteCtr % 100) == 0)
-          System.out.println("Records deleted: " + deleteCtr);
-      }
-    }
-
-    System.out.println("Non-folder records deleted: " + deleteCtr);
-
-    // Delete folders last so the bypass preconditions hold (no non-folder records pointing to folders).
-
-    deleteNonProtectedFolders(deleteCtr, "Records");
-
-    System.out.println("Record deletion complete.");
-
-    db.recordDeletionTestInProgress = false;
-    db.rebuildMentions();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static int nextRecordToDelete(RecordType recordType)
-  {
-    return db.records(recordType).stream().filter(record -> (HDT_Record.isEmpty(record, false) == false))
-                                          .filter(record -> (db.isProtectedRecord(record, true) == false))
-                                          .map(HDT_Record::getID)
-                                          .findFirst()
-                                          .orElse(-1);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Delete all non-protected folders, sorted deepest first so children are deleted before parents.
-   * @param deleteCount number of records already deleted, used for progress logging
-   * @param recordLabel label to use in progress messages (e.g. "Records" or "Folders")
-   * @return the updated total delete count (deleteCount + number of folders deleted)
-   */
-  private static int deleteNonProtectedFolders(int deleteCount, String recordLabel)
-  {
-    List<HDT_Folder> foldersToDelete = db.folders.stream()
-      .filter(folder -> HDT_Record.isEmpty(folder, false) == false)
-      .filter(folder -> db.isProtectedRecord(folder, true) == false)
-      .sorted(Comparator.comparingInt(TestConsoleDlgCtrlr::folderDepth).reversed())
-      .toList();
-
-    for (HDT_Folder folder : foldersToDelete)
-    {
-      if (folder.isExpired()) continue;
-
-      db.deleteRecord(folder);
-      deleteCount++;
-
-      if ((deleteCount % 100) == 0)
-        System.out.println(recordLabel + " deleted: " + deleteCount);
-    }
-
-    return deleteCount;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static int folderDepth(HDT_Folder folder)
-  {
-    int depth = 0;
-
-    while ((folder = folder.parentFolder()) != null)
-      depth++;
-
-    return depth;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Test to verify that folder deletion bypass produces identical results to the non-bypass path.
-   * <p>
-   * This test should be run on a copy of a real database. It:
-   * <ol>
-   *   <li>Loops through all HDT_Folder records</li>
-   *   <li>For non-protected folders, severs links to HDT_WorkFile, HDT_MiscFile, HDT_Note, and HDT_Person records</li>
-   *   <li>Loops again and deletes all non-protected folders</li>
-   *   <li>Saves the database to XML</li>
-   * </ol>
-   * To verify correctness, run this test twice: once with bypass enabled and once disabled,
-   * then diff the resulting XML files.
-   */
-  @FXML private void folderBypassTest()
-  {
-    if (db.isOffline()) return;
-
-    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
-
-    if (db.getRootPath().equals(transientDBFilePath) == false)
-    {
-      errorPopup("This can only be done when the transient DB is loaded.");
-      return;
-    }
-
-    if (confirmDialog("This will sever folder links and delete non-protected folders. Proceed?", false) == false)
-      return;
-
-    db.recordDeletionTestInProgress = true;
-    db.runningConversion = true;
-
-    System.out.println("=== Folder Bypass Test: Severing non-folder links ===");
-
-    // First pass: sever links from non-folder records to non-protected folders
-
-    int severedCount = 0;
-
-    for (HDT_Folder folder : List.copyOf(db.folders))
-    {
-      if (db.isProtectedRecord(folder, true))
-        continue;
-
-      // Sever links from HDT_WorkFile records
-
-      for (HDT_WorkFile workFile : List.copyOf(db.<HDT_Folder, HDT_WorkFile>getSubjectList(rtFolderOfWorkFile, folder)))
-      {
-        workFile.getPath().clear(false);
-        severedCount++;
-      }
-
-      // Sever links from HDT_MiscFile records
-
-      for (HDT_MiscFile miscFile : List.copyOf(db.<HDT_Folder, HDT_MiscFile>getSubjectList(rtFolderOfMiscFile, folder)))
-      {
-        miscFile.getPath().clear(false);
-        severedCount++;
-      }
-
-      // Sever links from HDT_Note records
-
-      for (HDT_Note note : List.copyOf(db.<HDT_Folder, HDT_Note>getSubjectList(rtFolderOfNote, folder)))
-      {
-        note.folder.setID(-1);
-        severedCount++;
-      }
-
-      // Sever links from HDT_Person picture folder
-
-      for (HDT_Person person : List.copyOf(db.<HDT_Folder, HDT_Person>getSubjectList(rtPictureFolderOfPerson, folder)))
-      {
-        person.getPath().clear(false);
-        severedCount++;
-      }
-    }
-
-    System.out.println("Severed " + severedCount + " links.");
-    System.out.println("=== Folder Bypass Test: Deleting non-protected folders ===");
-
-    // Second pass: delete non-protected folders (deepest first so children are deleted before parents)
-
-    int deleteCount = deleteNonProtectedFolders(0, "Folders");
-
-    System.out.println("Deleted " + deleteCount + " folders total.");
-
-    db.recordDeletionTestInProgress = false;
-    db.runningConversion = false;
-    db.rebuildMentions();
-
-    System.out.println("=== Folder Bypass Test: Complete. ===");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void fileDeletionTest()
-  {
-    if (db.isOffline()) return;
-
-    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
-
-    if (db.getRootPath().equals(transientDBFilePath) == false)
-    {
-      errorPopup("This can only be done when the transient DB is loaded.");
-      return;
-    }
-
-    FileDeletionTestRunner.runTests(db.getRootPath());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @FXML private void setupFileManagerTest()
   {
-    if (db.isOffline()) return;
-
-    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
-
-    if (db.getRootPath().equals(transientDBFilePath) == false)
-    {
-      errorPopup("This can only be done when the transient DB is loaded.");
-      return;
-    }
+    if (requireTransientDBLoaded() == false) return;
 
     FileManagerTestRunner.setupTestFiles(db.getRootPath("_test_fm"));
 
@@ -856,73 +591,11 @@ public class TestConsoleDlgCtrlr extends ModalDialog
 
   @FXML private void fileManagerTest()
   {
-    if (db.isOffline()) return;
-
-    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
-
-    if (db.getRootPath().equals(transientDBFilePath) == false)
-    {
-      errorPopup("This can only be done when the transient DB is loaded.");
-      return;
-    }
+    if (requireTransientDBLoaded() == false) return;
 
     btnRunFMTest.setDisable(true);
 
     FileManagerTestRunner.runTests(db.getRootPath("_test_fm"), () -> btnSetupFMTest.setDisable(false));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void copyForNukeTest()
-  {
-    if (db.isOffline())
-    {
-      errorPopup("No database is currently loaded.");
-      return;
-    }
-
-    FilePath transientDBFilePath = getTransientDBFilePath(false, false, null);
-
-    if (FilePath.isEmpty(transientDBFilePath))
-    {
-      errorPopup("Transient DB folder path needs to be entered.");
-      return;
-    }
-
-    if (db.getRootPath().equals(transientDBFilePath))
-    {
-      errorPopup("Transient DB is currently loaded.");
-      return;
-    }
-
-    if (clearTransientDB() == false)
-      return;
-
-    try
-    {
-      db.getHdbPath().copyTo(transientDBFilePath.resolve(db.getHdbPath().getNameOnly()) , false);
-
-      FileUtils.copyDirectory(db.xmlPath().toFile(), transientDBFilePath.resolve(DEFAULT_XML_PATH).toFile());
-
-      Path srcRoot = db.getRootPath().toPath(),
-           dstRoot = transientDBFilePath.toPath();
-
-      try (Stream<Path> dirs = Files.walk(srcRoot))
-      {
-        dirs.filter(Files::isDirectory).forEach(srcDir ->
-        {
-          try { Files.createDirectories(dstRoot.resolve(srcRoot.relativize(srcDir))); }
-          catch (IOException e) { throw new UncheckedIOException(e); }
-        });
-      }
-
-      infoPopup("Database copied successfully.");
-    }
-    catch (IOException | UncheckedIOException e)
-    {
-      errorPopup("Error while copying: " + getThrowableMessage(e));
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -972,880 +645,6 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     stage.hide();
 
     Platform.runLater(NewArgDlgCtrlr::runTests);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  // Web Buttons tab: exercises every button offered in Settings > Web Search
-  // Buttons from one place, for the per-release link-rot check. Each opens in
-  // the system browser with the sample field values on the right, built the
-  // way the record tabs build it (WebButton takes the first pattern whose
-  // required fields are all non-blank, so blanking a field here tries the
-  // fallback patterns). Rot is the target site changing, which only a person
-  // looking at the live result can judge, so this is a launcher, not a test.
-
-  /** A web-button context (a slot in Settings), as listed in the context combo box. */
-  private record WebBtnContext(String prefKey, String label)
-  {
-    @Override public String toString() { return label; }
-  }
-
-  private static final List<WebBtnContext> WEB_BTN_CONTEXTS = List.of
-  (
-    new WebBtnContext(WebButtonContextPrefKey.PERSON    , "Person"),
-    new WebBtnContext(WebButtonContextPrefKey.PERSON_IMG, "Person image"),
-    new WebBtnContext(WebButtonContextPrefKey.INST      , "Institution"),
-    new WebBtnContext(WebButtonContextPrefKey.INST_MAP  , "Institution map"),
-    new WebBtnContext(WebButtonContextPrefKey.WORK      , "Work"),
-    new WebBtnContext(WebButtonContextPrefKey.DOI       , "DOI"),
-    new WebBtnContext(WebButtonContextPrefKey.ISBN      , "ISBN"),
-    new WebBtnContext(WebButtonContextPrefKey.GEN       , "Debate, position, argument, term")
-  );
-
-  private final Map<WebButtonField, TextField> webBtnFieldInputs = new EnumMap<>(WebButtonField.class);
-
-//---------------------------------------------------------------------------
-
-  /** Sample values that make every preset's most specific pattern applicable
-   *  and give a recognizable result page. */
-  private static String webBtnSampleValue(String contextPrefKey, WebButtonField field)
-  {
-    return switch (field)
-    {
-      case Name                 -> WebButtonContextPrefKey.GEN.equals(contextPrefKey) ? "Epistemology" : "University of Pittsburgh";
-      case SingleName, LastName -> "Wittgenstein";
-      case FirstName, QueryName -> "Ludwig";
-      case Field                -> "Philosophy";
-      case DivisionName         -> "Department of Philosophy";
-      case City                 -> "Pittsburgh";
-      case Region               -> "Pennsylvania";
-      case Country              -> "United States";
-      case Title, QueryTitle    -> "Philosophical Investigations";
-      case NumericYear, Year    -> "1953";
-      case doi                  -> "10.1093/mind/LIX.236.433";
-      case ISBN                 -> "9780631231592";
-    };
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void initWebButtonsTab()
-  {
-    colWebBtnName    .setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getName()));
-    colWebBtnCaption .setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getCaption()));
-    colWebBtnPatterns.setCellValueFactory(cd -> new SimpleStringProperty(String.valueOf(cd.getValue().getPatterns().size())));
-
-    cbWebBtnContext.getItems().setAll(WEB_BTN_CONTEXTS);
-    cbWebBtnContext.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> populateWebBtnContext(nv));
-    cbWebBtnContext.getSelectionModel().selectFirst();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void populateWebBtnContext(WebBtnContext context)
-  {
-    List<WebButton> buttons = WebButtonSettingsCtrlr.buttonsFor(context.prefKey());
-
-    tvWebBtnPresets.getItems().setAll(buttons);
-    tvWebBtnPresets.getSelectionModel().selectFirst();
-
-    // One input per field that any of the context's patterns requires or substitutes
-
-    EnumSet<WebButtonField> fields = EnumSet.noneOf(WebButtonField.class);
-
-    buttons.forEach(btn -> btn.getPatterns().forEach(pattern ->
-    {
-      fields.addAll(pattern.reqFields());
-
-      for (WebButtonField field : WebButtonField.values())
-        if (pattern.str.contains(field.key))
-          fields.add(field);
-    }));
-
-    gpWebBtnFields.getChildren().clear();
-    webBtnFieldInputs.clear();
-
-    int rowNdx = 0;
-
-    for (WebButtonField field : fields)
-    {
-      Label label = new Label(field.name());
-      setToolTip(label, field.toolTip);
-
-      TextField tf = new TextField(webBtnSampleValue(context.prefKey(), field));
-      tf.setMaxWidth(Double.MAX_VALUE);
-      GridPane.setHgrow(tf, Priority.ALWAYS);
-
-      gpWebBtnFields.addRow(rowNdx++, label, tf);
-      webBtnFieldInputs.put(field, tf);
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnWebBtnOpenClick()
-  {
-    WebButton btn = tvWebBtnPresets.getSelectionModel().getSelectedItem();
-
-    if (btn != null)
-      openWebBtn(btn);
-  }
-
-  @FXML private void btnWebBtnOpenAllClick()
-  {
-    tvWebBtnPresets.getItems().forEach(this::openWebBtn);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void openWebBtn(WebButton btn)
-  {
-    boolean first = true;
-
-    for (Map.Entry<WebButtonField, TextField> entry : webBtnFieldInputs.entrySet())
-    {
-      if (first) btn.first(entry.getKey(), entry.getValue().getText());
-      else       btn.next (entry.getKey(), entry.getValue().getText());
-
-      first = false;
-    }
-
-    String url = btn.buildUrl();
-
-    tfWebBtnLastUrl.setText(url != null ? url : "(no pattern of " + btn.getName() + " matched the supplied fields, or the prompt was cancelled)");
-
-    if (url != null)
-      openWebLink(url);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnPdfBrowseClick()  { browseForPdf(tfPdfPath);  }
-  @FXML private void btnPdfBrowse2Click() { browseForPdf(tfPdfPath2); }
-  @FXML private void btnPdfBrowse3Click() { browseForPdf(tfPdfPath3); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void browseForPdf(TextField tf)
-  {
-    FileChooser fileChooser = new FileChooser();
-
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF files (*.pdf)", "*.pdf"));
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
-
-    FilePath curPath = FilePath.of(tf.getText());
-
-    if (FilePath.isEmpty(curPath) == false)
-    {
-      FilePath parentDir = curPath.getParent();
-
-      if ((parentDir != null) && parentDir.exists())
-        fileChooser.setInitialDirectory(parentDir.toFile());
-    }
-
-    fileChooser.setTitle("Select PDF file");
-
-    FilePath filePath = showOpenDialog(fileChooser);
-
-    if (FilePath.isEmpty(filePath) == false)
-      tf.setText(filePath.toString());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnPdfExtractClick()
-  {
-    String pathStr = tfPdfPath.getText();
-
-    if (stripSafe(pathStr).isEmpty())
-    {
-      falseWithErrorPopup("Please select a PDF file.", tfPdfPath);
-      return;
-    }
-
-    FilePath filePath = FilePath.of(pathStr);
-
-    if (filePath.exists() == false)
-    {
-      falseWithErrorPopup("File not found: " + pathStr, tfPdfPath);
-      return;
-    }
-
-    int page = parseInt(tfPdfPage.getText().trim(), -1);
-
-    if (page < 1)
-    {
-      falseWithErrorPopup("Page number must be a number greater than zero.", tfPdfPage);
-      return;
-    }
-
-    taPdfResult.clear();
-    btnPdfExtract.setDisable(true);
-
-    extractionStarted();
-
-    if (rbPdfJS.isSelected())
-      extractViaPdfJS(filePath, page);
-    else
-      extractViaPDFBox(filePath, page);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnPdfExtract2Click() { extractSlot(1, tfPdfPath2, btnPdfExtract2); }
-  @FXML private void btnPdfExtract3Click() { extractSlot(2, tfPdfPath3, btnPdfExtract3); }
-
-//---------------------------------------------------------------------------
-
-  @FXML private void btnPdfShowClick () { showSlotPage(0); }
-  @FXML private void btnPdfShow2Click() { showSlotPage(1); }
-  @FXML private void btnPdfShow3Click() { showSlotPage(2); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  private void showSlotPage(int slot)
-  {
-    int page = parsePage();
-    if (page < 1) return;
-
-    List<String> pages;
-
-    if (slot == 0)
-    {
-      // Slot 0 uses the existing cache (which may be pdf.js or PDFBox)
-      pages = rbPdfJS.isSelected() ? cachedPdfJSPages : cachedPDFBoxPages;
-    }
-    else
-    {
-      TextField pathField = (slot == 1) ? tfPdfPath2 : tfPdfPath3;
-
-      // Only reuse the slot's cached pages if its file path is unchanged since extraction;
-      // otherwise treat as no cache so a stale extraction isn't shown for a different file.
-
-      pages = Objects.equals(pathField.getText(), cachedPdfJSPaths[slot]) ? (List<String>) cachedPdfJSSlotPages[slot] : null;
-    }
-
-    if (pages == null)
-    {
-      taPdfResult.setText("(no cached extraction for file " + (slot + 1) + ')');
-      return;
-    }
-
-    taPdfResult.clear();
-    showCachedPage(pages, page, "(file " + (slot + 1) + ", cached) ");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void extractSlot(int slot, TextField tf, Button btn)
-  {
-    String pathStr = tf.getText();
-
-    if (stripSafe(pathStr).isEmpty())
-    {
-      falseWithErrorPopup("Please select a PDF file.", tf);
-      return;
-    }
-
-    FilePath filePath = FilePath.of(pathStr);
-
-    if (filePath.exists() == false)
-    {
-      falseWithErrorPopup("File not found: " + pathStr, tf);
-      return;
-    }
-
-    taPdfResult.clear();
-    btn.setDisable(true);
-
-    extractionStarted();
-
-    int slotNum = slot + 1;
-
-    System.out.println("Slot " + slotNum + ": starting extraction of " + filePath.getNameOnly());
-
-    runOutsideFXThread(() ->
-    {
-      PDFJSTextExtractor extractor = new PDFJSTextExtractor();
-      long startTime = System.nanoTime();
-
-      try
-      {
-        extractor.initialize();
-
-        System.out.println("Slot " + slotNum + ": browser initialized, extracting...");
-
-        PDFJSTextExtractor.ExtractionResult result = extractor.extractText(filePath);
-
-        long elapsed = System.nanoTime() - startTime;
-        double seconds = elapsed / 1_000_000_000.0;
-
-        System.out.println("Slot " + slotNum + ": extraction complete in " + String.format("%.2f", seconds) + 's'
-          + (result != null ? " (" + result.pageCount() + " pages)" : " (null result)"));
-
-        Platform.runLater(() ->
-        {
-          if (result != null && result.pageOffsets() != null)
-          {
-            cachedPdfJSPaths[slot] = pathStr;
-            cachedPdfJSSlotPages[slot] = splitIntoPages(result);
-          }
-
-          btn.setDisable(false);
-          extractionFinished();
-        });
-      }
-      catch (Exception e)
-      {
-        System.out.println("Slot " + slotNum + ": extraction failed: " + getThrowableMessage(e));
-
-        Platform.runLater(() ->
-        {
-          btn.setDisable(false);
-          extractionFinished();
-        });
-      }
-      finally
-      {
-        extractor.dispose();
-        System.out.println("Slot " + slotNum + ": browser disposed");
-      }
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void extractViaPdfJS(FilePath filePath, int page)
-  {
-    boolean debug = chkPdfDebug.isSelected();
-
-    runOutsideFXThread(() ->
-    {
-      PDFJSTextExtractor extractor = new PDFJSTextExtractor();
-
-      try
-      {
-        extractor.initialize();
-
-        PDFJSTextExtractor.ExtractionResult result = debug
-          ? extractor.extractText(filePath, true, page)
-          : extractor.extractText(filePath);
-
-        Platform.runLater(() ->
-        {
-          if (result == null)
-          {
-            taPdfResult.setText("(extraction returned null)");
-          }
-          else if (debug)
-          {
-            taPdfResult.setText(result.text());
-          }
-          else if (result.pageOffsets() == null)
-          {
-            taPdfResult.setText("(no page offsets available)");
-          }
-          else
-          {
-            cachedPdfJSPages = splitIntoPages(result);
-            showCachedPage(cachedPdfJSPages, page, "");
-          }
-
-          btnPdfExtract.setDisable(false);
-          extractionFinished();
-        });
-      }
-      catch (Exception e)
-      {
-        Platform.runLater(() ->
-        {
-          taPdfResult.setText("Error: " + getThrowableMessage(e));
-          btnPdfExtract.setDisable(false);
-          extractionFinished();
-        });
-      }
-      finally
-      {
-        extractor.dispose();
-      }
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void extractViaPDFBox(FilePath filePath, int page)
-  {
-    runOutsideFXThread(() ->
-    {
-      try (PDDocument doc = Loader.loadPDF(filePath.toFile()))
-      {
-        int pageCount = doc.getNumberOfPages();
-        List<String> pages = new ArrayList<>(pageCount);
-
-        PDFTextStripper stripper = new PDFTextStripper();
-        stripper.setSortByPosition(true);
-        stripper.setLineSeparator("\n");
-
-        for (int pageNum = 1; pageNum <= pageCount; pageNum++)
-        {
-          stripper.setStartPage(pageNum);
-          stripper.setEndPage(pageNum);
-          pages.add(stripper.getText(doc));
-        }
-
-        Platform.runLater(() ->
-        {
-          cachedPDFBoxPages = pages;
-
-          showCachedPage(pages, page, "");
-          btnPdfExtract.setDisable(false);
-          extractionFinished();
-        });
-      }
-      catch (Exception e)
-      {
-        Platform.runLater(() ->
-        {
-          taPdfResult.setText("Error: " + getThrowableMessage(e));
-          btnPdfExtract.setDisable(false);
-          extractionFinished();
-        });
-      }
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void extractionStarted()
-  {
-    activeExtractions++;
-
-    if (activeExtractions == 1)
-    {
-      extractionStopWatch.resetAndStart();
-      lblPdfTime.setText("...");
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void extractionFinished()
-  {
-    activeExtractions--;
-
-    if (activeExtractions == 0)
-    {
-      extractionStopWatch.stop();
-      lblPdfTime.setText("Overall: " + extractionStopWatch.elapsedStr());
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private int parsePage()
-  {
-    int page = parseInt(tfPdfPage.getText().trim(), -1);
-    if (page < 1)
-    {
-      falseWithErrorPopup("Page number must be a number greater than zero.", tfPdfPage);
-      return -1;
-    }
-    return page;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void showCachedPage(List<String> pages, int page, String timePrefix)
-  {
-    if (page > pages.size())
-    {
-      taPdfResult.setText("Page " + page + " is out of range (document has " + pages.size() + " pages).");
-    }
-    else
-    {
-      lblPdfTime.setText(timePrefix + extractionStopWatch.elapsedStr());
-      taPdfResult.setText(pages.get(page - 1));
-    }
-
-    btnPdfExtract.setDisable(false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static List<String> splitIntoPages(PDFJSTextExtractor.ExtractionResult result)
-  {
-    int[] offsets = result.pageOffsets();
-    String text = result.text();
-
-    // Defensive against inconsistent ExtractionResults where pageOffsets claim positions
-    // past text.length() (e.g., extractor returned a tiny text snippet but reported
-    // full-document page boundaries). safeSubstring clamps, surfacing the inconsistency
-    // in the UI rather than crashing.
-
-    return IntStream.range(0, result.pageCount())
-      .mapToObj(ndx -> safeSubstring(text, offsets[ndx], offsets[ndx + 1]))
-      .toList();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private record FtsDiagMatch(int ndx, int tikaOffset, int tikaNormPos, String tikaSnippet,
-                              int pdfPage, int pdfNormPos, String pdfSnippet) {}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnFtsDiagBrowseClick()
-  {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Select file for FTS diagnostics");
-
-    if (db.isLoaded())
-      fileChooser.setInitialDirectory(db.getRootPath().toFile());
-
-    FilePath filePath = showOpenDialog(fileChooser);
-
-    if (FilePath.isEmpty(filePath)) return;
-
-    tfFtsDiagPath.setText(filePath.toString());
-    lblFtsDiagConvertedPath.setText("");
-    ftsDiagConvertedPath = null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnFtsDiagConvertClick()
-  {
-    String pathStr = tfFtsDiagPath.getText();
-
-    if (strNullOrBlank(pathStr))
-    {
-      falseWithErrorPopup("Please select a file.", tfFtsDiagPath);
-      return;
-    }
-
-    FilePath filePath = FilePath.of(pathStr);
-
-    if (filePath.exists() == false)
-    {
-      falseWithErrorPopup("File not found: " + pathStr, tfFtsDiagPath);
-      return;
-    }
-
-    lblFtsDiagStatus.setText("Converting...");
-
-    // Convert to PDF using JodConverter (same as OfficePreviewer)
-
-    Thread convertThread = new HyperThread("FtsDiagConvert", () ->
-    {
-      try
-      {
-        FilePath tempDir = FilePath.of(System.getProperty("java.io.tmpdir")).resolve("hnFtsDiag_" + System.currentTimeMillis());
-        Files.createDirectories(tempDir.toPath());
-
-        FilePath outputPath = tempDir.resolve("converted.pdf");
-
-        String officePath = getOfficeHome();
-
-        if (officePath.isBlank())
-        {
-          Platform.runLater(() -> lblFtsDiagStatus.setText("No office installation path configured in settings."));
-          return;
-        }
-
-        List<Integer> ports = new ArrayList<>();
-        findAvailablePorts(1, ports);
-
-        LocalOfficeManager officeManager = LocalOfficeManager.builder().officeHome(officePath).portNumbers(ports.getFirst()).build();
-
-        officeManager.start();
-
-        try
-        {
-          LocalConverter.make(officeManager).convert(filePath.toFile()).to(outputPath.toFile()).execute();
-        }
-        finally
-        {
-          OfficeUtils.stopQuietly(officeManager);
-        }
-
-        Platform.runLater(() ->
-        {
-          ftsDiagConvertedPath = outputPath;
-          lblFtsDiagConvertedPath.setText(outputPath.toString());
-          lblFtsDiagStatus.setText("Conversion complete.");
-        });
-      }
-      catch (Exception e)
-      {
-        Platform.runLater(() -> lblFtsDiagStatus.setText("Conversion failed: " + getThrowableMessage(e)));
-      }
-    });
-
-    convertThread.setDaemon(true);
-    convertThread.start();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnFtsDiagShowConvertedClick()
-  {
-    if (ftsDiagConvertedPath != null)
-      highlightFileInExplorer(ftsDiagConvertedPath);
-    else
-      infoPopup("No converted file available. Click Convert first.");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnFtsDiagExportClick()
-  {
-    try
-    {
-      FilePath exportDir = testDir().resolve("fts-diag");
-      exportDir.createDirectories();
-
-      String tikaText = taFtsDiagTika.getText(),
-             pdfText  = taFtsDiagPdfJS.getText();
-
-      if (strNullOrBlank(tikaText) && strNullOrBlank(pdfText))
-      {
-        infoPopup("No extraction data to export. Run Extract & Search first.");
-        return;
-      }
-
-      if (strNullOrBlank(tikaText) == false)
-        Files.writeString(exportDir.resolve("tika-normalized.txt").toPath(), tikaText);
-
-      if (strNullOrBlank(pdfText) == false)
-        Files.writeString(exportDir.resolve("pdfjs-normalized.txt").toPath(), pdfText);
-
-      // Export match table as TSV
-
-      StringBuilder tsv = new StringBuilder();
-      tsv.append("#\tTika Offset\tTika Norm Pos\tTika Snippet\tPDF Page\tPDF Norm Pos\tPDF Snippet\n");
-
-      for (FtsDiagMatch m : tvFtsDiagMatches.getItems())
-      {
-        tsv.append(m.ndx        ()).append('\t')
-           .append(m.tikaOffset ()).append('\t')
-           .append(m.tikaNormPos()).append('\t')
-           .append(m.tikaSnippet()).append('\t')
-           .append(m.pdfPage    ()).append('\t')
-           .append(m.pdfNormPos ()).append('\t')
-           .append(m.pdfSnippet ()).append('\n');
-      }
-
-      Files.writeString(exportDir.resolve("matches.tsv").toPath(), tsv.toString());
-
-      highlightFileInExplorer(exportDir.resolve("matches.tsv"));
-    }
-    catch (IOException e)
-    {
-      errorPopup("Export failed: " + getThrowableMessage(e));
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnFtsDiagExtractClick()
-  {
-    String pathStr  = tfFtsDiagPath .getText(),
-           queryStr = tfFtsDiagQuery.getText();
-
-    if (strNullOrBlank(pathStr))
-    {
-      falseWithErrorPopup("Please select a file.", tfFtsDiagPath);
-      return;
-    }
-
-    if (strNullOrBlank(queryStr))
-    {
-      falseWithErrorPopup("Please enter a query.", tfFtsDiagQuery);
-      return;
-    }
-
-    FilePath filePath = FilePath.of(pathStr);
-
-    if (filePath.exists() == false)
-    {
-      falseWithErrorPopup("File not found: " + pathStr, tfFtsDiagPath);
-      return;
-    }
-
-    FullTextIndexer indexer = db.getFullTextIndexer();
-    if (indexer == null)
-    {
-      errorPopup("Full-text indexer is not running.");
-      return;
-    }
-
-    lblFtsDiagStatus.setText("Extracting...");
-
-    Thread extractThread = new HyperThread("FtsDiagExtract", () ->
-    {
-      try
-      {
-        // Get Tika extraction from the Lucene index
-
-        String dbRelPath = null;
-
-        if (db.isLoaded())
-        {
-          try { dbRelPath = db.getRootPath().relativize(filePath).toString().replace('\\', '/'); }
-          catch (Exception e) { /* not under DB root */ }
-        }
-
-        String tikaText = (dbRelPath != null) ? indexer.getStoredContent(dbRelPath) : null;
-
-        // Get pdf.js extraction
-
-        FilePath pdfPath = ftsDiagConvertedPath != null ? ftsDiagConvertedPath : filePath;
-        FullTextIndexer.ExtractionResult pdfExtraction = null;
-
-        String mime = getMediaType(filePath).toString();
-
-        if (mime.contains("pdf") || (ftsDiagConvertedPath != null))
-          pdfExtraction = indexer.extractPdfText(pdfPath);
-
-        // Normalize both texts
-
-        ArrayList<Integer> tikaPosMap = new ArrayList<>(),
-                           pdfPosMap  = new ArrayList<>();
-
-        String normTika   = (tikaText != null) ? normalizeForMatching(tikaText, tikaPosMap) : "",
-               pdfRawText = ((pdfExtraction != null) && (pdfExtraction.text() != null)) ? pdfExtraction.text() : null;
-
-        int[] pdfPageOffsets = (pdfExtraction != null) ? pdfExtraction.pageOffsets().clone() : null;
-
-        if ((pdfRawText != null) && db.isLoaded())
-          pdfRawText = stripConvertedPdfHeaders(pdfRawText, db.getRootPath().toString().replace('/', '\\'), pdfPageOffsets);
-
-        String normPdf = (pdfRawText != null) ? normalizeForMatching(pdfRawText, pdfPosMap) : "";
-
-        int[] tikaRevMap = (tikaText != null) ? buildReversePositionMap(tikaPosMap, tikaText.length()) : new int[0];
-
-        // Parse and run the query against both texts using temporary indexes
-
-        Query query;
-
-        try (var analyzer = FullTextIndexer.createAnalyzer())
-        {
-          query = FullTextIndexer.createQueryParser(analyzer).parse(queryStr);
-        }
-        catch (Exception e)
-        {
-          Platform.runLater(() -> lblFtsDiagStatus.setText("Query parse error: " + e.getMessage()));
-          return;
-        }
-
-        // Search Tika text
-
-        List<FullTextIndexer.SearchResult.PageMatch> tikaMatches =
-          (tikaText != null) ? FullTextIndexer.searchExtractedText(tikaText, null, query) : List.of();
-
-        // Search pdf.js text
-
-        List<FullTextIndexer.SearchResult.PageMatch> pdfMatches =
-          ((pdfExtraction != null) && (pdfExtraction.text() != null))
-            ? FullTextIndexer.searchExtractedText(pdfExtraction.text(), pdfPageOffsets, query) : List.of();
-
-        // Build diagnostic match rows by mapping Tika matches to pdf.js positions
-
-        List<FtsDiagMatch> diagMatches = new ArrayList<>();
-
-        for (int ndx = 0; ndx < tikaMatches.size(); ndx++)
-        {
-          FullTextIndexer.SearchResult.PageMatch tm = tikaMatches.get(ndx);
-
-          int tikaAbsOffset = tm.startOffset();
-          if ((tm.hitRanges() != null) && (tm.hitRanges().isEmpty() == false))
-            tikaAbsOffset += tm.hitRanges().getFirst().start();
-
-          int tikaNormPos = ((tikaAbsOffset >= 0) && (tikaAbsOffset < tikaRevMap.length)) ? tikaRevMap[tikaAbsOffset] : -1;
-
-          String tikaSnip = (tm.snippet() != null) ? tm.snippet().replaceAll("\\s+", " ").strip() : "";
-          tikaSnip = safeSubstring(tikaSnip, 0, 60);
-
-          // Align via the same helper production passage-click navigation uses, so the
-          // diagnostics reflect what it actually computes (progressive context windows,
-          // mappable-position requirement) rather than a separate approximation.
-
-          int pdfNormPos = ((tikaNormPos >= 0) && (normPdf.isEmpty() == false)) ? findPdfNormPos   (tikaNormPos, normTika, normPdf, pdfPosMap.size()) : -1,
-              pdfPage    = ((pdfNormPos  >= 0) && (pdfPageOffsets    != null )) ? pageForPdfNormPos(pdfNormPos, pdfPosMap, pdfPageOffsets) : -1;
-
-          String pdfSnip = (pdfNormPos >= 0) ? safeSubstring(normPdf, pdfNormPos - 20, pdfNormPos + 40) : "";
-
-          diagMatches.add(new FtsDiagMatch(ndx, tikaAbsOffset, tikaNormPos, tikaSnip, pdfPage, pdfNormPos, pdfSnip));
-        }
-
-        int tikaMatchCount = tikaMatches.size(), pdfMatchCount = pdfMatches.size();
-
-        Platform.runLater(() ->
-        {
-          taFtsDiagTika.setText(normTika);
-          taFtsDiagPdfJS.setText(normPdf);
-
-          colFtsDiagNdx           .setCellValueFactory(cd -> new SimpleStringProperty(String.valueOf(cd.getValue().ndx())));
-          colFtsDiagTikaOffset    .setCellValueFactory(cd -> new SimpleStringProperty(String.valueOf(cd.getValue().tikaOffset())));
-          colFtsDiagTikaNormOffset.setCellValueFactory(cd -> new SimpleStringProperty(String.valueOf(cd.getValue().tikaNormPos())));
-          colFtsDiagTikaSnippet   .setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().tikaSnippet()));
-          colFtsDiagPdfPage       .setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().pdfPage() > 0 ? String.valueOf(cd.getValue().pdfPage()) : "?"));
-          colFtsDiagPdfNormOffset .setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().pdfNormPos() >= 0 ? String.valueOf(cd.getValue().pdfNormPos()) : "?"));
-          colFtsDiagPdfSnippet    .setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().pdfSnippet()));
-
-          tvFtsDiagMatches.getItems().setAll(diagMatches);
-
-          // Click a row to scroll both text areas to the match position
-
-          tvFtsDiagMatches.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) ->
-          {
-            if (nv == null) return;
-
-            if (nv.tikaNormPos() >= 0)
-              taFtsDiagTika.positionCaret(nv.tikaNormPos());
-
-            if (nv.pdfNormPos() >= 0)
-              taFtsDiagPdfJS.positionCaret(nv.pdfNormPos());
-          });
-
-          lblFtsDiagStatus.setText("Tika: " + tikaMatchCount + " matches, pdf.js: " + pdfMatchCount + " matches, " +
-            diagMatches.size() + " mapped");
-        });
-      }
-      catch (Exception e)
-      {
-        Platform.runLater(() -> lblFtsDiagStatus.setText("Error: " + getThrowableMessage(e)));
-        e.printStackTrace();
-      }
-    });
-
-    extractThread.setDaemon(true);
-    extractThread.start();
   }
 
 //---------------------------------------------------------------------------
