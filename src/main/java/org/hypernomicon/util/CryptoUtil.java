@@ -29,8 +29,6 @@ import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
-import org.apache.commons.lang3.mutable.MutableBoolean;
-
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 
@@ -127,34 +125,9 @@ public final class CryptoUtil
 
     try
     {
-      final Future<char[]> futureResult = keyringService.submit(() -> getKeyring().read(secretName));
+      Future<char[]> futureResult = keyringService.submit(() -> getKeyring().read(secretName));
 
-      // If not on FX thread, just wait for result
-
-      if (Platform.isFxApplicationThread() == false)
-        return futureResult.get();
-
-      // If already done, return immediately
-
-      if (futureResult.isDone())
-        return futureResult.get();
-
-      // Use HyperTask with built-in dialog delay to wait for result
-
-      State state = new HyperTask("LoadFromKeyring", taskMessage, false) { @Override protected void call() throws CancelledTaskException
-      {
-        while (futureResult.isDone() == false)
-        {
-          sleepForMillis(100);
-          throwExceptionIfCancelled(this);
-
-          if (futureResult.isCancelled())
-            throw new CancelledTaskException();
-        }
-
-      }}.setDialogDelayMillis(KEYRING_DIALOG_DELAY_MS).addMessage(SECURITY_PROMPT_MESSAGE).runWithProgressDialog();
-
-      return state == State.SUCCEEDED ? futureResult.get() : null;
+      return getResultWithProgressDialog(futureResult, "LoadFromKeyring", taskMessage, null);
     }
     catch (InterruptedException e)
     {
@@ -185,7 +158,9 @@ public final class CryptoUtil
  *                 (its contents will be nulled out by end of call)
  * @param description a user-visible description of the secret (may be null)
  * @param taskMessage Description of work being done shown on progress dialog
- * @return False if an error was generated while saving; true otherwise
+ * @return True if the secret was saved. False if an error was generated while saving, or if the
+ *         wait for the save ended early (the user cancelled it, or the thread was interrupted),
+ *         in which case the save may still complete.
  * @since 1.31
  */
   public static boolean saveToKeyring(@NonNull final String secretName, @NonNull final char[] secret, @NullAllowed final String description, String taskMessage)
@@ -193,26 +168,29 @@ public final class CryptoUtil
     Parameters.notNull("secretName", secretName);
     Parameters.notNull("secret", secret);
 
-    MutableBoolean retVal = new MutableBoolean(true);
-
-    Task task = keyringService.post(() ->
+    Future<Boolean> futureResult = keyringService.submit(() ->
     {
       try
       {
         getKeyring().save(secretName, secret, description);
+        return true;
       }
       catch (Exception e)
       {
         logMessage("Unable to save secret " + secretName + ": " + getThrowableMessage(e));
-        retVal.setFalse();
+        return false;
       }
-
-      Arrays.fill(secret, (char) 0);
+      finally
+      {
+        Arrays.fill(secret, (char) 0);
+      }
     });
 
-    finishWritingWithProgressDialog(task, taskMessage);
+    // If the wait ends early, the outcome is unknown (the save may still complete), so report that
+    // the secret cannot be assumed to be in the keyring. Wrongly assuming that only costs the caller
+    // a redundant save; wrongly assuming the opposite would lose the secret.
 
-    return retVal.booleanValue();
+    return finishWritingWithProgressDialog(futureResult, taskMessage, false);
   }
 
 //---------------------------------------------------------------------------
@@ -229,16 +207,16 @@ public final class CryptoUtil
  *
  * @param secretName name for the secret
  * @param taskMessage Description of work being done shown on progress dialog
- * @return False if an error was generated while deleting; true otherwise
+ * @return False if an error was generated while deleting; true otherwise, including when the
+ *         wait for the delete ended early (the user cancelled it, or the thread was interrupted),
+ *         in which case the delete may still complete.
  * @since 1.31
  */
   public static boolean deleteFromKeyring(@NonNull final String secretName, String taskMessage)
   {
     Parameters.notNull("secretName", secretName);
 
-    MutableBoolean retVal = new MutableBoolean(true);
-
-    Task task = keyringService.post(() ->
+    Future<Boolean> futureResult = keyringService.submit(() ->
     {
       if (app.debugging)
         logMessage("Deleting secret: " + secretName);
@@ -246,48 +224,94 @@ public final class CryptoUtil
       try
       {
         getKeyring().delete(secretName);
+        return true;
       }
       catch (Exception e)
       {
         logMessage("Unable to delete secret " + secretName + ": " + getThrowableMessage(e));
-        retVal.setFalse();
+        return false;
       }
     });
 
-    finishWritingWithProgressDialog(task, taskMessage);
+    // If the wait ends early, the outcome is unknown (the delete may still complete), so report
+    // here too that the secret cannot be assumed to be in the keyring, which for a delete means true.
 
-    return retVal.booleanValue();
+    return finishWritingWithProgressDialog(futureResult, taskMessage, true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void finishWritingWithProgressDialog(Task task, String taskMessage)
+  /**
+   * Waits for a keyring write to finish and returns its result.
+   *
+   * @param taskMessage Description of work being done shown on progress dialog
+   * @param valueIfOutcomeUnknown What to return if the wait ends before the write does, because
+   *        the user cancelled the wait or the thread was interrupted
+   * @return The result of the write; valueIfOutcomeUnknown if the wait ended early; false if the
+   *         write threw an exception it did not handle itself
+   */
+  private static boolean finishWritingWithProgressDialog(Future<Boolean> futureResult, String taskMessage, boolean valueIfOutcomeUnknown)
   {
-    // If not on FX thread, just wait for completion
+    try
+    {
+      return getResultWithProgressDialog(futureResult, "WriteToKeyring", taskMessage, valueIfOutcomeUnknown);
+    }
+    catch (InterruptedException e)
+    {
+      Thread.currentThread().interrupt();
+      return valueIfOutcomeUnknown;
+    }
+    catch (ExecutionException e)
+    {
+      logMessage("Unable to write to keyring: " + getThrowableMessage(e));
+      return false;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Waits for a keyring operation to finish and returns its result.
+   * <p>
+   * Off the FX thread, this blocks until the operation is done. On the FX thread, an operation
+   * that is still running is waited for with a progress dialog that the user can cancel.
+   * Cancelling only ends the wait; the operation itself still runs to completion.
+   *
+   * @param threadName Name of the thread that waits while the progress dialog is showing
+   * @param taskMessage Description of work being done shown on progress dialog
+   * @param valueIfCancelled What to return if the user cancels the wait
+   * @return The result of the operation, or valueIfCancelled if the user cancelled the wait
+   */
+  private static <T> T getResultWithProgressDialog(Future<T> futureResult, String threadName, String taskMessage, T valueIfCancelled) throws InterruptedException, ExecutionException
+  {
+    // If not on FX thread, just wait for result
 
     if (Platform.isFxApplicationThread() == false)
-    {
-      task.waitFinished();
-      return;
-    }
+      return futureResult.get();
 
     // If already done, return immediately
 
-    if (task.isFinished())
-      return;
+    if (futureResult.isDone())
+      return futureResult.get();
 
-    // Use HyperTask with built-in dialog delay to wait for completion
+    // Use HyperTask with built-in dialog delay to wait for result
 
-    new HyperTask("WriteToKeyring", taskMessage, false) { @Override protected void call() throws CancelledTaskException
+    State state = new HyperTask(threadName, taskMessage, false) { @Override protected void call() throws CancelledTaskException
     {
-      while (task.isFinished() == false)
+      while (futureResult.isDone() == false)
       {
         sleepForMillis(100);
         throwExceptionIfCancelled(this);
+
+        if (futureResult.isCancelled())
+          throw new CancelledTaskException();
       }
 
     }}.setDialogDelayMillis(KEYRING_DIALOG_DELAY_MS).addMessage(SECURITY_PROMPT_MESSAGE).runWithProgressDialog();
+
+    return state == State.SUCCEEDED ? futureResult.get() : valueIfCancelled;
   }
 
 //---------------------------------------------------------------------------
