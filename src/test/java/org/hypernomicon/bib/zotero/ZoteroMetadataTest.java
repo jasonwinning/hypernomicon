@@ -97,7 +97,9 @@ class ZoteroMetadataTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Fetches the creator types from the Zotero server, one request per item type, so it runs only when online tests are enabled with {@code HN_ONLINE_TESTS=true} */
   @Test
+  @EnabledIfEnvironmentVariable(named = "HN_ONLINE_TESTS", matches = "true")
   void creatorTypesTest()
   {
     JsonObj jServerCreatorTypesObj = null;

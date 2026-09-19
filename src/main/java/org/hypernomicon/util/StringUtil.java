@@ -18,6 +18,7 @@
 package org.hypernomicon.util;
 
 import java.math.RoundingMode;
+import java.security.SecureRandom;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,6 +45,11 @@ public final class StringUtil
 
   // at class level, initialize a small reusable buffer
   private static final ThreadLocal<char[]> COLLAPSE_BUF = ThreadLocal.withInitial(() -> new char[128]);
+
+  /** Source for the random strings. Cryptographically strong because some of
+   *  them serve as unguessable tokens (the preview file URLs); a
+   *  {@code java.util.Random} can be reconstructed from its own output. */
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1092,10 +1098,8 @@ public final class StringUtil
     char[] chars  = charsStr.toCharArray(),
            result = new char[size];
 
-    Random random = new Random();
-
     for (int ndx = 0; ndx < size; ndx++)
-      result[ndx] = chars[random.nextInt(chars.length)];
+      result[ndx] = chars[SECURE_RANDOM.nextInt(chars.length)];
 
     return new String(result);
   }

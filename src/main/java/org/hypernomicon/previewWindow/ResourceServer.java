@@ -17,6 +17,7 @@
 
 package org.hypernomicon.previewWindow;
 
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -28,7 +29,6 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.*;
 
@@ -96,13 +96,17 @@ public final class ResourceServer
 
   private static final int FILE_CHUNK_SIZE = 16 * 1024 * 1024;
 
+  /** Length of the random token in a file URL. The token is the only thing
+   *  standing between page content and a registered file, so it is random
+   *  rather than sequential: a page that knows its own document's URL cannot
+   *  derive the URLs of the other files previewed this session. */
+  private static final int FILE_TOKEN_LENGTH = 16;
+
   /** The registry behind the file URLs; registration goes through the inverse
    *  view. Synchronized rather than concurrent on purpose: traffic is a few
    *  lookups per document open, and the bijection is worth having as a
    *  structural fact rather than as two maps kept in step by hand. */
   private static final BiMap<String, FilePath> tokenToFile = Maps.synchronizedBiMap(HashBiMap.create());
-
-  private static final AtomicInteger nextToken = new AtomicInteger(1);
 
   /** Streams file response bodies off the network callback thread (see
    *  {@link #streamFileBytes}). Sized for the realistic concurrency: one
@@ -153,7 +157,7 @@ public final class ResourceServer
    */
   public static String urlForFile(FilePath filePath)
   {
-    String token = tokenToFile.inverse().computeIfAbsent(filePath, _filePath -> String.valueOf(nextToken.getAndIncrement()));
+    String token = tokenToFile.inverse().computeIfAbsent(filePath, _filePath -> randomAlphanumericStr(FILE_TOKEN_LENGTH));
 
     return BASE_URL + FILE_PATH_PREFIX + token + '/' + escapeURL(filePath.getNameOnly().toString(), false);
   }

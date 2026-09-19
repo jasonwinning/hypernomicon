@@ -79,6 +79,19 @@ class ResourceServerTest
 //---------------------------------------------------------------------------
 
   @Test
+  void fileUrlTokensAreRandomRatherThanSequential()
+  {
+    String url = ResourceServer.urlForFile(FilePath.of(tempDirPath.resolve("tokened.pdf")));
+
+    // A page that knows its own document's URL must not be able to derive the
+    // URLs of other registered files, which a counter would let it do
+
+    assertTrue(url.matches("hnres://app/file/[0-9a-zA-Z]{16}/tokened\\.pdf"), url);
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
   void fileForUrlRejectsUrlsThatAreNotItsFileUrls()
   {
     assertNull(ResourceServer.fileForUrl(null));
