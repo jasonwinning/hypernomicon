@@ -26,7 +26,7 @@
 //   { "matches": [ { "ctx": "<context>", "s": <start>, "e": <end> }, ... ] }
 
 (function (data) {
-  var entries = data.matches;
+  const entries = data.matches;
   if ((entries == null) || (entries.length === 0)) return;
 
   // Inject CSS. The color matches pdf.js's stock match highlight
@@ -34,10 +34,10 @@
   // preview content kind.
 
   if (document.getElementById('fts-hl-style') == null) {
-    var style = document.createElement('style');
+    const style = document.createElement('style');
     style.id = 'fts-hl-style';
     style.textContent = '.fts-highlight { background-color: rgba(180, 0, 170, 0.25); border-radius: 2px; }';
-    var target = document.head || document.body || document.documentElement;
+    const target = document.head || document.body || document.documentElement;
     if (target == null) return;
     target.appendChild(style);
   }
@@ -46,10 +46,10 @@
 
   // Build full text from all text nodes
 
-  var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
-  var nodes = [], nodeStarts = [];
-  var fullText = '';
-  var n;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+  const nodes = [], nodeStarts = [];
+  let fullText = '';
+  let n;
   while ((n = walker.nextNode()) != null) {
     nodes.push(n);
     nodeStarts.push(fullText.length);
@@ -74,45 +74,45 @@
   // whitespace collapsing. normToOrig[i] maps normText position i to the original
   // fullText position.
 
-  var normText = '', normToOrig = [];
-  var inWs = false;
+  const normToOrig = [];
+  let normText = '', inWs = false;
 
-  for (var oi = 0; oi < fullText.length; oi++) {
-    var ch = normStr(fullText.charAt(oi));  // may be empty, single char, or multi char
-    for (var ci = 0; ci < ch.length; ci++) {
+  for (let oi = 0; oi < fullText.length; oi++) {
+    const ch = normStr(fullText.charAt(oi));  // may be empty, single char, or multi char
+    for (let ci = 0; ci < ch.length; ci++) {
       if (/\s/.test(ch.charAt(ci))) {
-        if (!inWs) { normToOrig.push(oi); normText += ' '; inWs = true; }
+        if (inWs === false) { normToOrig.push(oi); normText += ' '; inWs = true; }
       } else {
         normToOrig.push(oi); normText += ch.charAt(ci); inWs = false;
       }
     }
   }
-  var normTextLower = normText.toLowerCase();
+  const normTextLower = normText.toLowerCase();
 
   // Phase 1: Find positions by searching for context strings
 
-  var allPositions = [];  // [origDomStart, origDomEnd, matchIndex] of the matched word
+  const allPositions = [];  // [origDomStart, origDomEnd, matchIndex] of the matched word
 
   // Anomaly counts: a context string absent from the page text (the indexed text and
   // the rendered text disagree), or present more than once (placement is ambiguous)
 
-  var notFound = 0, duplicate = 0;
+  let notFound = 0, duplicate = 0;
 
-  for (var m = 0; m < entries.length; m++) {
-    var ctx = entries[m].ctx.toLowerCase();
-    var pos = normTextLower.indexOf(ctx);
+  for (let m = 0; m < entries.length; m++) {
+    const ctx = entries[m].ctx.toLowerCase();
+    const pos = normTextLower.indexOf(ctx);
     if (pos < 0) { notFound++; continue; }
     if (normTextLower.indexOf(ctx, pos + 1) >= 0) duplicate++;
 
     // Map normalized positions back to original positions
 
-    var matchStart = normToOrig[pos + entries[m].s];
-    var matchEnd = normToOrig[Math.min(pos + entries[m].e, normToOrig.length - 1)];
+    const matchStart = normToOrig[pos + entries[m].s];
+    const matchEnd = normToOrig[Math.min(pos + entries[m].e, normToOrig.length - 1)];
 
     // Check overlap with already-found positions
 
-    var overlap = false;
-    for (var h = 0; h < allPositions.length; h++) {
+    let overlap = false;
+    for (let h = 0; h < allPositions.length; h++) {
       if (matchStart < allPositions[h][1] && matchEnd > allPositions[h][0]) { overlap = true; break; }
     }
     if (overlap === false) allPositions.push([matchStart, matchEnd, m]);
@@ -133,20 +133,20 @@
 
   // Phase 2: Apply highlights in reverse order
 
-  var applied = 0;
+  let applied = 0;
 
-  for (var r = 0; r < allPositions.length; r++) {
-    var start = allPositions[r][0], end = allPositions[r][1], mNdx = allPositions[r][2];
-    for (var ni = 0; ni < nodes.length; ni++) {
-      var nStart = nodeStarts[ni], nEnd = nStart + nodes[ni].textContent.length;
+  for (let r = 0; r < allPositions.length; r++) {
+    const start = allPositions[r][0], end = allPositions[r][1], mNdx = allPositions[r][2];
+    for (let ni = 0; ni < nodes.length; ni++) {
+      const nStart = nodeStarts[ni], nEnd = nStart + nodes[ni].textContent.length;
       if (start < nStart || start >= nEnd) continue;
-      var localStart = start - nStart;
-      var localEnd = Math.min(nodes[ni].textContent.length, end - nStart);
+      const localStart = start - nStart;
+      const localEnd = Math.min(nodes[ni].textContent.length, end - nStart);
       if (localEnd <= localStart) continue;
-      var textNode = nodes[ni];
+      let textNode = nodes[ni];
       if (localEnd < textNode.textContent.length) textNode.splitText(localEnd);
       if (localStart > 0) textNode = textNode.splitText(localStart);
-      var span = document.createElement('span');
+      const span = document.createElement('span');
       span.className = 'fts-highlight';
       span.setAttribute('data-match-ndx', mNdx);
       textNode.parentNode.replaceChild(span, textNode);
@@ -161,6 +161,6 @@
 
   // Scroll to first highlight
 
-  var first = document.querySelector('.fts-highlight');
+  const first = document.querySelector('.fts-highlight');
   if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
 })

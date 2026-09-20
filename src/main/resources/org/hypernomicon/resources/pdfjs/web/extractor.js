@@ -35,16 +35,17 @@ GlobalWorkerOptions.workerSrc = '../build/pdf.worker.mjs';
 // fetched, so sequential and concurrent extraction produce identical per-page text.
 
 function extractPageText(textContent) {
-  var text = '',
-      items = textContent.items,
+  const items = textContent.items;
+
+  let text = '',
       prevTextNdx = -1;  // last item with a non-empty str
 
-  for (var ndx = 0; ndx < items.length; ndx++) {
-    var item = items[ndx],
-        t = item.transform;
+  for (let ndx = 0; ndx < items.length; ndx++) {
+    const item = items[ndx],
+          t = item.transform;
 
     if (prevTextNdx >= 0 && text.length > 0 && item.str.length > 0) {
-      var lastChar = text.charAt(text.length - 1);
+      const lastChar = text.charAt(text.length - 1);
 
       if (lastChar !== ' ') {
         // Compare against the previous item WITH TEXT, not items[ndx - 1]:
@@ -54,15 +55,15 @@ function extractPageText(textContent) {
         // gap, which glued the last word of one line to the first word of
         // the next. That made every line-boundary word unsearchable.
 
-        var prev = items[prevTextNdx],
-            pt = prev.transform;
+        const prev = items[prevTextNdx],
+              pt = prev.transform;
 
         // Different line (different ty) or gap between items on the same line.
         // Threshold scales with font size to handle OCR'd text where glyph
         // positioning is less precise (e.g. small-caps in scanned documents).
 
-        var fontSize = Math.abs(t[0]) || Math.abs(t[3]) || 10,
-            threshold = fontSize * 0.27;
+        const fontSize = Math.abs(t[0]) || Math.abs(t[3]) || 10,
+              threshold = fontSize * 0.27;
 
         if (Math.abs(t[5] - pt[5]) > threshold || (t[4] - (pt[4] + prev.width)) > threshold) {
 
@@ -91,11 +92,11 @@ function extractPageText(textContent) {
 //---------------------------------------------------------------------------
 
 window.extractText = function (requestID, fileUrl) {
-  var task = getDocument({ url: fileUrl });
+  const task = getDocument({ url: fileUrl });
 
   task.promise.then(function (pdf) {
-    var pageCount = pdf.numPages,
-        pageTexts = new Array(pageCount);
+    const pageCount = pdf.numPages,
+          pageTexts = new Array(pageCount);
 
     if (pageCount === 0) {
       task.destroy().then(function () {
@@ -108,10 +109,11 @@ window.extractText = function (requestID, fileUrl) {
     // concatenated in page order, so this output is independent of the order in which pages were fetched.
 
     function finish() {
-      var fullText = '',
-          offsets = [];
+      const offsets = [];
 
-      for (var ndx = 0; ndx < pageCount; ndx++) {
+      let fullText = '';
+
+      for (let ndx = 0; ndx < pageCount; ndx++) {
         offsets.push(fullText.length);
         fullText += pageTexts[ndx];
 
@@ -179,17 +181,17 @@ window.extractText = function (requestID, fileUrl) {
 //---------------------------------------------------------------------------
 
 window.extractDebug = function (requestID, fileUrl, pageNum) {
-  var task = getDocument({ url: fileUrl });
+  const task = getDocument({ url: fileUrl });
 
   task.promise.then(function (pdf) {
     pdf.getPage(pageNum).then(function (page) {
       return page.getTextContent({ disableNormalization: true }).then(function (textContent) {
-        var items = textContent.items,
-            lines = [];
+        const items = textContent.items,
+              lines = [];
 
-        for (var ndx = 0; ndx < items.length; ndx++) {
-          var item = items[ndx],
-              t = item.transform;
+        for (let ndx = 0; ndx < items.length; ndx++) {
+          const item = items[ndx],
+                t = item.transform;
 
           lines.push(
             'ndx=' + ndx +

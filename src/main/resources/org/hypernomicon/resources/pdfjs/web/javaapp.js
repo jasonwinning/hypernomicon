@@ -44,29 +44,29 @@
 // surface.
 
 window.addEventListener('unhandledrejection', function(event) {
-  var reason = event.reason;
-  var message = (reason && reason.message) ? reason.message : String(reason);
+  const reason = event.reason,
+        message = (reason && reason.message) ? reason.message : String(reason);
 
   if ((message === 'Transport destroyed') ||
       (message === "Cannot read properties of null (reading 'getPage')"))
     event.preventDefault();
 });
 
-var listenersRegistered = false;
+let listenersRegistered = false;
 
 // Counts openPdfFile dispatches, so a per-open listener that outlives its open
 // (see openPdfFile) can recognize that it has been superseded.
-var openSeq = 0;
+let openSeq = 0;
 
 // Stored hit data for all pages, keyed by 1-based page number:
 // { "1": [[s,e],...], "3": [[s,e],...] } with offsets in Hypernomicon's
 // extracted-text space (column-aware spacing, dehyphenation, collapsed
 // whitespace); see extractor.js for the algorithm that defines that space.
-var pendingHits = null;
+let pendingHits = null;
 
 // Per-page converted matches in find-controller space, built asynchronously by
 // applyAllHits: convertedMatches[pageNdx] = { starts: [...], lens: [...] }.
-var convertedMatches = null;
+let convertedMatches = null;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ var convertedMatches = null;
 // the viewer page's CSP (style-src 'self') forbids.
 
 (function () {
-  var link = document.createElement('link');
+  const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = 'hypernomicon.css';
   document.head.appendChild(link);
@@ -97,7 +97,7 @@ var convertedMatches = null;
 // showStatusOverlay is idempotent: an identical kind and message leave the DOM
 // alone, so repeated updates never restart the progress animation.
 
-var statusOverlayDiv = null, statusOverlayShownSpec = null;
+let statusOverlayDiv = null, statusOverlayShownSpec = null;
 
 function buildStatusOverlay() {
   if (statusOverlayDiv !== null) return;
@@ -162,7 +162,7 @@ function showStatusOverlay(spec) {
 
   statusOverlayShownSpec = spec;
 
-  var blank = spec.message === '';
+  const blank = spec.message === '';
 
   document.getElementById('hnStatusMessage').textContent = spec.message;
   document.getElementById('hnStatusGlyph').style.display = ((blank === false) && (spec.kind === 'notice')) ? '' : 'none';
@@ -188,7 +188,7 @@ function hideStatusOverlay() {
 
 function drainPendingStatus() {
   if (window.__hnPendingStatus) {
-    var pendingStatus = window.__hnPendingStatus;
+    const pendingStatus = window.__hnPendingStatus;
     window.__hnPendingStatus = null;
     showStatusOverlay(pendingStatus);
   }
@@ -236,7 +236,7 @@ function registerListeners() {
   if (listenersRegistered) return;
   listenersRegistered = true;
 
-  var eventBus = PDFViewerApplication.eventBus;
+  const eventBus = PDFViewerApplication.eventBus;
 
   // The page event names its document. The viewer's url is set when an open is
   // dispatched and cleared by close(), and no page event fires in between, so at
@@ -253,7 +253,7 @@ function registerListeners() {
   // so wrapping it reports each one. The application is a plain object and the
   // viewer calls the method on it, so an own-property replacement keeps `this`.
 
-  var origProgress = PDFViewerApplication.progress;
+  const origProgress = PDFViewerApplication.progress;
 
   PDFViewerApplication.progress = function (percent) {
     javaApp.openProgress();
@@ -264,10 +264,10 @@ function registerListeners() {
   // the watch down until progress resumes (the load continues once a password
   // is entered; cancelling rejects the open, which reports normally).
 
-  var passwordPrompt = PDFViewerApplication.passwordPrompt;
+  const passwordPrompt = PDFViewerApplication.passwordPrompt;
 
   if (passwordPrompt) {
-    var origPromptOpen = passwordPrompt.open;
+    const origPromptOpen = passwordPrompt.open;
 
     passwordPrompt.open = function () {
       javaApp.openWaitingOnUser();
@@ -343,8 +343,8 @@ function openPdfFile(fileUrl, pageNum, sidebarView, token) {
   // would steer that document to this open's page for an instant before the
   // document's own listener corrects it. A superseded open's listener stands down.
 
-  var thisOpen = ++openSeq,
-      pagesEventBus = PDFViewerApplication.eventBus;
+  const thisOpen = ++openSeq,
+        pagesEventBus = PDFViewerApplication.eventBus;
 
   function onPagesLoaded() {
     pagesEventBus.off('pagesloaded', onPagesLoaded);
@@ -368,7 +368,7 @@ function openPdfFile(fileUrl, pageNum, sidebarView, token) {
   // report itself from throwing (an unhandled rejection reports nothing at all).
 
   PDFViewerApplication.open({ url: fileUrl }).then(function () {
-    var pdfDocument = PDFViewerApplication.pdfDocument;
+    const pdfDocument = PDFViewerApplication.pdfDocument;
 
     if (pdfDocument == null) {
       javaApp.openDone(true, 0, '', token, null);
@@ -426,7 +426,7 @@ function convertPageHits(pdfPage, hitRanges) {
   // had no normalization at all. All three getTextContent call sites (here and
   // two in extractor.js) must stay in lockstep.
   return pdfPage.getTextContent({ disableNormalization: true }).then(function (textContent) {
-    var items = textContent.items;
+    const items = textContent.items;
 
     // Cumulative offset of each item's first character in the TEXT HIGHLIGHTER's
     // space: the concatenation of item.str values only. Note this deliberately
@@ -438,10 +438,10 @@ function convertPageHits(pdfPage, hitRanges) {
     // the hasEOL newlines here displaced highlights by one character per line
     // of preceding text on hasEOL-heavy documents.
 
-    var itemStart = new Array(items.length);
-    var pos = 0;
+    const itemStart = new Array(items.length);
+    let pos = 0;
 
-    for (var ndx = 0; ndx < items.length; ndx++) {
+    for (let ndx = 0; ndx < items.length; ndx++) {
       itemStart[ndx] = pos;
       pos += items[ndx].str.length;
     }
@@ -449,23 +449,24 @@ function convertPageHits(pdfPage, hitRanges) {
     // Rerun the extraction concatenation to map extraction-space offsets to
     // (itemNdx, charNdx); see extractPageText in extractor.js.
 
-    var text = '',
-        offsetMap = [],  // offsetMap[extractionPos] = { itemNdx: n, charNdx: c } or null for inserted spaces
+    const offsetMap = [];  // offsetMap[extractionPos] = { itemNdx: n, charNdx: c } or null for inserted spaces
+
+    let text = '',
         prevTextNdx = -1;  // last item with a non-empty str; see extractPageText in extractor.js
 
-    for (var ndx2 = 0; ndx2 < items.length; ndx2++) {
-      var item = items[ndx2],
-          t = item.transform;
+    for (let ndx = 0; ndx < items.length; ndx++) {
+      const item = items[ndx],
+            t = item.transform;
 
       if (prevTextNdx >= 0 && text.length > 0 && item.str.length > 0) {
-        var lastChar = text.charAt(text.length - 1);
+        const lastChar = text.charAt(text.length - 1);
 
         if (lastChar !== ' ') {
-          var prev = items[prevTextNdx],
-              pt = prev.transform;
+          const prev = items[prevTextNdx],
+                pt = prev.transform;
 
-          var fontSize = Math.abs(t[0]) || Math.abs(t[3]) || 10,
-              threshold = fontSize * 0.27;
+          const fontSize = Math.abs(t[0]) || Math.abs(t[3]) || 10,
+                threshold = fontSize * 0.27;
 
           if (Math.abs(t[5] - pt[5]) > threshold || (t[4] - (pt[4] + prev.width)) > threshold) {
             if (lastChar === '-' && Math.abs(t[5] - pt[5]) > threshold) {
@@ -480,10 +481,10 @@ function convertPageHits(pdfPage, hitRanges) {
       }
 
       if (item.str.length > 0)
-        prevTextNdx = ndx2;
+        prevTextNdx = ndx;
 
-      for (var c = 0; c < item.str.length; c++) {
-        offsetMap.push({ itemNdx: ndx2, charNdx: c });
+      for (let c = 0; c < item.str.length; c++) {
+        offsetMap.push({ itemNdx: ndx, charNdx: c });
         text += item.str.charAt(c);
       }
     }
@@ -494,12 +495,13 @@ function convertPageHits(pdfPage, hitRanges) {
     // to whitespace too; keeping them would shift every offset on a page whose
     // item stream begins (or ends) with whitespace.
 
-    var collapsedMap = [],
-        collapsedChars = [],
+    const collapsedChars = [];
+
+    let collapsedMap = [],
         inWhitespace = false;
 
-    for (var p = 0; p < text.length; p++) {
-      var ch = text.charAt(p);
+    for (let p = 0; p < text.length; p++) {
+      const ch = text.charAt(p);
 
       if (/\s/.test(ch)) {
         if (inWhitespace === false) {
@@ -514,7 +516,7 @@ function convertPageHits(pdfPage, hitRanges) {
       }
     }
 
-    var trimStart = 0, trimEnd = collapsedMap.length;
+    let trimStart = 0, trimEnd = collapsedMap.length;
     while (trimStart < trimEnd && (collapsedMap[trimStart] == null || collapsedChars[trimStart] === ' ')) trimStart++;
     while (trimEnd > trimStart && (collapsedMap[trimEnd - 1] == null || collapsedChars[trimEnd - 1] === ' ')) trimEnd--;
     collapsedMap = collapsedMap.slice(trimStart, trimEnd);
@@ -523,10 +525,10 @@ function convertPageHits(pdfPage, hitRanges) {
     // to the span from its first to its last mapped character; inserted spaces
     // (null entries) at the edges are skipped.
 
-    var starts = [], lens = [];
+    const starts = [], lens = [];
 
-    for (var h = 0; h < hitRanges.length; h++) {
-      var s = hitRanges[h][0], e = hitRanges[h][1];
+    for (let h = 0; h < hitRanges.length; h++) {
+      let s = hitRanges[h][0], e = hitRanges[h][1];
 
       if (s < 0) s = 0;
 
@@ -536,10 +538,10 @@ function convertPageHits(pdfPage, hitRanges) {
         e = collapsedMap.length;
       }
 
-      var first = null, last = null;
+      let first = null, last = null;
 
-      for (var q = s; q < e; q++) {
-        var mapping = collapsedMap[q];
+      for (let q = s; q < e; q++) {
+        const mapping = collapsedMap[q];
         if (mapping != null) {
           if (first == null) first = mapping;
           last = mapping;
@@ -552,8 +554,8 @@ function convertPageHits(pdfPage, hitRanges) {
         continue;
       }
 
-      var startPos = itemStart[first.itemNdx] + first.charNdx,
-          endPos   = itemStart[last.itemNdx] + last.charNdx + 1;
+      const startPos = itemStart[first.itemNdx] + first.charNdx,
+            endPos   = itemStart[last.itemNdx] + last.charNdx + 1;
 
       starts.push(startPos);
       lens.push(endPos - startPos);
@@ -588,13 +590,13 @@ function setAllHits(hitsJson) {
   // from a superseded setAllHits call can neither inject nor abort on behalf
   // of this one.
 
-  var hits = pendingHits;
+  const hits = pendingHits;
 
-  var pdfDocument = PDFViewerApplication.pdfDocument,
-      fc = PDFViewerApplication.findController,
-      eventBus = PDFViewerApplication.eventBus,
-      pagesCount = pdfDocument.numPages,
-      pageNums = Object.keys(hits);
+  const pdfDocument = PDFViewerApplication.pdfDocument,
+        fc = PDFViewerApplication.findController,
+        eventBus = PDFViewerApplication.eventBus,
+        pagesCount = pdfDocument.numPages,
+        pageNums = Object.keys(hits);
 
   convertedMatches = new Array(pagesCount);
 
@@ -649,8 +651,8 @@ function setAllHits(hitsJson) {
     eventBus.dispatch('updatetextlayermatches', { source: fc, pageIndex: -1 });
 
     pageNums.forEach(function (pageNumStr) {
-      var pageNum = parseInt(pageNumStr, 10),
-          hitRanges = hits[pageNumStr];
+      const pageNum = parseInt(pageNumStr, 10),
+            hitRanges = hits[pageNumStr];
 
       if ((hitRanges == null) || (hitRanges.length === 0)) return;
 
@@ -662,10 +664,10 @@ function setAllHits(hitsJson) {
         // Matches must be sorted ascending; the highlighter silently drops
         // out-of-order entries.
 
-        var order = converted.starts.map(function (_, ndx) { return ndx; })
-                                    .sort(function (a, b) { return converted.starts[a] - converted.starts[b]; });
+        const order = converted.starts.map(function (_, ndx) { return ndx; })
+                                      .sort(function (a, b) { return converted.starts[a] - converted.starts[b]; });
 
-        var pageNdx = pageNum - 1;
+        const pageNdx = pageNum - 1;
         convertedMatches[pageNdx] = {
           starts: order.map(function (ndx) { return converted.starts[ndx]; }),
           lens:   order.map(function (ndx) { return converted.lens[ndx]; })
@@ -690,7 +692,7 @@ function setAllHits(hitsJson) {
   if (fc._pdfDocument === pdfDocument) {
     startInjection();
   } else {
-    var pollForFindController = function () {
+    const pollForFindController = function () {
       if ((pendingHits !== hits) || (PDFViewerApplication.pdfDocument !== pdfDocument))
         return;  // superseded; a newer hit set (if any) polls on its own
 
@@ -723,7 +725,7 @@ function clearAllHits() {
   // persist, and a later injection re-enabling the gate would resurrect their
   // entries on any page the new query doesn't cover.
 
-  var fc = PDFViewerApplication.findController;
+  const fc = PDFViewerApplication.findController;
 
   fc._pageMatches = [];
   fc._pageMatchesLength = [];
@@ -749,7 +751,7 @@ drainPendingStatus();
 // assigned in this file, so the editor's JS type inference does not know it.)
 
 if (window['__hnPendingOpen']) {
-  var pendingOpen = window['__hnPendingOpen'];
+  const pendingOpen = window['__hnPendingOpen'];
   delete window['__hnPendingOpen'];
   openPdfFile(pendingOpen[0], pendingOpen[1], pendingOpen[2], pendingOpen[3]);
 }
@@ -767,11 +769,11 @@ function scrollToMatchOnPage(pageNum, ndxOnPage) {
 
   PDFViewerApplication.pdfViewer.currentPageNumber = pageNum;
 
-  var attempts = 0;
+  let attempts = 0;
 
   function tryScroll() {
-    var pageDiv = document.querySelector('.page[data-page-number="' + pageNum + '"]');
-    var starts = pageDiv ? pageDiv.querySelectorAll('.textLayer .highlight:not(.middle):not(.end)') : [];
+    const pageDiv = document.querySelector('.page[data-page-number="' + pageNum + '"]'),
+          starts = pageDiv ? pageDiv.querySelectorAll('.textLayer .highlight:not(.middle):not(.end)') : [];
 
     if (starts.length > ndxOnPage) {
       starts[ndxOnPage].scrollIntoView({ behavior: 'smooth', block: 'center' });
