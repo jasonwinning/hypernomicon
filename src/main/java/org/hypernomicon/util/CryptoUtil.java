@@ -39,7 +39,7 @@ import org.netbeans.spi.keyring.KeyringProvider;
 
 import org.openide.util.*;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugging;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -218,7 +218,7 @@ public final class CryptoUtil
 
     Future<Boolean> futureResult = keyringService.submit(() ->
     {
-      if (app.debugging)
+      if (debugging())
         logMessage("Deleting secret: " + secretName);
 
       try

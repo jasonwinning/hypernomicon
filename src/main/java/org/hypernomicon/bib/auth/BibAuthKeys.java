@@ -17,7 +17,7 @@
 
 package org.hypernomicon.bib.auth;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugging;
 import static org.hypernomicon.util.StringUtil.*;
 
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
@@ -73,7 +73,7 @@ public abstract class BibAuthKeys
   @Deprecated
   public static void saveToDBSettings(BibAuthKeys authKeys) throws Exception
   {
-    assert(app.debugging);
+    assert(debugging());
 
     if (isNotEmpty(authKeys))
       authKeys.saveToDBSettings();

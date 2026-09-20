@@ -17,7 +17,7 @@
 
 package org.hypernomicon.bib.zotero;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugLog;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -627,8 +627,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
         offlineLibVersion = onlineLibVersion;
 
-        if (app.debugging)
-          System.out.println("libraryVersion: " + offlineLibVersion);
+        debugLog("libraryVersion: " + offlineLibVersion);
       }
       catch (UnsupportedOperationException | IOException | ParseException e)
       {

@@ -801,7 +801,7 @@ public final class MainCtrlr
     mnuAutoImport.setSelected(app.prefs.getBoolean(PrefKey.AUTO_IMPORT, true));
     mnuAutoImport.setOnAction(event -> app.prefs.putBoolean(PrefKey.AUTO_IMPORT, mnuAutoImport.isSelected()));
 
-    setAllVisible(app.debugging, mnuChangeID, mnuSaveReloadAll, mnuTestConsole);
+    setAllVisible(debugging(), mnuChangeID, mnuSaveReloadAll, mnuTestConsole);
 
 //---------------------------------------------------------------------------
 
@@ -951,8 +951,8 @@ public final class MainCtrlr
       if (board.hasContent(HYPERNOMICON_DATA_FORMAT))
         return;
 
-      if (board.hasImage() && app.debugging)
-        System.out.println("has image");
+      if (board.hasImage())
+        debugLog("has image");
 
       if (board.hasFiles())
       {

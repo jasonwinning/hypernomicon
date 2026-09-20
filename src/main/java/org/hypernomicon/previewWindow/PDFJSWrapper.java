@@ -571,7 +571,7 @@ final class PDFJSWrapper
       return MoveMouseWheelCallback.Response.proceed();
     });
 
-    if (app.debugging) browser.on(ConsoleMessageReceived.class, event ->
+    if (debugging()) browser.on(ConsoleMessageReceived.class, event ->
     {
       var msg = event.consoleMessage();
       String level = msg.level().toString(),
@@ -617,9 +617,8 @@ final class PDFJSWrapper
 
       pdfjsViewerLoaded = isViewerPage;
 
-      if (app.debugging)
-        System.out.println("PDFJSWrapper: main frame load finished; isViewerPage=" + isViewerPage
-          + " url=" + describeUrl(url) + "; pane " + paneStateStr());
+      debugLog("PDFJSWrapper: main frame load finished; isViewerPage=" + isViewerPage
+        + " url=" + describeUrl(url) + "; pane " + paneStateStr());
 
       // Direct content is not confirmed here; see the document-load handler below.
 
@@ -664,8 +663,7 @@ final class PDFJSWrapper
 
       if ((contentToShowIsDirect == false) || (isExpectedDirectUrl(url) == false))
       {
-        if (app.debugging)
-          System.out.println("PDFJSWrapper: error page for a navigation other than the expected direct load: " + event.error() + "; url=" + describeUrl(url));
+        debugLog("PDFJSWrapper: error page for a navigation other than the expected direct load: " + event.error() + "; url=" + describeUrl(url));
 
         return;
       }
@@ -695,17 +693,15 @@ final class PDFJSWrapper
 
       if (isExpectedDirectUrl(url) == false)
       {
-        if (app.debugging)
-          System.out.println("PDFJSWrapper: stale direct-content finish dropped; finished=" + describeUrl(url)
-            + " expected=" + (expectedDirectUrl == null ? "none" : describeUrl(expectedDirectUrl)));
+        debugLog("PDFJSWrapper: stale direct-content finish dropped; finished=" + describeUrl(url)
+          + " expected=" + (expectedDirectUrl == null ? "none" : describeUrl(expectedDirectUrl)));
 
         return;
       }
 
       ready = true;
 
-      if (app.debugging)
-        System.out.println("PDFJSWrapper: direct content loaded; url=" + describeUrl(url));
+      debugLog("PDFJSWrapper: direct content loaded; url=" + describeUrl(url));
 
       // A matching finish is also a status-clearing point: any overlay died
       // with the page this navigation replaced. The clear hops to the FX
@@ -808,8 +804,7 @@ final class PDFJSWrapper
 
     if ((curBrowser == null) || curBrowser.isClosed())
     {
-      if (app.debugging)
-        System.out.println("PDFJSWrapper.execJS dropped (browser closed): " + scriptHead(script));
+      debugLog("PDFJSWrapper.execJS dropped (browser closed): " + scriptHead(script));
 
       return false;
     }
@@ -1141,10 +1136,9 @@ final class PDFJSWrapper
 
     expectedDirectUrl = url;
 
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.loadFile: " + (isHtml ? "html" : "direct") + ' ' + filePath.getNameOnly()
-        + " url=" + describeUrl(url)
-        + "; supersedes in-flight open=" + (supersededOpenFile == null ? "none" : supersededOpenFile));
+    debugLog("PDFJSWrapper.loadFile: " + (isHtml ? "html" : "direct") + ' ' + filePath.getNameOnly()
+      + " url=" + describeUrl(url)
+      + "; supersedes in-flight open=" + (supersededOpenFile == null ? "none" : supersededOpenFile));
 
     browser.navigation().loadUrl(url);
   }
@@ -1188,8 +1182,7 @@ final class PDFJSWrapper
    * the plain truncation that used to apply hid which content they carried; here
    * they are summarized by media type, payload byte length, and a stable hash so
    * two log lines referring to the same content can be correlated. Other URLs are
-   * shown in full (they are short: {@code hnres://}, {@code file://}). Used only
-   * under {@code app.debugging}.
+   * shown in full (they are short: {@code hnres://}, {@code file://}).
    */
   private static String describeUrl(String url)
   {
@@ -1262,10 +1255,9 @@ final class PDFJSWrapper
 
   void loadPdf(FilePath file, int initialPage)
   {
-    if (app.debugging)
-      System.out.println("PDFJSWrapper.loadPdf: paged " + file.getNameOnly() + " page " + initialPage
-        + "; supersedes in-flight open=" + (opens.isOpenInFlight() ? opens.inFlightFile() : "none")
-        + "; lastDirect=" + (lastDirectFilePath == null ? "null" : lastDirectFilePath.getNameOnly()));
+    debugLog("PDFJSWrapper.loadPdf: paged " + file.getNameOnly() + " page " + initialPage
+      + "; supersedes in-flight open=" + (opens.isOpenInFlight() ? opens.inFlightFile() : "none")
+      + "; lastDirect=" + (lastDirectFilePath == null ? "null" : lastDirectFilePath.getNameOnly()));
 
     // Reset ready synchronously so a cross-thread goToPage call queued before
     // the open actually issues sees a not-ready state and buffers instead of
@@ -1295,8 +1287,7 @@ final class PDFJSWrapper
     {
       cleanupPdfHtml();
 
-      if (app.debugging)
-        System.out.println("PDFJSWrapper: initiating viewer navigation");
+      debugLog("PDFJSWrapper: initiating viewer navigation");
 
       browser.navigation().loadUrl(ResourceServer.viewerUrl());
     }
@@ -1371,8 +1362,7 @@ final class PDFJSWrapper
       // intent (for a superseded open the viewer page is loaded by then, so the
       // re-issued open dispatches directly without another navigation).
 
-      if (app.debugging)
-        System.out.println("PDFJSWrapper: reporting failed open of " + file.getNameOnly() + " (" + cause + "); pane " + paneStateStr());
+      debugLog("PDFJSWrapper: reporting failed open of " + file.getNameOnly() + " (" + cause + "); pane " + paneStateStr());
 
       if (doneHndlr != null)
         doneHndlr.handle(PDFJSOperation.pjsOpen, file, false, cause, null);

@@ -203,7 +203,7 @@ public class AboutDlgCtrlr extends ModalDialog
 
   private String getGeneralTabHtml()
   {
-    String maxHeap = app.debugging ? "Max heap space: " + numberFormat.format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
+    String maxHeap = debugging() ? "Max heap space: " + numberFormat.format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
 
     String distro = IS_OS_LINUX ? detectDistro() : "";
 

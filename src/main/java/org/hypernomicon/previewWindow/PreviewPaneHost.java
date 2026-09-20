@@ -334,9 +334,8 @@ final class PreviewPaneHost
 
   private void setPreviewNow(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
   {
-    if (debugging())
-      System.out.println("PreviewPaneHost[" + src + "].setPreviewNow EXECUTE: " + filePath.getNameOnly()
-        + " (replacing intent=" + (core.intentFile() == null ? "null" : core.intentFile().getNameOnly()) + ')');
+    debugLog("PreviewPaneHost[" + src + "].setPreviewNow EXECUTE: " + filePath.getNameOnly()
+      + " (replacing intent=" + (core.intentFile() == null ? "null" : core.intentFile().getNameOnly()) + ')');
 
     if (viewerReady() == false) return;
 
@@ -403,10 +402,9 @@ final class PreviewPaneHost
         // waiting in the settle gate. Stash it for setPreviewNow to consume;
         // dropping it would leave that intent Pending forever.
 
-        if (debugging())
-          System.out.println("PreviewPaneHost[" + src + "].updateHits: STASHED " + newStatus.getClass().getSimpleName() +
-                             " for gated request " + filePath.getNameOnly() +
-                             " (intent=" + (intentFile == null ? "null" : intentFile.getNameOnly()) + ')');
+        debugLog("PreviewPaneHost[" + src + "].updateHits: STASHED " + newStatus.getClass().getSimpleName() +
+                 " for gated request " + filePath.getNameOnly() +
+                 " (intent=" + (intentFile == null ? "null" : intentFile.getNameOnly()) + ')');
 
         requestedFileHits = newStatus;
         return;
@@ -414,9 +412,8 @@ final class PreviewPaneHost
 
       // Stale by value; a different file is intended now
 
-      if (debugging())
-        System.out.println("PreviewPaneHost[" + src + "].updateHits: DROPPED for " + filePath.getNameOnly() +
-                           " (intent=" + (intentFile == null ? "null" : intentFile.getNameOnly()) + ')');
+      debugLog("PreviewPaneHost[" + src + "].updateHits: DROPPED for " + filePath.getNameOnly() +
+               " (intent=" + (intentFile == null ? "null" : intentFile.getNameOnly()) + ')');
 
       return;
     }

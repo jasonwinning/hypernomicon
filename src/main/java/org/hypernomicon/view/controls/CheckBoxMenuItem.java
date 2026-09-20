@@ -17,14 +17,12 @@
 
 package org.hypernomicon.view.controls;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugLog;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -68,8 +66,7 @@ public class CheckBoxMenuItem extends CustomMenuItem
         ContextMenu popup = getParentPopup();
         if (popup == null)
         {
-          if (app.debugging)
-            System.out.println("Queries tab File Actions button checkbox menu failed to get reference to parent menu");
+          debugLog("Queries tab File Actions button checkbox menu failed to get reference to parent menu");
 
           return;
         }
@@ -77,8 +74,7 @@ public class CheckBoxMenuItem extends CustomMenuItem
         double width = popup.getWidth();
         if (width == 0.0)
         {
-          if (app.debugging)
-            System.out.println("Queries tab File Actions button checkbox menu failed to get parent menu width");
+          debugLog("Queries tab File Actions button checkbox menu failed to get parent menu width");
 
           return;
         }

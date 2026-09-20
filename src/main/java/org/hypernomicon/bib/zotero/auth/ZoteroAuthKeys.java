@@ -17,7 +17,7 @@
 
 package org.hypernomicon.bib.zotero.auth;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugging;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.CryptoUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
@@ -68,7 +68,7 @@ public final class ZoteroAuthKeys extends BibAuthKeys
     if (isEmpty())
       return;
 
-    assert(app.debugging);
+    assert(debugging());
 
     db.prefs.put(PrefKey.BIB_API_KEY, encrypt("", apiKey));
   }

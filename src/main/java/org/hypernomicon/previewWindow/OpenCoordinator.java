@@ -294,8 +294,7 @@ final class OpenCoordinator
 
     if ((file == null) || (token != inFlightToken))
     {
-      if (debugging())
-        System.out.println("OpenCoordinator.openFinished: dropped report for closed-out open (token " + token + ", success=" + success + ')');
+      debugLog("OpenCoordinator.openFinished: dropped report for closed-out open (token " + token + ", success=" + success + ')');
 
       return;
     }
@@ -372,8 +371,7 @@ final class OpenCoordinator
 
       if (viewerLoadInFlight)
       {
-        if (debugging())
-          System.out.println("OpenCoordinator.loadViewerPage: joining in-flight viewer load");
+        debugLog("OpenCoordinator.loadViewerPage: joining in-flight viewer load");
 
         return;
       }
@@ -429,8 +427,7 @@ final class OpenCoordinator
       viewerLoadStillInFlight = viewerLoadInFlight;
     }
 
-    if (debugging())
-      System.out.println("OpenCoordinator.navigationFinished: isViewerPage=" + isViewerPage + " hadPostLoadWork=" + hadPostLoadWork);
+    debugLog("OpenCoordinator.navigationFinished: isViewerPage=" + isViewerPage + " hadPostLoadWork=" + hadPostLoadWork);
 
     // Read once each, token first: this runs on a browser thread, and the FX
     // thread can release or replace the in-flight open between the reads. A
@@ -443,8 +440,7 @@ final class OpenCoordinator
 
     if ((supersededFile != null) && (toRun == null) && (viewerLoadStillInFlight == false))
     {
-      if (debugging())
-        System.out.println("OpenCoordinator: navigation superseded the in-flight open of " + supersededFile + "; releasing the coordinator");
+      debugLog("OpenCoordinator: navigation superseded the in-flight open of " + supersededFile + "; releasing the coordinator");
 
       fxExecutor.execute(() ->
       {
@@ -473,8 +469,8 @@ final class OpenCoordinator
       // releases the coordinator; if that never happens, every later open
       // parks here and the viewer sits empty, so make the wait visible.
 
-      if (debugging() && (waitingFile != null))
-        System.out.println("OpenCoordinator.pump: waiting on in-flight open of " + inFlightFile + "; queued " + waitingFile.getNameOnly());
+      if (waitingFile != null)
+        debugLog("OpenCoordinator.pump: waiting on in-flight open of " + inFlightFile + "; queued " + waitingFile.getNameOnly());
 
       return;
     }

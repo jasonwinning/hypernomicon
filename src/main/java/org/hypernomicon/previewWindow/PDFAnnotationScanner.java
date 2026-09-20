@@ -93,8 +93,7 @@ final class PDFAnnotationScanner
       System.out.println("PDFAnnotationScanner: unable to scan " + filePath + ": " + getThrowableMessage(e));
     }
 
-    if (debugging())
-      System.out.println("PDFAnnotationScanner: " + annotPages.size() + " annotated of " + pageNum + " pages in " + (System.currentTimeMillis() - startTime) + " ms: " + filePath.getNameOnly());
+    debugLog("PDFAnnotationScanner: " + annotPages.size() + " annotated of " + pageNum + " pages in " + (System.currentTimeMillis() - startTime) + " ms: " + filePath.getNameOnly());
 
     return annotPages;
   }

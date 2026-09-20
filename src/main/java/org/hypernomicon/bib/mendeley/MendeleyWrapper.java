@@ -401,8 +401,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
         if (remoteChangeIDtoObj.isEmpty() == false)
           changed = true;
 
-        if (app.debugging)
-          System.out.println("Number of Mendeley documents modified on server: " + (remoteChangeIDtoObj.size() + remoteDeletions.size()));
+        debugLog("Number of Mendeley documents modified on server: " + (remoteChangeIDtoObj.size() + remoteDeletions.size()));
 
 // If document that was assigned to a work now has unrecognized entry type, unassign it -----------------------------
 // ------------------------------------------------------------------------------------------------------------------
@@ -451,8 +450,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
           }
         });
 
-        if (app.debugging)
-          System.out.println("Number of Mendeley documents modified locally: " + localChanges.size());
+        debugLog("Number of Mendeley documents modified locally: " + localChanges.size());
 
         remoteChangeIDtoObj.forEach((entryKey, jObj) ->
         {

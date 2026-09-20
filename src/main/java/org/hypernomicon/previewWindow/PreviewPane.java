@@ -438,8 +438,8 @@ final class PreviewPane
     // only real transitions (desired != issued), which is exactly where a stale
     // re-issue of a superseded document would show up.
 
-    if (debugging() && (desired.equals(issuedView) == false))
-      System.out.println("PreviewPane.issue: gen=" + generation + " intent=" + (intent == null ? "null" : intent.sourceFile().getNameOnly())
+    if (desired.equals(issuedView) == false)
+      debugLog("PreviewPane.issue: gen=" + generation + " intent=" + (intent == null ? "null" : intent.sourceFile().getNameOnly())
         + "; " + viewStr(issuedView) + " -> " + viewStr(desired));
 
     switch (desired)

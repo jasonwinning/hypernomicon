@@ -1112,8 +1112,7 @@ public final class PreviewWindow extends NonmodalWindow
 
       Platform.runLater(() ->
       {
-        if (app.debugging)
-          System.out.println("Shutdown: closing main window");
+        debugLog("Shutdown: closing main window");
 
         ui.getStage().close();
 
@@ -1187,8 +1186,7 @@ public final class PreviewWindow extends NonmodalWindow
   {
     if (jxBrowserInitialized == false) return;
 
-    if (app.debugging)
-      System.out.println("Shutdown: disposing browser instances...");
+    debugLog("Shutdown: disposing browser instances...");
 
     // The chain calls the blocking browser/engine close(), which must stay off the FX
     // thread (closing a browser whose view is in the scene graph can need the FX thread,

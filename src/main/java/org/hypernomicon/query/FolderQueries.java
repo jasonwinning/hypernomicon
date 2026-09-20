@@ -17,7 +17,7 @@
 
 package org.hypernomicon.query;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugging;
 import static org.hypernomicon.model.HyperDB.db;
 
 import java.util.*;
@@ -45,7 +45,7 @@ public final class FolderQueries
 
   public static void addQueries(List<Query<?>> allQueries)
   {
-    if (app.debugging) allQueries.add(new FilteredFolderQuery(QUERY_DUPLICATE_FOLDERS, "that are duplicate folders")
+    if (debugging()) allQueries.add(new FilteredFolderQuery(QUERY_DUPLICATE_FOLDERS, "that are duplicate folders")
     {
       @Override public boolean evaluate(HDT_Folder folder, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {

@@ -71,10 +71,10 @@ public final class SettleGate implements RequestGate
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void debugLog(String message)
+  private void logDecision(String message)
   {
-    if ((debugLabel != null) && debugging())
-      System.out.println("SettleGate[" + debugLabel + "]: " + message);
+    if (debugLabel != null)
+      debugLog("SettleGate[" + debugLabel + "]: " + message);
   }
 
 //---------------------------------------------------------------------------
@@ -92,13 +92,13 @@ public final class SettleGate implements RequestGate
 
     if (quiet && (pending == null))
     {
-      debugLog("quiet; running immediately");
+      logDecision("quiet; running immediately");
 
       action.run();
       return;
     }
 
-    debugLog("burst (quiet=" + quiet + ", hadPending=" + (pending != null) + "); deferred as latest");
+    logDecision("burst (quiet=" + quiet + ", hadPending=" + (pending != null) + "); deferred as latest");
 
     pending = action;
     timer.playFromStart();
@@ -111,7 +111,7 @@ public final class SettleGate implements RequestGate
   @Override public void cancel()
   {
     if (pending != null)
-      debugLog("cancelled; pending action dropped");
+      logDecision("cancelled; pending action dropped");
 
     timer.stop();
     pending = null;
@@ -130,13 +130,13 @@ public final class SettleGate implements RequestGate
 
     if (((System.nanoTime() - lastRequestNanos) / 1_000_000L) < quietMillis)
     {
-      debugLog("timer fired early relative to last request; rearmed");
+      logDecision("timer fired early relative to last request; rearmed");
 
       timer.playFromStart();
       return;
     }
 
-    debugLog("burst settled; running deferred latest");
+    logDecision("burst settled; running deferred latest");
 
     Runnable action = pending;
     pending = null;

@@ -1205,9 +1205,8 @@ public class FullTextIndexer
       catch (IOException e) { smallFiles.add(filePath); }
     }
 
-    if (debugging())
-      System.out.println("Full-text indexer: " + smallFiles.size() + " small, "
-        + largeFiles.size() + " large, " + workerThreads + " worker thread" + (workerThreads == 1 ? "" : "s"));
+    debugLog("Full-text indexer: " + smallFiles.size() + " small, "
+      + largeFiles.size() + " large, " + workerThreads + " worker thread" + (workerThreads == 1 ? "" : "s"));
 
     AtomicInteger docCount = new AtomicInteger(), skipped = new AtomicInteger(), failed = new AtomicInteger(), noText = new AtomicInteger();
     long startTime = System.currentTimeMillis();
@@ -1228,9 +1227,8 @@ public class FullTextIndexer
       int processed = docCount.get() + skipped.get() + failed.get() + noText.get();
       buildProcessedFiles = processed;
 
-      if (debugging())
-        System.out.println("Full-text indexer: " + processed + '/' + totalIndexable
-          + " processed (" + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + noText.get() + " no text, " + failed.get() + " failed)");
+      debugLog("Full-text indexer: " + processed + '/' + totalIndexable
+        + " processed (" + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + noText.get() + " no text, " + failed.get() + " failed)");
 
       fireStatusListener();
 
@@ -1273,9 +1271,8 @@ public class FullTextIndexer
           logThrowable(t);
         }
 
-        if (debugging())
-          System.out.println("Full-text indexer: " + Thread.currentThread().getName()
-            + " exiting after " + workerCount + " files. stopRequested=" + stopRequested + " queueEmpty=" + workQueue.isEmpty());
+        debugLog("Full-text indexer: " + Thread.currentThread().getName()
+          + " exiting after " + workerCount + " files. stopRequested=" + stopRequested + " queueEmpty=" + workQueue.isEmpty());
       });
     }
 
@@ -1304,19 +1301,17 @@ public class FullTextIndexer
 
       waitForExecutorToFinish(buildWorkerPool);
 
-      if (debugging())
-        System.out.println("Full-text indexer: worker pool loop exited. stopRequested=" + stopRequested
-          + " workQueue.size=" + workQueue.size()
-          + " pool.isTerminated=" + (buildWorkerPool == null ? "null" : buildWorkerPool.isTerminated())
-          + " processed=" + (docCount.get() + skipped.get() + failed.get() + noText.get()));
+      debugLog("Full-text indexer: worker pool loop exited. stopRequested=" + stopRequested
+        + " workQueue.size=" + workQueue.size()
+        + " pool.isTerminated=" + (buildWorkerPool == null ? "null" : buildWorkerPool.isTerminated())
+        + " processed=" + (docCount.get() + skipped.get() + failed.get() + noText.get()));
 
       waitForExecutorToFinish(buildLargeFileExecutor);
 
-      if (debugging())
-        System.out.println("Full-text indexer: large file loop exited. stopRequested=" + stopRequested
-          + " executor.isTerminated=" + (buildLargeFileExecutor == null ? "null" : buildLargeFileExecutor.isTerminated())
-          + " processed=" + (docCount.get() + skipped.get() + failed.get() + noText.get())
-          + " pdfJS pool=" + (pdfJSExtractorPool == null ? "null" : pdfJSExtractorPool.size() + " available"));
+      debugLog("Full-text indexer: large file loop exited. stopRequested=" + stopRequested
+        + " executor.isTerminated=" + (buildLargeFileExecutor == null ? "null" : buildLargeFileExecutor.isTerminated())
+        + " processed=" + (docCount.get() + skipped.get() + failed.get() + noText.get())
+        + " pdfJS pool=" + (pdfJSExtractorPool == null ? "null" : pdfJSExtractorPool.size() + " available"));
     }
     finally
     {
@@ -1364,10 +1359,9 @@ public class FullTextIndexer
     }
     else
     {
-      if (debugging())
-        System.out.println("Full-text indexer: initial build interrupted after " + elapsedStr(startTime) + ". "
-          + processed + '/' + totalIndexable + " processed ("
-          + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + noText.get() + " no text, " + failed.get() + " failed).");
+      debugLog("Full-text indexer: initial build interrupted after " + elapsedStr(startTime) + ". "
+        + processed + '/' + totalIndexable + " processed ("
+        + docCount.get() + " indexed, " + skipped.get() + " up-to-date, " + noText.get() + " no text, " + failed.get() + " failed).");
     }
 
     commitAndSave();
@@ -1674,8 +1668,7 @@ public class FullTextIndexer
 
     if (result.text().isBlank())
     {
-      if (debugging())
-        System.out.println("Full-text indexer: no text extracted from " + filePath);
+      debugLog("Full-text indexer: no text extracted from " + filePath);
 
       markAsNoText(relPath, mtime, size);
       extractionFailures.add(relPath);
@@ -1875,8 +1868,7 @@ public class FullTextIndexer
       disposeExtractor(extractor);
     }
 
-    if (debugging())
-      System.out.println("Full-text indexer: pdf.js extractor pool disposed");
+    debugLog("Full-text indexer: pdf.js extractor pool disposed");
   }
 
 //---------------------------------------------------------------------------
@@ -1924,8 +1916,7 @@ public class FullTextIndexer
 
     LinkedBlockingQueue<PDFJSTextExtractor> pool = new LinkedBlockingQueue<>(poolSize);
 
-    if (debugging())
-      System.out.println("Full-text indexer: initializing " + poolSize + " pdf.js extractor instance(s)...");
+    debugLog("Full-text indexer: initializing " + poolSize + " pdf.js extractor instance(s)...");
 
     for (int ndx = 0; ndx < poolSize; ndx++)
     {
@@ -1942,8 +1933,7 @@ public class FullTextIndexer
     }
     else
     {
-      if (debugging())
-        System.out.println("Full-text indexer: " + pool.size() + " pdf.js extractor(s) ready");
+      debugLog("Full-text indexer: " + pool.size() + " pdf.js extractor(s) ready");
 
       pdfJSExtractorPool = pool;
     }
@@ -2084,10 +2074,9 @@ public class FullTextIndexer
           //     V8 retention that pdf.destroy() does not return to the OS).
           // Either way, dispose the process and put a fresh instance back so the pool does not degrade.
 
-          if (debugging())
-            System.out.println("Full-text indexer: " + (extractor.isReady()
-              ? "recycling pdf.js extractor after " + extractor.extractionCount() + " extractions"
-              : "replacing unresponsive pdf.js extractor"));
+          debugLog("Full-text indexer: " + (extractor.isReady()
+            ? "recycling pdf.js extractor after " + extractor.extractionCount() + " extractions"
+            : "replacing unresponsive pdf.js extractor"));
 
           disposeExtractor(extractor);
 

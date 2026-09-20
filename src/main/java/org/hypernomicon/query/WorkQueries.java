@@ -24,7 +24,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.concurrent.Worker.State;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugging;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -107,7 +107,7 @@ public final class WorkQueries
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-    if (app.debugging) allQueries.add(new WorkQuery(QUERY_ANALYZE_METADATA, "analyze pdf metadata")
+    if (debugging()) allQueries.add(new WorkQuery(QUERY_ANALYZE_METADATA, "analyze pdf metadata")
     {
       private List<List<String>> csvFile;
       private final FilePath csvFilePath = testDir().resolve("work-metadata").resolve("data.csv");

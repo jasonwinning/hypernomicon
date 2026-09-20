@@ -23,7 +23,7 @@ import org.hypernomicon.query.Query.PersonQuery;
 import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugging;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.Tag.*;
 
@@ -46,7 +46,7 @@ public final class PersonQueries
 
   public static void addQueries(List<Query<?>> allQueries)
   {
-    if (app.debugging) allQueries.add(new PersonQuery(QUERY_SET_DECEASED_AS_PAST, "Set deceased people as past members of institutions")
+    if (debugging()) allQueries.add(new PersonQuery(QUERY_SET_DECEASED_AS_PAST, "Set deceased people as past members of institutions")
     {
       @Override public boolean evaluate(HDT_Person person, HyperTableRow row, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
       {

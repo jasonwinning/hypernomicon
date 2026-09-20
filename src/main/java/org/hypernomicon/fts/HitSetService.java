@@ -468,7 +468,7 @@ public final class HitSetService
       for (PageMatch match : convertedMatches)
         pageToRangeCount.merge(match.pageNumber(), (match.hitRanges() != null) ? match.hitRanges().size() : 0, Integer::sum);
 
-      System.out.println("computeConvertedPdfHits: " + convertedMatches.size() + " matches; page->rangeCount " + pageToRangeCount);
+      debugLog("computeConvertedPdfHits: " + convertedMatches.size() + " matches; page->rangeCount " + pageToRangeCount);
     }
 
     if (convertedMatches.isEmpty())

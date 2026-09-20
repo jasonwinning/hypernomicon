@@ -17,7 +17,7 @@
 
 package org.hypernomicon.settings;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugging;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.HyperDB.db;
@@ -277,7 +277,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     initMaxChar(spnMaxChar, FileNamePrefKey.MAX_CHAR);
 
-    if (app.debugging == false)
+    if (debugging() == false)
       vbox.getChildren().remove(1, 3);
 
     reloadFromPrefs();

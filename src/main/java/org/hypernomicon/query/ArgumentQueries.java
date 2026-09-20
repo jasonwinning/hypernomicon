@@ -23,7 +23,7 @@ import org.hypernomicon.view.cellValues.HyperTableCell;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.debugging;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.cellValues.HyperTableCell.*;
 
@@ -46,7 +46,7 @@ public final class ArgumentQueries
 
   public static void addQueries(List<Query<?>> allQueries)
   {
-    if (app.debugging && Boolean.FALSE) allQueries.add(new ArgumentQuery(QUERY_SOURCES_AT_LEAST, "with at least ___ sources")
+    if (debugging() && Boolean.FALSE) allQueries.add(new ArgumentQuery(QUERY_SOURCES_AT_LEAST, "with at least ___ sources")
     {
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {

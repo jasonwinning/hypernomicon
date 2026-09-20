@@ -96,7 +96,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 
   public final Preferences prefs;
-  public final boolean debugging;
+  private final boolean debugging;
 
   private static int total, ctr, lastPercent;
 
@@ -126,6 +126,11 @@ public final class App extends Application
    *  run before the application instance exists (unit tests). */
   public static boolean debugging() { return (app != null) && app.debugging; }
 
+  /** Writes a flow-tracing line that only appears when running under a debugger.
+   *  The message is built by the caller either way, so a message that is
+   *  expensive to build belongs inside the caller's own {@link #debugging()} check. */
+  public static void debugLog(String message) { if (debugging()) System.out.println(message); }
+
 //---------------------------------------------------------------------------
 
   // Runs in FX application thread before init and before start
@@ -147,13 +152,13 @@ public final class App extends Application
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
     debugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
 
-    FolderTreeWatcher.consoleLogging = debugging;
+    FolderTreeWatcher.consoleLogging = debugging();
 
     // Apache POI logs an ERROR ("Skipped invalid entry") for every dangling relationship
     // inside a malformed .docx while Tika parses it during full-text indexing. POI skips
     // the entry and extraction proceeds, so keep the noise out of users' consoles and logs.
 
-    if (debugging == false)
+    if (debugging() == false)
       Configurator.setLevel("org.apache.poi", Level.FATAL);
 
     Preferences appPrefs = null;
@@ -307,7 +312,7 @@ public final class App extends Application
 
     shortcuts.setValue(Shortcut.loadFromPrefs());
 
-    if (debugging)
+    if (debugging())
       DPIScaleAudit.install();
 
     try
