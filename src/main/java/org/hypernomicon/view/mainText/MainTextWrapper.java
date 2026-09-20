@@ -182,6 +182,34 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Shows a record description read-only in a WebView that belongs to a modal dialog, at the zoom level of
+   * the main text view. External links open in the default browser. Record links do nothing while the dialog
+   * is open; see {@link MainTextUtil#handleJSEvent(String, WebEngine)}.
+   * @param dialogView the dialog's WebView
+   * @param htmlToUse the description HTML
+   */
+  public static void initDialogDescView(WebView dialogView, String htmlToUse)
+  {
+    WebEngine dialogWE = dialogView.getEngine();
+
+    dialogWE.setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
+
+    dialogWE.titleProperty().addListener((ob, oldTitle, newTitle) -> handleJSEvent("", dialogWE));
+
+    dialogView.setOnContextMenuRequested(_ -> setHTMLContextMenu());
+
+    dialogView.setOnDragOver   (Event::consume);
+    dialogView.setOnDragDropped(Event::consume);
+
+    updateZoomFromPref(dialogView, ZoomPrefKey.MAINTEXT);
+
+    setReadOnlyHTML(htmlToUse, dialogWE);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void clear()
   {
     removeFromParent(bpEditorRoot);

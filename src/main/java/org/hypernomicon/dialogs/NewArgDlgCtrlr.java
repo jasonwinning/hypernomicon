@@ -24,7 +24,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.*;
@@ -53,7 +52,6 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.SimpleSelector;
 
 import javafx.application.Platform;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
@@ -192,12 +190,7 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     tfTargetName.setText(target.name());
 
-    webView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
-
-    MainTextWrapper.setReadOnlyHTML(target.getMainText().getHtml(), webView.getEngine());
-
-    webView.setOnDragOver   (Event::consume);
-    webView.setOnDragDropped(Event::consume);
+    MainTextWrapper.initDialogDescView(webView, target.getMainText().getHtml());
 
     rbNew.setSelected(true);
 

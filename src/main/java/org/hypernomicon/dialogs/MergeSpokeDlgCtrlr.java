@@ -17,14 +17,15 @@
 
 package org.hypernomicon.dialogs;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.unities.HDT_RecordWithMainText;
+import org.hypernomicon.view.mainText.MainTextWrapper;
 
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
 import javafx.scene.web.*;
@@ -59,23 +60,16 @@ public class MergeSpokeDlgCtrlr extends ModalDialog
     mainText1 = record1.getMainText().getHtml();
     mainText2 = record2.getMainText().getHtml();
 
-    view1.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
-    view1.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
-
-    view1.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText1).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
-    view2.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText2).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
-
-    view1.setOnDragOver   (Event::consume);
-    view1.setOnDragDropped(Event::consume);
-
-    view2.setOnDragOver   (Event::consume);
-    view2.setOnDragDropped(Event::consume);
+    MainTextWrapper.initDialogDescView(view1, mainText1);
+    MainTextWrapper.initDialogDescView(view2, mainText2);
 
     if (strNullOrBlank(extractTextFromHTML(mainText1)) && strNotNullOrBlank(extractTextFromHTML(mainText2)))
       rbDesc2.setSelected(true);
 
-    WebEngine we = ((WebView) he3.lookup(".web-view")).getEngine();
-    we.setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
+    WebView editorView = (WebView) he3.lookup(".web-view");
+
+    editorView.getEngine().setUserStyleSheetLocation(cssStrToDataURI(EMPTY_FONT_CSS));
+    updateZoomFromPref(editorView, ZoomPrefKey.MAINTEXT);
 
     he3.setHtmlText(prepHtmlForEditing(""));
   }

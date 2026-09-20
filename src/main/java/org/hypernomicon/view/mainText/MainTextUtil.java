@@ -58,6 +58,7 @@ import com.google.common.collect.Ordering;
 import javafx.scene.input.*;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
 
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
@@ -180,6 +181,13 @@ public final class MainTextUtil
     if (jsEventID == lastEventID) return;
 
     lastEventID = jsEventID;
+
+    // While a modal dialog is open, the only view that can be clicked is one inside that dialog. Navigating
+    // the main window or opening another window underneath it is not safe in the middle of whatever
+    // operation the dialog is part of, so only external links are followed.
+
+    if ((jsEvent != JS_EVENT_OPEN_URL) && (ui.windows.getOutermostModality() != Modality.NONE))
+      return;
 
     if (jsEvent == JS_EVENT_OPEN_FILE)
       jsEvent = ui.btnPointerLaunch.isSelected() ? JS_EVENT_LAUNCH_FILE : JS_EVENT_OPEN_PREVIEW;
@@ -1046,7 +1054,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void updateZoomFromPref(WebView view, String prefID)
+  public static void updateZoomFromPref(WebView view, String prefID)
   {
     view.setZoom(zoomFactors.get(app.prefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);
   }
