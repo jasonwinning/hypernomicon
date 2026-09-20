@@ -491,12 +491,7 @@ public final class FilePathRegistry implements RegistryAccessor
     if (cleanupExecutor != null)
       cleanupExecutor.shutdownNow();
 
-    cleanupExecutor = Executors.newSingleThreadScheduledExecutor(runnable ->
-    {
-      Thread cleanupThread = new HyperThread("FilePathRegistryCleanup", runnable);
-      cleanupThread.setDaemon(true);
-      return cleanupThread;
-    });
+    cleanupExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> new HyperThread("FilePathRegistryCleanup", runnable).asDaemon());
 
     cleanupExecutor.scheduleAtFixedRate(this::cleanup, CLEANUP_INTERVAL_MINUTES, CLEANUP_INTERVAL_MINUTES, TimeUnit.MINUTES);
   }

@@ -113,11 +113,7 @@ public final class ResourceServer
    *  full-file background download plus a few ranged fetches per document;
    *  excess requests queue. */
   private static final ExecutorService streamExecutor = Executors.newFixedThreadPool(4, runnable ->
-  {
-    HyperThread thread = new HyperThread("ResourceServer-stream", runnable);
-    thread.setDaemon(true);
-    return thread;
-  });
+    new HyperThread("ResourceServer-stream", runnable).asDaemon());
 
   private static final Map<String, String> MIME_TYPES = Map.ofEntries(
     Map.entry("html"      , "text/html"),

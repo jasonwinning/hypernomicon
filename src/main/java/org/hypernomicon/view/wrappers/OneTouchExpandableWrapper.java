@@ -255,12 +255,11 @@ public final class OneTouchExpandableWrapper
         if (onOneTouchAdderFinish != null)
           onOneTouchAdderFinish.run();
       }
-    };
+    }.asDaemon();
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    newThread.setDaemon(true);
     newThread.start();
 
     return newThread;

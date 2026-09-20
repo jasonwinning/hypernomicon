@@ -605,8 +605,10 @@ public class FullTextIndexer
     {
       System.out.println("Full-text indexer: metadata/Lucene mismatch (metadata=" + metadataExists
         + ", lucene=" + lucenePopulated + "); wiping both");
-      FileDeletion.ofDirContentsOnly(lucenePath).nonInteractiveLogErrors().execute();
-      FileDeletion.ofFile(metadataPath).nonInteractiveLogErrors().execute();
+
+      FileDeletion.ofDirContentsOnly(lucenePath  ).nonInteractiveLogErrors().execute();
+      FileDeletion.ofFile           (metadataPath).nonInteractiveLogErrors().execute();
+
       Files.createDirectories(lucenePath.toPath());
     }
 
@@ -644,8 +646,10 @@ public class FullTextIndexer
       System.out.println("Full-text indexer: index format too old to read (" + getThrowableMessage(e) + "); wiping and rebuilding from scratch");
 
       luceneDir.close();
-      FileDeletion.ofDirContentsOnly(lucenePath).nonInteractiveLogErrors().execute();
-      FileDeletion.ofFile(metadataPath).nonInteractiveLogErrors().execute();
+
+      FileDeletion.ofDirContentsOnly(lucenePath  ).nonInteractiveLogErrors().execute();
+      FileDeletion.ofFile           (metadataPath).nonInteractiveLogErrors().execute();
+
       Files.createDirectories(lucenePath.toPath());
 
       luceneDir = FSDirectory.open(lucenePath.toPath());
@@ -683,9 +687,9 @@ public class FullTextIndexer
    */
   public static void deleteIndexContents(FilePath indexDir)
   {
-    FileDeletion.ofDirWithContents(indexDir.resolve(LUCENE_DIR_NAME)).nonInteractiveLogErrors().execute();
-    FileDeletion.ofFile(indexDir.resolve(METADATA_FILENAME)).nonInteractiveLogErrors().execute();
-    FileDeletion.ofFile(indexDir.resolve(MANIFEST_FILENAME)).nonInteractiveLogErrors().execute();
+    FileDeletion.ofDirWithContents(indexDir.resolve(LUCENE_DIR_NAME  )).nonInteractiveLogErrors().execute();
+    FileDeletion.ofFile           (indexDir.resolve(METADATA_FILENAME)).nonInteractiveLogErrors().execute();
+    FileDeletion.ofFile           (indexDir.resolve(MANIFEST_FILENAME)).nonInteractiveLogErrors().execute();
   }
 
 //---------------------------------------------------------------------------
@@ -709,9 +713,7 @@ public class FullTextIndexer
 
     state = IndexerState.BUILDING;
 
-    backgroundThread = new HyperThread("FullTextIndex", this::backgroundLoop);
-    backgroundThread.setDaemon(true);
-    backgroundThread.setPriority(Thread.MIN_PRIORITY);
+    backgroundThread = new HyperThread("FullTextIndex", this::backgroundLoop).asDaemon().atPriority(Thread.MIN_PRIORITY);
     backgroundThread.start();
   }
 
@@ -1148,10 +1150,8 @@ public class FullTextIndexer
     {
       long sinceLast = System.currentTimeMillis() - lastStart;
       if (sinceLast < MIN_EXTRACTION_INTERVAL_MS)
-      {
-        try { Thread.sleep(MIN_EXTRACTION_INTERVAL_MS - sinceLast); }
-        catch (InterruptedException e) { Thread.currentThread().interrupt(); return; }
-      }
+        if (sleepForMillis(MIN_EXTRACTION_INTERVAL_MS - sinceLast) == false)
+          return;
     }
 
     // Wait for the file to finish being written before we try to extract.
@@ -1220,12 +1220,7 @@ public class FullTextIndexer
 
     // Progress reporting thread
 
-    buildProgressReporter = Executors.newSingleThreadScheduledExecutor(runnable ->
-    {
-      HyperThread hyperThread = new HyperThread("FTI-Progress", runnable);
-      hyperThread.setDaemon(true);
-      return hyperThread;
-    });
+    buildProgressReporter = Executors.newSingleThreadScheduledExecutor(runnable -> new HyperThread("FTI-Progress", runnable).asDaemon());
 
     buildProgressReporter.scheduleAtFixedRate(() ->
     {
@@ -1250,12 +1245,7 @@ public class FullTextIndexer
     // Worker pool for small files
 
     buildWorkerPool = Executors.newFixedThreadPool(workerThreads, runnable ->
-    {
-      HyperThread hyperThread = new HyperThread("FTI-Worker", runnable);
-      hyperThread.setDaemon(true);
-      hyperThread.setPriority(Thread.MIN_PRIORITY);
-      return hyperThread;
-    });
+      new HyperThread("FTI-Worker", runnable).asDaemon().atPriority(Thread.MIN_PRIORITY));
 
     for (int ndx = 0; ndx < workerThreads; ndx++)
     {
@@ -1286,12 +1276,7 @@ public class FullTextIndexer
     // Dedicated thread for large files
 
     buildLargeFileExecutor = Executors.newSingleThreadExecutor(runnable ->
-    {
-      HyperThread hyperThread = new HyperThread("FTI-LargeFile", runnable);
-      hyperThread.setDaemon(true);
-      hyperThread.setPriority(Thread.MIN_PRIORITY);
-      return hyperThread;
-    });
+      new HyperThread("FTI-LargeFile", runnable).asDaemon().atPriority(Thread.MIN_PRIORITY));
 
     buildLargeFileExecutor.submit(() -> processFileList(largeFiles, docCount, skipped, failed, noText));
 
@@ -1572,7 +1557,9 @@ public class FullTextIndexer
    * between probes to determine whether the file is mid-write. Returns
    * {@code true} when two consecutive probes agree, {@code false} if the size
    * keeps changing past {@link #SIZE_STABILITY_RETRIES} attempts (or if size
-   * cannot be read, implying the file was deleted or is locked).
+   * cannot be read, implying the file was deleted or is locked). Also returns
+   * {@code false} if the wait is interrupted, so that the caller does not go
+   * on to extract the file on an interrupted thread.
    */
   private static boolean waitForSizeStability(FilePath filePath)
   {
@@ -1582,7 +1569,8 @@ public class FullTextIndexer
 
       for (int attempt = 0; attempt < SIZE_STABILITY_RETRIES; attempt++)
       {
-        Thread.sleep(SIZE_STABILITY_DELAY_MS);
+        if (sleepForMillis(SIZE_STABILITY_DELAY_MS) == false) return false;
+
         long size = filePath.size();
         if (size == lastSize) return true;
         lastSize = size;
@@ -1590,8 +1578,7 @@ public class FullTextIndexer
 
       return false;
     }
-    catch (IOException e)             { return false; }
-    catch (InterruptedException e)    { Thread.currentThread().interrupt(); return false; }
+    catch (IOException e) { return false; }
   }
 
 //---------------------------------------------------------------------------

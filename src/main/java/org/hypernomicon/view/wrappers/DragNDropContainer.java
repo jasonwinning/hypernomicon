@@ -140,12 +140,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       expandFuture.cancel(false);
 
     if (expandExecutor == null)
-      expandExecutor = Executors.newSingleThreadScheduledExecutor(runnable ->
-      {
-        Thread thread = new HyperThread("TreeExpandTimer", runnable);
-        thread.setDaemon(true);
-        return thread;
-      });
+      expandExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> new HyperThread("TreeExpandTimer", runnable).asDaemon());
 
     expandFuture = expandExecutor.schedule(() -> Platform.runLater(() ->
     {

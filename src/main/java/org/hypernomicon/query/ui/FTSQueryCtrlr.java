@@ -806,10 +806,10 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       }
     }
 
-    SearchTask task = new SearchTask();
-    task.setInterruptOnCancel(true);
-    task.setWaitOnCancel(false);  // Lucene search isn't responsive to interrupt; abandon stale tasks
-    task.setDaemonThread(true);   // ...and don't let an abandoned task block JVM exit
+    SearchTask task = (SearchTask) new SearchTask()
+      .setInterruptOnCancel(true)
+      .setWaitOnCancel(false)   // Lucene search isn't responsive to interrupt; abandon stale tasks
+      .setDaemonThread(true);   // ...and don't let an abandoned task block JVM exit
 
     if (task.runWithProgressDialog() != State.SUCCEEDED) return null;
 

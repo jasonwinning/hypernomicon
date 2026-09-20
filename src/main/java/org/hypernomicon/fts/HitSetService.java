@@ -174,12 +174,7 @@ public final class HitSetService
   private final Map<String, List<PageMatch>> matchCache = new ConcurrentHashMap<>();
   private final Set<String> matchesRequested = ConcurrentHashMap.newKeySet();
 
-  private final ExecutorService executor = Executors.newSingleThreadExecutor(runnable ->
-  {
-    HyperThread hyperThread = new HyperThread("FTS-highlight", runnable);
-    hyperThread.setDaemon(true);
-    return hyperThread;
-  });
+  private final ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> new HyperThread("FTS-highlight", runnable).asDaemon());
 
   private volatile int generation;
   private volatile QueryDescriptor query;

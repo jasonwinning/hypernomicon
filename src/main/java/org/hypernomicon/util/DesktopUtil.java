@@ -832,9 +832,8 @@ public final class DesktopUtil
             throwable.set(e);
           }
 
-        });
+        }).asDaemon();
 
-        innerThread.setDaemon(true);
         innerThread.start();
 
         try

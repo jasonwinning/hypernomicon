@@ -76,9 +76,9 @@ public final class ExitWatchdog
   {
     if (armed.getAndSet(true)) return;
 
-    HyperThread watchdog = new HyperThread("ExitWatchdog", ExitWatchdog::watch);
-    watchdog.setDaemon(true);  // On an organic exit during the grace period, this thread must not keep the JVM alive
-    watchdog.start();
+    // Daemon: on an organic exit during the grace period, this thread must not keep the JVM alive
+
+    new HyperThread("ExitWatchdog", ExitWatchdog::watch).asDaemon().start();
   }
 
 //---------------------------------------------------------------------------

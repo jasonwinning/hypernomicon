@@ -536,9 +536,9 @@ public final class Util
 
   /**
    * Schedules a task to run on the JavaFX Application Thread after a specified delay,
-   * repeated for the given number of cycles. Uses Thread.sleep + Platform.runLater
-   * so the task runs in a normal event handler context that allows nested event loops
-   * (e.g., Stage.showAndWait).
+   * repeated for the given number of cycles. Uses {@link #sleepForMillis(long)} on a
+   * background thread + Platform.runLater so the task runs in a normal event handler
+   * context that allows nested event loops (e.g., Stage.showAndWait).
    *
    * @param cycles the number of times the task should be executed (must be positive)
    * @param delayMS the delay in milliseconds before each execution of the task (must be non-negative)
@@ -555,12 +555,11 @@ public final class Util
     if (delayMS < 0)
       throw new IllegalArgumentException("Delay must be non-negative");
 
-    HyperThread thread = new HyperThread("Util", () ->
+    new HyperThread("Util", () ->
     {
       for (int ndx = 0; ndx < cycles; ndx++)
       {
-        try { Thread.sleep(delayMS); }
-        catch (InterruptedException e) { Thread.currentThread().interrupt(); return; }
+        if (sleepForMillis(delayMS) == false) return;
 
         Platform.runLater(() ->
         {
@@ -568,10 +567,7 @@ public final class Util
           catch (Exception e) { logThrowable(e); }
         });
       }
-    });
-
-    thread.setDaemon(true);
-    thread.start();
+    }).asDaemon().start();
   }
 
 //---------------------------------------------------------------------------
@@ -606,15 +602,22 @@ public final class Util
 
   /**
    * Puts the current thread to sleep for the specified number of milliseconds.
+   * <p>
+   * If the thread is interrupted while sleeping, or its interrupt status was already set,
+   * the sleep ends early. The interrupt status is left set, so the caller and anything it
+   * calls afterward can still observe it. A caller that must not carry on with its work
+   * after an interrupt should check the return value.
    *
    * @param millis the length of time to sleep in milliseconds
+   * @return true if the thread slept for the full duration; false if an interrupt cut the sleep short
    * @throws IllegalArgumentException if the value of millis is negative
-   * @throws InterruptedException if any thread has interrupted the current thread.
    */
-  public static void sleepForMillis(long millis)
+  public static boolean sleepForMillis(long millis)
   {
     try { Thread.sleep(millis); }
-    catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    catch (InterruptedException e) { Thread.currentThread().interrupt(); return false; }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

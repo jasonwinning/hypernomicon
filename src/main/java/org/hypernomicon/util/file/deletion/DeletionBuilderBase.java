@@ -268,12 +268,8 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
       if ((System.currentTimeMillis() - startTime) >= timeoutMillis)
         return FAILED;
 
-      try { Thread.sleep(RETRY_DELAY_MS); }
-      catch (InterruptedException e)
-      {
-        Thread.currentThread().interrupt();
+      if (sleepForMillis(RETRY_DELAY_MS) == false)
         return FAILED;
-      }
     }
 
     return SUCCESS;

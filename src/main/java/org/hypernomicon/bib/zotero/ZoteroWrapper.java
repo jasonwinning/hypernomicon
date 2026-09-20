@@ -865,8 +865,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
         successHndlr.accept(userName);
     });
 
-    hyperTask.setDaemonThread(true);
-    hyperTask.startWithNewThread();
+    hyperTask.startWithNewThread(true);
   }
 
 //---------------------------------------------------------------------------

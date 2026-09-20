@@ -28,7 +28,6 @@ import javafx.application.Platform;
 import javafx.concurrent.Worker.State;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.searchKeys.*;
@@ -286,18 +285,6 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final class RebuildThread extends HyperThread
-  {
-    private RebuildThread(HyperTask task)
-    {
-      super(task);
-      setDaemon(true);
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   /**
    * If asynchronous is true, the rebuild task will be started in its own thread. Otherwise,
    * the mentionsIndex is completely rebuilt in this thread before this function returns.
@@ -377,7 +364,7 @@ class MentionsIndex
         ui.updateMentionsProgress("Indexing:", (double)task.completedCount / (double)task.totalCount);
     }));
 
-    new RebuildThread(task).start();
+    task.startWithNewThread(true);
   }
 
 //---------------------------------------------------------------------------

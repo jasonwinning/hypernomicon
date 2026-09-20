@@ -734,13 +734,10 @@ public class FilePath implements Comparable<FilePath>
           retryNotified = true;
         }
 
-        sleepForMillis(RENAME_RETRY_DELAY_MS);
+        // An interrupted wait means the operation was cancelled: propagate out of
+        // the retry loop instead of continuing to the next attempt.
 
-        // sleepForMillis swallows InterruptedException but restores the flag.
-        // Check it here so cancel propagates out of the retry loop instead of
-        // continuing to the next attempt.
-
-        if (Thread.currentThread().isInterrupted()) throw e;
+        if (sleepForMillis(RENAME_RETRY_DELAY_MS) == false) throw e;
       }
     }
   }

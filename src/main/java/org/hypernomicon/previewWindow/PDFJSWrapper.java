@@ -103,11 +103,7 @@ final class PDFJSWrapper
   /** One daemon thread serving every pane's open watchdog; each check is a
    *  rare, cheap hop to the FX thread (see {@link OpenCoordinator}). */
   private static final ScheduledExecutorService watchdogScheduler = Executors.newSingleThreadScheduledExecutor(runnable ->
-  {
-    HyperThread hyperThread = new HyperThread("Preview-OpenWatchdog", runnable);
-    hyperThread.setDaemon(true);
-    return hyperThread;
-  });
+    new HyperThread("Preview-OpenWatchdog", runnable).asDaemon());
 
   private Browser browser = null;
   private BrowserView browserView = null;

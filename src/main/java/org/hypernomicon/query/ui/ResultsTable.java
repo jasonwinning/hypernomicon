@@ -135,7 +135,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
 
     commencedAddingButton = true;
 
-    Thread thread = new HyperThread("ButtonAdder")
+    new HyperThread("ButtonAdder")
     {
       @Override public void run()
       {
@@ -179,10 +179,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
           }
         }
       }
-    };
-
-    thread.setDaemon(true);
-    thread.start();
+    }.asDaemon().start();
   }
 
   private final MutableBoolean buttonAdded = new MutableBoolean(false);

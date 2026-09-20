@@ -812,8 +812,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
         successHndlr.accept(userName);
     });
 
-    hyperTask.setDaemonThread(true);
-    hyperTask.startWithNewThread();
+    hyperTask.startWithNewThread(true);
   }
 
 //---------------------------------------------------------------------------

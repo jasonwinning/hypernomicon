@@ -140,7 +140,7 @@ public class FtsDiagnosticsCtrlr implements TestConsoleTab
 
     // Convert to PDF using JodConverter (same as OfficePreviewer)
 
-    Thread convertThread = new HyperThread("FtsDiagConvert", () ->
+    new HyperThread("FtsDiagConvert", () ->
     {
       try
       {
@@ -184,10 +184,7 @@ public class FtsDiagnosticsCtrlr implements TestConsoleTab
       {
         Platform.runLater(() -> lblFtsDiagStatus.setText("Conversion failed: " + getThrowableMessage(e)));
       }
-    });
-
-    convertThread.setDaemon(true);
-    convertThread.start();
+    }).asDaemon().start();
   }
 
 //---------------------------------------------------------------------------
@@ -289,7 +286,7 @@ public class FtsDiagnosticsCtrlr implements TestConsoleTab
 
     lblFtsDiagStatus.setText("Extracting...");
 
-    Thread extractThread = new HyperThread("FtsDiagExtract", () ->
+    new HyperThread("FtsDiagExtract", () ->
     {
       try
       {
@@ -425,10 +422,7 @@ public class FtsDiagnosticsCtrlr implements TestConsoleTab
         Platform.runLater(() -> lblFtsDiagStatus.setText("Error: " + getThrowableMessage(e)));
         e.printStackTrace();
       }
-    });
-
-    extractThread.setDaemon(true);
-    extractThread.start();
+    }).asDaemon().start();
   }
 
 //---------------------------------------------------------------------------

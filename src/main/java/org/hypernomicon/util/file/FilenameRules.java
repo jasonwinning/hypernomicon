@@ -303,10 +303,7 @@ public record FilenameRules(boolean caseInsensitive, boolean trimsTrailingDotsAn
   {
     FilePath probeDir = FilePath.of(path);
 
-    HyperThread cleanupThread = new HyperThread("ProbeCleanup", () -> FileDeletion.ofDirWithContents(probeDir).nonInteractiveFailureOK().execute());
-
-    cleanupThread.setDaemon(true);
-    cleanupThread.start();
+    new HyperThread("ProbeCleanup", () -> FileDeletion.ofDirWithContents(probeDir).nonInteractiveFailureOK().execute()).asDaemon().start();
   }
 
 //---------------------------------------------------------------------------
@@ -333,10 +330,7 @@ public record FilenameRules(boolean caseInsensitive, boolean trimsTrailingDotsAn
     if (probeDirs.isEmpty())
       return;
 
-    HyperThread cleanupThread = new HyperThread("ProbeCleanup", () -> FileDeletion.ofDirsWithContents(probeDirs).nonInteractiveFailureOK().execute());
-
-    cleanupThread.setDaemon(true);
-    cleanupThread.start();
+    new HyperThread("ProbeCleanup", () -> FileDeletion.ofDirsWithContents(probeDirs).nonInteractiveFailureOK().execute()).asDaemon().start();
   }
 
 //---------------------------------------------------------------------------

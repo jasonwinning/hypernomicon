@@ -494,8 +494,7 @@ public final class BibManager extends NonmodalWindow
         ui.updateSavedStatus(false, true);
     });
 
-    syncTask.setDaemonThread(true);
-    syncTask.startWithNewThread();
+    syncTask.startWithNewThread(true);
   }
 
 //---------------------------------------------------------------------------

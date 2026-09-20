@@ -47,10 +47,37 @@ public abstract class HyperTask
     protected HyperThread(String name                   ) { super(          newThreadName(name)); }
     public    HyperThread(String name, Runnable runnable) { super(runnable, newThreadName(name)); }
 
-    protected HyperThread(HyperTask task)
+    /**
+     * Private so that {@link HyperTask#startWithNewThread()}, which checks the task's
+     * state first, is the only way to give a task its thread.
+     */
+    private HyperThread(HyperTask task)
     {
       super(task.innerTask, newThreadName(task.threadName));
       task.thread = this;
+    }
+
+    /**
+     * Fluent form of {@link #setDaemon(boolean) setDaemon(true)}, which returns void: lets a thread be
+     * constructed, marked as a daemon, and then returned or started within a single expression.
+     * Like {@code setDaemon}, it must be called before the thread is started.
+     * @return This HyperThread
+     */
+    public HyperThread asDaemon()
+    {
+      setDaemon(true);
+      return this;
+    }
+
+    /**
+     * Fluent form of {@link #setPriority(int)}, which returns void; the counterpart of {@link #asDaemon()}.
+     * @param priority The priority to give this thread, from {@link Thread#MIN_PRIORITY} to {@link Thread#MAX_PRIORITY}
+     * @return This HyperThread
+     */
+    public HyperThread atPriority(int priority)
+    {
+      setPriority(priority);
+      return this;
     }
 
     private static final ConcurrentHashMap<String, Integer> threadNameBaseToNum = new ConcurrentHashMap<>();
@@ -497,9 +524,24 @@ public abstract class HyperTask
       throw new IllegalStateException("Task already has thread.");
 
     HyperThread newThread = new HyperThread(this);
+
     if (daemonThread)
       newThread.setDaemon(true);
+
     newThread.start();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Shorthand for {@link #setDaemonThread(boolean)} followed by {@link #startWithNewThread()}.
+   * @param daemonThread Whether the task's thread should be a daemon thread
+   */
+  public void startWithNewThread(boolean daemonThread)
+  {
+    setDaemonThread(daemonThread);
+    startWithNewThread();
   }
 
 //---------------------------------------------------------------------------
