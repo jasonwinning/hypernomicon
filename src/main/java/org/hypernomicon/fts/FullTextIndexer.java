@@ -183,7 +183,11 @@ public class FullTextIndexer
 
   private static final String LUCENE_DIR_NAME   = "lucene",
                               METADATA_FILENAME = "metadata.json",
-                              MANIFEST_FILENAME = "index-manifest.json";
+                              MANIFEST_FILENAME = "index-manifest.json",
+
+                              // Follows the name of a zero-byte file in the statistics list of files without extractable text
+
+                              EMPTY_FILE_SUFFIX = " (empty file)";
 
   private final LinkedBlockingQueue<IndexEvent> eventQueue = new LinkedBlockingQueue<>();
 
@@ -312,7 +316,7 @@ public class FullTextIndexer
    */
   public String getStatistics()
   {
-    int total = 0, indexed = 0, noText = 0, failed = 0, abandoned = 0, stale = 0;
+    int total = 0, indexed = 0, noText = 0, emptyFiles = 0, failed = 0, abandoned = 0, stale = 0;
 
     List<String> failedFiles = new ArrayList<>(), abandonedFiles = new ArrayList<>(), noTextFiles = new ArrayList<>();
 
@@ -326,7 +330,23 @@ public class FullTextIndexer
       switch (mapEntry.getValue().status())
       {
         case INDEXED   -> indexed++;
-        case NO_TEXT   -> { noText++;    noTextFiles   .add(mapEntry.getKey()); }
+
+        case NO_TEXT   ->
+        {
+          noText++;
+
+          // The size is the one recorded when the file was indexed, so it says why the file
+          // had no text at that time; a zero-byte file is never passed to an extractor
+
+          if (mapEntry.getValue().size() == 0)
+          {
+            emptyFiles++;
+            noTextFiles.add(mapEntry.getKey() + EMPTY_FILE_SUFFIX);
+          }
+          else
+            noTextFiles.add(mapEntry.getKey());
+        }
+
         case FAILED    -> { failed++;    failedFiles   .add(mapEntry.getKey()); }
         case ABANDONED -> { abandoned++; abandonedFiles.add(mapEntry.getKey()); }
       }
@@ -353,7 +373,12 @@ public class FullTextIndexer
     sb.append("Index directory: ").append(indexDir).append('\n')
       .append("Total files tracked: ").append(total).append('\n')
       .append("Successfully indexed: ").append(indexed).append('\n')
-      .append("No extractable text: ").append(noText).append('\n')
+      .append("No extractable text: ").append(noText);
+
+    if (emptyFiles > 0)
+      sb.append(" (empty files: ").append(emptyFiles).append(')');
+
+    sb.append('\n')
       .append("Failed: ").append(failed).append('\n')
       .append("Abandoned (repeatedly failed): ").append(abandoned).append('\n');
 

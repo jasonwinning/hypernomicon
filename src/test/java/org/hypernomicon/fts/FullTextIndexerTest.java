@@ -371,6 +371,30 @@ class FullTextIndexerTest
   }
 
 //---------------------------------------------------------------------------
+
+  @Test void statisticsMarkEmptyFilesAmongThoseWithoutText() throws Exception
+  {
+    Path emptyFile = writeDbFile("empty.txt", ""),
+         blankFile = writeDbFile("blank.txt", "     ");
+
+    activateRegistry(emptyFile, blankFile);
+
+    buildAndAwait(openSession(SCHEMA_V1));
+
+    String stats = indexer.getStatistics();
+
+    assertTrue(stats.contains("No extractable text: 2 (empty files: 1)"), stats);
+    assertTrue(stats.contains("\n  empty.txt (empty file)"), stats);
+
+    // A file that has content but no text is listed without the marker
+
+    assertTrue(stats.contains("\n  blank.txt"), stats);
+    assertFalse(stats.contains("blank.txt (empty file)"), stats);
+
+    closeSession();
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }
