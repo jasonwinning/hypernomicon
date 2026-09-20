@@ -138,7 +138,7 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     {
       TableRow<BibEntryRow> row = new TableRow<>();
 
-      row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(createContextMenu(nv)));
+      buildContextMenuOnRequest(row);
 
       row.setOnMouseClicked(mouseEvent ->
       {

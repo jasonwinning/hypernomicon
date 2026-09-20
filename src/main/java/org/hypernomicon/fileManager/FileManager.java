@@ -340,8 +340,7 @@ public final class FileManager extends NonmodalWindow
 
       fileTable.setupDragHandlers(row);
 
-      row.itemProperty().addListener((ob, oldValue, newValue) ->
-        row.setContextMenu(fileTable.createContextMenu(newValue, fileTable.getContextMenuSchemata())));
+      fileTable.buildContextMenuOnRequest(row);
 
       return row;
     });

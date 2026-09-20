@@ -30,25 +30,12 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.PreviewWindow;
 
 import javafx.scene.control.*;
+import javafx.scene.input.ContextMenuEvent;
 
 //---------------------------------------------------------------------------
 
 public abstract class HasRightClickableRows<RowType extends AbstractRow<? extends HDT_Record, RowType>>
 {
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private final class RowMenuItem extends MenuItem
-  {
-    private RowMenuItem(MenuItemSchema<? extends HDT_Record, RowType> schema, RowType row)
-    {
-      super(schema.getCaption(row));
-      this.schema = schema;
-    }
-
-    private final MenuItemSchema<? extends HDT_Record, RowType> schema;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -60,12 +47,45 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final ContextMenu createContextMenu(RowType row)
+  /**
+   * Makes the cell build its context menu each time one is requested, using this object's menu item schemata.
+   * @param cell the table row, tree table row, or tree cell
+   * @see #buildContextMenuOnRequest(Cell, Supplier, Iterable)
+   */
+  public final void buildContextMenuOnRequest(Cell<RowType> cell)
   {
-    return createContextMenu(row, contextMenuSchemata);
+    buildContextMenuOnRequest(cell, cell::getItem, contextMenuSchemata);
   }
 
-  public final ContextMenu createContextMenu(RowType row, Iterable<MenuItemSchema<? extends HDT_Record, RowType>> schemata)
+  /**
+   * Makes the cell build its context menu each time one is requested, so that the conditions for showing
+   * each item are tested against the state at that moment, not the state when the row was populated.
+   * <p>The menu is set in an event filter because filters run before handlers; the cell's built-in handler
+   * then shows the menu that was just set, or nothing if no item applies.</p>
+   * <p>The expand and collapse items are added only when the cell belongs to a tree. A row in a table can
+   * also refer to a tree item (a folder in the File Manager's file table does), but expanding it from there
+   * would be meaningless.</p>
+   * @param cell the table row, tree table row, or tree cell
+   * @param rowSupplier supplies the row currently shown by the cell; null if there is none
+   * @param schemata the menu item schemata to build the menu from
+   */
+  public final void buildContextMenuOnRequest(Cell<RowType> cell, Supplier<RowType> rowSupplier, Iterable<MenuItemSchema<? extends HDT_Record, RowType>> schemata)
+  {
+    cell.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event ->
+    {
+      TreeItem<RowType> treeItem = null;
+
+      if      (cell instanceof TreeTableRow<RowType> treeTableRow) treeItem = treeTableRow.getTreeItem();
+      else if (cell instanceof TreeCell    <RowType> treeCell    ) treeItem = treeCell    .getTreeItem();
+
+      cell.setContextMenu(createContextMenu(rowSupplier.get(), treeItem, schemata));
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ContextMenu createContextMenu(RowType row, TreeItem<RowType> treeItem, Iterable<MenuItemSchema<? extends HDT_Record, RowType>> schemata)
   {
     if (row == null) return null;
 
@@ -74,13 +94,11 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 
     for (MenuItemSchema<? extends HDT_Record, RowType> schema : schemata)
     {
-      RowMenuItem newItem = createContextMenuItem(schema, row, rowMenu);
+      MenuItem newItem = createContextMenuItem(schema, row, rowMenu);
       rowMenu.getItems().add(newItem);
 
       if (newItem.isVisible()) noneVisible = false;
     }
-
-    TreeItem<RowType> treeItem = row.getTreeItem();
 
     if ((treeItem != null) && (treeItem.isLeaf() == false))
     {
@@ -99,12 +117,6 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
       rowMenu.getItems().add(newItem);
     }
 
-    rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem ->
-    {
-      if (menuItem instanceof HasRightClickableRows<?>.RowMenuItem rowItem)
-        rowItem.setDisable(rowItem.schema.disabled);
-    }));
-
     return noneVisible ? null : rowMenu;
   }
 
@@ -121,9 +133,9 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private <HDT_T extends HDT_Record> RowMenuItem createContextMenuItem(MenuItemSchema<HDT_T, RowType> schema, RowType row, ContextMenu rowMenu)
+  private <HDT_T extends HDT_Record> MenuItem createContextMenuItem(MenuItemSchema<HDT_T, RowType> schema, RowType row, ContextMenu rowMenu)
   {
-    RowMenuItem newItem = new RowMenuItem(schema, row);
+    MenuItem newItem = new MenuItem(schema.getCaption(row));
 
     newItem.setOnAction(event ->
     {
@@ -132,6 +144,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
     });
 
     newItem.setVisible(schema.testWhetherToShow(row));
+    newItem.setDisable(schema.disabled);
     return newItem;
   }
 

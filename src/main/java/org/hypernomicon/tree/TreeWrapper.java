@@ -224,6 +224,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
         if (limitedControl == false)
         {
           setupDragHandlers(row);
+          buildContextMenuOnRequest(row);
 
           row.setOnMouseClicked(mouseEvent ->
             nullSwitch(row.getItem(), treeRow -> nullSwitch(treeRow.treeItem, treeItem -> nullSwitch(treeRow.<HDT_Record>getRecord(), record ->
@@ -253,9 +254,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
               treeItem.setGraphic(nv.getGraphic(parentRecord));
             });
           }
-
-          if (limitedControl == false)
-            row.setContextMenu(createContextMenu(nv));
         });
 
         return row;

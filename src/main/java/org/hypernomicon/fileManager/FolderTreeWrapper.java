@@ -21,6 +21,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -92,7 +93,6 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
           {
             setText(null);
             setGraphic(null);
-            setContextMenu(null);
             return;
           }
 
@@ -101,12 +101,15 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
           setToolTip(this, fileName.length() >= FILENAME_LENGTH_TO_SHOW_TOOLTIP ? fileName : null);
 
           setGraphic(imgViewForRecord(newValue.getRecord(), hdtFolder));
-
-          setContextMenu(createContextMenu(newValue, fileTable.getContextMenuSchemata()));
         }
       };
 
       setupDragHandlers(row);
+
+      // A row whose folder record expired during deletion has no path and gets no menu
+
+      buildContextMenuOnRequest(row, () -> nullSwitch(row.getItem(), null, fileRow -> fileRow.getFilePath() == null ? null : fileRow),
+                                fileTable.getContextMenuSchemata());
 
       return row;
     });

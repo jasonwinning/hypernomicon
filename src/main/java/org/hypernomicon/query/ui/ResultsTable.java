@@ -95,7 +95,7 @@ final class ResultsTable extends HasRightClickableRows<ResultRow>
           nullSwitch(row.getItem(), rowItem -> ui.goToRecord(rowItem.getRecord(), false));
       });
 
-      row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(createContextMenu(nv)));
+      buildContextMenuOnRequest(row);
 
       return row;
     });
