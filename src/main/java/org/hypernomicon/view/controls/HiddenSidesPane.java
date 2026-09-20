@@ -28,8 +28,15 @@ import javafx.scene.Node;
 //---------------------------------------------------------------------------
 
 /**
- * Custom version of the ControlsFX HiddenSidesPane class that exposes
- * the hide and show methods
+ * Custom version of the ControlsFX HiddenSidesPane class, paired with a modified
+ * copy of its skin ({@link HiddenSidesPaneSkin}). The modifications cannot be made
+ * by subclassing the stock skin because they are internal to its private methods:
+ * <ul>
+ * <li>A side can be shown such that mouse movement will not interrupt the show
+ * animation (see {@link #show(Side, boolean)}).</li>
+ * <li>Moving the mouse near an edge only shows that side if it has a node.</li>
+ * <li>Releasing the mouse button does not show or hide a side.</li>
+ * </ul>
  *
  * @author  Jason Winning
  * @since   1.0
@@ -42,7 +49,6 @@ public class HiddenSidesPane extends org.controlsfx.control.HiddenSidesPane impl
 
   public HiddenSidesPane()                         { setSkin(new HiddenSidesPaneSkin(this)); }
 
-  @Override public void hide()                     { ((HiddenSidesPaneSkin) getSkin()).hide(); }
   public void show(Side side, boolean noInterrupt) { ((HiddenSidesPaneSkin) getSkin()).show(side, noInterrupt); }
 
   // The content and side nodes are held through this control's own properties;

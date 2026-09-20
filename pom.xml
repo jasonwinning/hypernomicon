@@ -22,8 +22,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mainClass>org.hypernomicon.Main</mainClass>
     <maven.compiler.release>25</maven.compiler.release>
-    <javafx.version>26.0.1</javafx.version>
-    <jxbrowser.version>9.4.1</jxbrowser.version>
+    <javafx.version>27</javafx.version>
+    <jxbrowser.version>9.5.1</jxbrowser.version>
     <lucene.version>10.5.1</lucene.version>
   </properties>
 
@@ -77,7 +77,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
-        <version>2.21.0</version>
+        <version>2.22.0</version>
         <configuration>
           <generateBackupPoms>false</generateBackupPoms>
           <rulesUri>file:///${project.basedir}/versions-rules.xml</rulesUri>
@@ -87,7 +87,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.15.0</version>
+        <version>3.16.0</version>
         <configuration>
           <release>${maven.compiler.release}</release>
           <compilerArgs>
@@ -99,7 +99,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.3</version>
+        <version>3.6.4</version>
         <executions>
           <execution>
             <goals>
@@ -152,7 +152,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.6</version>
+        <version>3.6.0</version>
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
@@ -435,12 +435,12 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <version>2.0.18</version>
+      <version>2.0.19</version>
     </dependency>
     <dependency>
       <groupId>org.controlsfx</groupId>
       <artifactId>controlsfx</artifactId>
-      <version>11.2.4</version>
+      <version>11.2.5</version>
     </dependency>	
     <dependency>
       <groupId>org.jodconverter</groupId>

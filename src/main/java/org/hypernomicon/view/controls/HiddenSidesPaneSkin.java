@@ -277,7 +277,7 @@ public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane>
 
     private Timeline hideTimeline;
 
-    void hide() {
+    private void hide() {
         if (showTimeline != null) {
           if (showTimeline.getStatus() == Status.RUNNING) {
             if (noInterrupt) return;
