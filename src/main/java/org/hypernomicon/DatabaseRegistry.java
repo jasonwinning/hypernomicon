@@ -172,6 +172,14 @@ public final class DatabaseRegistry
 
   /**
    * Register or update a database entry in the registry.
+   * <p>
+   * A root path holds at most one database, so any other entry registered at the
+   * same root path has been superseded: the folder now holds a database with a
+   * different DBID (it was created anew there, replaced, or assigned a new DBID).
+   * Such entries are removed here; they would otherwise never be pruned, because
+   * {@link #garbageCollect(String)} treats an entry as live for as long as a
+   * database exists at its root path. Their index directories are deleted by the
+   * next {@code garbageCollect} pass.
    * @param dbID The database identifier
    * @param rootPath The root path of the database
    */
@@ -187,6 +195,8 @@ public final class DatabaseRegistry
       errorPopup("Unable to read registry file: " + getThrowableMessage(e));
       return;
     }
+
+    databases.entrySet().removeIf(entry -> (entry.getKey().equals(dbID) == false) && entry.getValue().equals(rootPath));
 
     databases.put(dbID, rootPath);
 

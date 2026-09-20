@@ -692,8 +692,8 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
-   * Start active background indexing. Initializes Tika and launches the background
-   * thread, which runs the initial build and then processes filesystem events.
+   * Start active background indexing. Launches the background thread, which
+   * initializes Tika, runs the initial build, and then processes filesystem events.
    * Transitions the indexer from {@code ONLINE_INDEXING_DISABLED} to {@code BUILDING};
    * must be called after {@link #bringOnline}.
    *
@@ -702,9 +702,6 @@ public class FullTextIndexer
   public void startIndexing(int threadCount)
   {
     this.threadCount = threadCount;
-
-    tika = new Tika();
-    tika.setMaxStringLength(MAX_TEXT_LENGTH);
 
     stopRequested = false;
     lastCommitTime = System.currentTimeMillis();
@@ -881,6 +878,16 @@ public class FullTextIndexer
 
   private void backgroundLoop()
   {
+    // Tika is constructed here rather than in startIndexing because startIndexing runs on
+    // the FX thread while the database is loading, and construction takes seconds as of
+    // Tika 4: each parser that detects encodings builds its own DefaultEncodingDetector,
+    // and each of those loads the charset detection models again. Only this thread and
+    // the workers it starts ever extract text, and the loop must never run without a
+    // Tika instance (extractText would return null and every file would be marked failed).
+
+    tika = new Tika();
+    tika.setMaxStringLength(MAX_TEXT_LENGTH);
+
     while (stopRequested == false)
     {
       try
