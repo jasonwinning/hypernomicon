@@ -119,8 +119,6 @@ public final class JsonObj
 
   public enum JsonNodeType { OBJECT, STRING, ARRAY, BOOLEAN, INTEGER, NONE }
 
-  public static final JSONParser jsonParser = new JSONParser();
-
   final JSONObject jObj;
 
   public JsonObj(JSONObject jObj) { this.jObj = jObj; }
@@ -225,16 +223,45 @@ public final class JsonObj
 //---------------------------------------------------------------------------
 
   public static JsonObj parseJsonObj(Reader in) throws IOException, ParseException
-  { return new JsonObj((JSONObject) jsonParser.parse(in)); }
+  { return new JsonObj((JSONObject) parse(in)); }
 
   public static JsonObj parseJsonObj(String str) throws ParseException
-  { return new JsonObj((JSONObject) jsonParser.parse(str)); }
+  { return new JsonObj((JSONObject) parse(str)); }
 
   public static JsonArray parseJson(String str) throws ParseException
-  { return wrapJSONObject(jsonParser.parse(str)); }
+  { return wrapJSONObject(parse(str)); }
 
   public static JsonArray parseJson(Reader in) throws IOException, ParseException
-  { return wrapJSONObject(jsonParser.parse(in)); }
+  { return wrapJSONObject(parse(in)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Parses JSON text into what json-simple makes of it: a {@link JSONObject}, a
+   * {@link JSONArray}, or a bare value.
+   * <p>
+   * Every parse gets a parser of its own, here and in {@link #parse(String)}, which are the
+   * only places that create one. A {@link JSONParser} keeps the state of the parse in its
+   * fields, and JSON is parsed on the JavaFX thread, on the HTTP request threads, on the
+   * thread of a reference-manager sync, and on the browser's threads, sometimes for as long
+   * as a response takes to arrive; a deep copy is a parse too. A parser shared between them
+   * mixes their input. Creating one costs little next to the parse itself.
+   * </p>
+   */
+  public static Object parse(Reader in) throws IOException, ParseException
+  {
+    return new JSONParser().parse(in);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The same for a string; see {@link #parse(Reader)} for why the parser is a new one. */
+  static Object parse(String str) throws ParseException
+  {
+    return new JSONParser().parse(str);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

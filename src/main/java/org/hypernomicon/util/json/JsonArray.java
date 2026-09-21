@@ -114,7 +114,7 @@ public final class JsonArray
   {
     try
     {
-      return new JsonArray((JSONArray)jsonParser.parse(jArr.toJSONString()));
+      return new JsonArray((JSONArray)parse(jArr.toJSONString()));
     }
     catch (ParseException e)
     {

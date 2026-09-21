@@ -17,8 +17,6 @@
 
 package org.hypernomicon.util.http;
 
-import static org.hypernomicon.util.json.JsonObj.*;
-
 import java.io.*;
 import java.net.http.*;
 import java.net.http.HttpResponse.BodyHandlers;
@@ -203,7 +201,7 @@ public class JsonHttpClient extends ParsingHttpClient
     {
       if (contentType.toLowerCase().contains("json"))
       {
-        Object obj = jsonParser.parse(new InputStreamReader(is, StandardCharsets.UTF_8));
+        Object obj = JsonObj.parse(new InputStreamReader(is, StandardCharsets.UTF_8));
 
         if (obj instanceof JSONObject jObj)
         {
