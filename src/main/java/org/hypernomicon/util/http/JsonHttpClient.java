@@ -17,7 +17,6 @@
 
 package org.hypernomicon.util.http;
 
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
 
 import java.io.*;
@@ -30,7 +29,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
-import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
@@ -43,27 +41,19 @@ import org.hypernomicon.util.json.JsonObj;
  * with automatic parsing into {@link JsonObj} or {@link JsonArray} objects.
  * </p>
  */
-public class JsonHttpClient
+public class JsonHttpClient extends ParsingHttpClient
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HttpHeaders headers;
-  private int statusCode;
-  private String lastUrl = "";
   private JsonArray jsonArray = null;
   private JsonObj jsonObj = null;
   private Exception lastException = null;
 
-  /** Returns the HTTP status code from the most recent response. */
-  public int getStatusCode()       { return statusCode; }
+//---------------------------------------------------------------------------
 
-  /** Returns the HTTP headers from the most recent response. */
-  public HttpHeaders getHeaders()  { return headers; }
-
-  /** Returns the URL of the most recent request. */
-  public String getLastUrl()       { return lastUrl; }
+  @Override void clearParsedBody() { jsonArray = null; jsonObj = null; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -78,7 +68,8 @@ public class JsonHttpClient
    * @param url          the URL to fetch
    * @param httpClient   the async HTTP client to use for the request
    * @param successHndlr callback invoked on the FX thread with the parsed JSON array
-   * @param failHndlr    callback invoked on the FX thread if the request fails
+   * @param failHndlr    callback invoked on the FX thread if the request fails, or if
+   *                     {@code successHndlr} throws
    */
   public static void getArrayAsync(String url, AsyncHttpClient httpClient, Consumer<JsonArray> successHndlr, Consumer<Exception> failHndlr)
   {
@@ -86,17 +77,9 @@ public class JsonHttpClient
     {
       HttpRequest request = AsyncHttpClient.requestBuilder(url).GET().build();
 
-      new JsonHttpClient().doAsyncRequest(request, httpClient, jsonClient -> runInFXThread(() ->
-      {
-        if (jsonClient.jsonArray == null)
-        {
-          jsonClient.jsonArray = new JsonArray();
+      JsonHttpClient jsonClient = new JsonHttpClient();
 
-          if (jsonClient.jsonObj != null)
-            jsonClient.jsonArray.add(jsonClient.jsonObj);
-        }
-        successHndlr.accept(jsonClient.jsonArray);
-      }), failHndlr);
+      jsonClient.doAsyncRequest(request, httpClient, () -> successHndlr.accept(jsonClient.getArray()), failHndlr);
     }
     catch (IllegalArgumentException e)
     {
@@ -114,7 +97,8 @@ public class JsonHttpClient
    * @param url          the URL to fetch
    * @param httpClient   the async HTTP client to use for the request
    * @param successHndlr callback invoked on the FX thread with the parsed JSON object
-   * @param failHndlr    callback invoked on the FX thread if the request fails
+   * @param failHndlr    callback invoked on the FX thread if the request fails, or if
+   *                     {@code successHndlr} throws
    */
   public static void getObjAsync(String url, AsyncHttpClient httpClient, Consumer<JsonObj> successHndlr, Consumer<Exception> failHndlr)
   {
@@ -122,25 +106,15 @@ public class JsonHttpClient
     {
       HttpRequest request = AsyncHttpClient.requestBuilder(url).GET().build();
 
-      new JsonHttpClient().doAsyncRequest(request, httpClient, jsonClient -> runInFXThread(() -> successHndlr.accept(jsonClient.jsonObj)), failHndlr);
+      JsonHttpClient jsonClient = new JsonHttpClient();
+
+      jsonClient.doAsyncRequest(request, httpClient, () -> successHndlr.accept(jsonClient.jsonObj), failHndlr);
     }
     catch (IllegalArgumentException e)
     {
       if (failHndlr != null)
         failHndlr.accept(e);
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void doAsyncRequest(HttpRequest request, AsyncHttpClient httpClient, Consumer<JsonHttpClient> successHndlr, Consumer<Exception> failHndlr)
-  {
-    jsonArray = null;
-    jsonObj = null;
-    lastUrl = request.uri().toString();
-
-    httpClient.doRequest(request, response -> handleResponse(response, httpClient, successHndlr, failHndlr), failHndlr);
   }
 
 //---------------------------------------------------------------------------
@@ -163,6 +137,18 @@ public class JsonHttpClient
     if (doRequestInThisThread(request) == false)
       return null;
 
+    return getArray();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns the parsed response as an array: a lone JSON object becomes the only element,
+   * and the array is empty if nothing was parsed.
+   */
+  private JsonArray getArray()
+  {
     if (jsonArray == null)
     {
       jsonArray = new JsonArray();
@@ -179,11 +165,9 @@ public class JsonHttpClient
 
   private boolean doRequestInThisThread(HttpRequest request) throws ParseException, IOException
   {
-    jsonArray = null;
-    jsonObj = null;
     boolean rc = false;
 
-    lastUrl = request.uri().toString();
+    startRequest(request);
 
     try
     {
@@ -206,13 +190,12 @@ public class JsonHttpClient
 //----------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean handleResponse(HttpResponse<InputStream> response, AsyncHttpClient httpClient,
-                                 Consumer<JsonHttpClient> successHndlr, Consumer<Exception> failHndlr)
+  @Override boolean handleResponse(HttpResponse<InputStream> response, AsyncHttpClient httpClient,
+                                   Runnable successHndlr, Consumer<Exception> failHndlr)
   {
-    statusCode = response.statusCode();
+    recordResponse(response);
 
-    headers = response.headers();
-    String contentType = headers.firstValue("Content-Type").orElse("");
+    String contentType = getHeaders().firstValue("Content-Type").orElse("");
 
     boolean parsed = false;
 
@@ -240,13 +223,12 @@ public class JsonHttpClient
 
       if (failHndlr != null)
       {
-        boolean cancelledByUser = (httpClient != null) && httpClient.wasCancelledByUser();
-        runInFXThread(() -> failHndlr.accept(cancelledByUser ? new CancelledTaskException() : e));
+        dispatchFailure(failHndlr, httpClient, e);
         return false;
       }
     }
 
-    if (HttpStatusCode.isError(statusCode))
+    if (HttpStatusCode.isError(getStatusCode()))
     {
       // Asynchronous callers get an error status as an exception even when the server
       // described the error with a JSON body, which Google Books does: parsing that body
@@ -255,7 +237,7 @@ public class JsonHttpClient
 
       if (failHndlr != null)
       {
-        runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, lastUrl)));
+        dispatchErrorStatus(failHndlr);
         return false;
       }
 
@@ -266,8 +248,7 @@ public class JsonHttpClient
       return parsed;
     }
 
-    if (successHndlr != null)
-      runInFXThread(() -> successHndlr.accept(this));
+    dispatchSuccess(successHndlr, failHndlr);
 
     return true;
   }

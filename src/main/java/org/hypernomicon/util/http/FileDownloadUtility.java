@@ -26,7 +26,6 @@ import java.util.function.Consumer;
 
 import org.apache.commons.io.FilenameUtils;
 
-import org.hypernomicon.model.Exceptions.CancelledTaskException;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 
@@ -266,7 +265,7 @@ public final class FileDownloadUtility
       }
       catch (IOException e)
       {
-        runInFXThread(() -> failHndlr.accept(httpClient.wasCancelledByUser() ? new CancelledTaskException() : e));
+        runInFXThread(() -> failHndlr.accept(httpClient.failureToReport(e)));
       }
 
       return;
@@ -290,7 +289,7 @@ public final class FileDownloadUtility
     }
     catch (IOException e)
     {
-      runInFXThread(() -> failHndlr.accept(httpClient.wasCancelledByUser() ? new CancelledTaskException() : e));
+      runInFXThread(() -> failHndlr.accept(httpClient.failureToReport(e)));
     }
   }
 

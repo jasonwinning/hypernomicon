@@ -75,12 +75,12 @@ public class AsyncHttpClient
       }
       catch (IOException e)
       {
-        runInFXThread(() -> failHndlr.accept(cancelledByUser ? new CancelledTaskException() : e));
+        runInFXThread(() -> failHndlr.accept(failureToReport(e)));
       }
       catch (InterruptedException e)
       {
         currentThread().interrupt();
-        runInFXThread(() -> failHndlr.accept(cancelledByUser ? new CancelledTaskException() : new IOException("Request interrupted", e)));
+        runInFXThread(() -> failHndlr.accept(failureToReport(new IOException("Request interrupted", e))));
       }
     }
   }
@@ -102,7 +102,12 @@ public class AsyncHttpClient
   private RequestThread requestThread;
   private String lastUrl = "";
 
-  boolean wasCancelledByUser()            { return cancelledByUser; }
+  /**
+   * Returns what a failure handler should be given for a request that failed with {@code e}:
+   * a {@link CancelledTaskException} if the user stopped the request, because the error is
+   * then only how the interruption surfaced, and otherwise {@code e} itself.
+   */
+  Exception failureToReport(Exception e)  { return cancelledByUser ? new CancelledTaskException() : e; }
 
   /**
    * Returns the URL of the most recent request.

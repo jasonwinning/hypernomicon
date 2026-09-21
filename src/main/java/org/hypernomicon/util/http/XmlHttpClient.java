@@ -32,8 +32,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
 
-import org.hypernomicon.model.Exceptions.CancelledTaskException;
-
 //---------------------------------------------------------------------------
 
 /**
@@ -50,7 +48,7 @@ import org.hypernomicon.model.Exceptions.CancelledTaskException;
  * gating on the header would silently produce an empty document.
  * </p>
  */
-public class XmlHttpClient
+public class XmlHttpClient extends ParsingHttpClient
 {
 
 //---------------------------------------------------------------------------
@@ -63,19 +61,11 @@ public class XmlHttpClient
    */
   private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
 
-  private HttpHeaders headers;
-  private int statusCode;
-  private String lastUrl = "";
   private Document document = null;
 
-  /** Returns the HTTP status code from the most recent response. */
-  public int getStatusCode()      { return statusCode; }
+//---------------------------------------------------------------------------
 
-  /** Returns the HTTP headers from the most recent response. */
-  public HttpHeaders getHeaders() { return headers; }
-
-  /** Returns the URL of the most recent request. */
-  public String getLastUrl()      { return lastUrl; }
+  @Override void clearParsedBody() { document = null; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -86,7 +76,8 @@ public class XmlHttpClient
    * @param url          the URL to fetch
    * @param httpClient   the async HTTP client to use for the request
    * @param successHndlr callback invoked on the FX thread with the parsed document
-   * @param failHndlr    callback invoked on the FX thread if the request fails
+   * @param failHndlr    callback invoked on the FX thread if the request fails, or if
+   *                     {@code successHndlr} throws
    */
   public static void getDocAsync(String url, AsyncHttpClient httpClient, Consumer<Document> successHndlr, Consumer<Exception> failHndlr)
   {
@@ -94,7 +85,9 @@ public class XmlHttpClient
     {
       HttpRequest request = AsyncHttpClient.requestBuilder(url).timeout(REQUEST_TIMEOUT).GET().build();
 
-      new XmlHttpClient().doAsyncRequest(request, httpClient, xmlClient -> runInFXThread(() -> successHndlr.accept(xmlClient.document)), failHndlr);
+      XmlHttpClient xmlClient = new XmlHttpClient();
+
+      xmlClient.doAsyncRequest(request, httpClient, () -> successHndlr.accept(xmlClient.document), failHndlr);
     }
     catch (IllegalArgumentException e)
     {
@@ -106,51 +99,33 @@ public class XmlHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void doAsyncRequest(HttpRequest request, AsyncHttpClient httpClient, Consumer<XmlHttpClient> successHndlr, Consumer<Exception> failHndlr)
+  @Override boolean handleResponse(HttpResponse<InputStream> response, AsyncHttpClient httpClient,
+                                   Runnable successHndlr, Consumer<Exception> failHndlr)
   {
-    document = null;
-    lastUrl = request.uri().toString();
+    recordResponse(response);
 
-    httpClient.doRequest(request, response -> handleResponse(response, httpClient, successHndlr, failHndlr), failHndlr);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean handleResponse(HttpResponse<InputStream> response, AsyncHttpClient httpClient,
-                                 Consumer<XmlHttpClient> successHndlr, Consumer<Exception> failHndlr)
-  {
-    statusCode = response.statusCode();
-    headers = response.headers();
-
-    if (HttpStatusCode.isError(statusCode))
+    if (HttpStatusCode.isError(getStatusCode()))
     {
       try (InputStream is = response.body()) { is.readAllBytes(); }  // Drain so the connection can be reused
       catch (IOException e) { noOp(); }
 
-      if (failHndlr != null)
-        runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, lastUrl)));
+      dispatchErrorStatus(failHndlr);
 
       return false;
     }
 
     try (InputStream is = response.body())
     {
-      document = Jsoup.parse(is, charsetName(), lastUrl, Parser.xmlParser());
+      document = Jsoup.parse(is, charsetName(), getLastUrl(), Parser.xmlParser());
     }
     catch (IOException e)
     {
-      if (failHndlr != null)
-      {
-        boolean cancelledByUser = (httpClient != null) && httpClient.wasCancelledByUser();
-        runInFXThread(() -> failHndlr.accept(cancelledByUser ? new CancelledTaskException() : e));
-      }
+      dispatchFailure(failHndlr, httpClient, e);
 
       return false;
     }
 
-    if (successHndlr != null)
-      runInFXThread(() -> successHndlr.accept(this));
+    dispatchSuccess(successHndlr, failHndlr);
 
     return true;
   }
@@ -164,7 +139,7 @@ public class XmlHttpClient
    */
   private String charsetName()
   {
-    MediaType mediaType = MediaType.parse(headers.firstValue("Content-Type").orElse(""));
+    MediaType mediaType = MediaType.parse(getHeaders().firstValue("Content-Type").orElse(""));
 
     if (mediaType == null) return null;
 
