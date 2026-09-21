@@ -374,21 +374,33 @@ public class BibDataRetriever
 
     future.whenComplete((bd, throwable) ->
     {
-      if (throwable == null)
+      try
       {
-        queryBD = bd;
-        finish(null);
-        return;
+        if (throwable == null)
+        {
+          queryBD = bd;
+          finish(null);
+          return;
+        }
+
+        Throwable cause = causeOf(throwable);
+
+        if (cause instanceof TerminateCascade)
+          finish(null);
+        else if (cause instanceof Exception e)
+          finish(e);
+        else
+          finish(new RuntimeException(cause));
       }
+      catch (Throwable thrown)
+      {
+        // This is the last step of the chain, and nothing observes its outcome. Whatever
+        // finish throws, which includes whatever the caller's handler throws, would be
+        // held by a future that nobody looks at, and so vanish without a trace.
 
-      Throwable cause = causeOf(throwable);
-
-      if (cause instanceof TerminateCascade)
-        finish(null);
-      else if (cause instanceof Exception e)
-        finish(e);
-      else
-        finish(new RuntimeException(cause));
+        logThrowable(thrown);
+        throw thrown;
+      }
     });
   }
 

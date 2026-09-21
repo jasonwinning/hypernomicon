@@ -24,6 +24,9 @@ import static org.hypernomicon.util.Util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -618,6 +621,65 @@ class BibDataRetrieverTest
 
     assertEquals(0, result.timesCalled, "a completion after stop must not invoke the handler");
     assertEquals(0, PopupRobot.getInvocationCount());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Runs the code and returns what it wrote to the standard error stream, which is where
+   *  logged exceptions go. */
+  private static String standardErrorOf(Runnable runnable)
+  {
+    PrintStream oldErr = System.err;
+    ByteArrayOutputStream captured = new ByteArrayOutputStream();
+
+    System.setErr(new PrintStream(captured, true, StandardCharsets.UTF_8));
+
+    try
+    {
+      runnable.run();
+    }
+    finally
+    {
+      System.setErr(oldErr);
+    }
+
+    return captured.toString(StandardCharsets.UTF_8);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The handler is the caller's code, run as the last step of the chain of futures, and
+   *  nothing observes the outcome of that step. An exception the handler throws is logged;
+   *  the chain would otherwise swallow it without a trace. Here the cascade finishes before
+   *  the constructor returns. */
+  @Test void whatTheHandlerThrowsIsLogged()
+  {
+    String logged = standardErrorOf(() -> noOp(new BibDataRetriever(httpClient, bookBD(), null, (pdfBD, queryBD, supplementBD, messageShown) ->
+    {
+      throw new IllegalStateException("Thrown by the handler");
+    })));
+
+    assertTrue(logged.contains("IllegalStateException: Thrown by the handler"), logged);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The same when the cascade finishes later, as it does once a source has had to wait
+   *  for the network. */
+  @Test void whatTheHandlerThrowsIsLoggedWhenTheCascadeFinishesLater()
+  {
+    CompletableFuture<BibDataStandalone> pending = new CompletableFuture<>();
+
+    fakeSources.script.add(pending);  // crossrefDoi: still in flight
+
+    noOp(new BibDataRetriever(httpClient, bookBD(), null, (pdfBD, queryBD, supplementBD, messageShown) ->
+    {
+      throw new IllegalStateException("Thrown by the handler");
+    }));
+
+    String logged = standardErrorOf(() -> pending.complete(hit()));
+
+    assertTrue(logged.contains("IllegalStateException: Thrown by the handler"), logged);
   }
 
 //---------------------------------------------------------------------------
