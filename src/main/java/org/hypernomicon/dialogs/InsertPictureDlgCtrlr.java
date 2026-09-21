@@ -110,6 +110,8 @@ public class InsertPictureDlgCtrlr extends ModalDialog
     btnPasteUrl.setOnAction(event -> tfWebUrl.setText(getClipboardText(true)));
     setToolTip(btnPasteUrl, "Paste text from clipboard");
 
+    btnStop.setOnAction(event -> stopClicked());
+
     tfWebUrl.setTextFormatter(new TextFormatter<>(change ->
     {
       if (change.isContentChange() == false)
@@ -363,8 +365,13 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
   private void exceptionHappened(Exception e)
   {
-    if ((e instanceof CancelledTaskException) == false)
-      errorPopup("An error occurred while trying to display the picture: " + getThrowableMessage(e));
+    // A cancelled download calls for nothing. Either the Stop button was clicked, which has
+    // already put the controls back, or a newer download took this one's place, and stopping
+    // now would stop that one.
+
+    if (e instanceof CancelledTaskException) return;
+
+    errorPopup("An error occurred while trying to display the picture: " + getThrowableMessage(e));
 
     stopClicked();
   }

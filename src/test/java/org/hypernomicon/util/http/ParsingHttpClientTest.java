@@ -25,6 +25,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
@@ -214,17 +216,25 @@ class ParsingHttpClientTest
 
       writePartialBody(exchange, kind);
 
-      try
-      {
-        releaseStalledResponses.await();
-      }
-      catch (InterruptedException e)
-      {
-        Thread.currentThread().interrupt();
-      }
-
+      awaitQuietly(releaseStalledResponses);
       exchange.close();
     });
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Returns whether the latch was released before the timeout, and without an interrupt. */
+  private static boolean awaitQuietly(CountDownLatch latch)
+  {
+    try
+    {
+      return latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    }
+    catch (InterruptedException e)
+    {
+      Thread.currentThread().interrupt();
+      return false;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -403,6 +413,88 @@ class ParsingHttpClientTest
     assertFalse(outcome.succeeded());
     assertInstanceOf(CancelledTaskException.class, outcome.failure());
     assertTrue(outcome.onFxThread());
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Where a request has got to when something stops it. */
+  private enum StallPoint { beforeHeaders, inBody }
+
+//---------------------------------------------------------------------------
+
+  /** Starting a request stops the one its client was still busy with, and that one reports
+   *  the cancellation however long its failure handler has to wait for the JavaFX thread.
+   *  The record of the stop belongs to the client, and the new request clears it as it
+   *  starts, so a request that looked only when its handler ran would see none and report
+   *  the I/O error of its own interruption: the picture dialogs would then show that as a
+   *  failed download and stop the new one. */
+  @ParameterizedTest
+  @EnumSource(StallPoint.class)
+  void aRequestItsClientReplacedReportsCancellation(StallPoint stallPoint)
+  {
+    ClientKind kind = ClientKind.jsonObj;
+    CountDownLatch firstArrived = new CountDownLatch(1), secondArrived = new CountDownLatch(1);
+
+    String url = serve(exchange ->
+    {
+      if ("second".equals(exchange.getRequestURI().getQuery()))
+      {
+        secondArrived.countDown();
+
+        byte[] body = kind.body.getBytes(StandardCharsets.UTF_8);
+
+        exchange.getResponseHeaders().set("Content-Type", kind.contentType);
+        exchange.sendResponseHeaders(HttpStatusCode.SC_OK, body.length);
+
+        try (OutputStream os = exchange.getResponseBody())
+        {
+          os.write(body);
+        }
+
+        return;
+      }
+
+      if (stallPoint == StallPoint.inBody)
+      {
+        exchange.getResponseHeaders().set("Content-Type", kind.contentType);
+        exchange.sendResponseHeaders(HttpStatusCode.SC_OK, 0);
+
+        writePartialBody(exchange, kind);
+      }
+
+      firstArrived.countDown();
+      awaitQuietly(releaseStalledResponses);
+      exchange.close();
+    });
+
+    AsyncHttpClient httpClient = new AsyncHttpClient();
+
+    CompletableFuture<Outcome> first = start(kind, url, httpClient);
+
+    assertTrue(awaitQuietly(firstArrived));
+
+    if (stallPoint == StallPoint.inBody)
+      awaitBlockedInResponseHandling();
+
+    List<CompletableFuture<Outcome>> second = new ArrayList<>();
+
+    // The JavaFX thread is held until the server has the second request. Its thread is
+    // running by then, so the first request's failure handler, which is already waiting
+    // for the JavaFX thread, runs after the record of the stop has been cleared.
+
+    FxTestUtil.runFxAndWait(() ->
+    {
+      second.add(start(kind, url + "?second", httpClient));
+
+      assertTrue(awaitQuietly(secondArrived));
+    });
+
+    Outcome firstOutcome = await(first);
+
+    assertFalse(firstOutcome.succeeded());
+    assertInstanceOf(CancelledTaskException.class, firstOutcome.failure());
+
+    assertTrue(await(second.getFirst()).succeeded());
   }
 
 //---------------------------------------------------------------------------

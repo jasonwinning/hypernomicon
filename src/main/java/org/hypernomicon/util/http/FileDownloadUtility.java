@@ -265,7 +265,7 @@ public final class FileDownloadUtility
       }
       catch (IOException e)
       {
-        runInFXThread(() -> failHndlr.accept(httpClient.failureToReport(e)));
+        httpClient.reportFailure(failHndlr, e);
       }
 
       return;
@@ -289,7 +289,7 @@ public final class FileDownloadUtility
     }
     catch (IOException e)
     {
-      runInFXThread(() -> failHndlr.accept(httpClient.failureToReport(e)));
+      httpClient.reportFailure(failHndlr, e);
     }
   }
 

@@ -184,21 +184,19 @@ abstract class ParsingHttpClient
    * read or parsed, on the JavaFX thread.
    * <p>
    * Stopping a request interrupts the read of its body, which then fails with an I/O
-   * error. The handler is given a {@link CancelledTaskException} in place of that error
-   * (see {@link AsyncHttpClient#failureToReport failureToReport}), because callers tell
-   * the two apart in order to say nothing about a request the user gave up on. Whether
-   * the request was stopped is settled here, on the request's own thread, and not when
-   * the handler runs: by then the same client may have started its next request, which
-   * clears the record of the stop.
+   * error. The client the request was sent through knows about the stop, so the reporting
+   * is left to it: see {@link AsyncHttpClient#reportFailure reportFailure}, which gives
+   * the handler a {@link CancelledTaskException} in place of that error.
    * </p>
    */
   static void dispatchFailure(Consumer<Exception> failHndlr, AsyncHttpClient httpClient, Exception e)
   {
     if (failHndlr == null) return;
 
-    Exception failure = (httpClient == null) ? e : httpClient.failureToReport(e);
-
-    runInFXThread(() -> failHndlr.accept(failure));
+    if (httpClient == null)
+      runInFXThread(() -> failHndlr.accept(e));  // Sent synchronously, so there was nothing to stop
+    else
+      httpClient.reportFailure(failHndlr, e);
   }
 
 //---------------------------------------------------------------------------

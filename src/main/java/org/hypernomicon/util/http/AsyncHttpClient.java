@@ -75,12 +75,12 @@ public class AsyncHttpClient
       }
       catch (IOException e)
       {
-        runInFXThread(() -> failHndlr.accept(failureToReport(e)));
+        reportFailure(failHndlr, e);
       }
       catch (InterruptedException e)
       {
         currentThread().interrupt();
-        runInFXThread(() -> failHndlr.accept(failureToReport(new IOException("Request interrupted", e))));
+        reportFailure(failHndlr, new IOException("Request interrupted", e));
       }
     }
   }
@@ -101,13 +101,6 @@ public class AsyncHttpClient
   private volatile boolean cancelledByUser = false;
   private RequestThread requestThread;
   private String lastUrl = "";
-
-  /**
-   * Returns what a failure handler should be given for a request that failed with {@code e}:
-   * a {@link CancelledTaskException} if the user stopped the request, because the error is
-   * then only how the interruption surfaced, and otherwise {@code e} itself.
-   */
-  Exception failureToReport(Exception e)  { return cancelledByUser ? new CancelledTaskException() : e; }
 
   /**
    * Returns the URL of the most recent request.
@@ -171,6 +164,30 @@ public class AsyncHttpClient
     }
 
     requestThread = null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Gives the failure handler, on the JavaFX thread, what a request made through this client
+   * failed with: a {@link CancelledTaskException} if the request was stopped, because the
+   * error is then only how the interruption surfaced, and otherwise {@code e} itself.
+   * Callers tell the two apart in order to say nothing about a request that was given up on.
+   * <p>
+   * This is to be called on the request's own thread as soon as it fails, because whether
+   * the request was stopped is settled here and not when the handler runs. The record of a
+   * stop belongs to the client, and its next request clears it as it starts; starting a
+   * request is also what stops the one before it. A check made only once the handler runs,
+   * after the wait for the JavaFX thread, would find no record of the stop, and the
+   * interruption of a request that was replaced would pass for a failure.
+   * </p>
+   */
+  void reportFailure(Consumer<Exception> failHndlr, Exception e)
+  {
+    Exception failure = cancelledByUser ? new CancelledTaskException() : e;
+
+    runInFXThread(() -> failHndlr.accept(failure));
   }
 
 //---------------------------------------------------------------------------
