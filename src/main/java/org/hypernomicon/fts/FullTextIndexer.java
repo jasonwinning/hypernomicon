@@ -120,12 +120,13 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /** Bump when application-level indexing behavior changes that the auto-detected
-   *  fields (analyzer class, Lucene/Tika version, extensions) cannot catch:
+   *  fields (analyzer class, Lucene version, Tika and pdf.js versions) cannot catch:
    *  custom tokenization, fuzzy search settings, text preprocessing, document field
-   *  structure, PDF text-extraction changes (e.g. a pdf.js upgrade that alters
-   *  extracted text or page offsets), etc. A bump does not wipe the index; existing
-   *  entries are loaded as stale and re-extracted in place while the index stays
-   *  searchable. */
+   *  structure, a change to this application's own PDF extraction script that alters
+   *  extracted text or page offsets, etc. A bump does not wipe the index; every
+   *  existing entry is loaded as stale and re-extracted in place while the index
+   *  stays searchable. An upgrade of Tika or of pdf.js needs no bump: it is detected,
+   *  and only the entries that extractor produced go stale (see {@link IndexManifest}). */
   private static final int INDEX_SCHEMA_VERSION = 2;
 
   private static final Set<String> INDEXABLE_EXTENSIONS = Set.of
@@ -184,6 +185,12 @@ public class FullTextIndexer
   private static final String LUCENE_DIR_NAME   = "lucene",
                               METADATA_FILENAME = "metadata.json",
                               MANIFEST_FILENAME = "index-manifest.json",
+
+                              // Keys in the root of the metadata snapshot: the manifest its entries were built under,
+                              // and the hash of the configuration that versions through 1.36.1 recorded there instead
+
+                              BUILT_UNDER_KEY        = "builtUnder",
+                              LEGACY_CONFIG_HASH_KEY = "configHash",
 
                               // Follows the name of a zero-byte file in the statistics list of files without extractable text
 
@@ -273,6 +280,10 @@ public class FullTextIndexer
    *  simulate a configuration change between sessions. Null in production. */
   private volatile Integer schemaVersionForTesting;
 
+  /** Overrides the detected extractor versions in {@link #bringOnline} so tests can
+   *  simulate an upgrade of one extractor between sessions. Empty in production. */
+  private final Map<ExtractorKind, String> extractorVersionsForTesting = new ConcurrentHashMap<>();
+
 //---------------------------------------------------------------------------
 
   public int getIndexedFileCount()                 { return metadataMap.size(); }
@@ -283,6 +294,8 @@ public class FullTextIndexer
   public Analyzer getAnalyzer()                    { return analyzer; }
   public void setStatusListener(Runnable listener) { this.statusListener = listener; }
   void setSchemaVersionForTesting(Integer version) { assertThatThisIsUnitTestThread(); schemaVersionForTesting = version; }
+
+  void setExtractorVersionForTesting(ExtractorKind kind, String version) { assertThatThisIsUnitTestThread(); extractorVersionsForTesting.put(kind, version); }
 
   /** Whether the Lucene index is open and searchable; true in every state except {@code CLOSED}. */
   public boolean isQueryable()                     { return state != IndexerState.CLOSED; }
@@ -606,20 +619,22 @@ public class FullTextIndexer
     manifestPath = indexDir.resolve(MANIFEST_FILENAME);
     FilePath metadataPath = indexDir.resolve(METADATA_FILENAME);
 
-    // Schema versioning: detect config changes. A mismatch no longer wipes the
-    // index; it is logged here for diagnostics, and the actual staleness handling
-    // is per file, driven by the config hash recorded in the metadata snapshot
-    // (see loadMetadata). Existing entries stay searchable while each file is
-    // re-extracted in place, and because the per-file flags are persisted with
-    // the metadata, an interrupted re-extraction pass resumes where it left off.
+    // Schema versioning: detect config changes. A change does not wipe the index;
+    // staleness is per file, worked out in loadMetadata from the manifest recorded
+    // in the metadata snapshot. Existing entries stay searchable while each stale
+    // file is re-extracted in place, and because the per-file flags are persisted
+    // with the metadata, an interrupted re-extraction pass resumes where it left off.
 
     Integer versionOverride = schemaVersionForTesting;
     currentManifest = IndexManifest.computeCurrent(INDEXABLE_EXTENSIONS, versionOverride != null ? versionOverride : INDEX_SCHEMA_VERSION);
-    IndexManifest storedManifest = IndexManifest.loadFrom(manifestPath);
 
-    if ((storedManifest != null) && (currentManifest.matches(storedManifest) == false))
-      System.out.println("Full-text indexer: indexing configuration changed (" + currentManifest.describeDifferences(storedManifest)
-        + "); index remains searchable while files are re-extracted in place");
+    for (Map.Entry<ExtractorKind, String> override : extractorVersionsForTesting.entrySet())
+      currentManifest = currentManifest.withExtractorVersion(override.getKey(), override.getValue());
+
+    // Read the manifest file before it is overwritten further down: loadMetadata needs
+    // it to interpret a snapshot from a version that did not record the manifest there
+
+    IndexManifest storedManifest = IndexManifest.loadFrom(manifestPath);
 
     // Metadata/Lucene mismatch rule: if one exists without the other, wipe both
 
@@ -636,13 +651,6 @@ public class FullTextIndexer
 
       Files.createDirectories(lucenePath.toPath());
     }
-
-    // Write the manifest now. It is purely a diagnostic record of the configuration
-    // this index directory last saw (used for the field-level change description
-    // above); staleness decisions are driven by the config hash in the metadata
-    // snapshot, not by this file.
-
-    currentManifest.saveTo(manifestPath);
 
     Logger.getLogger("org.apache.lucene.internal.vectorization.VectorizationProvider").setLevel(Level.SEVERE);
 
@@ -692,7 +700,18 @@ public class FullTextIndexer
 
     System.out.println("Full-text indexer: index directory = " + indexDir);
 
-    loadMetadata();
+    loadMetadata(storedManifest);
+
+    // Write the manifest only now. It is a record of the configuration this index
+    // directory last saw; staleness decisions are driven by the manifest inside the
+    // metadata snapshot, not by this file. The one exception is a snapshot from a
+    // version that did not record the manifest there, which loadMetadata interprets
+    // with the help of this file and then rewrites in the current form. Overwriting
+    // the file before that rewrite would leave a session that ends early with a
+    // snapshot nothing can interpret any more, and so with every entry stale.
+
+    currentManifest.saveTo(manifestPath);
+
     loadExclusions();
     purgeExcludedEntries();
 
@@ -1670,17 +1689,19 @@ public class FullTextIndexer
 
     if (size == 0)
     {
-      markAsNoText(relPath, mtime, size);
+      markAsNoText(relPath, mtime, size, null);  // No extractor runs on an empty file
+      extractionFailures.add(relPath);
       return;
     }
 
-    ExtractionResult result = extractText(filePath);
+    ExtractorKind extractorKind = extractorKindFor(filePath);
+    ExtractionResult result = extractText(filePath, extractorKind);
 
     if (stopRequested) return;
 
     if (result == null)
     {
-      markAsFailed(relPath, mtime, size);
+      markAsFailed(relPath, mtime, size, extractorKind);
       extractionFailures.add(relPath);
       return;
     }
@@ -1689,7 +1710,7 @@ public class FullTextIndexer
     {
       debugLog("Full-text indexer: no text extracted from " + filePath);
 
-      markAsNoText(relPath, mtime, size);
+      markAsNoText(relPath, mtime, size, extractorKind);
       extractionFailures.add(relPath);
       return;
     }
@@ -1698,7 +1719,7 @@ public class FullTextIndexer
 
     writer.updateDocument(new Term("path", relPath), doc);
 
-    putMetadataEntry(relPath, mtime, size, INDEXED);
+    putMetadataEntry(relPath, mtime, size, INDEXED, extractorKind);
   }
 
 //---------------------------------------------------------------------------
@@ -1706,9 +1727,9 @@ public class FullTextIndexer
 
   /** Records the result of a fresh extraction attempt, which by definition ran
    *  under the current configuration, so the entry is never stale. */
-  private void putMetadataEntry(String relPath, long mtime, long size, FileIndexEntry.IndexStatus status)
+  private void putMetadataEntry(String relPath, long mtime, long size, FileIndexEntry.IndexStatus status, ExtractorKind extractorKind)
   {
-    metadataMap.put(relPath, new FileIndexEntry(mtime, size, status, false));
+    metadataMap.put(relPath, new FileIndexEntry(mtime, size, status, extractorKind, false));
   }
 
 //---------------------------------------------------------------------------
@@ -1720,10 +1741,10 @@ public class FullTextIndexer
    * consistency contract; the Lucene index and the metadata map must not
    * disagree about a file, so they are paired in one helper.
    */
-  private void markAsNoText(String relPath, long mtime, long size) throws IOException
+  private void markAsNoText(String relPath, long mtime, long size, ExtractorKind extractorKind) throws IOException
   {
     writer.deleteDocuments(new Term("path", relPath));
-    putMetadataEntry(relPath, mtime, size, NO_TEXT);
+    putMetadataEntry(relPath, mtime, size, NO_TEXT, extractorKind);
   }
 
 //---------------------------------------------------------------------------
@@ -1735,7 +1756,7 @@ public class FullTextIndexer
    * second consecutive unchanged failure. See {@link #markAsNoText}
    * for the delete/metadata consistency contract.
    */
-  private void markAsFailed(String relPath, long mtime, long size) throws IOException
+  private void markAsFailed(String relPath, long mtime, long size, ExtractorKind extractorKind) throws IOException
   {
     writer.deleteDocuments(new Term("path", relPath));
 
@@ -1757,7 +1778,7 @@ public class FullTextIndexer
         && (prior.mtime() == mtime)
         && (prior.size() == size);
 
-    putMetadataEntry(relPath, mtime, size, priorFailedUnchanged ? ABANDONED : FAILED);
+    putMetadataEntry(relPath, mtime, size, priorFailedUnchanged ? ABANDONED : FAILED, extractorKind);
   }
 
 //---------------------------------------------------------------------------
@@ -1820,25 +1841,28 @@ public class FullTextIndexer
         writer.addDocument(newDoc);
 
         FileIndexEntry.IndexStatus status;
+        ExtractorKind extractorKind;
         long mtime, size;
 
         if (oldEntry != null)
         {
           status = oldEntry.status();
+          extractorKind = oldEntry.extractorKind();
           mtime = oldEntry.mtime();
           size = oldEntry.size();
         }
         else
         {
           status = INDEXED;
+          extractorKind = extractorKindFor(newFile);
           mtime = newFile.lastModified().toEpochMilli();
           size = newFile.size();
         }
 
-        // Not putMetadataEntry: the reused content came from the old extraction,
-        // so the old entry's staleness carries over rather than being cleared
+        // Not putMetadataEntry: the reused content came from the old extraction, so the
+        // old entry's extractor and staleness carry over rather than being reset
 
-        metadataMap.put(newRelPath, new FileIndexEntry(mtime, size, status, (oldEntry != null) && oldEntry.stale()));
+        metadataMap.put(newRelPath, new FileIndexEntry(mtime, size, status, extractorKind, (oldEntry != null) && oldEntry.stale()));
         return true;
       });
 
@@ -1857,14 +1881,24 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ExtractionResult extractText(FilePath filePath)
+  /** Picks the extractor from the detected media type (content magic, with the filename only as a hint). */
+  private static ExtractorKind extractorKindFor(FilePath filePath)
+  {
+    return getMediaType(filePath).toString().contains("pdf") ? ExtractorKind.PDFJS : ExtractorKind.TIKA;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private ExtractionResult extractText(FilePath filePath, ExtractorKind extractorKind)
   {
     if (stopRequested || (tika == null)) return null;
 
-    if (getMediaType(filePath).toString().contains("pdf"))
-      return extractViaPdfJS(filePath);
-
-    return extractViaTika(filePath);
+    return switch (extractorKind)
+    {
+      case PDFJS -> extractViaPdfJS(filePath);
+      case TIKA  -> extractViaTika (filePath);
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -3286,10 +3320,10 @@ public class FullTextIndexer
 
     JsonObj root = new JsonObj();
 
-    // The config hash the (non-stale) entries were built under; loadMetadata
-    // compares it against the current config to detect configuration changes
+    // The configuration the (non-stale) entries were built under; loadMetadata
+    // compares it against the current one to work out which entries a change affects
 
-    root.put("configHash", currentManifest.configHash());
+    root.put(BUILT_UNDER_KEY, currentManifest.toJson());
     root.put("files", arr);
 
     return root.toString();
@@ -3306,7 +3340,10 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadMetadata()
+  /**
+   * @param storedManifest the manifest file as the previous session left it, or {@code null} if there was none
+   */
+  private void loadMetadata(IndexManifest storedManifest)
   {
     FilePath metadataFile = indexDir.resolve(METADATA_FILENAME);
 
@@ -3320,13 +3357,23 @@ public class FullTextIndexer
 
       if (files == null) return;
 
-      // The snapshot records the config hash its entries were built under. If it
-      // differs from the current config (or is absent, i.e. the snapshot predates
-      // hash stamping), every entry is loaded as stale: still searchable, but due
-      // for re-extraction. Otherwise each entry's own persisted flag is honored,
+      // The snapshot records the manifest its entries were built under. The entries
+      // that a difference from the current configuration affects are loaded as stale:
+      // still searchable, but due for re-extraction. That is every entry when a shared
+      // setting changed or when what the snapshot was built under cannot be
+      // established, and only one extractor's entries when just that extractor's
+      // version changed. Apart from that, each entry's own persisted flag is honored,
       // which is what lets an interrupted re-extraction pass resume.
 
-      boolean allStale = currentManifest.configHash().equals(root.getStrSafe("configHash")) == false;
+      JsonObj builtUnderObj = root.getObj(BUILT_UNDER_KEY);
+      boolean legacySnapshot = builtUnderObj == null;
+
+      IndexManifest builtUnder = legacySnapshot ? IndexManifest.forLegacySnapshot(storedManifest, root.getStrSafe(LEGACY_CONFIG_HASH_KEY)) : IndexManifest.fromJson(builtUnderObj);
+
+      IndexManifest.StaleScope staleScope = currentManifest.staleScopeSince(builtUnder);
+
+      if (staleScope.isNothing() == false)
+        System.out.println("Full-text indexer: indexing configuration changed (" + currentManifest.describeDifferences(builtUnder) + ')');
 
       int failedCount = 0, noTextCount = 0, abandonedCount = 0, staleCount = 0;
 
@@ -3336,7 +3383,11 @@ public class FullTextIndexer
 
         if (path != null)
         {
-          FileIndexEntry entry = FileIndexEntry.fromJson(obj, allStale);
+          FileIndexEntry entry = FileIndexEntry.fromJson(obj, legacySnapshot);
+
+          if (staleScope.includes(entry.extractorKind()))
+            entry = entry.asStale();
+
           metadataMap.put(path, entry);
 
           if (entry.stale())
@@ -3373,7 +3424,25 @@ public class FullTextIndexer
 
       if (staleCount > 0)
         System.out.println("Full-text indexer: " + staleCount + " entr" + (staleCount == 1 ? "y is" : "ies are")
-          + " from an older indexing configuration and will be re-extracted in place");
+          + " from an older indexing configuration and will be re-extracted in place; the index remains searchable meanwhile");
+
+      // Rewrite a snapshot that does not record its manifest in the current form right
+      // away, while the manifest file that was needed to interpret it still exists
+      // (see bringOnline). The stale flags just worked out are persisted with it.
+
+      if (legacySnapshot)
+      {
+        try
+        {
+          writeMetadataSnapshot(buildMetadataJson());
+        }
+        catch (IOException e)
+        {
+          // The entries are loaded all the same; the next periodic save tries again
+
+          System.out.println("Full-text indexer: failed to rewrite the metadata snapshot in the current form: " + getThrowableMessage(e));
+        }
+      }
     }
     catch (Exception e)
     {

@@ -37,8 +37,13 @@ import static org.hypernomicon.util.Util.*;
  * detection in {@code FullTextIndexer} treat the file as changed regardless of
  * mtime and size, and is persisted so an interrupted re-extraction pass resumes
  * where it left off instead of starting over.
+ * <p>
+ * {@code extractorKind} is the extractor that handled the file on its last attempt,
+ * whatever the outcome; it decides whether an extractor upgrade makes the entry
+ * stale. It is {@code null} when no extractor ran (an empty file), and such an
+ * entry goes stale only with a change that affects every entry.
  */
-record FileIndexEntry(long mtime, long size, IndexStatus status, boolean stale)
+record FileIndexEntry(long mtime, long size, IndexStatus status, ExtractorKind extractorKind, boolean stale)
 {
 
 //---------------------------------------------------------------------------
@@ -69,6 +74,9 @@ record FileIndexEntry(long mtime, long size, IndexStatus status, boolean stale)
     if (status != IndexStatus.INDEXED)
       obj.put("status", status.name());
 
+    if (extractorKind != null)
+      obj.put("extractor", extractorKind.jsonName());
+
     if (stale)
       obj.put("stale", Boolean.TRUE);
 
@@ -78,16 +86,27 @@ record FileIndexEntry(long mtime, long size, IndexStatus status, boolean stale)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Returns this entry marked as due for re-extraction. */
+  FileIndexEntry asStale()
+  {
+    return stale ? this : new FileIndexEntry(mtime, size, status, extractorKind, true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /**
-   * @param forceStale load the entry as stale regardless of its own flag; used when the
-   *                   metadata file as a whole was written under an older configuration
+   * @param inferExtractorKind the snapshot predates the recording of extractor kinds,
+   *                           so the kind is inferred from the file's extension
    */
-  static FileIndexEntry fromJson(JsonObj obj, boolean forceStale)
+  static FileIndexEntry fromJson(JsonObj obj, boolean inferExtractorKind)
   {
     String statusStr = obj.getStr("status");
     IndexStatus status = nullSwitch(statusStr, IndexStatus.INDEXED, IndexStatus::valueOf);
 
-    return new FileIndexEntry(obj.getLong("mtime", 0L), obj.getLong("size", 0L), status, forceStale || obj.getBoolean("stale", false));
+    ExtractorKind extractorKind = inferExtractorKind ? ExtractorKind.inferFromPath(obj.getStrSafe("path")) : ExtractorKind.fromJsonName(obj.getStr("extractor"));
+
+    return new FileIndexEntry(obj.getLong("mtime", 0L), obj.getLong("size", 0L), status, extractorKind, obj.getBoolean("stale", false));
   }
 
 //---------------------------------------------------------------------------
