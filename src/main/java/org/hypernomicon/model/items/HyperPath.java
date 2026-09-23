@@ -279,7 +279,7 @@ public class HyperPath
    * @param pageNumber The 1-based page number of interest, or {@code <= 0} if not applicable
    * @return The most specific record, or {@code null} if the file has no record association
    */
-  public static HDT_RecordWithPath resolveRecord(FilePath filePath, int pageNumber)
+  public static HDT_RecordWithFilePath resolveRecord(FilePath filePath, int pageNumber)
   {
     Set<HyperPath> hyperPaths = getHyperPathSetForFilePath(filePath);
 
@@ -289,15 +289,9 @@ public class HyperPath
     HDT_Work bestWork = HDT_WorkFile.smallestCoveringWork(hyperPaths, pageNumber, pageNumber);
     if (bestWork != null) return bestWork;
 
-    // No associated work covers the page; fall back to any record associated with the file
+    // No associated work covers the page; fall back to the record that owns the file
 
-    for (HyperPath hyperPath : hyperPaths)
-    {
-      HDT_RecordWithPath recordWithPath = hyperPath.getRecord();
-      if (recordWithPath != null) return recordWithPath;
-    }
-
-    return null;
+    return getRecordFromFilePath(filePath);
   }
 
 //---------------------------------------------------------------------------
@@ -425,10 +419,10 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_RecordWithPath getRecordFromFilePath(FilePath filePath)
+  public static HDT_RecordWithFilePath getRecordFromFilePath(FilePath filePath)
   {
-    return findFirstHaving(getHyperPathSetForFilePath(filePath), HyperPath::getRecord, record ->
-      (record.getType() == hdtMiscFile) || (record.getType() == hdtWorkFile) || (record.getType() == hdtPerson));
+    return findFirstHaving(getHyperPathSetForFilePath(filePath), hyperPath ->
+      (hyperPath.getRecord() instanceof HDT_RecordWithFilePath fileRecord) ? fileRecord : null);
   }
 
 //---------------------------------------------------------------------------

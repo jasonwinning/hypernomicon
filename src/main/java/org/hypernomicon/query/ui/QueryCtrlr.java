@@ -447,24 +447,10 @@ public final class QueryCtrlr extends QuerySubCtrlr
 
   private void setPreview()
   {
-    if (inReportMode() || (curResult == null))
-    {
+    if ((inReportMode() == false) && (curResult instanceof HDT_RecordWithFilePath recordWithFilePath))
+      PreviewWindow.setPreview(pvsQueriesTab, recordWithFilePath);
+    else
       PreviewWindow.clearPreview(pvsQueriesTab);
-      return;
-    }
-
-    switch (curResult.getType())
-    {
-      case hdtWork : case hdtMiscFile : case hdtWorkFile : case hdtPerson :
-
-        PreviewWindow.setPreview(pvsQueriesTab, (HDT_RecordWithPath) curResult);
-        break;
-
-      default :
-
-        PreviewWindow.clearPreview(pvsQueriesTab);
-        break;
-    }
   }
 
 //---------------------------------------------------------------------------

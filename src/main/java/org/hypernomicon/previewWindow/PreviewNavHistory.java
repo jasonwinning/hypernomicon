@@ -19,8 +19,7 @@ package org.hypernomicon.previewWindow;
 
 import java.util.*;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordWithPath;
+import org.hypernomicon.model.records.HDT_RecordWithFilePath;
 import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
@@ -46,9 +45,7 @@ import org.hypernomicon.util.file.FilePath;
  * <li>Clearing the current entry (the pane shows nothing) leaves the entries
  *     navigable; only a reset empties them.</li>
  * </ul>
- * Only records of a type that can own a previewed file are kept (work, work
- * file, miscellaneous file, person); any other record tracks as none. Pure
- * state with no JavaFX, confined to the FX thread by its owner.
+ * Pure state with no JavaFX, confined to the FX thread by its owner.
  */
 final class PreviewNavHistory
 {
@@ -60,26 +57,26 @@ final class PreviewNavHistory
   static final class Entry
   {
     private final FilePath filePath;
-    private final HDT_RecordWithPath record;
+    private final HDT_RecordWithFilePath record;
     private final List<Integer> pages = new ArrayList<>();
     private int pageNdx = -1;
 
-    private Entry(FilePath filePath, HDT_RecordWithPath record)
+    private Entry(FilePath filePath, HDT_RecordWithFilePath record)
     {
       this.filePath = filePath;
       this.record = record;
     }
 
-    FilePath filePath()          { return filePath; }
-    HDT_RecordWithPath record()  { return record; }
-    boolean hasPages()           { return pages.isEmpty() == false; }
-    int pageNdx()                { return pageNdx; }
+    FilePath filePath()             { return filePath; }
+    HDT_RecordWithFilePath record() { return record; }
+    boolean hasPages()              { return pages.isEmpty() == false; }
+    int pageNdx()                   { return pageNdx; }
 
     /** The pages visited, oldest first; the page cursor indexes into it. */
-    List<Integer> pages()        { return Collections.unmodifiableList(pages); }
+    List<Integer> pages()           { return Collections.unmodifiableList(pages); }
 
     /** The page to reopen this file at: the page the cursor is on, or 1 if none was visited. */
-    int currentPage()            { return pageNdx < 0 ? 1 : pages.get(pageNdx); }
+    int currentPage()               { return pageNdx < 0 ? 1 : pages.get(pageNdx); }
   }
 
 //---------------------------------------------------------------------------
@@ -93,7 +90,7 @@ final class PreviewNavHistory
   /** The entry the pane is showing, or null when it shows nothing. */
   Entry current()                        { return current; }
   FilePath currentFile()                 { return current == null ? null : current.filePath; }
-  HDT_RecordWithPath currentRecord()     { return current == null ? null : current.record; }
+  HDT_RecordWithFilePath currentRecord() { return current == null ? null : current.record; }
 
   boolean canStepPage(boolean forward)   { return (current != null) && (forward ? ((current.pageNdx + 1) < current.pages.size()) : (current.pageNdx >= 1)); }
   boolean canStepFile(boolean forward)   { return entryNdxAfterStep(forward) >= 0; }
@@ -109,14 +106,12 @@ final class PreviewNavHistory
    * entry itself when it is already that file with that record, otherwise a
    * new entry appended in place of the forward file history.
    */
-  Entry track(FilePath sourceFile, HDT_Record record)
+  Entry track(FilePath sourceFile, HDT_RecordWithFilePath record)
   {
-    HDT_RecordWithPath trackable = trackableRecord(record);
-
-    if ((current != null) && current.filePath.equals(sourceFile) && (current.record == trackable))
+    if ((current != null) && current.filePath.equals(sourceFile) && (current.record == record))
       return current;
 
-    current = new Entry(sourceFile, trackable);
+    current = new Entry(sourceFile, record);
 
     entryNdx++;
 
@@ -126,20 +121,6 @@ final class PreviewNavHistory
     entries.add(current);
 
     return current;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static HDT_RecordWithPath trackableRecord(HDT_Record record)
-  {
-    if (record == null) return null;
-
-    return switch (record.getType())
-    {
-      case hdtWork, hdtWorkFile, hdtMiscFile, hdtPerson -> (HDT_RecordWithPath) record;
-      default                                           -> null;
-    };
   }
 
 //---------------------------------------------------------------------------

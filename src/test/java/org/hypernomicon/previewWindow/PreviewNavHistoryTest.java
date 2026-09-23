@@ -24,7 +24,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import java.util.List;
 
 import org.hypernomicon.model.TestHyperDB;
-import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.previewWindow.PreviewNavHistory.Entry;
 import org.hypernomicon.util.file.FilePath;
@@ -279,21 +278,6 @@ class PreviewNavHistoryTest
 
     db.deleteRecord(work1);
     db.deleteRecord(work2);
-  }
-
-//---------------------------------------------------------------------------
-
-  @Test void onlyFileOwningRecordTypesAreTracked()
-  {
-    TestHyperDB db = TestHyperDB.instance();
-    HDT_Work work = db.createNewBlankRecord(hdtWork);
-    HDT_Position position = db.createNewBlankRecord(hdtPosition);
-
-    assertSame(work, history.track(A, work).record());
-    assertNull(history.track(B, position).record(), "a position cannot own a previewed file");
-
-    db.deleteRecord(work);
-    db.deleteRecord(position);
   }
 
 //---------------------------------------------------------------------------

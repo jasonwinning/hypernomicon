@@ -364,7 +364,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
             case hdtWork : case hdtMiscFile :
 
-              PreviewWindow.setPreview(pvsTreeTab, (HDT_RecordWithPath)record);
+              PreviewWindow.setPreview(pvsTreeTab, (HDT_RecordWithFilePath)record);
               clearPreview = false;
               break;
 

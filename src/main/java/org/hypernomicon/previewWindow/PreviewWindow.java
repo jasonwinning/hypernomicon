@@ -98,7 +98,7 @@ public final class PreviewWindow extends NonmodalWindow
   private final Map<PreviewSource, Runnable> srcToLockedReplay = new EnumMap<>(PreviewSource.class);
 
   /** An initiator's most recent request for a pane, as {@link #doSetPreview} received it ({@code filePath} null for a clear). */
-  private record Selection(FilePath filePath, int startPageNum, int endPageNum, HDT_Record record) { }
+  private record Selection(FilePath filePath, int startPageNum, int endPageNum, HDT_RecordWithFilePath record) { }
 
   /** Each pane's initiator selection, so {@link #show(PreviewSource)} can bring
    *  a pane back to it after the window's file history stepped away from it.
@@ -537,7 +537,7 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setPreview(PreviewSource src, FilePath filePath, HDT_Record record)
+  public static void setPreview(PreviewSource src, FilePath filePath, HDT_RecordWithFilePath record)
   {
     if (record instanceof HDT_Work work)
       instance.doSetPreview(src, filePath, work.getStartPageNum(), work.getEndPageNum(), work);
@@ -548,7 +548,7 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void show(PreviewSource src, HDT_RecordWithPath record)
+  public static void show(PreviewSource src, HDT_RecordWithFilePath record)
   {
     setPreview(src, record);
     show(src);
@@ -557,7 +557,7 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setPreview(PreviewSource src, HDT_RecordWithPath record)
+  public static void setPreview(PreviewSource src, HDT_RecordWithFilePath record)
   {
     if (record instanceof HDT_Work work)
       setPreview(src, work.filePathIncludeExt(), work);
@@ -568,7 +568,7 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
+  public static void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_RecordWithFilePath record)
   {
     instance.doSetPreview(src, filePath, startPageNum, endPageNum, record);
   }
@@ -680,7 +680,7 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /** Sets the queries pane's FTS preview intent; see {@link PreviewPaneHost#setPreview}. */
-  public static void setQueriesFtsPreview(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
+  public static void setQueriesFtsPreview(FilePath filePath, HDT_RecordWithFilePath record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
   {
     if (jxBrowserDisabled || (instance == null)) return;
 
@@ -768,13 +768,9 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void doSetPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
+  private void doSetPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_RecordWithFilePath record)
   {
     if (jxBrowserDisabled || disablePreviewUpdating) return;
-
-    if ((record != null) && (record.getType () != hdtWork    ) && (record.getType() != hdtMiscFile) &&
-                            (record.getType () != hdtWorkFile) && (record.getType() != hdtPerson  ))
-      record = null;
 
     // Directories clear the pane like empty paths do: nothing can preview a
     // folder (the File Manager passes one when a folder row is selected), and
@@ -786,9 +782,7 @@ public final class PreviewWindow extends NonmodalWindow
 
     if (btnLock.isSelected() && (curSource() == src) && (hostFor(src).confirmedFile() != null))
     {
-      HDT_Record lockedRecord = record;
-
-      srcToLockedReplay.put(src, () -> doSetPreview(src, filePath, startPageNum, endPageNum, lockedRecord));
+      srcToLockedReplay.put(src, () -> doSetPreview(src, filePath, startPageNum, endPageNum, record));
       return;
     }
 
@@ -810,9 +804,7 @@ public final class PreviewWindow extends NonmodalWindow
       // Defer the load until the source is the active, showing one, then replay
       // through this same intent path (the File Manager's laziness, generalized).
 
-      HDT_Record finalRecord = record;  // record is reassigned above, so the lambda needs a copy
-
-      runWhenSourceActivates(src, () -> doSetPreview(src, filePath, startPageNum, endPageNum, finalRecord));
+      runWhenSourceActivates(src, () -> doSetPreview(src, filePath, startPageNum, endPageNum, record));
       return;
     }
 

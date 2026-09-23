@@ -24,7 +24,11 @@ import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 
-public interface HDT_RecordWithPath extends HDT_Record
+/**
+ * A record that has a path. Sealed so that every record type with a path says, by implementing
+ * {@link HDT_RecordWithFilePath} or {@link HDT_RecordWithFolderPath}, which kind of path it has.
+ */
+public sealed interface HDT_RecordWithPath extends HDT_Record permits HDT_RecordWithFilePath, HDT_RecordWithFolderPath
 {
 
 //---------------------------------------------------------------------------

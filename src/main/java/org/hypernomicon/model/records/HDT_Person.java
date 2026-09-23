@@ -43,7 +43,7 @@ import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
-public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWithPath
+public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWithFilePath
 {
 
 //---------------------------------------------------------------------------

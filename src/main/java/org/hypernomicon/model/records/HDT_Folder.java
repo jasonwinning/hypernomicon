@@ -38,7 +38,7 @@ import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
 //---------------------------------------------------------------------------
 
-public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
+public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithFolderPath
 {
 
 //---------------------------------------------------------------------------
@@ -69,9 +69,9 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   /** @see org.hypernomicon.model.AbstractHyperDB#isSpecialFolder(int, boolean) */
   public boolean isSpecial(boolean checkSubfolders) { return db.isSpecialFolder(getID(), checkSubfolders); }
 
-  @Override public HyperPath getPath()     { return path; }
-  @Override public String name()           { return path.getNameStr(); }
-  @Override public String getNameEngChar() { return convertToEnglishChars(name()); }
+  @Override public HyperPath getPath()              { return path; }
+  @Override public String name()                    { return path.getNameStr(); }
+  @Override public String getNameEngChar()          { return convertToEnglishChars(name()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

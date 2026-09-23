@@ -1681,7 +1681,8 @@ public final class FileManager extends NonmodalWindow
       }
     }
 
-    PreviewWindow.setPreview(pvsManager, FilePath.isEmpty(fileTablePath) ? filePath : fileTablePath, record);
+    PreviewWindow.setPreview(pvsManager, FilePath.isEmpty(fileTablePath) ? filePath : fileTablePath,
+                             (record instanceof HDT_RecordWithFilePath recordWithFilePath) ? recordWithFilePath : null);
   }
 
 //---------------------------------------------------------------------------

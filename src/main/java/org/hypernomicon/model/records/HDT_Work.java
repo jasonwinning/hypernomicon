@@ -50,7 +50,7 @@ import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
 //---------------------------------------------------------------------------
 
-public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<WorkAuthors>, Comparable<HDT_Work>
+public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithFilePath, HDT_RecordWithAuthors<WorkAuthors>, Comparable<HDT_Work>
 {
 
 //---------------------------------------------------------------------------

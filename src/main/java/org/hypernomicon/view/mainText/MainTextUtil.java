@@ -163,8 +163,7 @@ public final class MainTextUtil
   @SuppressWarnings("removal")
   static void handleJSEvent(String htmlToUse, WebEngine weToUse, TextViewInfo textViewInfo)
   {
-    int recordID = -1;
-    RecordType recordType = hdtNone;
+    HDT_Record record = null;
     JSObject jsToJava;
 
     // It might seem strange to do this instead of passing an object to javascript with methods the script can call
@@ -194,11 +193,12 @@ public final class MainTextUtil
 
     if ((jsEvent == JS_EVENT_OPEN_RECORD) || (jsEvent == JS_EVENT_LAUNCH_FILE) || (jsEvent == JS_EVENT_OPEN_PREVIEW))
     {
-      recordID = (Integer) jsToJava.getMember("recordID");
-      int recordTypeOrd = (Integer) jsToJava.getMember("recordType");
-      recordType = getEnumVal(recordTypeOrd, RecordType.class);
+      int recordID      = (Integer) jsToJava.getMember("recordID"),
+          recordTypeOrd = (Integer) jsToJava.getMember("recordType");
 
-      if ((recordType == hdtNote) && (jsEvent == JS_EVENT_OPEN_PREVIEW))
+      record = db.records(getEnumVal(recordTypeOrd, RecordType.class)).getByID(recordID);
+
+      if ((record instanceof HDT_RecordWithFolderPath) && (jsEvent == JS_EVENT_OPEN_PREVIEW))
         jsEvent = JS_EVENT_LAUNCH_FILE;
     }
 
@@ -206,12 +206,12 @@ public final class MainTextUtil
     {
       case JS_EVENT_OPEN_RECORD :
 
-        openRecordLinkAction(db.records(recordType).getByID(recordID));
+        openRecordLinkAction(record);
         break;
 
       case JS_EVENT_OPEN_PREVIEW :
 
-        previewRecordLinkAction(db.records(recordType).getByID(recordID));
+        previewRecordLinkAction(record);
         break;
 
       case JS_EVENT_OPEN_URL :
@@ -221,7 +221,7 @@ public final class MainTextUtil
 
       case JS_EVENT_LAUNCH_FILE :
 
-        launchRecordLinkAction(db.records(recordType).getByID(recordID));
+        launchRecordLinkAction(record);
         break;
 
       case JS_EVENT_OPEN_CHOOSER :
@@ -256,8 +256,8 @@ public final class MainTextUtil
 
   public static void previewRecordLinkAction(HDT_Record target)
   {
-    if (target instanceof HDT_RecordWithPath recordWithPath)
-      PreviewWindow.show(pvsOther, recordWithPath);
+    if (target instanceof HDT_RecordWithFilePath recordWithFilePath)
+      PreviewWindow.show(pvsOther, recordWithFilePath);
   }
 
 //---------------------------------------------------------------------------

@@ -30,7 +30,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 //---------------------------------------------------------------------------
 
-public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithPath
+public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithFolderPath
 {
 
 //---------------------------------------------------------------------------

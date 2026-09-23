@@ -95,7 +95,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  record FTSResultRow(SearchResult result, HDT_RecordWithPath resolvedRecord)
+  record FTSResultRow(SearchResult result, HDT_RecordWithFilePath resolvedRecord)
   {
     String path() { return result.path(); }
   }
@@ -958,7 +958,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
           FilePath filePath = db.getRootPath(sr.path());
           List<PageMatch> matches = sr.pageMatches();
           IntStream pages = (matches != null) ? matches.stream().mapToInt(PageMatch::pageNumber) : IntStream.empty();
-          HDT_RecordWithPath record = HDT_WorkFile.resolveRecordForPages(filePath, pages, HyperPath.resolveRecord(filePath, 0));
+          HDT_RecordWithFilePath record = HDT_WorkFile.resolveRecordForPages(filePath, pages, HyperPath.resolveRecord(filePath, 0));
           rows.add(new FTSResultRow(sr, record));
         }
 
@@ -1185,7 +1185,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
           {
             FilePath filePath = db.getRootPath(path);
             IntStream pages = matches.stream().mapToInt(PageMatch::pageNumber);
-            HDT_RecordWithPath newRecord = HDT_WorkFile.resolveRecordForPages(filePath, pages, row.resolvedRecord());
+            HDT_RecordWithFilePath newRecord = HDT_WorkFile.resolveRecordForPages(filePath, pages, row.resolvedRecord());
 
             if (newRecord != row.resolvedRecord())
               allRows.set(ndx, new FTSResultRow(row.result(), newRecord));

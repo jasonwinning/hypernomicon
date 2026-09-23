@@ -175,7 +175,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     {
       if ((newValue == null) || (oldValue == newValue)) return;
 
-      HDT_RecordWithPath record = newValue.getRecord();
+      HDT_RecordWithFilePath record = newValue.getRecord();
 
       if (record == null)
         setDefaultWorkPreview();

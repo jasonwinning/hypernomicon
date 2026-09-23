@@ -165,7 +165,7 @@ final class PreviewPaneHost
   private PaneViewer viewer = null;
   private Tab tab = null;
 
-  private HDT_Record intentRecord = null;
+  private HDT_RecordWithFilePath intentRecord = null;
   private HitsStatus hitsStatus = null;
 
   /**
@@ -250,7 +250,7 @@ final class PreviewPaneHost
 
   FilePath confirmedFile()                 { return core.confirmedFile(); }
   FilePath intendedFile()                  { return history.currentFile(); }
-  HDT_RecordWithPath intendedRecord()      { return history.currentRecord(); }
+  HDT_RecordWithFilePath intendedRecord()  { return history.currentRecord(); }
 
   int pageNum()                            { return pageNum; }
   int numPages()                           { return meta.pageCount(); }
@@ -308,7 +308,7 @@ final class PreviewPaneHost
    * @param scrollTarget    clicked-match target to scroll to once the document and
    *                        its highlights are in place, or {@code null}
    */
-  void setPreview(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
+  void setPreview(FilePath filePath, HDT_RecordWithFilePath record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
   {
     // Record the request target before gating, so hits arriving for it while
     // the intent waits in the gate are stashed rather than dropped as stale.
@@ -327,7 +327,7 @@ final class PreviewPaneHost
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setPreviewNow(FilePath filePath, HDT_Record record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
+  private void setPreviewNow(FilePath filePath, HDT_RecordWithFilePath record, boolean paged, int pageNum, boolean wantsHighlights, ScrollTarget scrollTarget)
   {
     debugLog("PreviewPaneHost[" + src + "].setPreviewNow EXECUTE: " + filePath.getNameOnly()
       + " (replacing intent=" + (core.intentFile() == null ? "null" : core.intentFile().getNameOnly()) + ')');
@@ -358,7 +358,7 @@ final class PreviewPaneHost
    * with the content kind derived from the file's mimetype. Rapid selection
    * coalesces in the settle gate.
    */
-  void setPreviewAuto(FilePath filePath, HDT_Record record, int pageNum)
+  void setPreviewAuto(FilePath filePath, HDT_RecordWithFilePath record, int pageNum)
   {
     boolean paged = PreviewIntent.kindFor(filePath) == ContentKind.PAGED;
 
@@ -796,7 +796,7 @@ final class PreviewPaneHost
    * path derives them the same way, except that a record tab may pass its
    * unsaved values instead.
    */
-  void setWorkPageNumsFrom(FilePath filePath, HDT_Record record)
+  void setWorkPageNumsFrom(FilePath filePath, HDT_RecordWithFilePath record)
   {
     if (record instanceof HDT_Work work)
     {

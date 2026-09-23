@@ -40,7 +40,7 @@ import java.util.stream.IntStream;
 
 //---------------------------------------------------------------------------
 
-public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
+public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithFilePath
 {
 
 //---------------------------------------------------------------------------
@@ -413,7 +413,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
    *                     no {@code HDT_WorkFile} is associated with the file)
    * @return the most specific covering work, or {@code fallback}
    */
-  public static HDT_RecordWithPath resolveRecordForPages(FilePath filePath, IntStream pageNumbers, HDT_RecordWithPath fallback)
+  public static HDT_RecordWithFilePath resolveRecordForPages(FilePath filePath, IntStream pageNumbers, HDT_RecordWithFilePath fallback)
   {
     IntSummaryStatistics pageNumberStats = pageNumbers.filter(pageNumber -> pageNumber > 0).summaryStatistics();
 

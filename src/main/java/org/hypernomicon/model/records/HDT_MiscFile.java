@@ -34,7 +34,7 @@ import org.hypernomicon.model.unities.HDT_RecordWithMainText;
 
 //---------------------------------------------------------------------------
 
-public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWithPath, HDT_RecordWithAuthors<RecordAuthors>
+public class HDT_MiscFile extends HDT_RecordWithMainText implements HDT_RecordWithFilePath, HDT_RecordWithAuthors<RecordAuthors>
 {
 
 //---------------------------------------------------------------------------
