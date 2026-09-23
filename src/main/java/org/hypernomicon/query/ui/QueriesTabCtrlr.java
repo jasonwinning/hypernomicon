@@ -310,13 +310,13 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       return;
     }
 
-    List<HDT_RecordWithPath> sourceRecords = new ArrayList<>();
+    List<HDT_RecordWithFilePath> sourceRecords = new ArrayList<>();
 
     for (ResultRow row : resultRows)
     {
       HDT_Record record = row.getRecord();
-      if (record instanceof HDT_RecordWithPath recordWithPath)
-        sourceRecords.add(recordWithPath);
+      if (record instanceof HDT_RecordWithFilePath recordWithFilePath)
+        sourceRecords.add(recordWithFilePath);
     }
 
     // Default to excluding edited works (the checkbox starts unchecked); the user can opt in.
@@ -365,13 +365,17 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 
   /**
-   * Whether the record maps to at least one existing, indexable file; this is the
-   * same file set that {@link #searchWithinRecordFiles(HDT_RecordWithPath)} would
-   * scope the search to. Lets callers validate before navigating to this tab.
+   * Whether the record maps to at least one existing, indexable file, or to a folder; this is
+   * the same scope that {@link #searchWithinRecordFiles(HDT_RecordWithPath)} would
+   * use for the search. Lets callers validate before navigating to this tab.
    */
   public static boolean recordHasIndexableFiles(HDT_RecordWithPath record)
   {
-    return scopeListForRecord(record).getPathScope().isEmpty() == false;
+    return switch (record)
+    {
+      case HDT_RecordWithFolderPath folderRecord -> folderRecord.pathNotEmpty();
+      case HDT_RecordWithFilePath   fileRecord   -> scopeListForRecord(fileRecord).getPathScope().isEmpty() == false;
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -380,22 +384,31 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   /**
    * Opens a new FTS tab scoped to the files associated with the given record,
    * the same way searchWithinFiles scopes to the records in the query results.
+   * For a folder record, or a note that has a folder, the scope is that folder.
    */
   public void searchWithinRecordFiles(HDT_RecordWithPath record)
   {
-    // Include edited works: the user explicitly selected this record
+    switch (record)
+    {
+      case HDT_RecordWithFolderPath folderRecord -> searchWithinFolder(folderRecord.filePath());
 
-    SearchResultFileList scopeList = scopeListForRecord(record);
+      case HDT_RecordWithFilePath fileRecord ->
+      {
+        // Include edited works: the user explicitly selected this record
 
-    goToNewFTSTab().setRecordScope(scopeList, List.of(record), "By selected record", true);
+        SearchResultFileList scopeList = scopeListForRecord(fileRecord);
 
-    scopeList.showErrors();
+        goToNewFTSTab().setRecordScope(scopeList, List.of(fileRecord), "By selected record", true);
+
+        scopeList.showErrors();
+      }
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static SearchResultFileList scopeListForRecord(HDT_RecordWithPath record)
+  private static SearchResultFileList scopeListForRecord(HDT_RecordWithFilePath record)
   {
     return buildScopeList(List.of(record), true);
   }
@@ -403,7 +416,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static SearchResultFileList buildScopeList(List<HDT_RecordWithPath> records, boolean includeEdited)
+  private static SearchResultFileList buildScopeList(List<HDT_RecordWithFilePath> records, boolean includeEdited)
   {
     SearchResultFileList scopeList = new SearchResultFileList(false, includeEdited);
     records.forEach(scopeList::addRecord);
@@ -727,8 +740,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         for (ResultRow row : resultRowList)
         {
           HDT_Record record = row.getRecord();
-          if (record instanceof HDT_RecordWithPath recordWithPath)
-            fileList.addRecord(recordWithPath);
+          if (record instanceof HDT_RecordWithFilePath recordWithFilePath)
+            fileList.addRecord(recordWithFilePath);
 
           incrementAndUpdateProgress();
         }

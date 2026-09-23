@@ -234,7 +234,7 @@ class SearchResultFileList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void addRecord(HDT_RecordWithPath record)
+  void addRecord(HDT_RecordWithFilePath record)
   {
     switch (record.getType())
     {

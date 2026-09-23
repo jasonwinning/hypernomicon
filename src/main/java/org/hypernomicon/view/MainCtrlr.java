@@ -2632,24 +2632,49 @@ public final class MainCtrlr
 
     HDT_Record record = getSelectedRecordAskIfNeeded();
 
-    if (record == null)
-      return;
+    if (record != null)
+      searchWithinRecordFiles(record);
+  }
 
-    if (record instanceof HDT_RecordWithPath recordWithPath)
-    {
-      if (recordHasIndexableFiles(recordWithPath) == false)
-      {
-        errorPopup("No indexable files are associated with this record.");
-        return;
-      }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-      if (prepareToShowQuery())
-        queryHyperTab().searchWithinRecordFiles(recordWithPath);
-    }
-    else
+  /**
+   * Whether the menu item for searching the contents of a record's files should be offered for this record.
+   * @param record the record
+   * @return true if full-text search is enabled and the record has at least one file that could be searched
+   */
+  public static boolean canSearchWithinRecordFiles(HDT_RecordWithPath record)
+  {
+    return db.ftsEnabledOnThisComputer() && recordHasIndexableFiles(record);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Opens a new full-text search tab scoped to the files associated with the record, or shows a popup if
+   * there are none. This can be called from another window, in which case the main window is brought forward.
+   * @param record the record
+   */
+  public void searchWithinRecordFiles(HDT_Record record)
+  {
+    if ((record instanceof HDT_RecordWithPath) == false)
     {
       errorPopup("Records of type \"" + getTypeName(record.getType()) + "\" do not have files associated with them.");
+      return;
     }
+
+    HDT_RecordWithPath recordWithPath = (HDT_RecordWithPath) record;
+
+    if (recordHasIndexableFiles(recordWithPath) == false)
+    {
+      errorPopup("No indexable files are associated with this record.");
+      return;
+    }
+
+    if (prepareToShowQuery(windows.getOutermostStage() != getStage()))
+      queryHyperTab().searchWithinRecordFiles(recordWithPath);
   }
 
 //---------------------------------------------------------------------------

@@ -130,7 +130,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   private Query lastSearchKeyQuery;
   private SearchResultFileList recordScopeList, lastScopeList;
   private ScoreDoc lastScoreDoc;
-  private List<HDT_RecordWithPath> recordScopeRecords;
+  private List<HDT_RecordWithFilePath> recordScopeRecords;
   private String lastQueryStr, lastFileMask, lastFolderPrefix, cachedContextHtml;
 
   /** Path of the row whose preview intent is currently set on the queries
@@ -1361,7 +1361,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
    * the includeEdited value the caller built {@code scopeList} with so the checkbox and the
    * displayed file set agree
    */
-  void setRecordScope(SearchResultFileList scopeList, List<HDT_RecordWithPath> sourceRecords, String radioCaption, boolean includeEdited)
+  void setRecordScope(SearchResultFileList scopeList, List<HDT_RecordWithFilePath> sourceRecords, String radioCaption, boolean includeEdited)
   {
     recordScopeRecords = sourceRecords;
 
@@ -1421,7 +1421,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     SearchResultFileList scopeList = new SearchResultFileList(false, chkIncludeEdited.isSelected());
 
-    for (HDT_RecordWithPath record : recordScopeRecords)
+    for (HDT_RecordWithFilePath record : recordScopeRecords)
       scopeList.addRecord(record);
 
     recordScopeList = scopeList;

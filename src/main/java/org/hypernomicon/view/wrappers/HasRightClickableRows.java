@@ -28,6 +28,7 @@ import java.util.function.*;
 import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.PreviewWindow;
+import org.hypernomicon.view.MainCtrlr;
 
 import javafx.scene.control.*;
 import javafx.scene.input.ContextMenuEvent;
@@ -244,6 +245,21 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 
     addContextMenuItem("Show nearest note ancestor's folder in system explorer", HDT_Note.class, note -> (note.pathNotEmpty() == false) && (note.getAncestorWithFolder() != null),
                        note -> highlightFileInExplorer(note.getAncestorWithFolder().filePath()));
+
+    addContextMenuItem("Search contents of work file(s)...", HDT_Work.class, MainCtrlr::canSearchWithinRecordFiles,
+                       work -> ui.searchWithinRecordFiles(work));
+
+    addContextMenuItem("Search file contents...", HDT_WorkFile.class, MainCtrlr::canSearchWithinRecordFiles,
+                       workFile -> ui.searchWithinRecordFiles(workFile));
+
+    addContextMenuItem("Search file contents...", HDT_MiscFile.class, MainCtrlr::canSearchWithinRecordFiles,
+                       miscFile -> ui.searchWithinRecordFiles(miscFile));
+
+    addContextMenuItem("Search file contents...", HDT_Folder.class, MainCtrlr::canSearchWithinRecordFiles,
+                       folder -> ui.searchWithinRecordFiles(folder));
+
+    addContextMenuItem("Search contents of files in folder...", HDT_Note.class, MainCtrlr::canSearchWithinRecordFiles,
+                       note -> ui.searchWithinRecordFiles(note));
 
     addContextMenuItem("Assign to note record", HDT_Folder.class, HDT_Folder::pathNotEmpty,
                        folder ->
