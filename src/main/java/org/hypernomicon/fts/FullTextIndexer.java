@@ -131,7 +131,7 @@ public class FullTextIndexer
 
   private static final Set<String> INDEXABLE_EXTENSIONS = Set.of
   (
-    "pdf", "doc", "docx", "ppt", "pptx", "epub", "html", "htm", "odt", "rtf", "txt", "srt", "vtt"
+    "pdf", "doc", "docx", "ppt", "pptx", "one", "epub", "html", "htm", "odt", "rtf", "txt", "srt", "vtt"
   );
 
   public static boolean isIndexableExtension(String ext)
@@ -284,6 +284,10 @@ public class FullTextIndexer
    *  simulate an upgrade of one extractor between sessions. Empty in production. */
   private final Map<ExtractorKind, String> extractorVersionsForTesting = new ConcurrentHashMap<>();
 
+  /** Overrides {@link #INDEXABLE_EXTENSIONS} for {@link #bringOnline} and {@link #isIndexable}
+   *  so tests can change the set of indexable file types between sessions. Null in production. */
+  private volatile Set<String> indexableExtensionsForTesting;
+
 //---------------------------------------------------------------------------
 
   public int getIndexedFileCount()                 { return metadataMap.size(); }
@@ -296,6 +300,10 @@ public class FullTextIndexer
   void setSchemaVersionForTesting(Integer version) { assertThatThisIsUnitTestThread(); schemaVersionForTesting = version; }
 
   void setExtractorVersionForTesting(ExtractorKind kind, String version) { assertThatThisIsUnitTestThread(); extractorVersionsForTesting.put(kind, version); }
+
+  void setIndexableExtensionsForTesting(Set<String> extensions) { assertThatThisIsUnitTestThread(); indexableExtensionsForTesting = extensions; }
+
+  private Set<String> indexableExtensions() { return nullSwitch(indexableExtensionsForTesting, INDEXABLE_EXTENSIONS); }
 
   /** Whether the Lucene index is open and searchable; true in every state except {@code CLOSED}. */
   public boolean isQueryable()                     { return state != IndexerState.CLOSED; }
@@ -626,7 +634,7 @@ public class FullTextIndexer
     // with the metadata, an interrupted re-extraction pass resumes where it left off.
 
     Integer versionOverride = schemaVersionForTesting;
-    currentManifest = IndexManifest.computeCurrent(INDEXABLE_EXTENSIONS, versionOverride != null ? versionOverride : INDEX_SCHEMA_VERSION);
+    currentManifest = IndexManifest.computeCurrent(indexableExtensions(), versionOverride != null ? versionOverride : INDEX_SCHEMA_VERSION);
 
     for (Map.Entry<ExtractorKind, String> override : extractorVersionsForTesting.entrySet())
       currentManifest = currentManifest.withExtractorVersion(override.getKey(), override.getValue());
@@ -2307,7 +2315,7 @@ public class FullTextIndexer
       return false;
 
     String ext = filePath.getExtensionOnly();
-    return strNotNullOrBlank(ext) && INDEXABLE_EXTENSIONS.contains(ext.toLowerCase());
+    return strNotNullOrBlank(ext) && indexableExtensions().contains(ext.toLowerCase());
   }
 
 //---------------------------------------------------------------------------

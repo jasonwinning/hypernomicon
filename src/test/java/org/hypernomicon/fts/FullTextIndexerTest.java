@@ -23,8 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
-import java.util.HexFormat;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
@@ -143,11 +142,30 @@ class FullTextIndexerTest
    *  its real one, as it would after an upgrade of that extractor. */
   private FullTextIndexer openSession(int schemaVersion, ExtractorKind upgradedKind, String upgradedVersion) throws IOException
   {
+    return openSession(schemaVersion, upgradedKind, upgradedVersion, null);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Opens a session whose live set of indexable file types is the given one instead of
+   *  the production set, as a later version that indexes another type would have. */
+  private FullTextIndexer openSession(int schemaVersion, Set<String> indexableExtensions) throws IOException
+  {
+    return openSession(schemaVersion, null, null, indexableExtensions);
+  }
+
+//---------------------------------------------------------------------------
+
+  private FullTextIndexer openSession(int schemaVersion, ExtractorKind upgradedKind, String upgradedVersion, Set<String> indexableExtensions) throws IOException
+  {
     indexer = new FullTextIndexer();
     indexer.setSchemaVersionForTesting(schemaVersion);
 
     if (upgradedKind != null)
       indexer.setExtractorVersionForTesting(upgradedKind, upgradedVersion);
+
+    if (indexableExtensions != null)
+      indexer.setIndexableExtensionsForTesting(indexableExtensions);
 
     indexer.bringOnline(FilePath.of(dbRoot), FilePath.of(indexDir), registry);
     return indexer;
@@ -340,10 +358,59 @@ class FullTextIndexerTest
 
     buildAndAwait(openSession(SCHEMA_V1));
 
+    // Reopen before judging: the build reports completion before its final commit
+    // refreshes the searcher, so only a fresh session shows the durable index
+
+    closeSession();
+    openSession(SCHEMA_V1);
+
     assertTrue (found(indexer, "alpha", "a.txt"), "unchanged file should keep its existing document");
     assertFalse(found(indexer, "bravo", "a.txt"), "unchanged file should not have been re-extracted");
 
     closeSession();
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void addingAnIndexableExtensionDoesNotReextractExistingEntries() throws Exception
+  {
+    Path txtFile  = writeDbFile("a.txt",  "alpha alpha alpha"),
+         textFile = writeDbFile("b.text", "charlie charlie charlie");  // plain text under a type the first session does not index
+
+    activateRegistry(txtFile, textFile);
+
+    buildAndAwait(openSession(SCHEMA_V1, Set.of("txt")));
+    awaitTrue(() -> found(indexer, "alpha", "a.txt"), "initial build should index the txt file");
+
+    assertFalse(indexer.isFileIndexed(FilePath.of(textFile)), "a file whose type is outside the live set is not indexed");
+    closeSession();
+
+    swapContentPreservingIdentity(txtFile, "bravo bravo bravo");
+
+    openSession(SCHEMA_V1, Set.of("txt", "text"));
+
+    // Only the list of indexable types differs between the sessions: nothing is stale
+
+    assertFalse(indexer.getStatistics().contains("Awaiting re-extraction"), indexer.getStatistics());
+
+    buildAndAwait(indexer);
+
+    awaitTrue(() -> found(indexer, "charlie", "b.text"), "the build should pick up the newly indexable file");
+
+    // Checked only now: the build reports MAINTAINING before its final commit refreshes the
+    // searcher, and the new file becoming searchable is what proves that refresh has happened
+
+    assertTrue (found(indexer, "alpha", "a.txt"), "an entry indexed before the change keeps its document");
+    assertFalse(found(indexer, "bravo", "a.txt"), "an entry indexed before the change is not re-extracted");
+    assertTrue (indexer.isFileIndexed(FilePath.of(textFile)), "the File Manager's search item gate sees the new entry");
+
+    closeSession();
+
+    JsonObj metadataRoot = readMetadata();
+
+    assertEquals("tika", entryFor(metadataRoot, "b.text").getStr("extractor"));
+    assertTrue(metadataRoot.getObj("builtUnder").getArray("indexableExtensions").strStream().anyMatch("text"::equals),
+               "the snapshot records the set it was built under");
   }
 
 //---------------------------------------------------------------------------
@@ -474,6 +541,12 @@ class FullTextIndexerTest
     assertEquals("tika", entryFor(metadataRoot, "a.txt").getStr("extractor"), "the extractor should be inferred from the extension");
 
     buildAndAwait(indexer);
+
+    // Reopen before judging: the build reports completion before its final commit
+    // refreshes the searcher, so only a fresh session shows the durable index
+
+    closeSession();
+    openSession(SCHEMA_V1);
 
     assertTrue (found(indexer, "alpha", "a.txt"), "an entry carried over from version 1.36 should keep its existing document");
     assertFalse(found(indexer, "bravo", "a.txt"), "an entry carried over from version 1.36 should not be re-extracted");
