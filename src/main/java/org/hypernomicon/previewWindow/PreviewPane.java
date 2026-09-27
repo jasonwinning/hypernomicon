@@ -64,7 +64,9 @@ import org.hypernomicon.util.file.FilePath;
  * {@code issuedView} so reconcile re-issues, at most
  * {@link #MAX_VIEWER_RETRIES} times per desired document; on exhaustion the
  * desired view itself escalates to {@code Unable}, a terminal state exited
- * only by an intent change or a user refresh ({@link #refreshDisplay}).
+ * only by an intent change or a user refresh ({@link #refreshDisplay}). A
+ * refusal of direct content escalates at once, since the answer would not
+ * change.
  * <p>
  * <b>The intent back-edge.</b> User scrolling ({@code pageChanged}) is both a
  * confirmation and an intent update: the new page is folded into the current
@@ -81,7 +83,8 @@ final class PreviewPane
   /** Re-issues after a viewer error, per desired document, before escalating to Unable. */
   static final int MAX_VIEWER_RETRIES = 2;
 
-  private static final String VIEWER_FAILURE_CAUSE = "The viewer was unable to display the file";
+  private static final String VIEWER_FAILURE_CAUSE     = "The viewer was unable to display the file",
+                              UNPREVIEWABLE_KIND_CAUSE = "The file kind cannot be shown in the preview";
 
   private final ViewerPort viewer;
   private final Executor paneExecutor;
@@ -98,8 +101,10 @@ final class PreviewPane
   private long generation = 0;
   private boolean loadConfirmed = false;
 
-  private FilePath retryDocPath = null, escalatedDocPath = null;
+  private FilePath retryDocPath = null, escalatedDocPath = null,
+                   unpreviewableProbePath = null;   // memo key for isUnpreviewableKind
   private int retryCount = 0;
+  private boolean unpreviewableProbeResult = false;
 
   private volatile FilePath confirmedFile = null;
   private volatile int confirmedPage = -1;
@@ -146,9 +151,7 @@ final class PreviewPane
     paneExecutor.execute(() ->
     {
       intent = newIntent;
-      retryDocPath = null;
-      escalatedDocPath = null;
-      retryCount = 0;
+      resetDocumentState();
       reconcile();
     });
   }
@@ -203,9 +206,7 @@ final class PreviewPane
     {
       intent = newIntent;
       snapshot = newSnapshot;
-      retryDocPath = null;
-      escalatedDocPath = null;
-      retryCount = 0;
+      resetDocumentState();
       reconcile();
     });
   }
@@ -271,13 +272,31 @@ final class PreviewPane
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unused")
+  /** A viewer error (a render failure, a load error) on the current document: it is
+   *  re-issued, up to the retry budget, then escalated. The cause is the viewer's own
+   *  report; nothing shows it yet, so it goes to the debug log rather than being lost. */
   void onViewerError(long gen, String cause)
   {
-    // cause is not surfaced yet: every viewer error currently collapses to a
-    // generic Unable after the retry budget. Reserved for per-cause display or
-    // retry-policy variation.
+    debugLog("Preview viewer error: " + cause);
 
+    handleViewerFailure(gen, false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The viewer refused the current document as direct content: a deterministic
+   *  answer, so the pane escalates at once instead of re-issuing. */
+  void onDirectContentRefused(long gen)
+  {
+    handleViewerFailure(gen, true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void handleViewerFailure(long gen, boolean terminal)
+  {
     paneExecutor.execute(() ->
     {
       if (gen != generation) return;
@@ -291,7 +310,7 @@ final class PreviewPane
         retryCount = 0;
       }
 
-      retryCount++;
+      retryCount = terminal ? (MAX_VIEWER_RETRIES + 1) : (retryCount + 1);
 
       if (retryCount > MAX_VIEWER_RETRIES)
         escalatedDocPath = docPath;
@@ -325,9 +344,7 @@ final class PreviewPane
       issuedHitsJson = null;
       issuedScrollTarget = null;
       loadConfirmed = false;
-      retryDocPath = null;
-      escalatedDocPath = null;
-      retryCount = 0;
+      resetDocumentState();
       reconcile();
     });
   }
@@ -377,6 +394,12 @@ final class PreviewPane
   {
     if (intent.kind() == ContentKind.DIRECT)
     {
+      // A kind the browser cannot show at all is a terminal Unable up front: no
+      // direct load is attempted, so there is no viewer error to retry on
+
+      if (isUnpreviewableKind(displayPath))
+        return new Unable(sourceFile, UNPREVIEWABLE_KIND_CAUSE);
+
       String hitsJson = (intent.wantsHighlights() && (snapshot.hits() instanceof HitsStatus.ReadyDirect(String json)))
         ? json
         : null;
@@ -409,6 +432,35 @@ final class PreviewPane
       : null;
 
     return new PagedDoc(sourceFile, displayPath, pageNum, hitsJson);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Memoized per display path: derive runs several times while one document is up
+   *  (load confirmation, hit pushes, page changes) and the probe reads the file. */
+  private boolean isUnpreviewableKind(FilePath displayPath)
+  {
+    if (displayPath.equals(unpreviewableProbePath) == false)
+    {
+      unpreviewableProbePath   = displayPath;
+      unpreviewableProbeResult = PreviewIntent.isUnpreviewableKind(displayPath);
+    }
+
+    return unpreviewableProbeResult;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Forgets what the pane knows about the current document: viewer-failure
+   *  escalation and the memoized kind probe. */
+  private void resetDocumentState()
+  {
+    retryDocPath = null;
+    escalatedDocPath = null;
+    retryCount = 0;
+    unpreviewableProbePath = null;
   }
 
 //---------------------------------------------------------------------------

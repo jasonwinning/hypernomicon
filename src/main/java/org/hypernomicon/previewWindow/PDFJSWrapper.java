@@ -38,7 +38,6 @@ import com.teamdev.jxbrowser.view.javafx.BrowserView;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -324,16 +323,7 @@ final class PDFJSWrapper
 
   void setGenerating(FilePath filePath)
   {
-    // Dialog previews can show a file being imported from outside the database, which
-    // does not relativize; those fall back to the full path, left in native form so it
-    // can be copied and pasted. Database-relative paths are shown with forward slashes
-    // regardless of platform.
-
-    FilePath relPath = db.getRootPath().relativize(filePath);
-
-    String pathStr = relPath != null ? relPath.toString().replace('\\', '/') : filePath.toString();
-
-    showStatus(StatusKind.PROGRESS, "Generating preview for file: " + pathStr);
+    showStatus(StatusKind.PROGRESS, "Generating preview for file: " + filePath.toDbRelativeStr());
   }
 
   void setStartingConverter()
@@ -343,12 +333,17 @@ final class PDFJSWrapper
 
   public void setUnable(FilePath filePath)
   {
-    setUnable(filePath.toString());
+    if (PreviewIntent.isUnpreviewableKind(filePath))
+      setUnableFileKind(filePath);
+    else
+      showStatus(StatusKind.NOTICE, "Unable to preview the file: " + filePath.toDbRelativeStr());
   }
 
-  private void setUnable(String pathStr)
+  /** The notice for a kind of file the browser cannot show at all (a OneNote
+   *  section, an EPUB): the file is not broken, it belongs in its own program. */
+  private void setUnableFileKind(FilePath filePath)
   {
-    showStatus(StatusKind.NOTICE, "Unable to preview the file: " + pathStr);
+    showStatus(StatusKind.NOTICE, "This type of file cannot be shown in the preview. Use Launch to open it in its own program: " + filePath.toDbRelativeStr());
   }
 
   void setNoOfficeInstallation()

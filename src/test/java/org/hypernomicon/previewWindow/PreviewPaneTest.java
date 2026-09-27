@@ -19,6 +19,9 @@ package org.hypernomicon.previewWindow;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +34,9 @@ import org.hypernomicon.previewWindow.ViewerPort.ViewerMeta;
 import org.hypernomicon.util.file.FilePath;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 //---------------------------------------------------------------------------
 
@@ -57,6 +63,8 @@ class PreviewPaneTest
 
   private final FakeViewer viewer = new FakeViewer();
   private final PreviewPane pane = new PreviewPane(viewer, Runnable::run);
+
+  @TempDir Path tempDir;
 
 //---------------------------------------------------------------------------
 
@@ -371,6 +379,37 @@ class PreviewPaneTest
 
 //---------------------------------------------------------------------------
 
+  @ParameterizedTest
+  @ValueSource(strings = { "notebook.one", "book.epub" })
+  void unpreviewableKindShowsUnableOnFirstPassWithoutRetries(String fileName) throws IOException
+  {
+    // An empty file: Tika detects the kind from the name when the content says nothing,
+    // and the pane asks only for the media type
+
+    FilePath file = FilePath.of(Files.createFile(tempDir.resolve(fileName)));
+
+    pane.setIntentAndPipeline(new PreviewIntent(file, ContentKind.DIRECT, -1, true, null), readySnapshot(file, file, null));
+
+    assertEquals(List.of("showUnable"), viewer.methods(), "no direct load is attempted, so there is nothing to retry");
+    assertEquals(file, viewer.last("showUnable").filePath());
+
+    // Direct hits arriving later re-derive the same view: nothing further is issued,
+    // and hits never apply to a document that never loaded
+
+    viewer.clear();
+    pane.updatePipeline(readySnapshot(file, file, new HitsStatus.ReadyDirect(HITS)));
+
+    assertEquals(List.of(), viewer.methods());
+
+    // A refresh re-shows the notice from a fresh probe
+
+    pane.refreshDisplay();
+
+    assertEquals(List.of("showUnable"), viewer.methods());
+  }
+
+//---------------------------------------------------------------------------
+
   /** The intent back-edge: user scrolling updates intent and the issued view,
    *  so reconcile never fights the user with a goToPage to the stale page. */
   @Test void userScrollFoldsBackIntoIntentWithoutCounterCommands()
@@ -503,6 +542,36 @@ class PreviewPaneTest
     pane.setIntent(new PreviewIntent(PDF, ContentKind.PAGED, 1, false, null));
 
     assertEquals(List.of("showDocument"), viewer.methods());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void directContentRefusalEscalatesToUnableAtOnce()
+  {
+    pane.setIntent(new PreviewIntent(HTML, ContentKind.DIRECT, 1, false, null));
+    pane.updatePipeline(readySnapshot(HTML, HTML, null));
+
+    assertEquals(1, countCalls("showContent"));
+
+    // The viewer refused the file as direct content: the same file would get the
+    // same answer, so there is nothing to retry
+
+    pane.onDirectContentRefused(viewer.lastShownGen());
+
+    assertEquals(1, countCalls("showContent"));
+    assertNotNull(viewer.last("showUnable"));
+    assertEquals(HTML, viewer.last("showUnable").filePath());
+
+    // Terminal until the intent changes, as after exhausted retries
+
+    viewer.clear();
+    pane.updatePipeline(readySnapshot(HTML, HTML, null));
+
+    assertEquals(List.of(), viewer.methods());
+
+    pane.setIntent(new PreviewIntent(HTML, ContentKind.DIRECT, 1, false, null));
+
+    assertEquals(List.of("showContent"), viewer.methods());
   }
 
 //---------------------------------------------------------------------------

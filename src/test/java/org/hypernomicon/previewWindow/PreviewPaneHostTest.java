@@ -19,6 +19,9 @@ package org.hypernomicon.previewWindow;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Executor;
 
@@ -31,6 +34,7 @@ import org.hypernomicon.util.RequestGate;
 import org.hypernomicon.util.file.FilePath;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 //---------------------------------------------------------------------------
 
@@ -45,7 +49,8 @@ import org.junit.jupiter.api.Test;
  * readings of the current file (intended at issue, confirmed on report).
  * Files here do not exist on disk, so every one is a natively viewable
  * artifact (no conversion service involved); paged versus direct is chosen
- * explicitly.
+ * explicitly. The one exception is the empty OneNote section written to a
+ * temporary folder, so that the kind check can detect it from its name.
  */
 class PreviewPaneHostTest
 {
@@ -156,6 +161,8 @@ class PreviewPaneHostTest
                                 B = FilePath.of("b.pdf");
 
   private static final String HITS = "{\"2\":[[4,11]]}";
+
+  @TempDir Path tempDir;
 
   private final HeldGate gate = new HeldGate();
   private final RecordingViewer viewer = new RecordingViewer();
@@ -417,15 +424,27 @@ class PreviewPaneHostTest
 
 //---------------------------------------------------------------------------
 
-  @Test void unshowableDirectContentEscalatesToUnableAfterBoundedRetries()
+  @Test void unshowableDirectContentEscalatesToUnableAfterOneAttempt()
   {
     viewer.directShowable = false;
 
     host.setPreview(A, null, false, 1, false, null);
 
-    assertEquals(1 + PreviewPane.MAX_VIEWER_RETRIES, count("direct:a.pdf"));
+    assertEquals(1, count("direct:a.pdf"));
     assertEquals("unable:a.pdf", calls().get(calls().size() - 1));
     assertEquals(A, host.intendedFile(), "the controls still name the file the pane is about");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void unpreviewableKindIsReportedWithoutADirectAttempt() throws IOException
+  {
+    FilePath file = FilePath.of(Files.createFile(tempDir.resolve("notebook.one")));
+
+    host.setPreview(file, null, false, 1, false, null);
+
+    assertEquals(List.of("unable:notebook.one"), calls());
+    assertEquals(file, host.intendedFile());
   }
 
 //---------------------------------------------------------------------------

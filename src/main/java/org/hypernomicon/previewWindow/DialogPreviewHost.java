@@ -411,7 +411,7 @@ public final class DialogPreviewHost
       try
       {
         if (jsWrapper.loadDirectContent(contentPath) == false)
-          core.pane().onViewerError(gen, "The file kind cannot be shown as direct content");
+          core.pane().onDirectContentRefused(gen);
       }
       catch (IllegalStateException | IOException e)
       {

@@ -977,7 +977,7 @@ final class PreviewPaneHost
 
       if (viewer.showDirect(sourceFile, contentPath) == false)
       {
-        core.pane().onViewerError(gen, "The file kind cannot be shown as direct content");
+        core.pane().onDirectContentRefused(gen);
         return;
       }
 

@@ -410,6 +410,21 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns a String of the path relative to the database root, with forward slashes
+   * whatever the platform, when the path is under that root; otherwise the full path in
+   * native form, so that it can be copied and pasted (a dialog preview, for one, can show
+   * a file being imported from outside the database). A database travels between
+   * platforms, so a path under its root reads the same wherever it is shown.
+   */
+  public String toDbRelativeStr()
+  {
+    return isUnderDbRoot() ? db.getRootPath().relativize(this).toString().replace('\\', '/') : toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private boolean moveOrCopy(FilePath destFilePath, boolean confirmOverwrite, boolean move) throws IOException
   {
     if (equals(destFilePath))

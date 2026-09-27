@@ -80,4 +80,22 @@ record PreviewIntent(FilePath sourceFile, ContentKind kind, int pageNum, boolean
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Whether the file is of a kind the embedded browser cannot show at all, so a
+   * pane derives its Unable display up front instead of attempting a direct load
+   * that fails: OneNote sections and EPUBs, the two indexable kinds that reach the
+   * preview as direct content. A denylist rather than a mirror of
+   * {@link PDFJSWrapper#loadDirectContent}'s acceptance test, whose last resort is a
+   * content probe that no static list can reproduce.
+   */
+  static boolean isUnpreviewableKind(FilePath filePath)
+  {
+    String mimetypeStr = getMediaType(filePath).toString();
+
+    return mimetypeStr.contains("onenote") || mimetypeStr.contains("epub");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }
