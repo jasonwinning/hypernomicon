@@ -192,6 +192,36 @@ public final class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Converts an image file to a data URI, for HTML that a WebView shows through
+   * {@code WebEngine.loadContent}. Such a page cannot show an image by its
+   * {@code file:} URL: WebKit refuses it as a local resource (since WebKit 623.1,
+   * which came with JavaFX 26.0.1).
+   *
+   * @param filePath the image file
+   * @return a data URI holding the file's contents, or null if the file is not an
+   *         image or cannot be read
+   */
+  public static String imgDataURI(FilePath filePath)
+  {
+    MediaType mediaType = getMediaType(filePath);
+
+    if ("image".equals(mediaType.getType()) == false)
+      return null;
+
+    try
+    {
+      return "data:" + mediaType.getBaseType() + ";base64," + Base64.getEncoder().encodeToString(Files.readAllBytes(filePath.toPath()));
+    }
+    catch (IOException e)
+    {
+      return null;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static String imgDataURIbyRecord(HDT_Record record) { return imgDataURI(imgRelPath(record, record.getType(), null)); }
 
 //---------------------------------------------------------------------------
