@@ -18,6 +18,8 @@
 package org.hypernomicon.view.mainText;
 
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Predicate;
@@ -34,6 +36,7 @@ import org.hypernomicon.model.searchKeys.KeywordLink;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
 import org.hypernomicon.model.unities.MainText.DisplayItemType;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 
 import static org.hypernomicon.App.*;
@@ -176,7 +179,44 @@ public final class MainTextWrapper
 
     addLinks(new HtmlTextNodeList(doc.body()), recordsToHilite);
 
+    embedLocalImages(doc);
+
     weToUse.loadContent(doc.html().replace("</head>", headContent));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Gives each image the document shows by a {@code file:} URL (a picture from a misc. file
+   * record, for example) the file's contents as its {@code srcset}. Since WebKit 623.1 (JavaFX
+   * 26.0.1), a page loaded through {@code loadContent} cannot load {@code file:} URLs; WebKit has
+   * fixed this upstream, but OpenJFX has not taken the fix yet. A srcset entry without a descriptor
+   * is the 1x candidate, which WebKit uses instead of {@code src}, so {@code src} keeps the file's
+   * URL and content copied or dragged out of the view still links to the local file. An image whose
+   * file cannot be read gets no srcset, and so shows as missing. A tripwire in MainTextWrapperTest
+   * fails once WebKit loads such URLs again, at which point this can go.
+   */
+  static void embedLocalImages(Document doc)
+  {
+    for (Element img : doc.select("img[src^=file:]"))
+    {
+      FilePath filePath;
+
+      try
+      {
+        filePath = FilePath.of(Path.of(URI.create(img.attr("src"))));
+      }
+      catch (IllegalArgumentException e)
+      {
+        continue;  // Not a URL that names a file
+      }
+
+      String dataURI = imgDataURI(filePath);
+
+      if (dataURI != null)
+        img.attr("srcset", dataURI);
+    }
   }
 
 //---------------------------------------------------------------------------

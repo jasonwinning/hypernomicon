@@ -19,6 +19,7 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -173,13 +174,13 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
   private void displayFilePath(FilePath filePath)
   {
-    if (FilePath.isEmpty(filePath))
+    String dataURI = imgDataURI(filePath);
+
+    if (dataURI == null)
     {
       webView.getEngine().loadContent("");
       return;
     }
-
-    String url = filePath.toURLString();
 
     String html = """
 <!DOCTYPE html>
@@ -248,7 +249,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
     window.addEventListener('load', start);
   </script>
 </body>
-</html>""".replace("$url", url);
+</html>""".replace("$url", dataURI);
 
     webView.getEngine().loadContent(html);
   }
@@ -334,7 +335,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
       displayFilePath(tempFile);
 
-      runOutsideFXThread(2000, () -> FileDeletion.ofFile(tempFile).nonInteractiveFailureOK().execute());
+      runOutsideFXThread(() -> FileDeletion.ofFile(tempFile).nonInteractiveFailureOK().execute());
     }
     catch (IOException e)
     {
@@ -381,7 +382,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
       displayFilePath(tempFile);
 
-      runOutsideFXThread(2000, () -> FileDeletion.ofFile(tempFile).nonInteractiveFailureOK().execute());
+      runOutsideFXThread(() -> FileDeletion.ofFile(tempFile).nonInteractiveFailureOK().execute());
 
       webBufferOutOfDate = false;
     }
