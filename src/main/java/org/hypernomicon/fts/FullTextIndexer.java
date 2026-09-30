@@ -2170,6 +2170,34 @@ public class FullTextIndexer
     }
     catch (Exception e)
     {
+      if (getMediaType(filePath).toString().contains("onenote"))
+        return scrapeOneNoteSection(filePath, e);
+
+      System.out.println("Full-text indexer: failed to extract " + filePath + ": " + getThrowableMessage(e));
+      return null;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Tika's OneNote parser rejects sections written by OneNote 2007, whose revision store
+   * predates the documented format (Tika issue TIKA-3194), and throws. The readable runs
+   * of such a section give the words of the notes, though not their order, so they are
+   * collected here in the parser's place; see {@link OneNoteStringScrape}.
+   */
+  private static ExtractionResult scrapeOneNoteSection(FilePath filePath, Exception parseFailure)
+  {
+    try
+    {
+      String text = OneNoteStringScrape.scrape(filePath);
+
+      System.out.println("Full-text indexer: OneNote parser rejected " + filePath + " (" + getThrowableMessage(parseFailure) + "); indexed the strings found in the file instead");
+      return new ExtractionResult(text, null, 0);
+    }
+    catch (Exception e)
+    {
       System.out.println("Full-text indexer: failed to extract " + filePath + ": " + getThrowableMessage(e));
       return null;
     }

@@ -18,6 +18,7 @@
 package org.hypernomicon.fts;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -112,11 +113,49 @@ class FullTextIndexerTest
 
 //---------------------------------------------------------------------------
 
+  private Path writeDbFile(String name, byte[] content) throws IOException
+  {
+    Path file = dbRoot.resolve(name);
+    Files.write(file, content);
+    return file;
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The 1024-byte header of a OneNote section as far as Tika's type detection and format
+   *  routing read it (the section type GUID, any file GUID, a nil legacy version so that the
+   *  parser takes its 2010-format tree walk, the .one format GUID, zeros for the rest),
+   *  followed by the two texts, one as ASCII and one as UTF-16LE. The parser rejects the
+   *  zeroed header pointers, as it rejects the reserved bits of a real 2007 section. */
+  private static byte[] oneNoteSectionTheParserRejects(String asciiText, String utf16Text)
+  {
+    byte[] asciiBytes = asciiText.getBytes(StandardCharsets.US_ASCII),
+           utf16Bytes = utf16Text.getBytes(StandardCharsets.UTF_16LE);
+
+    HexFormat hex = HexFormat.of();
+
+    ByteBuffer buf = ByteBuffer.allocate(1024 + asciiBytes.length + 4 + utf16Bytes.length + 4);
+
+    buf.put(hex.parseHex("E4525C7B8CD8A74DAEB15378D02996D3"))   // guidFileType: a OneNote section
+       .put(hex.parseHex("00112233445566778899AABBCCDDEEFF"))   // guidFile
+       .put(new byte[16])                                       // guidLegacyFileVersion: nil
+       .put(hex.parseHex("3FDD9A101B91F549A5D01791EDC8AED8"));  // guidFileFormat: .one
+
+    buf.position(1024);
+
+    buf.put(asciiBytes).put(new byte[4])
+       .put(utf16Bytes).put(new byte[4]);
+
+    return buf.array();
+  }
+
+//---------------------------------------------------------------------------
+
   /** Activates the registry with the db root itself pre-interned alongside the files,
    *  mirroring production populate(), whose walk interns the root directory. Without
    *  this, FilePath.of(dbRoot) misses the registry's normalized-key tier and falls into
    *  the toRealPath tier, which on macOS resolves the JUnit temp dir through the
-   *  /var -> /private/var symlink — a different identity space than the raw-interned
+   *  /var -> /private/var symlink, a different identity space than the raw-interned
    *  files, making the indexer's relativePath() produce ../-style keys. */
   private void activateRegistry(Path... files)
   {
@@ -181,18 +220,18 @@ class FullTextIndexerTest
 
 //---------------------------------------------------------------------------
 
-  private static void buildAndAwait(FullTextIndexer idx) throws Exception
+  private static void buildAndAwait(FullTextIndexer indexer) throws Exception
   {
-    idx.startIndexing(1);
-    awaitTrue(() -> idx.getState() == IndexerState.MAINTAINING, "initial build should complete");
+    indexer.startIndexing(1);
+    awaitTrue(() -> indexer.getState() == IndexerState.MAINTAINING, "initial build should complete");
   }
 
 //---------------------------------------------------------------------------
 
   /** Whether a search for {@code queryStr} returns the given relative path. */
-  private static boolean found(FullTextIndexer idx, String queryStr, String relPath) throws Exception
+  private static boolean found(FullTextIndexer indexer, String queryStr, String relPath) throws Exception
   {
-    return idx.searchLight(queryStr, 10, null, null, null).results().stream()
+    return indexer.searchLight(queryStr, 10, null, null, null).results().stream()
       .anyMatch(result -> result.path().equals(relPath));
   }
 
@@ -293,9 +332,9 @@ class FullTextIndexerTest
                      + "|analyzerClass=" + manifest.getStr("analyzerClass")
                      + "|indexableExtensions=" + String.join(",", manifest.getArray("indexableExtensions").strStream().toList())
                      + "|luceneVersion=" + manifest.getStr("luceneVersion")
-                     + "|tikaVersion=" + manifest.getStr("tikaVersion");
+                     + "|tikaVersion=" + manifest.getStr("tikaVersion"),
 
-    String configHash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical.getBytes(StandardCharsets.UTF_8)));
+           configHash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical.getBytes(StandardCharsets.UTF_8)));
 
     manifest.put("configHash", configHash);
     Files.writeString(manifestPath, manifest.toString(), StandardCharsets.UTF_8);
@@ -411,6 +450,24 @@ class FullTextIndexerTest
     assertEquals("tika", entryFor(metadataRoot, "b.text").getStr("extractor"));
     assertTrue(metadataRoot.getObj("builtUnder").getArray("indexableExtensions").strStream().anyMatch("text"::equals),
                "the snapshot records the set it was built under");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void oneNoteSectionTheParserRejectsIsIndexedFromItsStrings() throws Exception
+  {
+    Path file = writeDbFile("notes.one", oneNoteSectionTheParserRejects("charlie charlie charlie", "foxtrot foxtrot foxtrot"));
+    activateRegistry(file);
+
+    buildAndAwait(openSession(SCHEMA_V1));
+    awaitTrue(() -> found(indexer, "charlie", "notes.one"), "the ASCII strings of a section the parser rejects should be indexed");
+
+    assertTrue(found(indexer, "foxtrot", "notes.one"), "its UTF-16 strings should be indexed too");
+    assertTrue(indexer.isFileIndexed(FilePath.of(file)), "the section counts as indexed, not as failed");
+
+    closeSession();
+
+    assertEquals("tika", entryFor(readMetadata(), "notes.one").getStr("extractor"));
   }
 
 //---------------------------------------------------------------------------
