@@ -816,7 +816,7 @@ public class PictureDlgCtrlr extends ModalDialog
     {
       ivPicture.setImage(picture);
 
-      tfCurrent.setText(db.getRootPath().relativize(personHyperTab.getCurPicture()).toString());
+      tfCurrent.setText(personHyperTab.getCurPicture().toDbRelativeStr());
       tfName.setText(personHyperTab.getCurPicture().getNameOnly().toString());
     }
     else

@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.io.FilenameUtils;
-
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
@@ -394,7 +392,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     return folderName.isBlank() ?
       "Assign new folder in parent folder: " + parentFolder.filePath().toString()
     :
-      "Assign new folder: " + FilenameUtils.separatorsToUnix(db.getRootPath().relativize(parentFolder.filePath().resolve(folderName)).toString());
+      "Assign new folder: " + parentFolder.filePath().resolve(folderName).toDbRelativeStr();
   }
 
 //---------------------------------------------------------------------------

@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -53,7 +52,7 @@ public class HDT_Note extends HDT_RecordWithMainText implements HDT_RecordWithFo
 //---------------------------------------------------------------------------
 
   public boolean setParentNotes(List<HDT_Note> list) { return updateObjectsFromList(rtParentNoteOfNote, list); }
-  public String getFolderStr(boolean absolute)       { return nullSwitch(filePath(), "", filePath -> absolute ? filePath.toString() : db.getRootPath().relativize(filePath).toString()); }
+  public String getFolderStr(boolean absolute)       { return nullSwitch(filePath(), "", filePath -> absolute ? filePath.toString() : filePath.toDbRelativeStr()); }
   public HDT_Note getAncestorWithFolder()            { return folder.isNotNull() ? this : findFirstHaving(parentNotes, HDT_Note::getAncestorWithFolder); }
 
   @Override public HyperPath getPath()               { return folder.isNull() ? null : folder.get().getPath(); }

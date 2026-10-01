@@ -376,7 +376,7 @@ public class FolderTreeWatcher
 
       if ((confirmed.size() == 1) && (hadOverflow == false))
       {
-        warningPopup("A " + noun + " that is in use by the database, \"" + db.getRootPath().relativize(confirmed.getFirst()) +
+        warningPopup("A " + noun + " that is in use by the database, \"" + confirmed.getFirst().toDbRelativeStr() +
                      "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. " +
                      "Changes to database folders should be made using the " + appTitle + " File Manager instead.");
       }
@@ -389,7 +389,7 @@ public class FolderTreeWatcher
                             "This may or may not cause data integrity problems. " +
                             "Changes to database " + noun + "s should be made using the " + appTitle + " File Manager instead.";
 
-        String msg = confirmed.stream().map(fp -> String.valueOf(db.getRootPath().relativize(fp)) + '\n').collect(Collectors.joining());
+        String msg = confirmed.stream().map(fp -> fp.toDbRelativeStr() + '\n').collect(Collectors.joining());
 
         runInFXThread(() -> longMessagePopup(title, AlertType.WARNING, headerText, msg));
       }
@@ -579,7 +579,7 @@ public class FolderTreeWatcher
             else if (HyperPath.isInUseByRecords(hyperPath))
             {
               if (watcherEvent.isDirectory())
-                warningPopup("A folder that is in use by the database, \"" + db.getRootPath().relativize(oldPathInfo.getFilePath()) +
+                warningPopup("A folder that is in use by the database, \"" + oldPathInfo.getFilePath().toDbRelativeStr() +
                              "\", has been renamed from outside the program. This may or may not cause a data integrity problem. " +
                              "Changes to database folders should be made using the " + appTitle + " File Manager instead.");
               else
@@ -590,15 +590,15 @@ public class FolderTreeWatcher
 
                   runInFXThread(() ->
                   {
-                    if (confirmDialog("A file that is in use by the database, \"" + db.getRootPath().relativize(oldPathInfo.getFilePath()) +
+                    if (confirmDialog("A file that is in use by the database, \"" + oldPathInfo.getFilePath().toDbRelativeStr() +
                                       "\", has been renamed from outside the program." + System.lineSeparator() +
                                       "This may or may not cause a data integrity problem." + System.lineSeparator() +
-                                      "Should the record be reassigned to \"" + db.getRootPath().relativize(newPath) + "\"?", true) == false)
+                                      "Should the record be reassigned to \"" + newPath.toDbRelativeStr() + "\"?", true) == false)
                       return;
 
                     if (newPath.exists() == false)
                     {
-                      warningPopup("The file \"" + db.getRootPath().relativize(newPath) + "\" no longer exists. Record was not changed.");
+                      warningPopup("The file \"" + newPath.toDbRelativeStr() + "\" no longer exists. Record was not changed.");
                       return;
                     }
 

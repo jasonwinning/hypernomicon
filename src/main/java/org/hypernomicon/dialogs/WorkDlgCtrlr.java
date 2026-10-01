@@ -442,7 +442,7 @@ public class WorkDlgCtrlr extends ModalDialog
     lblAutoPopulated.setText("");
     tfOrigFile.setEditable(false);
 
-    destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
+    destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? nv.filePath().toDbRelativeStr() : "")));
 
     if (db.bibLibraryIsLinked())
       BibManager.instance().initEntryTypeCB(cbEntryType);

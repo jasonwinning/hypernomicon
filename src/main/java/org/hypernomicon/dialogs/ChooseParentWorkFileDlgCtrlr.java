@@ -17,9 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 
@@ -28,7 +26,6 @@ import java.util.function.Predicate;
 import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
-import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.fxml.FXML;
@@ -62,10 +59,7 @@ public class ChooseParentWorkFileDlgCtrlr extends ModalDialog
       String pathStr = "";
 
       if (workFile.pathNotEmpty())
-      {
-        FilePath filePath = workFile.filePath();
-        pathStr = nullSwitch(db.getRootPath().relativize(filePath), filePath.getNameOnly().toString(), FilePath::toString);
-      }
+        pathStr = workFile.filePath().toDbRelativeStr();
 
       row.setCellValue(0, workFile, pathStr);
       row.setCellValue(1, workFile, workFile.name());

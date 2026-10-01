@@ -149,7 +149,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
           return hyperPath.getRecord() == db.getRootFolder() ?
             HyperPath.ROOT_PATH_STR
           :
-            db.getRootPath().relativize(hyperPath.filePath()).toString();
+            hyperPath.filePath().toDbRelativeStr();
         }
 
         // now it should fall through to tagParentFolder case
@@ -162,7 +162,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
         return hyperPath.parentFolder().getID() == ROOT_FOLDER_ID ?
           HyperPath.ROOT_PATH_STR
         :
-          db.getRootPath().relativize(hyperPath.parentFolder().filePath()).toString();
+          hyperPath.parentFolder().filePath().toDbRelativeStr();
 
       default :
 

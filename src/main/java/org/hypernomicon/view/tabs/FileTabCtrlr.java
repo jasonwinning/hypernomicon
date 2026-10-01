@@ -191,15 +191,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   public void refreshFile()
   {
-    if (curMiscFile.pathNotEmpty())
-    {
-      FilePath filePath = curMiscFile.filePath(),
-               relPath = db.getRootPath().relativize(filePath);
-
-      tfFileName.setText(relPath == null ? filePath.getNameOnly().toString() : relPath.toString());
-    }
-    else
-      tfFileName.setText("");
+    tfFileName.setText(curMiscFile.pathNotEmpty() ? curMiscFile.filePath().toDbRelativeStr() : "");
   }
 
 //---------------------------------------------------------------------------
@@ -321,7 +313,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     if (result)
     {
-      tfFileName.setText(curMiscFile.pathNotEmpty() ? db.getRootPath().relativize(curMiscFile.filePath()).toString() : "");
+      refreshFile();
 
       tfName.setText(fdc.tfRecordName.getText());
 

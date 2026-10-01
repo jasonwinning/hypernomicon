@@ -503,8 +503,7 @@ class SearchResultFileList
 
     for (SearchResultFile rf : list)
     {
-      FilePath relPath = db.getRootPath().relativize(rf.filePath);
-      String pathStr = relPath != null ? relPath.toString().replace('\\', '/') : rf.filePath.toString();
+      String pathStr = rf.filePath.toDbRelativeStr();
 
       if (rf.hasPageRestriction())
         desc.add(pathStr + "  [" + formatPageRange(rf.startPage, rf.endPage == Integer.MAX_VALUE ? 0 : rf.endPage) + ']');

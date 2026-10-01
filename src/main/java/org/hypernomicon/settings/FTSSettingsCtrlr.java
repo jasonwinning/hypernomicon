@@ -244,7 +244,7 @@ public class FTSSettingsCtrlr implements SettingsControl
         return;
       }
 
-      String relativePath = db.getRootPath().relativize(folder.filePath()).toString();
+      String relativePath = folder.filePath().toDbRelativeStr();
       row.setCellValue(0, folder, relativePath);
 
     }).setButtonTooltip(ButtonAction.baCustom, "Browse for folder to exclude");
@@ -322,7 +322,7 @@ public class FTSSettingsCtrlr implements SettingsControl
 
       if (folder == null) continue;
 
-      String relativePath = db.getRootPath().relativize(folder.filePath()).toString();
+      String relativePath = folder.filePath().toDbRelativeStr();
       HyperTableRow row = htFolders.newDataRow();
       row.setCellValue(0, folder, relativePath);
     }

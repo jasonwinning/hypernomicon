@@ -73,7 +73,7 @@ public class FolderSettingsCtrlr implements SettingsControl
 
   private static void updateTextField(TextField tf, String prefKey)
   {
-    tf.setText(db.getRootPath().relativize(db.getSpecialFolder(prefKey).filePath()).toString());
+    tf.setText(db.getSpecialFolder(prefKey).filePath().toDbRelativeStr());
   }
 
 //---------------------------------------------------------------------------

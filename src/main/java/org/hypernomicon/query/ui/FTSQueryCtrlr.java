@@ -1401,8 +1401,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     recordScopeList = scopeList;
     recordScopeRecords = null;
 
-    FilePath relPath = db.getRootPath().relativize(filePath);
-    lblRecordScope.setText((relPath != null ? relPath : filePath).toString());
+    lblRecordScope.setText(filePath.toDbRelativeStr());
 
     rbRecordScope.setText("Single file");
     rbRecordScope.setDisable(false);
