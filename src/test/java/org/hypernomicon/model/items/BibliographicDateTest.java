@@ -19,6 +19,12 @@ package org.hypernomicon.model.items;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.StringReader;
+
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.events.XMLEvent;
+
 import org.apache.commons.lang3.compare.ComparableUtils;
 
 import org.junit.jupiter.api.Test;
@@ -424,6 +430,43 @@ class BibliographicDateTest
     bibYear = BibliographicYear.fromRawStrWhereMinusOneEqualsOneBC("955 c.e.");
     assertEquals(955, bibYear.numericValueWhereMinusOneEqualsOneBC(), parseMsg);
     assertEquals("955 c.e.", bibYear.rawValue, parseMsg);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void xmlAttributeEscapingTest() throws Exception
+  {
+    BibliographicDate date = new BibliographicDate(0, 0, "1953 \"2nd ed.\"", false);
+
+    assertEquals("raw_year=\"1953 &quot;2nd ed.&quot;\" parsed_year=\"1953\"", date.toXmlAttribs(), "Double quotes in the raw year should be written as character references");
+
+    assertXmlRoundTrip(date, "Double quotes in the raw year should survive the XML round trip");
+    assertXmlRoundTrip(new BibliographicDate(5, 3, "1953 \"2nd ed.\"", false), "Double quotes in the raw year should survive the XML round trip when a day and month are present");
+    assertXmlRoundTrip(new BibliographicDate(0, 0, "1999 (it's 'quoted')", false), "Apostrophes in the raw year should survive the XML round trip");
+    assertXmlRoundTrip(new BibliographicDate(0, 0, "c. 1800 <rev. & corr.>", false), "Angle brackets and ampersands in the raw year should survive the XML round trip");
+    assertXmlRoundTrip(new BibliographicDate(0, 0, "300 BC", false), "A BC year should survive the XML round trip");
+    assertXmlRoundTrip(new BibliographicDate(12, 11, "1986", false), "A plain numeric year with a day and month should survive the XML round trip");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void assertXmlRoundTrip(BibliographicDate date, String message) throws Exception
+  {
+    XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(new StringReader("<bibliographic_date " + date.toXmlAttribs() + " />"));
+    BibliographicDate parsed = null;
+
+    while (eventReader.hasNext())
+    {
+      XMLEvent event = eventReader.nextEvent();
+
+      if (event.isStartElement())
+        parsed = BibliographicDate.fromXmlAttribs(event.asStartElement().getAttributes(), null);  // The record state is only consulted to report an unknown attribute
+    }
+
+    assertEquals(date, parsed, message);
   }
 
 //---------------------------------------------------------------------------

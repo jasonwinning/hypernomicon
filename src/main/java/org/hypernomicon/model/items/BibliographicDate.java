@@ -288,7 +288,7 @@ public class BibliographicDate implements Comparable<BibliographicDate>
       attribs = attribs + MONTH_ATTR_NAME + '=' + QUOTE + month + QUOTE + ' ';
 
     if (strNotNullOrBlank(year.rawValue) && (((year.numericValueWhereMinusOneEqualsOneBC() > 0) && year.rawValue.equals(parsedYearStr)) == false))
-      attribs = attribs + RAW_YEAR_ATTR_NAME + '=' + QUOTE + xmlContentEscaper.escape(year.rawValue) + QUOTE + ' ';
+      attribs = attribs + RAW_YEAR_ATTR_NAME + '=' + QUOTE + xmlAttributeEscaper.escape(year.rawValue) + QUOTE + ' ';
 
     if (year.numericValueWhereMinusOneEqualsOneBC() != 0)
       attribs = attribs + PARSED_YEAR_ATTR_NAME + '=' + QUOTE + parsedYearStr + QUOTE + ' ';
