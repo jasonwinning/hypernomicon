@@ -3047,6 +3047,8 @@ public final class MainCtrlr
   {
     if ((record == null) || db.isOffline() || shuttingDown) return;
 
+    if (windows.getOutermostModality() != Modality.NONE) return;  // See the comment in goToRecord
+
     if (windows.getOutermostStage() != stage)
       windows.focusStage(stage);
 
@@ -3075,6 +3077,13 @@ public final class MainCtrlr
   public void goToRecord(HDT_Record record, boolean save)
   {
     if ((record == null) || db.isOffline() || shuttingDown) return;
+
+    // While a modal dialog is open, navigating the main window (which can also save the active record) or
+    // opening the File Manager underneath the dialog would interfere with whatever operation the dialog is
+    // part of. Tables inside dialogs share the default double-click, Enter and Go button behavior with the
+    // main window's tables, so the check is made here, where all of those paths end up, rather than at each gesture.
+
+    if (windows.getOutermostModality() != Modality.NONE) return;
 
     treeSelector.clear();
     HDT_WorkFile workFile = null;
