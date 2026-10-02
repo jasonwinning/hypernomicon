@@ -71,7 +71,7 @@ public class HDI_OfflinePointerSingle extends HDI_OfflineBase
     if (objID < 1) return;
 
     if (tagToNestedItem != null)
-      writePointerTagWithNestedPointers(xml, tag, objID, db.records(objType).getByID(objID).getXMLObjectName(), tagToNestedItem);
+      writePointerTagWithNestedPointers(xml, tag, objID, ord, db.records(objType).getByID(objID).getXMLObjectName(), tagToNestedItem);
     else
       writePointerTag(xml, tag, objID, hdtNone, ord, db.records(objType).getByID(objID).getXMLObjectName());
   }

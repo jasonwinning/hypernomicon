@@ -64,6 +64,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   private final Map<HDT_Obj , Long> subjListSizeModCount = new HashMap<>();
   private final List<RelationChangeHandler> changeHandlers = new ArrayList<>();
   private final Set<RelationType> cycleGroup;
+  private final SubjectOrderTracker<HDT_Subj, HDT_Obj> subjectOrder = new SubjectOrderTracker<>();
 
   private static final EnumMap<RecordType, Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>>> orphanTypeToRelSets = new EnumMap<>(RecordType.class);
   private static final EnumMap<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
@@ -644,7 +645,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       else           objList.add(ndx, obj);
 
       if (subjOrd > -1)
-        initOrderedSubject(obj, subj, subjOrd);
+        subjectOrder.placeLoadedSubject(objToSubjList.get(obj), obj, subj, subjOrd);
       else
         objToSubjList.put(obj, subj);
 
@@ -670,7 +671,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       if (objList.contains(obj) == false)
       {
         objToSubjList.remove(obj, subj);
-        subjOrdMap.remove(subj); // This map is only used for ordered pointer-single items so the subject will no longer have any objects
 
         incrSubjListSizeModCount(obj);
 
@@ -697,22 +697,18 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final Map<HDT_Subj, Integer> subjOrdMap = new HashMap<>();
-
-  // This should only get called while database is first loading; that is the only time subject order values are valid.
-
-  private void initOrderedSubject(HDT_Obj obj, HDT_Subj subj, int subjOrd)
-  {
-    subjOrdMap.put(subj, subjOrd);
-    addToSortedList(objToSubjList.get(obj), subj, Comparator.comparing(subjOrdMap::get));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
+  /**
+   * The position of the subject among the object's subjects, counted from 1, if the user has
+   * arranged that object's subjects; otherwise -1, which leaves the ord attribute out of the
+   * subject's pointer tag when it is saved.
+   */
   int getSubjectOrd(HDT_Obj obj, HDT_Subj subj)
   {
-    return subjOrdMap.containsKey(subj) ? (getSubjectNdx(obj, subj) + 1) : -1;
+    if (subjectOrder.isArranged(obj) == false) return -1;
+
+    int ndx = getSubjectNdx(obj, subj);
+
+    return ndx < 0 ? -1 : (ndx + 1);
   }
 
 //---------------------------------------------------------------------------
@@ -844,11 +840,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       if (HDT_Record.isEmptyThrowsException(orphanIt.next(), false))
         orphanIt.remove();
 
-    Iterator<Entry<HDT_Subj, Integer>> subjOrdMapIt = subjOrdMap.entrySet().iterator();
-
-    while (subjOrdMapIt.hasNext())
-      if (HDT_Record.isEmptyThrowsException(subjOrdMapIt.next().getKey(), false))
-        subjOrdMapIt.remove();
+    subjectOrder.dropExpired();
 
     if (hasNestedItems == false) return;
 
@@ -1012,12 +1004,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   void reorderSubjects(HDT_Obj obj, List<HDT_Subj> newSubjList)
   {
-    if (reorderList(obj, newSubjList, objToSubjList) == false)
-      return;
-
-    subjOrdMap.clear();
-    for (int ndx = 0; ndx < newSubjList.size(); ndx++)
-      subjOrdMap.put(newSubjList.get(ndx), ndx + 1);
+    if (reorderList(obj, newSubjList, objToSubjList))
+      subjectOrder.markArranged(obj);
   }
 
   /**

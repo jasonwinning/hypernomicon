@@ -62,24 +62,35 @@ public abstract class HDI_OfflineBase extends HDI_Base
 
   static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map)
   {
-    writePointerTagWithNestedPointers(xml, tag, objID, value, map, false);
+    writePointerTagWithNestedPointers(xml, tag, objID, -1, value, map, false);
+  }
+
+  static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, int ord, String value, Map<Tag, HDI_OfflineBase> map)
+  {
+    writePointerTagWithNestedPointers(xml, tag, objID, ord, value, map, false);
   }
 
   protected static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map, boolean noIDOk)
+  {
+    writePointerTagWithNestedPointers(xml, tag, objID, -1, value, map, noIDOk);
+  }
+
+  private static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, int ord, String value, Map<Tag, HDI_OfflineBase> map, boolean noIDOk)
   {
     if ((objID < 1) && (noIDOk == false)) return;
 
     if (map.isEmpty())
     {
-      writePointerTag(xml, tag, objID, hdtNone, value, noIDOk);
+      writePointerTag(xml, tag, objID, hdtNone, ord, value, noIDOk);
       return;
     }
 
-    String idStr = "";
-    if (objID > 0)
-      idStr = " id=" + QUOTE + objID + QUOTE;
+    String idStr = "", ordStr = "";
 
-    xml.append(HDX_INDENT).append('<').append(tag.name).append(idStr).append('>')
+    if (objID > 0) idStr  = " id="  + QUOTE + objID + QUOTE;
+    if (ord > -1)  ordStr = " ord=" + QUOTE + ord   + QUOTE;
+
+    xml.append(HDX_INDENT).append('<').append(tag.name).append(idStr).append(ordStr).append('>')
        .append(xmlContentEscaper.escape(value))
        .append(System.lineSeparator());
 
