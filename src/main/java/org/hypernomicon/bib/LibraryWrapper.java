@@ -307,14 +307,23 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
    * {@link AccessDeniedException}; the callback receives a status message that the
    * caller can surface in a progress dialog while the rename waits out a cloud-sync
    * conflict. Pass {@code null} if no retry notification is needed.
+   * <p>
+   * A failure is thrown rather than reported here so that the save this is part of
+   * fails as a whole. The records XML files are written after this file, and the
+   * integrity manifest written with them would otherwise certify a set of files in
+   * which works are linked to entries that were never saved; the next load would
+   * then have to unlink those works.
    *
    * @param onRetry callback invoked once when retry begins, or {@code null}
+   * @throws HyperDataException if the data could not be assembled or the file could
+   *                            not be written; the checksum and preferences recorded
+   *                            for the file are left as they were
    */
-  public void saveAllToPersistentStorage(Consumer<String> onRetry)
+  public void saveAllToPersistentStorage(Consumer<String> onRetry) throws HyperDataException
   {
     if (db.isOffline()) return;
 
-    StringBuilder json = null;
+    StringBuilder json;
 
     try
     {
@@ -357,8 +366,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     catch (Throwable e)
     {
       logThrowable(e);
-      errorPopup("An error occurred while saving bibliographic data: " + getThrowableMessage(e));
-      return;
+      throw new HyperDataException("An error occurred while saving bibliographic data: " + getThrowableMessage(e), e);
     }
 
     try
@@ -368,7 +376,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     }
     catch (IOException e)
     {
-      errorPopup("An error occurred while saving bibliographic data: " + getThrowableMessage(e));
+      throw new HyperDataException("An error occurred while saving bibliographic data: " + getThrowableMessage(e), e);
     }
   }
 

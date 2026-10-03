@@ -1110,9 +1110,10 @@ public final class UIUtil
    * thread. Either way, it will cause the calling thread to wait until
    * the user has clicked OK on the popup.
    *
-   * <p>If the MainCtrlr object has been constructed, it will only show the
-   * popup if ui.dontInteract() returns false. If ui.dontInteract() returns
-   * true, the method will return immediately without displaying the popup.
+   * <p>While {@link PopupRobot} is active (unit tests, the in-app test runners,
+   * and the parts of a shutdown that must not stop for the user), no popup is
+   * shown: the message and type are recorded by the robot and the method
+   * returns immediately.
    *
    * @param msg  the message to be displayed in the popup. Cannot be null.
    * @param type the type of the alert (e.g., WARNING, INFORMATION, ERROR). Cannot be null.

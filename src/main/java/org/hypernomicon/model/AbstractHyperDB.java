@@ -1091,6 +1091,48 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Asks the user whether to go on loading when works are linked to reference manager
+   * entries that the library file does not contain. The sync code unlinks a work itself
+   * when its entry is deleted, so this only happens when the set of files is inconsistent:
+   * a save that wrote the records files but not the library file, or a library file
+   * replaced with an older copy. Continuing drops the links, which the next save makes
+   * permanent; aborting lets the user put back a copy of the library file that has the
+   * entries, since the links are stored with the works.
+   * @return true if loading should continue, false if the user chose to abort
+   */
+  private boolean confirmUnlinkingWorks(List<HDT_Work> worksToUnlink)
+  {
+    if (worksToUnlink.isEmpty())
+      return true;
+
+    int count = worksToUnlink.size(), maxListed = 10;
+    boolean single = count == 1;
+
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(single ? "A work record is linked to a " : (count + " work records are linked to "))
+      .append(bibLibraryUserFriendlyName()).append(single ? " entry that is" : " entries that are")
+      .append(" not present in ").append(BIB_FILE_NAME).append(".\nThis can happen if the application ")
+      .append("was interrupted during a save, or if ").append(BIB_FILE_NAME)
+      .append(" was replaced with an older copy.\n\nAffected work").append(single ? "" : "s").append(":\n\n");
+
+    worksToUnlink.stream().limit(maxListed).forEach(work -> sb.append(work.getID()).append(": ").append(work.defaultChoiceText()).append('\n'));
+
+    if (count > maxListed)
+      sb.append("(and ").append(count - maxListed).append(" more)\n");
+
+    sb.append("\nIf you continue, ").append(single ? "the link" : "these links")
+      .append(" will be removed, and the next save will make the removal permanent.\nIf a copy of ")
+      .append(BIB_FILE_NAME).append(" that contains the ").append(single ? "entry" : "entries")
+      .append(" is available, abort and restore it first.\n\nContinue loading?");
+
+    return confirmDialog(sb.toString(), "Continue", "Abort", false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static VersionNumber getVersionNumberSavingAs(Map<VersionNumber, VersionNumber> appVersionToMaxVersion)
   {
     VersionNumber versionNumber = new VersionNumber(0);
@@ -1245,6 +1287,12 @@ public abstract class AbstractHyperDB
       if ((bibLibrary == null) || (bibLibrary.getEntryByKey(bibEntryKey) == null))
         worksToUnlink.add(work);
     });
+
+    if (confirmUnlinkingWorks(worksToUnlink) == false)
+    {
+      close(null);
+      return false;
+    }
 
     worksToUnlink.forEach(work -> work.setBibEntryKey(""));
 
@@ -1456,7 +1504,12 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws IOException, ParseException, HyperDataException
+  /**
+   * Creates the wrapper for the linked reference manager library from the given account
+   * details and the library file, if there is one. {@link TestHyperDB} overrides this to
+   * link an offline wrapper instead.
+   */
+  protected void loadBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws IOException, ParseException, HyperDataException
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21173);

@@ -159,6 +159,22 @@ public final class TestHyperDB extends AbstractHyperDB
 
   @Override MentionsIndex createMentionsIndex(List<Runnable> completeHandlers) { return new MentionsIndex(completeHandlers, false); }
 
+  /**
+   * Links the offline wrapper that {@link #linkBibLibrary(LibraryType, String)} links, in place
+   * of the real one, when the database settings being loaded (see {@link #setSettingsLoadFilter})
+   * name a reference manager library: the real wrapper would read the keyring and the library file.
+   */
+  @Override protected void loadBibLibrary(LibraryType libType, BibAuthKeys authKeys, String userID, String userName) throws HyperDataException
+  {
+    linkBibLibrary(libType, userID);
+  }
+
+  /**
+   * The checksum recorded for the reference manager library file, as the integrity manifest
+   * would record it at the next save; {@code null} when no such file has been loaded or saved.
+   */
+  public String getBibChecksum() { return xmlChecksums.get(BIB_FILE_NAME); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -323,14 +339,16 @@ public final class TestHyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void open()
+  private void open() { open(tempDir()); }
+
+  private void open(FilePath newRootFilePath)
   {
     if (isOnline())
       throw new AssertionError("Already open");
 
     try
     {
-      loadAllFromPersistentStorage(true, null, tempDir(), HDB_DEFAULT_FILENAME);
+      loadAllFromPersistentStorage(true, null, newRootFilePath, HDB_DEFAULT_FILENAME);
     }
     catch (HDB_InternalError e)
     {
@@ -348,7 +366,19 @@ public final class TestHyperDB extends AbstractHyperDB
    *
    * @throws AssertionError if the database is already closed or if an error occurs during closing or reopening.
    */
-  public void closeAndOpen()
+  public void closeAndOpen() { closeAndOpen(tempDir()); }
+
+  /**
+   * Like {@link #closeAndOpen()}, but the reopened session has the given folder as its
+   * database root instead of the OS temp directory, so that a test can arrange real files
+   * where the database expects them (the XML subfolder, a library file that cannot be
+   * written). The load itself still creates nothing there. The folder is the root only
+   * until the next reopen.
+   *
+   * @param newRootFilePath an existing folder, typically a JUnit {@code @TempDir}
+   * @throws AssertionError if the database is already closed or if an error occurs during closing or reopening.
+   */
+  public void closeAndOpen(FilePath newRootFilePath)
   {
     if (isOffline())
       throw new AssertionError("Already closed");
@@ -362,7 +392,7 @@ public final class TestHyperDB extends AbstractHyperDB
       throw newAssertionError(e);
     }
 
-    open();
+    open(newRootFilePath);
   }
 
 //---------------------------------------------------------------------------
