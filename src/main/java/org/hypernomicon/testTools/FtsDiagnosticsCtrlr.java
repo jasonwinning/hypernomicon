@@ -335,7 +335,7 @@ public class FtsDiagnosticsCtrlr implements TestConsoleTab
 
         try (var analyzer = FullTextIndexer.createAnalyzer())
         {
-          query = FullTextIndexer.createQueryParser(analyzer).parse(queryStr);
+          query = FullTextIndexer.parseQuery(analyzer, queryStr);
         }
         catch (Exception e)
         {

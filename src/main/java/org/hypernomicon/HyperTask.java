@@ -147,10 +147,23 @@ public abstract class HyperTask
 
       Throwable e = getException();
 
+      // Both popups are posted instead of shown here, although this already runs on the FX thread.
+      // The done handlers have just hidden the progress dialog, but its showModal has not returned,
+      // so it is still the outermost stage in ui.windows, and UIUtil.showAndWait would give a popup
+      // shown now no owner (it drops an owner that is not showing). Posting the popup also lets the
+      // caller unwind first: runWithProgressDialog returns FAILED before the popup appears.
+
       if (e instanceof HyperDataException)
         Platform.runLater(() -> errorPopup(e));
       else if (e != null)
+      {
+        // Not a failure the task anticipated: keep the stack trace for diagnosis, and tell the
+        // user as well. Callers see only the FAILED state, so without a popup a save, load or
+        // sync that died this way would look as though nothing had happened.
+
         logThrowable(e);
+        Platform.runLater(() -> errorPopup("An unexpected error occurred: " + getThrowableMessage(e)));
+      }
     }
   }
 

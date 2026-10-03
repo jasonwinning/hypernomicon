@@ -469,7 +469,7 @@ public final class BibManager extends NonmodalWindow
 
       if (state == State.CANCELLED)
       {
-        // If the task failed, and it was a HyperDataException, a popup is displayed by HyperTask.InnerTask.failed()
+        // If the task failed, a popup for its exception is displayed by HyperTask.InnerTask.failed()
 
         Throwable e = syncTask.getException();
 

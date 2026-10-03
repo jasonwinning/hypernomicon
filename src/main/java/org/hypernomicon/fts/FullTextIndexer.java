@@ -2541,7 +2541,7 @@ public class FullTextIndexer
   {
     if ((searcherMgr == null) || (analyzer == null)) return 0;
 
-    return countMatches(createQueryParser(analyzer).parse(queryStr));
+    return countMatches(parseQuery(analyzer, queryStr));
   }
 
 //---------------------------------------------------------------------------
@@ -3028,8 +3028,37 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
-   * Builds the {@link QueryParser} used for all free-text FTS queries: the
-   * {@code content} field with AND as the default operator.
+   * Parses a free-text FTS query with the parser from {@link #createQueryParser(Analyzer)}.
+   * Lucene reports most syntax errors as a {@link ParseException}, but a malformed regular
+   * expression term (between slashes) comes out of its regex compiler as an
+   * IllegalArgumentException. That is a syntax error too, so it is reported the same way,
+   * and no caller has to tell the two apart.
+   *
+   * @param analyzer the analyzer the index was built with
+   * @param queryStr the query, passed through unchanged (see {@link #createQueryParser(Analyzer)})
+   * @return the parsed query
+   * @throws ParseException if the query has a syntax error
+   */
+  public static Query parseQuery(Analyzer analyzer, String queryStr) throws ParseException
+  {
+    try
+    {
+      return createQueryParser(analyzer).parse(queryStr);
+    }
+    catch (IllegalArgumentException e)
+    {
+      ParseException parseException = new ParseException("Cannot parse '" + queryStr + "': " + e.getMessage());
+      parseException.initCause(e);
+      throw parseException;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds the {@link QueryParser} behind {@link #parseQuery(Analyzer, String)}, used for
+   * all free-text FTS queries: the {@code content} field with AND as the default operator.
    *
    * <p>The caller must pass the query string through unchanged; it must NOT be
    * lowercased first, because that would turn the boolean operators AND/OR/NOT
@@ -3039,7 +3068,7 @@ public class FullTextIndexer
    * wildcard/prefix/fuzzy/regexp term strings through unanalyzed, so those are
    * lower-cased here instead, to match the lower-cased index.
    */
-  public static QueryParser createQueryParser(Analyzer analyzer)
+  private static QueryParser createQueryParser(Analyzer analyzer)
   {
     QueryParser parser = new QueryParser("content", analyzer)
     {
@@ -3136,7 +3165,7 @@ public class FullTextIndexer
       query = prebuiltQuery;
     else
     {
-      query = createQueryParser(analyzer).parse(queryStr);
+      query = parseQuery(analyzer, queryStr);
     }
 
     try
@@ -3194,7 +3223,7 @@ public class FullTextIndexer
     }
     else
     {
-      query = createQueryParser(analyzer).parse(queryStr);
+      query = parseQuery(analyzer, queryStr);
     }
 
     if (query instanceof MatchNoDocsQuery)

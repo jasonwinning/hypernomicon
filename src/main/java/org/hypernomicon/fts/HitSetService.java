@@ -431,8 +431,9 @@ public final class HitSetService
       try
       {
         @SuppressWarnings("resource")
-        var parser = FullTextIndexer.createQueryParser(source.getAnalyzer());
-        luceneQuery = parser.parse(query.queryStr());
+        Analyzer analyzer = source.getAnalyzer();
+
+        luceneQuery = FullTextIndexer.parseQuery(analyzer, query.queryStr());
       }
       catch (Exception e)
       {
