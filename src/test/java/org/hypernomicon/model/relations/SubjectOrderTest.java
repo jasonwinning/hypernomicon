@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.relations;
 
-import static org.hypernomicon.model.AbstractHyperDB.XML_FILES_CHARSET;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 
@@ -156,7 +155,7 @@ class SubjectOrderTest
    */
   private static void reloadWithWorks(String recordsXml)
   {
-    db.setRecordsLoadFilter("Works.xml", bytes -> new String(bytes, XML_FILES_CHARSET).replace("</records>", recordsXml + "</records>").getBytes(XML_FILES_CHARSET));
+    db.setRecordsLoadFilter("Works.xml", xml -> xml.replace("</records>", recordsXml + "</records>"));
 
     PopupRobot.setDefaultResponse(mrYes);  // Continue past the integrity-checksum prompt, since the works file no longer matches the manifest
 

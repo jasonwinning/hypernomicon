@@ -181,11 +181,7 @@ class NewDBTest
   {
     // Insert an XML comment to change the checksum while keeping the XML valid
 
-    db.setRecordsLoadFilter(targetFileName, bytes ->
-    {
-      String xml = new String(bytes, XML_FILES_CHARSET);
-      return xml.replace("</records>", "<!-- modified -->\n</records>").getBytes(XML_FILES_CHARSET);
-    });
+    db.setRecordsLoadFilter(targetFileName, xml -> xml.replace("</records>", "<!-- modified -->\n</records>"));
 
     PopupRobot.setDefaultResponse(mrYes);  // Continue loading
 
@@ -203,11 +199,7 @@ class NewDBTest
   @Test
   void integrityChecksumMultipleMismatchTest()
   {
-    UnaryOperator<byte[]> filter = bytes ->
-    {
-      String xml = new String(bytes, XML_FILES_CHARSET);
-      return xml.replace("</records>", "<!-- modified -->\n</records>").getBytes(XML_FILES_CHARSET);
-    };
+    UnaryOperator<String> filter = xml -> xml.replace("</records>", "<!-- modified -->\n</records>");
 
     db.setRecordsLoadFilter("People.xml", filter);
     db.setRecordsLoadFilter("Works.xml", filter);
@@ -229,11 +221,7 @@ class NewDBTest
   @Test
   void missingManifestWithCurrentVersionTest()
   {
-    db.setSettingsLoadFilter(bytes ->
-    {
-      String xml = new String(bytes, XML_FILES_CHARSET);
-      return xml.replaceAll("\\s*<entry key=\"integrityChecksums\"[^/]*/>\n?", "\n").getBytes(XML_FILES_CHARSET);
-    });
+    db.setSettingsLoadFilter(xml -> xml.replaceAll("\\s*<entry key=\"integrityChecksums\"[^/]*/>\n?", "\n"));
 
     PopupRobot.setDefaultResponse(mrYes);  // Continue loading
 

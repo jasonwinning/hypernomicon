@@ -84,8 +84,8 @@ public final class TestHyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 
   private byte[] settingsFileBuffer;
-  private final Map<String, UnaryOperator<byte[]>> recordsLoadFilters = new HashMap<>();
-  private UnaryOperator<byte[]> settingsLoadFilter;
+  private final Map<String, UnaryOperator<String>> recordsLoadFilters = new HashMap<>();
+  private UnaryOperator<String> settingsLoadFilter;
 
 //---------------------------------------------------------------------------
 
@@ -163,19 +163,20 @@ public final class TestHyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 
   /**
-   * Registers a filter that transforms the raw bytes of a record XML file
-   * during {@link #loadFromXMLFiles}. The filter is applied to the bytes
-   * read from the zip before they are passed to {@code loadFromXMLStream},
-   * allowing tests to simulate corrupted or modified record files.
+   * Registers a filter that transforms the text of a record XML file during
+   * {@link #loadFromXMLFiles}. The bytes read from the zip are decoded with
+   * {@link AbstractHyperDB#XML_FILES_CHARSET}, passed through the filter, and
+   * encoded again before they reach {@code loadFromXMLStream}, allowing tests
+   * to simulate corrupted or modified record files.
    *
    * @param fileName the leaf filename to intercept (e.g. "People.xml"),
    *                 or {@code null} to clear all record filters
-   * @param filter   a function that transforms the original bytes, or
+   * @param filter   a function that transforms the original text, or
    *                 {@code null} to remove the filter for {@code fileName}
    * @throws IllegalArgumentException if {@code fileName} is not {@code null}
    *         and does not match any known record XML filename
    */
-  public void setRecordsLoadFilter(String fileName, UnaryOperator<byte[]> filter)
+  public void setRecordsLoadFilter(String fileName, UnaryOperator<String> filter)
   {
     if (fileName == null)
       recordsLoadFilters.clear();
@@ -191,18 +192,35 @@ public final class TestHyperDB extends AbstractHyperDB
     }
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /**
-   * Registers a filter that transforms the raw bytes of Settings.xml during
-   * {@link #loadSettings}. The filter is applied to the bytes read from the
-   * zip before they are passed to {@code loadSettingsFromStream}, allowing
+   * Registers a filter that transforms the text of Settings.xml during
+   * {@link #loadSettings}. The bytes read from the zip are decoded with
+   * {@link AbstractHyperDB#XML_FILES_CHARSET}, passed through the filter, and
+   * encoded again before they reach {@code loadSettingsFromStream}, allowing
    * tests to simulate modified settings (e.g. missing integrity checksums).
    *
-   * @param filter a function that transforms the original bytes, or
+   * @param filter a function that transforms the original text, or
    *               {@code null} to clear the filter
    */
-  public void setSettingsLoadFilter(UnaryOperator<byte[]> filter)
+  public void setSettingsLoadFilter(UnaryOperator<String> filter)
   {
     settingsLoadFilter = filter;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Applies a load filter to the text of a file's bytes and encodes the result the same way.
+   * Decoding well-formed input and encoding it again with the same charset is lossless, so
+   * the bytes the loader sees differ from the originals only where the filter edited the text.
+   */
+  private static byte[] applyLoadFilter(UnaryOperator<String> filter, byte[] bytes)
+  {
+    return filter.apply(new String(bytes, XML_FILES_CHARSET)).getBytes(XML_FILES_CHARSET);
   }
 
 //---------------------------------------------------------------------------
@@ -241,9 +259,9 @@ public final class TestHyperDB extends AbstractHyperDB
             byte[] bytes = zis.readAllBytes();
             String leafName = filePath.getNameOnly().toString();
 
-            UnaryOperator<byte[]> filter = recordsLoadFilters.get(leafName);
+            UnaryOperator<String> filter = recordsLoadFilters.get(leafName);
             if (filter != null)
-              bytes = filter.apply(bytes);
+              bytes = applyLoadFilter(filter, bytes);
 
             loadFromXMLStream(creatingNew, new ByteArrayInputStream(bytes), recordTypeToDataVersion, workIDtoInvIDs, entry.getName(), leafName, bytes.length, null);
           }
@@ -275,7 +293,7 @@ public final class TestHyperDB extends AbstractHyperDB
       throw new HyperDataException("Unable to read database settings: " + SETTINGS_FILE_NAME + " not found.");
     }
 
-    byte[] bytes = settingsLoadFilter != null ? settingsLoadFilter.apply(settingsFileBuffer) : settingsFileBuffer;
+    byte[] bytes = settingsLoadFilter != null ? applyLoadFilter(settingsLoadFilter, settingsFileBuffer) : settingsFileBuffer;
 
     loadSettingsFromStream(new ByteArrayInputStream(bytes), creatingNew, favorites);
   }
