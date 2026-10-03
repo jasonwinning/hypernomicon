@@ -236,19 +236,6 @@ public abstract class HyperTask
 
   protected abstract void call() throws HyperDataException, CancelledTaskException;
 
-  /**
-   * Terminates execution of this task. If the task is running and
-   * {@link #setInterruptOnCancel(boolean)} was set to true, the thread
-   * will be interrupted to cancel any blocking I/O operations.
-   */
-  public void cancel()
-  {
-    if (interruptOnCancel && (thread != null))
-      thread.interrupt();
-
-    innerTask.cancel();
-  }
-
   public Throwable getException()             { return innerTask.getException(); }
   public State getState()                     { return innerTask.getState(); }
   public List<String> getAdditionalMessages() { return Collections.unmodifiableList(additionalMessages); }
@@ -269,27 +256,12 @@ public abstract class HyperTask
 
   private void updateProgress() throws CancelledTaskException { updateProgress(completedCount, totalCount); }
 
-  public void incrementAndUpdateProgress(int updateInterval) throws CancelledTaskException
-  {
-    if ((++completedCount % updateInterval) == 0)
-      updateProgress();
-  }
-
-  public void updateProgress(double cur, double total) throws CancelledTaskException
-  {
-    innerTask.updateProgress(cur, total);
-    throwExceptionIfCancelled(this);
-  }
-
   /**
    * Update the message displayed on the progress dialog mid-task. Useful for
    * surfacing transient status changes that don't correspond to progress increments.
    * @param message The message to display
    */
-  public void updateMessage(String message)
-  {
-    innerTask.updateMessage(message);
-  }
+  public void updateMessage(String message) { innerTask.updateMessage(message); }
 
   /**
    * Run the specified task while showing progress updates in a progress dialog.
@@ -312,11 +284,86 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 
   /**
+   * Terminates execution of this task. If the task is running and
+   * {@link #setInterruptOnCancel(boolean)} was set to true, the thread
+   * will be interrupted to cancel any blocking I/O operations.
+   */
+  public void cancel()
+  {
+    if (interruptOnCancel && (thread != null))
+      thread.interrupt();
+
+    innerTask.cancel();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void incrementAndUpdateProgress(int updateInterval) throws CancelledTaskException
+  {
+    if ((++completedCount % updateInterval) == 0)
+      updateProgress();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void updateProgress(double cur, double total) throws CancelledTaskException
+  {
+    innerTask.updateProgress(cur, total);
+    throwExceptionIfCancelled(this);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Waits until the FX thread has run everything posted to it so far, then raises a cancellation
+   * made in the meantime. For a task whose work posts runnables to the FX thread faster than that
+   * thread can run them (while records are brought online, every relation change posts the tree's
+   * update handlers): called every so many units of work, it keeps the FX queue short, so the
+   * progress dialog stays responsive and its progress reflects that work as well, and the task ends
+   * only once the FX thread has finished what the task gave it. Returns at once when called on the
+   * FX thread. The FX-side counterpart is {@link org.hypernomicon.util.Util#pauseAndWaitForRunLaters()}.
+   * @throws CancelledTaskException if the task was cancelled before or during the wait
+   */
+  public void waitForFXThread() throws CancelledTaskException
+  {
+    runInFXThread(() -> {}, true);
+
+    throwExceptionIfCancelled(this);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * {@link #incrementAndUpdateProgress(int)}, and after every {@code fxWaitInterval} completed units,
+   * {@link #waitForFXThread()}.
+   * @param updateInterval The number of completed units between progress updates
+   * @param fxWaitInterval The number of completed units between waits for the FX thread
+   * @throws CancelledTaskException if the task was cancelled before or during a wait
+   */
+  public void incrementAndUpdateProgress(int updateInterval, int fxWaitInterval) throws CancelledTaskException
+  {
+    incrementAndUpdateProgress(updateInterval);
+
+    if ((completedCount % fxWaitInterval) == 0)
+      waitForFXThread();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Prevent further changes to progress dialog configuration.
    * <p>
    * This should only be called from ProgressDlgCtrlr
    */
   public void setInitialized() { initialized = true; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   /**
    * If true, then if an exception is thrown during the task's <code>call</code> method,

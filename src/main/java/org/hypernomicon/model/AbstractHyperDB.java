@@ -1828,6 +1828,14 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * While records are brought online, every relation set posts the tree's update handlers to the FX
+   * thread, which falls behind the thread doing the work; see {@link HyperTask#waitForFXThread()} for
+   * what waiting for it every so many records does for the progress dialog. Four progress updates'
+   * worth of records.
+   */
+  private static final int RECORDS_BETWEEN_FX_WAITS = 200;
+
   protected void bringAllDatasetsOnline(HyperTask task) throws HyperDataException, CancelledTaskException
   {
     try
@@ -1845,7 +1853,7 @@ public abstract class AbstractHyperDB
           addToInitialNavList(record);
 
           if (task != null)
-            task.incrementAndUpdateProgress(50);
+            task.incrementAndUpdateProgress(50, RECORDS_BETWEEN_FX_WAITS);
         }
 
         dataset.online = true;

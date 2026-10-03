@@ -823,12 +823,21 @@ public final class Util
    * Pauses execution and waits for pending {@link Platform#runLater(Runnable)} calls
    * to be processed before returning.
    * <p>
-   * This method enters and immediately exits a nested event loop, which allows
-   * any pending runLater calls to execute. This is useful when you need to ensure
-   * that deferred state updates have been applied.
+   * This method enters a nested event loop and exits it from a runnable posted just
+   * before, so everything posted earlier runs first. This is useful when you need to
+   * ensure that deferred state updates have been applied.
    * </p>
    * <p>
-   * <strong>Must be called from the JavaFX Application Thread.</strong>
+   * <strong>Must be called from the JavaFX Application Thread</strong>, which cannot
+   * wait for itself any other way. The nested loop is a real event loop: input events,
+   * timers and other handlers can run inside it, so call this only where that is
+   * acceptable, as before a progress dialog is shown or in a test runner, never from
+   * layout or from the middle of a change that other handlers may observe.
+   * </p>
+   * <p>
+   * The counterpart for a task thread is {@link org.hypernomicon.HyperTask#waitForFXThread()},
+   * which blocks that thread until the FX thread has caught up and then raises a
+   * cancellation made in the meantime.
    * </p>
    */
   public static void pauseAndWaitForRunLaters()
