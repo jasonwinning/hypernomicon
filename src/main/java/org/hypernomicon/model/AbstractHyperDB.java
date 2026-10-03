@@ -231,8 +231,16 @@ public abstract class AbstractHyperDB
 
   private DBState state = DBState.CLOSED;
 
-  private boolean resolveAgain = false, pointerResolutionInProgress     = false, deletionInProgress      = false,
-                  initialized  = false, startMentionsRebuildAfterDelete = false, alreadyShowedUpgradeMsg = false;
+  private boolean resolveAgain = false, pointerResolutionInProgress     = false, deletionInProgress = false,
+                  initialized  = false, startMentionsRebuildAfterDelete = false;
+
+  /**
+   * For each kind of data that the next save will write in a newer format, named as {@link #checkVersion}
+   * names it, the newest version of Hypernomicon that will no longer be able to load it. Filled while
+   * loading, on the load task's thread for the record files, and reported once the load is done by
+   * {@link #showUpgradeWarning()}.
+   */
+  private final Map<String, VersionNumber> upgradeWarnings = new LinkedHashMap<>();
 
   public boolean runningConversion            = false,  // suppresses "modified date" updating
                  recordDeletionTestInProgress = false,  // suppresses file deletion prompts and mentions index building
@@ -1135,20 +1143,11 @@ public abstract class AbstractHyperDB
 
   private static VersionNumber getVersionNumberSavingAs(Map<VersionNumber, VersionNumber> appVersionToMaxVersion)
   {
-    VersionNumber versionNumber = new VersionNumber(0);
-
-    for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
-    {
-      if (ComparableUtils.is(entry.getKey()).lessThanOrEqualTo(appVersion))
-      {
-        VersionNumber maxVersion = entry.getValue();
-
-        if (ComparableUtils.is(maxVersion).greaterThan(versionNumber))
-          versionNumber = maxVersion;
-      }
-    }
-
-    return versionNumber;
+    return appVersionToMaxVersion.entrySet().stream()
+      .filter(entry -> ComparableUtils.is(entry.getKey()).lessThanOrEqualTo(appVersion))
+      .map(Entry::getValue)
+      .max(Comparator.naturalOrder())
+      .orElse(new VersionNumber(0));
   }
 
 //---------------------------------------------------------------------------
@@ -1191,7 +1190,7 @@ public abstract class AbstractHyperDB
     if (dbChanged)
       dbPreChangeHandlers.forEach(Runnable::run);
 
-    alreadyShowedUpgradeMsg = false;
+    upgradeWarnings.clear();
     EnumMap<RecordType, VersionNumber> recordTypeToDataVersion = new EnumMap<>(RecordType.class);
     SetMultimap<Integer, Integer> workIDtoInvIDs = LinkedHashMultimap.create(); // For backwards compatibility with records XML version 1.4
 
@@ -1301,6 +1300,8 @@ public abstract class AbstractHyperDB
     // Backwards compatibility with records XML version 1.7
     if (bibLibraryIsLinked() && ComparableUtils.is(recordTypeToDataVersion.getOrDefault(hdtWork, new VersionNumber(1))).lessThan(new VersionNumber(1, 8)))
       doBibDateConversion();
+
+    showUpgradeWarning();
 
     state = DBState.ONLINE;
     dbLoadedHandlers.forEach(Runnable::run);
@@ -2203,6 +2204,25 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Checks that this version of Hypernomicon can load data saved in the given format version, and notes
+   * whether the next save will upgrade it. The two maps are the ones in {@link org.hypernomicon.Const Const}
+   * for the kind of data: each maps a version of Hypernomicon to the oldest format that version (and any
+   * newer one) can load, and to the newest format that version (and any older one) saves.
+   * <p>
+   * If the data is older than the oldest format this version can load, or newer than the format it saves,
+   * the load fails with a message naming the versions of Hypernomicon that could load it. Otherwise, if
+   * the data is older than the format this version saves, and the database is not being created, the
+   * kind of data is recorded for {@link #showUpgradeWarning()} along with the newest version of
+   * Hypernomicon that will no longer be able to load it once it has been saved.
+   *
+   * @param creatingNew whether the database is being created, in which case the upgrade is expected and not noted
+   * @param versionNumber the format version the data was saved in
+   * @param dataName how messages refer to the data, such as "this XML record data" or "the Settings XML file"
+   * @param appVersionToMinVersion for each version of Hypernomicon, the oldest format it can load
+   * @param appVersionToMaxVersion for each version of Hypernomicon, the newest format it saves
+   * @throws HyperDataException if this version of Hypernomicon cannot load the data
+   */
   private void checkVersion(boolean creatingNew, VersionNumber versionNumber, String dataName,
                             Map<VersionNumber, VersionNumber> appVersionToMinVersion,
                             Map<VersionNumber, VersionNumber> appVersionToMaxVersion) throws HyperDataException
@@ -2211,21 +2231,17 @@ public abstract class AbstractHyperDB
                   oldestTooNewAppVersion = new VersionNumber(Integer.MAX_VALUE);
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMinVersion.entrySet())
-    {
       if (ComparableUtils.is(entry.getValue()).greaterThan(versionNumber))        // Too new
         if (ComparableUtils.is(entry.getKey()).lessThan(oldestTooNewAppVersion))  // Older than other too new ones
           oldestTooNewAppVersion = entry.getKey();
-    }
 
     if (ComparableUtils.is(oldestTooNewAppVersion).lessThanOrEqualTo(appVersion))
       throw new HyperDataException("A version of Hypernomicon older than v" + oldestTooNewAppVersion + " is required to load " + dataName + '.');
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
-    {
       if (ComparableUtils.is(entry.getValue()).lessThan(versionNumber))              // Too old
         if (ComparableUtils.is(entry.getKey()).greaterThan(newestTooOldAppVersion))  // Newer than other too old ones
           newestTooOldAppVersion = entry.getKey();
-    }
 
     if (ComparableUtils.is(newestTooOldAppVersion).greaterThanOrEqualTo(appVersion))
       throw new HyperDataException("A version of Hypernomicon newer than v" + newestTooOldAppVersion + " is required to load " + dataName + '.');
@@ -2235,22 +2251,39 @@ public abstract class AbstractHyperDB
     if (creatingNew || (ComparableUtils.is(versionNumber).lessThan(savingAs) == false))
       return;
 
-    if (appVersionToMinVersion == appVersionToMinRecordsXMLVersion)
-    {
-      if (alreadyShowedUpgradeMsg) return;
-      alreadyShowedUpgradeMsg = true;
-    }
+    // The cutoff is the newest version of Hypernomicon that cannot load what this build saves. It depends
+    // only on the version this build saves as, not on the version the file is at now, so every file of
+    // one kind of data records the same value here, however many there are.
 
-    newestTooOldAppVersion = new VersionNumber(0);
+    VersionNumber cutoff = appVersionToMaxVersion.entrySet().stream()
+      .filter(entry -> ComparableUtils.is(entry.getValue()).lessThan(savingAs))
+      .map(Entry::getKey)
+      .max(Comparator.naturalOrder())
+      .orElse(new VersionNumber(0));
 
-    for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
-    {
-      if (ComparableUtils.is(entry.getValue()).lessThan(savingAs))                   // Too old
-        if (ComparableUtils.is(entry.getKey()).greaterThan(newestTooOldAppVersion))  // Newer than other too old ones
-          newestTooOldAppVersion = entry.getKey();
-    }
+    upgradeWarnings.put(dataName, cutoff);
+  }
 
-    warningPopup("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with Hypernomicon v" + newestTooOldAppVersion + " or older.");
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Warns, in one popup, about everything {@link #checkVersion} found that the next save will write in
+   * a newer format. This runs once the load is through its tasks and its prompts, rather than from
+   * inside the record loading task as the warning used to: shown then, the popup was centered on the
+   * progress dialog, held the load up until it was dismissed, and left the settings file to a second
+   * popup, centered on the main window, after the load.
+   * <p>
+   * With more than one kind of data, the version named is the newer of the cutoffs, which is the right
+   * one for the database as a whole: a version of Hypernomicon that cannot load one of the files cannot
+   * open the database.
+   */
+  private void showUpgradeWarning()
+  {
+    if (upgradeWarnings.isEmpty()) return;
+
+    warningPopup("When you save changes, " + String.join(" and ", upgradeWarnings.keySet()) + " will be upgraded and will no longer be compatible with Hypernomicon v" +
+                 Collections.max(upgradeWarnings.values()) + " or older.");
   }
 
 //---------------------------------------------------------------------------

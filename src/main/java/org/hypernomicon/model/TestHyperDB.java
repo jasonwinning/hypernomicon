@@ -339,16 +339,16 @@ public final class TestHyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void open() { open(tempDir()); }
+  private void open() { open(tempDir(), true); }
 
-  private void open(FilePath newRootFilePath)
+  private void open(FilePath newRootFilePath, boolean creatingNew)
   {
     if (isOnline())
       throw new AssertionError("Already open");
 
     try
     {
-      loadAllFromPersistentStorage(true, null, newRootFilePath, HDB_DEFAULT_FILENAME);
+      loadAllFromPersistentStorage(creatingNew, null, newRootFilePath, HDB_DEFAULT_FILENAME);
     }
     catch (HDB_InternalError e)
     {
@@ -378,7 +378,20 @@ public final class TestHyperDB extends AbstractHyperDB
    * @param newRootFilePath an existing folder, typically a JUnit {@code @TempDir}
    * @throws AssertionError if the database is already closed or if an error occurs during closing or reopening.
    */
-  public void closeAndOpen(FilePath newRootFilePath)
+  public void closeAndOpen(FilePath newRootFilePath) { closeAndOpen(newRootFilePath, true); }
+
+  /**
+   * Like {@link #closeAndOpen()}, but the template is loaded as an existing database rather than as
+   * one being created, so that the load's version checks apply to it: with a load filter dating a
+   * record file or the settings file, the load warns that saving will upgrade it, as it does for a
+   * user's database. The template is at the versions this build saves, so without a filter the
+   * session is the same as after {@link #closeAndOpen()}.
+   *
+   * @throws AssertionError if the database is already closed or if an error occurs during closing or reopening.
+   */
+  public void closeAndOpenAsExisting() { closeAndOpen(tempDir(), false); }
+
+  private void closeAndOpen(FilePath newRootFilePath, boolean creatingNew)
   {
     if (isOffline())
       throw new AssertionError("Already closed");
@@ -392,7 +405,7 @@ public final class TestHyperDB extends AbstractHyperDB
       throw newAssertionError(e);
     }
 
-    open(newRootFilePath);
+    open(newRootFilePath, creatingNew);
   }
 
 //---------------------------------------------------------------------------
