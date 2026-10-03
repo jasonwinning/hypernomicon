@@ -264,7 +264,13 @@ public abstract class AbstractHyperDB
   public Iterable<KeywordBinding> getKeysByRecord(HDT_Record record) { return searchKeys.getKeysByRecord(record); }
   public HDT_Work getWorkByBibEntryKey(String key)                   { return bibEntryKeyToWork.get(key); }
   public boolean reindexingMentioners()                              { return mentionsIndex.isRebuilding(); }
-  public BibEntry<?, ?> getBibEntryByKey(String key)                 { return bibLibrary.getEntryByKey(key); }
+
+  /**
+   * The linked reference manager entry with the given key, or null if there is none, including
+   * when no library is linked: a work can be asked for its entry while the database is loading,
+   * before the library is linked.
+   */
+  public BibEntry<?, ?> getBibEntryByKey(String key)                 { return bibLibrary == null ? null : bibLibrary.getEntryByKey(key); }
 
   /**
    * Whether full-text search is enabled for the currently-loaded database on this computer.

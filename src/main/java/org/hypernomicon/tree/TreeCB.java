@@ -20,6 +20,7 @@ package org.hypernomicon.tree;
 import java.util.*;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Debate;
@@ -42,7 +43,7 @@ class TreeCB
   private final ComboBox<TreeRow> cb;
   private final Map<HDT_Record, TreeRow> recordToRow;
   private final ObservableList<TreeRow> rows;
-  private boolean sorted = false, changeIsProgrammatic = false;
+  private boolean itemsAreCurrent = false, changeIsProgrammatic = false;
   private final TreeWrapper tree;
 
 //---------------------------------------------------------------------------
@@ -57,16 +58,22 @@ class TreeCB
 
     comboBox.setEditable(true);
 
+    // The items are filled in here, when the dropdown opens, not as records enter the tree.
+    // Every change to the items makes the ComboBox skin convert the editor's text back into
+    // a value with the converter below, which compares the text with the display text of
+    // every row; filling the items record by record while the tree model is being built
+    // (see the relation change handlers in TreeModel) scanned the whole list for each record.
+
     comboBox.setOnShowing(event ->
     {
-      if (sorted) return;
+      if (itemsAreCurrent) return;
 
       HDT_Record record = tree.selectedRecord();
 
       changeIsProgrammatic = true;
 
       comboBox.setItems(null);
-      rows.sort(Comparator.comparing(row -> row.getDisplayText().toLowerCase()));
+      populateRows();
       comboBox.setItems(rows);
 
       changeIsProgrammatic = false;
@@ -74,7 +81,7 @@ class TreeCB
       if (record != null)
         select(record);
 
-      sorted = true;
+      itemsAreCurrent = true;
 
       event.consume();
 
@@ -106,10 +113,15 @@ class TreeCB
 
       @Override public TreeRow fromString(String string)
       {
-        return comboBox.getItems() == null ?
-          new TreeRow(string)
-        :
-          nullSwitch(findFirst(comboBox.getItems(), row -> string.equals(row.getDisplayText())), new TreeRow(string));
+        if (strNullOrEmpty(string) || (comboBox.getItems() == null))  // No row's display text is empty
+          return new TreeRow(string);
+
+        TreeRow value = comboBox.getValue();  // The skin converts the editor's own text back whenever the items change
+
+        if ((value != null) && string.equals(value.getDisplayText()))
+          return value;
+
+        return nullSwitch(findFirst(comboBox.getItems(), row -> string.equals(row.getDisplayText())), new TreeRow(string));
       }
     });
 
@@ -132,6 +144,7 @@ class TreeCB
     changeIsProgrammatic = false;
 
     recordToRow.clear();
+    itemsAreCurrent = false;
   }
 
 //---------------------------------------------------------------------------
@@ -141,12 +154,8 @@ class TreeCB
   {
     if (recordToRow.containsKey(record)) return;
 
-    TreeRow row = new TreeRow(record, null);
-    recordToRow.put(record, row);
-
-    changeIsProgrammatic = true;
-    rows.add(row);
-    changeIsProgrammatic = false;
+    recordToRow.put(record, new TreeRow(record, null));
+    itemsAreCurrent = false;
   }
 
 //---------------------------------------------------------------------------
@@ -156,11 +165,13 @@ class TreeCB
   {
     if (tree.getRowsForRecord(record).isEmpty() == false) return;
 
-    changeIsProgrammatic = true;
-    rows.remove(recordToRow.get(record));
-    changeIsProgrammatic = false;
+    TreeRow row = recordToRow.remove(record);
 
-    recordToRow.remove(record);
+    if (row == null) return;
+
+    changeIsProgrammatic = true;
+    rows.remove(row);  // Not necessarily present: records added since the dropdown last opened are not in the items yet
+    changeIsProgrammatic = false;
   }
 
 //---------------------------------------------------------------------------
@@ -178,7 +189,7 @@ class TreeCB
 
   void refresh()
   {
-    sorted = false;
+    itemsAreCurrent = false;
 
     HDT_Debate rootDebate = db.debates.getByID(1);                           // If these two lines are combined into one, there will be
     nullSwitch(nullSwitch(tree.selectedRecord(), rootDebate), this::select); // false-positive build errors
@@ -194,6 +205,26 @@ class TreeCB
     changeIsProgrammatic = true;
     nullSwitch(recordToRow.get(record), cb.getSelectionModel()::select);
     changeIsProgrammatic = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Fills the items with a row for every record in the tree, in the order the dropdown lists
+   * them. Each display text is computed once: computed per comparison instead, the texts would
+   * be most of the cost of opening the dropdown, since a work's is built from its authors, year
+   * and title. Called while the items are detached from the ComboBox, so nothing observes the
+   * fill or the sort.
+   */
+  private void populateRows()
+  {
+    Map<TreeRow, String> sortKeys = new HashMap<>();
+
+    recordToRow.values().forEach(row -> sortKeys.put(row, row.getDisplayText().toLowerCase()));
+
+    rows.setAll(recordToRow.values());
+    rows.sort(Comparator.comparing(sortKeys::get));
   }
 
 //---------------------------------------------------------------------------

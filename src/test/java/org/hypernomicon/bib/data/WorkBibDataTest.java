@@ -128,6 +128,28 @@ class WorkBibDataTest
 //---------------------------------------------------------------------------
 
   /**
+   * A work can carry an entry key while no library is linked, which is the case while a database
+   * loads, before its library is linked. Its own data must be returned then, not a failure.
+   */
+  @Test
+  void workWithEntryKeyButNoLibraryKeepsItsOwnData()
+  {
+    db.unlinkBibLibrary();  // The tests in this class do not run in a fixed order
+
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+    work.setName("Title");
+    work.setBibEntryKey("ABCD1234");
+
+    assertNull(db.getBibEntryByKey("ABCD1234"));
+    assertInstanceOf(WorkBibData.class, work.getBibData());
+    assertEquals("Title", work.defaultChoiceText());
+
+    work.setBibEntryKey("");
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
    * Once an entry is assigned, the work's bibliographic data is that entry, and the same write lands in it
    */
   @Test
