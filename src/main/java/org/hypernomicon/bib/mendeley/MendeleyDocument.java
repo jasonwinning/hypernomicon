@@ -542,7 +542,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
    * @param serverPatch True if we are patching a server document, so we have to set null to clear out values
    * @return The standalone JSON object
    */
-  public JsonObj exportStandaloneJsonObj(boolean serverPatch)
+  @Override public JsonObj exportStandaloneJsonObj(boolean serverPatch)
   {
     JsonObj jStandaloneObj = jObj.deepCopy();
 

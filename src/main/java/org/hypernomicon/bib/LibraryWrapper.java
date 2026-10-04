@@ -32,9 +32,12 @@ import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.http.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
+
+import org.json.simple.parser.ParseException;
 
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -110,6 +113,14 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
   protected abstract String entryFileNode();
   protected abstract String collectionFileNode();
   protected abstract BibAuthKeys getAuthKeys();
+
+  /**
+   * Reads the library file into this wrapper the way the real wrapper does at load (see {@code create} in
+   * each subclass): the entries, the trash and the collections, the file's checksum, which is recorded with
+   * the database, and the library's own preferences. A file that does not exist is the state before the first
+   * sync and leaves the wrapper empty.
+   */
+  protected abstract void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException, HyperDataException;
 
   public abstract void enableSyncOnThisComputer(BibAuthKeys authKeys, String userID, String userName, boolean reestablishing) throws HyperDataException;
   public abstract void getProfileInfoFromServer(Consumer<String> successHndlr, Consumer<Throwable> failHndlr);
@@ -233,6 +244,27 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
     assertThatThisIsUnitTestThread();
 
     keyToAllEntry.put(entry.getKey(), entry);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Reads a library file into this wrapper as {@link #loadAllFromJsonFile} does at load, for a unit test that
+   * starts from a file rather than from an empty library.
+   */
+  public final void loadLibraryFileForTesting(FilePath filePath) throws HyperDataException
+  {
+    assertThatThisIsUnitTestThread();
+
+    try
+    {
+      loadAllFromJsonFile(filePath);
+    }
+    catch (IOException | ParseException e)
+    {
+      throw new HyperDataException(e);
+    }
   }
 
 //---------------------------------------------------------------------------

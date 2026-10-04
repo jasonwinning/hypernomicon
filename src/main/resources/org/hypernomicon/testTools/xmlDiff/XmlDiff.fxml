@@ -17,6 +17,7 @@
 -->
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
@@ -38,7 +39,7 @@
     <bottom>
       <HBox alignment="CENTER" prefHeight="48.0" spacing="10.0" BorderPane.alignment="CENTER">
         <Button fx:id="btnTestToBackup" mnemonicParsing="false" text="Copy Test Files to Backup Folder"/>
-        <Button fx:id="btnProcess" mnemonicParsing="false" text="Process XML files and diff the results"/>
+        <Button fx:id="btnProcess" mnemonicParsing="false" text="Process files and diff the results"/>
         <Button fx:id="btnBackupToTest" mnemonicParsing="false" text="Copy Backup Files to Test Folder"/>
       </HBox>
     </bottom>
@@ -171,6 +172,16 @@
                 <Font name="System Bold" size="12.0"/>
               </font>
             </Button>
+          </AnchorPane>
+          <AnchorPane GridPane.rowIndex="4">
+            <Label alignment="CENTER_RIGHT" text="Text options:" AnchorPane.leftAnchor="6.0"
+                   AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0"/>
+          </AnchorPane>
+          <AnchorPane GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="4">
+            <HBox spacing="24.0" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0">
+              <CheckBox fx:id="chkNormalizeNFC" mnemonicParsing="false" text="Normalize both sides to NFC"/>
+              <CheckBox fx:id="chkEscapeNonAscii" mnemonicParsing="false" text="Escape non-ASCII characters"/>
+            </HBox>
           </AnchorPane>
           <AnchorPane GridPane.rowIndex="5">
             <RadioButton fx:id="rbExe1" layoutX="23.0" layoutY="13.0" mnemonicParsing="false" selected="true"

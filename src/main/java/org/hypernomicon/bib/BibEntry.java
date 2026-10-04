@@ -54,7 +54,7 @@ import org.hypernomicon.util.json.JsonObj;
  * miscellaneous information and the work type) are then read from and written to the record, and only
  * the others, publisher, volume and so on (see
  * {@link org.hypernomicon.bib.data.BibField.BibFieldEnum#requiresBibEntry}), live in the JSON. Each
- * subclass's {@code exportStandaloneJsonObj} builds the complete object for the server by writing the
+ * subclass's {@link #exportStandaloneJsonObj} builds the complete object for the server by writing the
  * work's fields back into a copy of the JSON. Text read from the JSON is composed to NFC on the way out
  * (see {@link BibData#setStr}); the JSON itself stays as the reference manager sent it.
  * <p>
@@ -93,6 +93,18 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   public abstract List<String> getReportFieldOrder();
   public abstract BibliographicDate getDateFromJson();
   protected abstract String getUserID();
+
+  /**
+   * The entry as one complete JSON object: a copy of the data the server sent with the fields a linked work
+   * record holds written into it, so that the object stands alone. An upload sends it, and the merge dialog
+   * and the related-entry update read it.
+   * @param forServer true to shape the object as the server's write API takes it (a Zotero item then has only
+   *                  the fields of its item type, with the date in the form Zotero recognizes; a Mendeley
+   *                  document patch nulls the values being cleared and omits the keys a client may not write);
+   *                  false for a complete standalone copy
+   * @return a new object; the entry's own JSON is not changed
+   */
+  public abstract JsonObj exportStandaloneJsonObj(boolean forServer);
 
 //---------------------------------------------------------------------------
 

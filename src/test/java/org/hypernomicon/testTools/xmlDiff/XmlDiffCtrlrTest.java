@@ -19,6 +19,7 @@ package org.hypernomicon.testTools.xmlDiff;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -197,6 +198,113 @@ class XmlDiffCtrlrTest
     List<String> input = List.of("line one", "", "line three");
 
     assertEquals(input, XmlDiffCtrlr.processLines(input));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void textOptionsLeaveLinesAloneWhenOff()
+  {
+    List<String> input = List.of("café", "café");
+
+    assertEquals(input, XmlDiffCtrlr.applyTextOptions(input, false, false));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void normalizingComposesBothSpellingsToTheSameLine()
+  {
+    List<String> precomposed = List.of("café"),    // the precomposed letter (U+00E9)
+                 decomposed  = List.of("café");   // e followed by a combining acute accent (U+0301)
+
+    assertNotEquals(precomposed, decomposed);
+
+    assertEquals(precomposed, XmlDiffCtrlr.applyTextOptions(decomposed , true, false));
+    assertEquals(precomposed, XmlDiffCtrlr.applyTextOptions(precomposed, true, false));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void escapingMakesTheTwoSpellingsDiffer()
+  {
+    assertEquals("caf\\u00E9"    , XmlDiffCtrlr.escapeNonAscii("café"));
+    assertEquals("cafe\\u0301"   , XmlDiffCtrlr.escapeNonAscii("café"));
+    assertEquals("\\uD83D\\uDE00", XmlDiffCtrlr.escapeNonAscii("😀"), "One escape per UTF-16 code unit");
+
+    String ascii = "  <name>plain &lt;p&gt; text</name>";
+
+    assertSame(ascii, XmlDiffCtrlr.escapeNonAscii(ascii), "ASCII text is returned as it is");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void bothOptionsEscapeTheComposedText()
+  {
+    assertEquals(List.of("caf\\u00E9"), XmlDiffCtrlr.applyTextOptions(List.of("café"), true, true));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // Two entries in the order a hash map happened to give them, with the keys of each object in an arbitrary
+  // order as well; the second file holds the same data in another order
+
+  private static final String LIBRARY_FILE =
+    "{\"items\":[" +
+      "{\"version\":2,\"key\":\"bravo\",\"data\":{\"title\":\"Title bravo\",\"creators\":[{\"lastName\":\"yankee\"},{\"lastName\":\"xray\"}],\"key\":\"bravo\"}}," +
+      "{\"key\":\"alpha\",\"version\":1,\"data\":{\"key\":\"alpha\",\"title\":\"Title alpha\"}}]," +
+     "\"collections\":[{\"key\":\"delta\",\"data\":{\"name\":\"Collection delta\"}}]}",
+
+    LIBRARY_FILE_REORDERED =
+    "{\"collections\":[{\"data\":{\"name\":\"Collection delta\"},\"key\":\"delta\"}]," +
+     "\"items\":[" +
+      "{\"data\":{\"title\":\"Title alpha\",\"key\":\"alpha\"},\"version\":1,\"key\":\"alpha\"}," +
+      "{\"key\":\"bravo\",\"data\":{\"key\":\"bravo\",\"creators\":[{\"lastName\":\"yankee\"},{\"lastName\":\"xray\"}],\"title\":\"Title bravo\"},\"version\":2}]}";
+
+  private static int lineNdxContaining(List<String> lines, String text)
+  {
+    for (int ndx = 0; ndx < lines.size(); ndx++)
+      if (lines.get(ndx).contains(text))
+        return ndx;
+
+    return fail("No line contains " + text);
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void libraryFileIsLaidOutOneValuePerLineInKeyOrder() throws IOException
+  {
+    List<String> lines = XmlDiffCtrlr.formatJsonForDiff(LIBRARY_FILE);
+
+    assertEquals(2, lines.stream().filter(line -> line.contains("\"title\"")).count(), "One value per line");
+
+    assertTrue(lineNdxContaining(lines, "Collection delta") < lineNdxContaining(lines, "Title alpha"), "Keys of an object in alphabetical order: collections before items");
+    assertTrue(lineNdxContaining(lines, "\"creators\"") < lineNdxContaining(lines, "Title bravo"), "Keys of an entry in alphabetical order: creators before title");
+    assertTrue(lineNdxContaining(lines, "Title alpha") < lineNdxContaining(lines, "Title bravo"), "Entries in the order of their keys");
+    assertTrue(lineNdxContaining(lines, "yankee") < lineNdxContaining(lines, "xray"), "An array inside an entry keeps its order");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void libraryFilesWithTheSameDataFormatIdentically() throws IOException
+  {
+    assertEquals(XmlDiffCtrlr.formatJsonForDiff(LIBRARY_FILE), XmlDiffCtrlr.formatJsonForDiff(LIBRARY_FILE_REORDERED));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void mendeleyEntitiesAreOrderedByTheirID() throws IOException
+  {
+    List<String> lines = XmlDiffCtrlr.formatJsonForDiff("{\"documents\":[{\"id\":\"bravo\",\"title\":\"Title bravo\"},{\"id\":\"alpha\",\"title\":\"Title alpha\"}]}");
+
+    assertTrue(lineNdxContaining(lines, "Title alpha") < lineNdxContaining(lines, "Title bravo"));
   }
 
 //---------------------------------------------------------------------------

@@ -492,9 +492,15 @@ public final class App extends Application
 
     try
     {
+      Map<String, BibEntrySnapshot> entriesAtLoad = snapshotBibEntries();
+
+      reportEntriesNotInSync("at load", entriesAtLoad);
+
       for (int pass = 1; pass <= passes; pass++)
         for (RecordType type : types)
           testUpdatingRecords(type);
+
+      reportBibEntryChanges(entriesAtLoad);
     }
     catch (Throwable t)
     {
@@ -527,6 +533,75 @@ public final class App extends Application
         lastPercent = curPercent;
       }
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * What a reference manager entry would send to the server, and whether it counts as having local changes,
+   * taken before and after the save cycle. The cycle edits nothing, so neither may change: an entry whose
+   * export differs afterwards, or that is in sync before and not after, has registered a change nobody made,
+   * the kind that opens the merge dialog for an entry the user never touched. The entries out of sync at load
+   * are reported as well: a library synced just before the last save has none, so an entry out of sync before
+   * any record has been visited shows a difference the load itself produced.
+   */
+  private record BibEntrySnapshot(String exportText, boolean synced) {}
+
+//---------------------------------------------------------------------------
+
+  private static Map<String, BibEntrySnapshot> snapshotBibEntries()
+  {
+    Map<String, BibEntrySnapshot> snapshots = new TreeMap<>();
+
+    if (db.bibLibraryIsLinked())
+      db.getBibLibrary().getAllEntries().forEach(entry -> snapshots.put(entry.getKey(), new BibEntrySnapshot(entry.exportStandaloneJsonObj(false).toString(), entry.isSynced())));
+
+    return snapshots;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void reportEntriesNotInSync(String when, Map<String, BibEntrySnapshot> snapshots)
+  {
+    if (db.bibLibraryIsLinked() == false) return;
+
+    List<String> keys = snapshots.entrySet().stream().filter(entry -> entry.getValue().synced() == false).map(Map.Entry::getKey).toList();
+
+    System.out.println("Reference manager entries not in sync " + when + ": " + keys.size() + " of " + snapshots.size());
+
+    keys.forEach(key -> System.out.println("  " + key));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void reportBibEntryChanges(Map<String, BibEntrySnapshot> entriesAtLoad)
+  {
+    if (db.bibLibraryIsLinked() == false) return;
+
+    Map<String, BibEntrySnapshot> entriesAfterCycle = snapshotBibEntries();
+
+    reportEntriesNotInSync("after the cycle", entriesAfterCycle);
+
+    List<String> changedKeys = entriesAfterCycle.keySet().stream().filter(key -> entriesAfterCycle.get(key).equals(entriesAtLoad.get(key)) == false).toList();
+
+    if (changedKeys.isEmpty())
+    {
+      System.out.println("No reference manager entry's export or sync state changed during the cycle.");
+      return;
+    }
+
+    System.out.println(changedKeys.size() + " reference manager entries changed during the cycle:");
+
+    changedKeys.forEach(key ->
+    {
+      BibEntrySnapshot atLoad = entriesAtLoad.get(key), afterCycle = entriesAfterCycle.get(key);
+
+      System.out.println("  " + key + ": " + (atLoad == null ? "not present at load" :
+        (atLoad.exportText().equals(afterCycle.exportText()) ? "" : "export changed; ") + "in sync at load: " + atLoad.synced() + ", after: " + afterCycle.synced()));
+    });
   }
 
 //---------------------------------------------------------------------------

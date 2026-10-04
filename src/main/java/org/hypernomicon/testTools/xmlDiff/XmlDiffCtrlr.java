@@ -21,6 +21,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.AbstractHyperDB.*;
 import static org.hypernomicon.testTools.xmlDiff.XmlDiffApp.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.UIUtil.*;
 
@@ -32,13 +33,15 @@ import org.hypernomicon.util.file.deletion.FileDeletion.DeletionResult;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.util.ArrayList;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -60,12 +63,19 @@ public final class XmlDiffCtrlr
   @FXML private RadioButton rbExe1, rbExe2, rbExe3, rbExe4;
   @FXML private TextField tfBackup, tfTest, tfOldProcessed, tfNewProcessed, tfExe1, tfExe2, tfExe3, tfExe4;
   @FXML private ToggleGroup tgExe;
+  @FXML private CheckBox chkNormalizeNFC, chkEscapeNonAscii;
 
   private final Stage stage;
 
   private static final Object LOCK = new Object();
 
-//---------------------------------------------------------------------------
+  private static final String ESCAPED_GT = "&gt;",
+                              ESCAPED_LT = "&lt;";
+
+  private static final int ESCAPED_GT_LEN = ESCAPED_GT.length();
+
+  private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
 //---------------------------------------------------------------------------
 
   public static void create(Stage stage) throws IOException
@@ -112,6 +122,9 @@ public final class XmlDiffCtrlr
     btnTestToBackup.setOnAction(event -> moveFiles(tfTest, tfBackup));
 
     btnProcess     .setOnAction(event -> process());
+
+    setToolTip(chkNormalizeNFC  , "Compose both sides to canonical form (NFC) before comparing, so that a difference of composition alone does not show");
+    setToolTip(chkEscapeNonAscii, "Write each character outside ASCII as a backslash-u escape, so that two visually identical characters show their difference");
 
     loadPaths();
   }
@@ -185,6 +198,9 @@ public final class XmlDiffCtrlr
     xmlDiffApp.prefs.put(PrefKey.XML_DIFF_EXECUTABLE_4, tfExe4.getText());
 
     xmlDiffApp.prefs.putInt(PrefKey.XML_DIFF_SELECTED_EXE_NUM, selectedExeNum());
+
+    xmlDiffApp.prefs.putBoolean(PrefKey.XML_DIFF_NORMALIZE_NFC   , chkNormalizeNFC  .isSelected());
+    xmlDiffApp.prefs.putBoolean(PrefKey.XML_DIFF_ESCAPE_NON_ASCII, chkEscapeNonAscii.isSelected());
   }
 
 //---------------------------------------------------------------------------
@@ -203,6 +219,9 @@ public final class XmlDiffCtrlr
     tfExe4.setText(xmlDiffApp.prefs.get(PrefKey.XML_DIFF_EXECUTABLE_4, ""));
 
     tgExe.selectToggle(getRadioButton(xmlDiffApp.prefs.getInt(PrefKey.XML_DIFF_SELECTED_EXE_NUM, 1)));
+
+    chkNormalizeNFC  .setSelected(xmlDiffApp.prefs.getBoolean(PrefKey.XML_DIFF_NORMALIZE_NFC   , false));
+    chkEscapeNonAscii.setSelected(xmlDiffApp.prefs.getBoolean(PrefKey.XML_DIFF_ESCAPE_NON_ASCII, false));
   }
 
 //---------------------------------------------------------------------------
@@ -290,8 +309,11 @@ public final class XmlDiffCtrlr
   {
     try
     {
-      processForFolder(tfBackup.getText(), tfOldProcessed.getText());
-      processForFolder(tfTest  .getText(), tfNewProcessed.getText());
+      boolean normalizeNFC   = chkNormalizeNFC  .isSelected(),
+              escapeNonAscii = chkEscapeNonAscii.isSelected();
+
+      processForFolder(tfBackup.getText(), tfOldProcessed.getText(), normalizeNFC, escapeNonAscii);
+      processForFolder(tfTest  .getText(), tfNewProcessed.getText(), normalizeNFC, escapeNonAscii);
 
       ProcessBuilder pb = new ProcessBuilder(List.of(getExeField(selectedExeNum()).getText(), tfOldProcessed.getText(), tfNewProcessed.getText()));
 
@@ -321,21 +343,148 @@ public final class XmlDiffCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final String ESCAPED_GT = "&gt;",
-                              ESCAPED_LT = "&lt;";
-
-  private static final int ESCAPED_GT_LEN = ESCAPED_GT.length();
-
-//---------------------------------------------------------------------------
-
-  private static void processForFolder(String srcPathStr, String destPathStr) throws IOException
+  private static void processForFolder(String srcPathStr, String destPathStr, boolean normalizeNFC, boolean escapeNonAscii) throws IOException
   {
+    FilePath srcFolderPath  = FilePath.of(srcPathStr),
+             destFolderPath = FilePath.of(destPathStr);
+
     for (String fileName : streamToIterable(allXMLFileNames()))
     {
-      List<String> originalLines = FileUtils.readLines(Path.of(srcPathStr, fileName).toFile(), StandardCharsets.UTF_8);
+      List<String> originalLines = FileUtils.readLines(srcFolderPath.resolve(fileName).toFile(), StandardCharsets.UTF_8);
 
-      FileUtils.writeLines(Path.of(destPathStr, fileName).toFile(), processLines(originalLines));
+      writeLines(destFolderPath.resolve(fileName), applyTextOptions(processLines(originalLines), normalizeNFC, escapeNonAscii));
     }
+
+    processLibraryFile(srcFolderPath, destFolderPath, normalizeNFC, escapeNonAscii);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void writeLines(FilePath filePath, List<String> lines) throws IOException
+  {
+    FileUtils.writeLines(filePath.toFile(), StandardCharsets.UTF_8.name(), lines);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Formats a folder's reference manager library file for the diff, when the folder has one, and writes the
+   * result under the same name in the processed folder; see {@link #formatJsonForDiff} for why the file cannot
+   * be compared as it is. A processed folder may still hold the file from an earlier run against a database
+   * that had a library, so when the source folder has none, a copy left in the processed folder is removed
+   * rather than left to show up as a difference.
+   */
+  private static void processLibraryFile(FilePath srcFolderPath, FilePath destFolderPath, boolean normalizeNFC, boolean escapeNonAscii) throws IOException
+  {
+    FilePath srcFilePath  = srcFolderPath .resolve(BIB_FILE_NAME),
+             destFilePath = destFolderPath.resolve(BIB_FILE_NAME);
+
+    if (srcFilePath.exists() == false)
+    {
+      FileDeletion.ofFile(destFilePath).nonInteractiveFailureOK().execute();
+      return;
+    }
+
+    String jsonText = FileUtils.readFileToString(srcFilePath.toFile(), StandardCharsets.UTF_8);
+
+    writeLines(destFilePath, applyTextOptions(formatJsonForDiff(jsonText), normalizeNFC, escapeNonAscii));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Lays the reference manager library file out one value per line, with the keys of every object in
+   * alphabetical order and the entities of each top-level array (the entries, the trash, the collections) in
+   * the order of their keys, so that two copies of the file differ only where their data does. The library
+   * writes the file as one line, in whatever order its hash maps iterate: stable while the set of keys is
+   * unchanged, arbitrary otherwise. Arrays inside an entity, such as the creators of an entry, keep their
+   * order, which is part of the data.
+   */
+  static List<String> formatJsonForDiff(String jsonText) throws IOException
+  {
+    Object root = JSON_MAPPER.readValue(jsonText, Object.class);
+
+    if (root instanceof Map<?, ?> rootMap)
+      rootMap.values().forEach(XmlDiffCtrlr::sortEntitiesByKey);
+
+    DefaultPrettyPrinter printer = new DefaultPrettyPrinter().withArrayIndenter(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);  // Each element of an array on a line of its own, as the fields of an object are
+
+    return JSON_MAPPER.writer(printer).with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS).writeValueAsString(root).lines().toList();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Sorts a top-level array of the library file by the key of each entity: {@code key} for Zotero, {@code id}
+   * for Mendeley. Anything but an array of objects is left as it is.
+   */
+  @SuppressWarnings("unchecked")
+  private static void sortEntitiesByKey(Object node)
+  {
+    if ((node instanceof List<?> list) && list.stream().allMatch(element -> element instanceof Map))
+      ((List<Map<String, Object>>) node).sort(Comparator.comparing(XmlDiffCtrlr::entityKey));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String entityKey(Map<String, Object> entity)
+  {
+    Object key = entity.containsKey("key") ? entity.get("key") : entity.get("id");
+
+    return key == null ? "" : key.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Applies the two text options to the processed lines of either file. Composing both sides to canonical form
+   * (NFC) removes a difference of composition alone, so that after a change which composes stored text, the
+   * diff with this option on shows only what else changed. Escaping every character outside ASCII does the
+   * opposite: a letter with a diacritic reads the same in a diff tool whether it is one precomposed character
+   * or a base letter followed by a combining mark, so with this option on the two spellings differ visibly.
+   * Both may be on at once; the escaped text is then the composed text.
+   */
+  static List<String> applyTextOptions(List<String> lines, boolean normalizeNFC, boolean escapeNonAscii)
+  {
+    if (normalizeNFC)
+      lines = toNFC(lines);
+
+    if (escapeNonAscii)
+      lines = lines.stream().map(XmlDiffCtrlr::escapeNonAscii).toList();
+
+    return lines;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Replaces every character outside ASCII with a backslash-u escape of its UTF-16 code unit, the form JSON
+   * uses, in both files alike: the processed copies exist to be compared, not parsed.
+   */
+  static String escapeNonAscii(String line)
+  {
+    if (isAscii(line)) return line;
+
+    StringBuilder sb = new StringBuilder(line.length() + 32);
+
+    for (int ndx = 0; ndx < line.length(); ndx++)
+    {
+      char ch = line.charAt(ndx);
+
+      if (ch > 0x7F)
+        sb.append("\\u").append(String.format("%04X", (int) ch));
+      else
+        sb.append(ch);
+    }
+
+    return sb.toString();
   }
 
 //---------------------------------------------------------------------------

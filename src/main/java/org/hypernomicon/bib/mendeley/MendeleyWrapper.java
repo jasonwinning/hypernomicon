@@ -712,7 +712,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException
+  @Override protected void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException
   {
     JsonObj jMainObj = null;
     MessageDigest md = newMessageDigest();

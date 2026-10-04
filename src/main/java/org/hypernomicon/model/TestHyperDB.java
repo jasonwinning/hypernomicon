@@ -437,19 +437,14 @@ public final class TestHyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
+  /**
+   * Links an offline wrapper of the given type that holds no entries: the state of a database just linked to
+   * a reference manager, before its first sync. See {@link #linkBibLibrary(LibraryType, String, FilePath)} to
+   * start from a library file instead.
+   */
   public <T extends LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection>> T linkBibLibrary(LibraryType libType, String userID) throws HyperDataException
   {
-    assertThatThisIsUnitTestThread();
-
-    if (bibLibraryIsLinked())
-      unlinkBibLibrary();
-
-    T libWrapper = switch (libType)
-    {
-      case ltZotero   -> (T) ZoteroWrapper  .createForTesting();
-      case ltMendeley -> (T) MendeleyWrapper.createForTesting(userID);
-    };
+    T libWrapper = createOfflineWrapper(libType, userID);
 
     if (libType == LibraryType.ltZotero)
       ZoteroWrapper.initTemplatesForTesting();  // as loading a library file would have; entries cannot be created without the templates
@@ -457,6 +452,43 @@ public final class TestHyperDB extends AbstractHyperDB
     linkBibLibraryForUnitTest(libWrapper);
 
     return libWrapper;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Links an offline wrapper of the given type that holds the entries, trash and collections of the given
+   * library file, read as the real wrapper reads the file at load (which, for a Zotero library, initializes
+   * the templates as well). The read leaves the file as it is; a save writes it.
+   */
+  public <T extends LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection>> T linkBibLibrary(LibraryType libType, String userID, FilePath libraryFilePath) throws HyperDataException
+  {
+    T libWrapper = createOfflineWrapper(libType, userID);
+
+    libWrapper.loadLibraryFileForTesting(libraryFilePath);
+
+    linkBibLibraryForUnitTest(libWrapper);
+
+    return libWrapper;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  private <T extends LibraryWrapper<? extends BibEntry<?, ?>, ? extends BibCollection>> T createOfflineWrapper(LibraryType libType, String userID) throws HyperDataException
+  {
+    assertThatThisIsUnitTestThread();
+
+    if (bibLibraryIsLinked())
+      unlinkBibLibrary();
+
+    return switch (libType)
+    {
+      case ltZotero   -> (T) ZoteroWrapper  .createForTesting();
+      case ltMendeley -> (T) MendeleyWrapper.createForTesting(userID);
+    };
   }
 
 //---------------------------------------------------------------------------

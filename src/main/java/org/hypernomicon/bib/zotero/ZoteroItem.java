@@ -622,7 +622,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
    * @param forUploadToServer True if this is being exported to send to the Zotero server
    * @return The standalone JSON object
    */
-  public JsonObj exportStandaloneJsonObj(boolean forUploadToServer)
+  @Override public JsonObj exportStandaloneJsonObj(boolean forUploadToServer)
   {
     JsonObj jStandaloneObj = jObj.deepCopy();
 

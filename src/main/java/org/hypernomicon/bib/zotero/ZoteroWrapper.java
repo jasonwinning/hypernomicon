@@ -900,7 +900,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException, HDB_InternalError
+  @Override protected void loadAllFromJsonFile(FilePath filePath) throws IOException, ParseException, HDB_InternalError
   {
     JsonObj jMainObj = null;
     MessageDigest md = newMessageDigest();

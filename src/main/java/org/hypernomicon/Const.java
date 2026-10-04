@@ -227,6 +227,9 @@ public final class Const
 
       XML_DIFF_SELECTED_EXE_NUM = "xmlDiffSelectedExeNum",
 
+      XML_DIFF_NORMALIZE_NFC    = "xmlDiffNormalizeNfc",
+      XML_DIFF_ESCAPE_NON_ASCII = "xmlDiffEscapeNonAscii",
+
       INTEGRITY_CHECKSUMS = "integrityChecksums",
 
       FTS_INDEXING_ENABLED = "ftsIndexingEnabled",

@@ -51,6 +51,7 @@ public final class JsonArray
   public boolean isEmpty()                { return jArr.isEmpty(); }
   public JsonNodeType getType(int ndx)    { return determineType(jArr.get(ndx)); }
   public String getLongAsStrSafe(int ndx) { return nullSwitch(jArr.get(ndx), "", obj -> String.valueOf(((Long)obj).longValue())); }
+  public String getAsStr(int ndx)         { return nullSwitch(jArr.get(ndx), "", Object::toString); }
   public JsonObjIterator getObjs()        { return new JsonObjIterator(); }
   public Stream<JsonObj> objStream()      { return ((Stream<?>)jArr.stream()).map(obj -> new JsonObj((JSONObject) obj)); }
   public Stream<String> strStream()       { return ((Stream<?>)jArr.stream()).map(obj -> obj instanceof String str ? str : ""); }
