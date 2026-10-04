@@ -25,8 +25,6 @@ import java.util.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.ibm.icu.text.Normalizer2;
-
 //---------------------------------------------------------------------------
 
 /**
@@ -312,8 +310,6 @@ final class MarcRecord
 
 //---------------------------------------------------------------------------
 
-  private static final Normalizer2 NFC = Normalizer2.getNFCInstance();
-
   private final String leader;
   private final Map<String, String> controlFields = new HashMap<>();
   private final List<DataField> dataFields = new ArrayList<>();
@@ -342,12 +338,13 @@ final class MarcRecord
           // Subfield text is composed to NFC: MARC's MARC-8 heritage (MARC-8 being the pre-Unicode
           // character set of MARC records) delivers diacritics decomposed (a base letter followed by a
           // combining mark), while keyboards and every other source produce the precomposed letter.
-          // Composition is canonical, so nothing is lost, and the stored text then compares equal to a
-          // visually identical one instead of differing invisibly.
+          // Composition is canonical, so nothing is lost. Every bibliographic store composes what it is
+          // given anyway (see BibData.setStr); composing at the read as well means the code that interprets
+          // a record works on composed letters too.
 
           for (Element subfieldElement : fieldElement.children())
             if ("subfield".equals(localName(subfieldElement)) && (subfieldElement.attr("code").length() == 1))
-              subfields.add(new Subfield(subfieldElement.attr("code").charAt(0), NFC.normalize(subfieldElement.wholeText())));
+              subfields.add(new Subfield(subfieldElement.attr("code").charAt(0), toNFC(subfieldElement.wholeText())));
 
           dataFields.add(new DataField(fieldElement.attr("tag"), indicator(fieldElement, "ind1"), indicator(fieldElement, "ind2"), List.copyOf(subfields)));
         }

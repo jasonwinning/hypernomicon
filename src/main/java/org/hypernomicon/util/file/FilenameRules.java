@@ -34,7 +34,6 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
 
 import com.ibm.icu.lang.UCharacter;
 import com.ibm.icu.lang.UProperty;
-import com.ibm.icu.text.Normalizer2;
 
 //---------------------------------------------------------------------------
 
@@ -364,8 +363,6 @@ public record FilenameRules(boolean caseInsensitive, boolean trimsTrailingDotsAn
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final Normalizer2 NFC = Normalizer2.getNFCInstance();
-
   /**
    * Normalizes a filename according to these rules.
    *
@@ -429,10 +426,7 @@ public record FilenameRules(boolean caseInsensitive, boolean trimsTrailingDotsAn
     // OS/filesystem reports a different composition for the same file (macOS reports NFD on read,
     // Windows/NTFS reports NFC). This also handles any denormalization introduced by case folding.
 
-    if (NFC.isNormalized(s) == false)
-      s = NFC.normalize(s);
-
-    return s;
+    return toNFC(s);
   }
 
 //---------------------------------------------------------------------------
@@ -456,31 +450,7 @@ public record FilenameRules(boolean caseInsensitive, boolean trimsTrailingDotsAn
   {
     if (filename == null) return "";
 
-    String s = UCharacter.foldCase(filename, true);
-
-    return NFC.isNormalized(s) ? s : NFC.normalize(s);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Returns the canonical-composition (NFC) form of a filename, leaving case untouched.
-   * <p>
-   * Unlike {@link #normalizeLoose(String)} this does not fold case, so it preserves the
-   * filename's actual casing while collapsing the distinction between precomposed (NFC) and
-   * decomposed (NFD) Unicode. Used to keep a stored filename stable across synced machines
-   * whose filesystems report different composition forms for the same file (e.g. macOS APFS
-   * reports NFD, Windows/NTFS reports NFC).
-   *
-   * @param filename the filename to normalize (may be null)
-   * @return the NFC form, or {@code null} if {@code filename} is null
-   */
-  public static String toNFC(String filename)
-  {
-    if (filename == null) return null;
-
-    return NFC.isNormalized(filename) ? filename : NFC.normalize(filename);
+    return toNFC(UCharacter.foldCase(filename, true));
   }
 
 //---------------------------------------------------------------------------

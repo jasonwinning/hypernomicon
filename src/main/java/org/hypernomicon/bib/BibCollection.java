@@ -25,6 +25,13 @@ import org.hypernomicon.util.json.JsonObj;
 
 //---------------------------------------------------------------------------
 
+/**
+ * A collection of the reference manager library, a Zotero collection or a Mendeley folder, as the server
+ * describes it. Hypernomicon only reads collections: it shows them as the tree beside the entries
+ * ({@code CollectionTree}), each under the parent named by {@link #getParentKey}, and lists under each the
+ * entries that name it among their collections. Nothing about a collection is edited locally, so one is
+ * always synced, and {@link #update} has only to keep the server's data.
+ */
 public abstract class BibCollection implements BibEntity
 {
 

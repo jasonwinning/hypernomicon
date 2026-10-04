@@ -167,7 +167,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
+  @Override protected void setStrInternal(BibFieldEnum bibFieldEnum, String newStr)
   {
     if (linkedToWork())
     {
@@ -216,7 +216,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       return;
     }
 
-    if (jObj.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
+    if (getFieldText(fieldKey).equals(safeStr(newStr))) return;
 
     jObj.put(fieldKey, newStr);
   }
@@ -288,6 +288,17 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * The text of a field as Hypernomicon reads it: composed to NFC like all bibliographic text (see
+   * BibData.setStr). The JSON itself stays as the reference manager sent it, so the fields Hypernomicon does
+   * not manage go back to it unchanged, and a field it does manage changes composition there only when
+   * Hypernomicon writes a different text to it.
+   */
+  private String getFieldText(String fieldKey) { return toNFC(jObj.getStrSafe(fieldKey)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public BibliographicDate getDateFromJson()
   {
     int year  = parseInt(safeStr(jObj.getAsStr("year" )), 0),
@@ -321,18 +332,18 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
       case bfDOI :
 
-        return jObj.condObj("identifiers").condStrOrBlank("doi");
+        return toNFC(jObj.condObj("identifiers").condStrOrBlank("doi"));
 
       case bfURL :
 
         JsonArray jArr = jObj.getArraySafe("websites");
 
-        return jArr.isEmpty() ? "" : jArr.getStr(0);
+        return jArr.isEmpty() ? "" : toNFC(jArr.getStr(0));
 
       case bfVolume : case bfIssue   : case bfPages    : case bfPublisher :
       case bfPubLoc : case bfEdition : case bfLanguage :
 
-        return jObj.getStrSafe(fieldKey);
+        return getFieldText(fieldKey);
 
       case bfAuthors     : return getAuthors().getStr(author);
       case bfEditors     : return getAuthors().getStr(editor);
@@ -359,7 +370,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list)
+  @Override protected void setMultiStrInternal(BibFieldEnum bibFieldEnum, List<String> list)
   {
     if (linkedToWork())
     {
@@ -379,7 +390,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       case bfContainerTitle : case bfTitle :
       {
         String titleStr = strListToStr(list, false);
-        if (jObj.getStrSafe(fieldKey).equals(safeStr(titleStr))) return;
+        if (getFieldText(fieldKey).equals(safeStr(titleStr))) return;
 
         jObj.put(fieldKey, titleStr);
 
@@ -390,7 +401,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
       {
         String miscStr = String.join("<br>", list);
 
-        if (jObj.getStrSafe(fieldKey).equals(safeStr(miscStr))) return;
+        if (getFieldText(fieldKey).equals(safeStr(miscStr))) return;
 
         jObj.put(fieldKey, miscStr);
 
@@ -430,11 +441,11 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
     {
       case bfTitle : case bfContainerTitle :
 
-        return convertMultiLineStrToStrList(jObj.getStrSafe(getFieldKey(bibFieldEnum)), false);
+        return convertMultiLineStrToStrList(getFieldText(getFieldKey(bibFieldEnum)), false);
 
       case bfMisc  :
 
-        String note = jObj.getStrSafe(getFieldKey(bibFieldEnum));
+        String note = getFieldText(getFieldKey(bibFieldEnum));
 
         note = note.replaceAll("<br>"   , "\n")
                    .replaceAll("<br/>"   , "\n")
@@ -449,7 +460,7 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
         JsonObj idObj = jObj.getObj("identifiers");
         if (idObj == null) return new ArrayList<>();
 
-        String str = idObj.getStrSafe(getFieldKey(bibFieldEnum));
+        String str = toNFC(idObj.getStrSafe(getFieldKey(bibFieldEnum)));
 
         return bibFieldEnum == bfISBNs ? matchISBN(str) : matchISSN(str);
 
@@ -513,8 +524,10 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
         JsonObj ed1 = jArr1.getObj(ndx),
                 ed2 = jArr2.getObj(ndx);
 
-        if (ed1.getStrSafe("first_name").equals(ed2.getStrSafe("first_name")) == false) return true;
-        if (ed1.getStrSafe("last_name" ).equals(ed2.getStrSafe("last_name" )) == false) return true;
+        // Composed on both sides, as every comparison of an entry's text is (see getFieldText)
+
+        if (toNFC(ed1.getStrSafe("first_name")).equals(toNFC(ed2.getStrSafe("first_name"))) == false) return true;
+        if (toNFC(ed1.getStrSafe("last_name" )).equals(toNFC(ed2.getStrSafe("last_name" ))) == false) return true;
       }
     }
 

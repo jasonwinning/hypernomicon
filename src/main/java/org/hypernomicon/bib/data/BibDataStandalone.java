@@ -79,7 +79,6 @@ public abstract class BibDataStandalone extends BibData
   @Override public final BibAuthors getAuthors()                               { return authors; }
   @Override public final EntryType getEntryType()                              { return entryType; }
   @Override public final BibliographicDate getDate()                           { return date; }
-  @Override public final void setMultiStr(BibFieldEnum bfe, List<String> list) { bibFieldEnumToBibField.get(bfe).setAll(list); }
   @Override protected final void setEntryType(EntryType entryType)             { this.entryType = entryType; }
   @Override public HDT_WorkType getWorkType()                                  { return EntryType.toWorkType(getEntryType()); }
   @Override protected void setWorkType(HDT_WorkType workType)                  { }
@@ -143,7 +142,15 @@ public abstract class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
+  @Override protected final void setMultiStrInternal(BibFieldEnum bibFieldEnum, List<String> list)
+  {
+    bibFieldEnumToBibField.get(bibFieldEnum).setAll(list);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected void setStrInternal(BibFieldEnum bibFieldEnum, String newStr)
   {
     bibFieldEnumToBibField.get(bibFieldEnum).setStr(newStr);
   }

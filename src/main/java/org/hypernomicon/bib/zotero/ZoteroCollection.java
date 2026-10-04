@@ -52,6 +52,9 @@ public class ZoteroCollection extends BibCollection implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * {@inheritDoc}
+   */
   @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     this.jObj = jObj;

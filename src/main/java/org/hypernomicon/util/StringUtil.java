@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
+import com.ibm.icu.text.Normalizer2;
 import com.ibm.icu.text.Transliterator;
 
 //---------------------------------------------------------------------------
@@ -771,6 +772,38 @@ public final class StringUtil
    * @return the original string if it is non-null, or an empty string if it is {@code null}
    */
   public static String safeStr(String s)           { return s == null ? "" : s; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final Normalizer2 NFC = Normalizer2.getNFCInstance();
+
+  /**
+   * Returns the canonical composition (NFC) form of a string: wherever Unicode defines a precomposed character
+   * for a letter with a diacritic, that single character stands in for the base letter followed by a combining
+   * mark. Keyboards and most sources produce the precomposed form; the decomposed form (NFD) arrives from
+   * MARC-derived library records, from text extracted from some PDFs, and from filenames as macOS reports them.
+   * The two forms are canonically equivalent, so composing loses nothing, and it lets text that looks the same
+   * compare equal instead of differing invisibly. Case is left untouched.
+   * @param s the string to compose; may be null
+   * @return the NFC form, which is {@code s} itself when it is already composed; null if {@code s} is null
+   */
+  public static String toNFC(String s)
+  {
+    if (s == null) return null;
+
+    return NFC.isNormalized(s) ? s : NFC.normalize(s);
+  }
+
+  /**
+   * Returns the canonical composition (NFC) form of each string in a list; see {@link #toNFC(String)}.
+   * @param list the strings to compose; may be null
+   * @return a new list holding the composed strings, or null if {@code list} is null
+   */
+  public static List<String> toNFC(List<String> list)
+  {
+    return list == null ? null : list.stream().map(StringUtil::toNFC).toList();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -17,6 +17,7 @@
 
 package org.hypernomicon.bib.zotero;
 
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.Util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -231,6 +232,74 @@ class ZoteroAuthorSyncTest
 
     assertEquals("firstName4"    , newCreatorsArr.getObj(2).getStr("firstName"));
     assertEquals("reviewedAuthor", newCreatorsArr.getObj(2).getStr("creatorType"));
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * A letter the server spells decomposed (a base letter followed by a combining mark) is not a change: the
+   * item's text is composed as Hypernomicon reads it, as the work record's is on assignment, so the two
+   * compare equal and nothing is pushed back. The JSON itself keeps the server's spelling, so what goes back
+   * to the server is unchanged until Hypernomicon has a different text to write.
+   */
+  @Test
+  void decomposedTextFromServerIsNotAChange()
+  {
+    String titleNFD = "Problemy poėtiki Dostoevskogo",  // e followed by a combining dot above (U+0307)
+           titleNFC = "Problemy poėtiki Dostoevskogo";   // the precomposed letter (U+0117)
+
+    JsonObj jData = getTemplate(EntryType.etBook);
+
+    assertNotNull(jData);
+
+    jData.put("title", titleNFD);
+    jData.put("abstractNote", titleNFD);  // A field Hypernomicon does not manage
+
+    JsonArray origCreatorsArr = jData.getOrAddArray("creators");
+
+    origCreatorsArr.clear();
+
+    JsonObj creatorObj = new JsonObj();
+
+    creatorObj.put("creatorType", "author");
+    creatorObj.put("firstName", "Mikhaĭl");  // i followed by a combining breve (U+0306)
+    creatorObj.put("lastName" , "Bakhtin");
+
+    origCreatorsArr.add(creatorObj);
+
+    ZoteroItem bookEntry = ZoteroItem.createForUnitTest(zWrapper, jData);
+
+    assertEquals(titleNFC, bookEntry.getStr(bfTitle));
+    assertEquals("Mikhaĭl", bookEntry.getAuthors().iterator().next().firstName());  // The precomposed letter (U+012D)
+    assertEquals(titleNFD, jData.getStr("title"));  // Read composed, kept as sent
+
+    HDT_Work work = db.createWorkForEntry(bookEntry);
+
+    assertEquals(titleNFC, work.name());
+    assertTrue(bookEntry.isSynced());
+
+    // Assigning the decomposed spelling to the work changes nothing either
+
+    work.setName(titleNFD);
+
+    assertTrue(bookEntry.isSynced());
+
+    // Nothing Hypernomicon holds differs from the server's text, so an export keeps the server's spelling
+    // of the title and of the field Hypernomicon does not manage; a real change goes out composed
+
+    JsonObj exported = bookEntry.exportStandaloneJsonObj(false).getObj("data");
+
+    assertEquals(titleNFD, exported.getStr("title"));
+    assertEquals(titleNFD, exported.getStr("abstractNote"));
+
+    work.setName(titleNFD + " II");
+
+    assertFalse(bookEntry.isSynced());
+
+    exported = bookEntry.exportStandaloneJsonObj(false).getObj("data");
+
+    assertEquals(titleNFC + " II", exported.getStr("title"));
+    assertEquals(titleNFD, exported.getStr("abstractNote"));
   }
 
 //---------------------------------------------------------------------------

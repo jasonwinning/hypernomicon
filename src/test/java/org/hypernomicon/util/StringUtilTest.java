@@ -467,4 +467,58 @@ class StringUtilTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // é as the single precomposed character (NFC) and as e followed by a combining acute accent (NFD)
+
+  private static final String CAFE_NFC = "café",
+                              CAFE_NFD = "café";
+
+  @Test
+  void testToNFC_ComposesDecomposedText()
+  {
+    assertNotEquals(CAFE_NFC, CAFE_NFD);  // The inputs really do differ as strings
+    assertEquals(CAFE_NFC, toNFC(CAFE_NFD));
+
+    // The accented names whose decomposed spellings macOS reports for files whose database names are composed
+
+    assertEquals("Gärdenfors", toNFC("Gärdenfors"));   // a with diaeresis
+    assertEquals("Núñez", toNFC("Núñez"));  // u with acute, n with tilde
+    assertEquals("Gödel"     , toNFC("Gödel"));        // o with diaeresis
+  }
+
+  @Test
+  void testToNFC_ReturnsComposedTextItself()
+  {
+    assertSame(CAFE_NFC, toNFC(CAFE_NFC));
+    assertSame("plain.pdf", toNFC("plain.pdf"));
+  }
+
+  @Test
+  void testToNFC_ComposesSingletons()
+  {
+    assertEquals("Å", toNFC("Å"));  // The angstrom sign decomposes to the letter A with a ring above, whose composed form is that letter
+  }
+
+  @Test
+  void testToNFC_LeavesCaseAlone()
+  {
+    assertEquals("ÜRD", toNFC("ÜRD"));  // Composition only: a decomposed uppercase U with diaeresis recomposes but stays uppercase
+    assertNotEquals(toNFC("file"), toNFC("FILE"));
+  }
+
+  @Test
+  void testToNFC_NullString()
+  {
+    assertNull(toNFC((String) null));
+  }
+
+  @Test
+  void testToNFC_List()
+  {
+    assertEquals(List.of(CAFE_NFC, "plain", CAFE_NFC), toNFC(List.of(CAFE_NFD, "plain", CAFE_NFC)));
+    assertNull(toNFC((List<String>) null));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

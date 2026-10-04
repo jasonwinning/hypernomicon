@@ -42,7 +42,13 @@ public class NameItem
 
   public void set(String newName)
   {
-    name = safeStr(newName);
+    // Kept in canonical composition (NFC) form, as HyperPath.assignNameInternal keeps filenames: whether a
+    // letter with a diacritic arrives precomposed or decomposed is an artifact of the source, never a meaningful
+    // distinction, so composing here keeps a name comparing equal to a visually identical one wherever names are
+    // compared. Loading passes through here too, so a database holding decomposed names from an earlier version
+    // converges on its next save.
+
+    name = toNFC(safeStr(newName));
     nameEngChar = convertToEnglishChars(name.strip());
   }
 

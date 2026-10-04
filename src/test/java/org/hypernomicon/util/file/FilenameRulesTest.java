@@ -793,47 +793,6 @@ class FilenameRulesTest
   }
 //---------------------------------------------------------------------------
 //endregion
-//region toNFC: canonical composition, case preserved
-//---------------------------------------------------------------------------
-
-  @Test
-  void toNFC_collapsesDecomposedToComposed()
-  {
-    String nfc = "caf\u00E9",       // precomposed e-acute (U+00E9)
-           nfd = "cafe\u0301";      // e + combining acute (U+0065 U+0301)
-
-    assertNotEquals(nfc, nfd);                    // the inputs really do differ byte-for-byte
-    assertEquals(nfc, FilenameRules.toNFC(nfd));  // NFD collapses to NFC
-    assertEquals(nfc, FilenameRules.toNFC(nfc));  // idempotent on already-NFC input
-  }
-
-  @Test
-  void toNFC_preservesCase()
-  {
-    // Unlike normalizeLoose, toNFC must NOT fold case: composition only.
-    // Decomposed uppercase U-umlaut (U + combining diaeresis) recomposes but stays uppercase.
-    assertEquals("\u00DCRD", FilenameRules.toNFC("U\u0308RD"));
-    assertNotEquals(FilenameRules.toNFC("file"), FilenameRules.toNFC("FILE"));
-  }
-
-  @Test
-  void toNFC_handlesNullAndPlainAscii()
-  {
-    assertNull(FilenameRules.toNFC(null));
-    assertEquals("plain.pdf", FilenameRules.toNFC("plain.pdf"));
-  }
-
-  @Test
-  void toNFC_realWorldDecomposedNames_matchComposed()
-  {
-    // The accented names from the reconciliation churn: NFD on macOS disk vs NFC in the database.
-    assertEquals("G\u00E4rdenfors", FilenameRules.toNFC("Ga\u0308rdenfors"));  // a-umlaut
-    assertEquals("N\u00FA\u00F1ez", FilenameRules.toNFC("Nu\u0301n\u0303ez")); // u-acute, n-tilde
-    assertEquals("G\u00F6del"     , FilenameRules.toNFC("Go\u0308del"));       // o-umlaut
-  }
-
-//---------------------------------------------------------------------------
-//endregion
 //---------------------------------------------------------------------------
 
 }

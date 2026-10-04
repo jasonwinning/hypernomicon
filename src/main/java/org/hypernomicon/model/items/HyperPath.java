@@ -579,7 +579,7 @@ public class HyperPath
     // meaningful distinction; canonicalizing here keeps the stored name stable across synced
     // machines and lets a database polluted with NFD names converge to NFC on the next save.
 
-    fileName = FilePath.isEmpty(newFileName) ? null : FilePath.of(FilenameRules.toNFC(newFileName.getNameOnly().toString()));
+    fileName = FilePath.isEmpty(newFileName) ? null : FilePath.of(toNFC(newFileName.getNameOnly().toString()));
 
     if (record != null)
       record.updateSortKey();
@@ -898,12 +898,12 @@ public class HyperPath
     // composition and ping-pong NFC<->NFD across synced machines. Only a genuine case difference
     // (which a case-sensitive filesystem really does distinguish) is worth correcting here.
 
-    if (FilenameRules.toNFC(realStr).equals(FilenameRules.toNFC(storedStr)))
+    if (toNFC(realStr).equals(toNFC(storedStr)))
       return false;
 
     // Adopt the disk's casing, kept in canonical NFC form (assignNameInternal also enforces NFC).
 
-    String correctedName = FilenameRules.toNFC(realStr);
+    String correctedName = toNFC(realStr);
 
     System.out.println("Filename reconciliation: corrected file name for record id " + record.getID()
       + ": \"" + storedStr + "\" -> \"" + correctedName + "\" (matched the actual file on disk)");

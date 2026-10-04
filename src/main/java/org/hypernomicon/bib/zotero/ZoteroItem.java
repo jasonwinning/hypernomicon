@@ -181,6 +181,8 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
    */
   public void setDateFromRawStr(String newRawDateStr)
   {
+    newRawDateStr = toNFC(newRawDateStr);  // Stored as all bibliographic text is; see BibData.setStr
+
     setDate(BibliographicDate.fromUserStr(newRawDateStr), newRawDateStr);
   }
 
@@ -204,7 +206,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
     if ((posIntYear > 9999) || (posIntYear < 1000) || (parsedDateStr.length() != 10))
       parsedDateStr = "";  // Zotero will only recognize a "multi-part" date if the year is 4 digits and month and day are present
 
-    String origRawDateStr = jData.getStrSafe("date"),
+    String origRawDateStr = getFieldText("date"),
            origParsedDateStr = jObj.condObj("meta").condStrOrBlank("parsedDate");
 
     if (strNotNullOrBlank(newRawDateStr) && newRawDateStr.equals(origRawDateStr))
@@ -241,7 +243,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
+  @Override protected void setStrInternal(BibFieldEnum bibFieldEnum, String newStr)
   {
     if (linkedToWork())
     {
@@ -273,7 +275,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       default : internalErrorPopup(90225); return;
     }
 
-    if (jData.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
+    if (getFieldText(fieldKey).equals(safeStr(newStr))) return;
 
     jData.put(fieldKey, newStr);
   }
@@ -337,6 +339,17 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * The text of a field as Hypernomicon reads it: composed to NFC like all bibliographic text (see
+   * BibData.setStr). The JSON itself stays as the reference manager sent it, so the fields Hypernomicon does
+   * not manage go back to it unchanged, and a field it does manage changes composition there only when
+   * Hypernomicon writes a different text to it.
+   */
+  private String getFieldText(String fieldKey) { return toNFC(jData.getStrSafe(fieldKey)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public String getDateRawStr()
   {
     if (linkedToWork())
@@ -352,7 +365,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
         return super.getDateRawStr();
     }
 
-    return jData.getStrSafe(getFieldKey(bfDate));
+    return getFieldText(getFieldKey(bfDate));
   }
 
 //---------------------------------------------------------------------------
@@ -374,7 +387,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       month = parsedDate.month;
     }
 
-    BibliographicDate date = BibliographicDate.fromUserStr(jData.getStrSafe(getFieldKey(bfDate)));
+    BibliographicDate date = BibliographicDate.fromUserStr(getFieldText(getFieldKey(bfDate)));
     return new BibliographicDate(day > 0 ? day : date.day, month > 0 ? month : date.month, date.year);
   }
 
@@ -403,7 +416,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       case bfDOI       : case bfURL       : case bfVolume    : case bfIssue     : case bfPages :
       case bfPublisher : case bfPubLoc    : case bfEdition   : case bfLanguage  :
 
-        return jData.getStrSafe(fieldKey);
+        return getFieldText(fieldKey);
 
       case bfAuthors     : return getAuthors().getStr(author);
       case bfEditors     : return getAuthors().getStr(editor);
@@ -430,7 +443,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list)
+  @Override protected void setMultiStrInternal(BibFieldEnum bibFieldEnum, List<String> list)
   {
     if (linkedToWork())
     {
@@ -463,7 +476,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
       default               : return;
     }
 
-    if (jData.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
+    if (getFieldText(fieldKey).equals(safeStr(newStr))) return;
 
     jData.put(fieldKey, newStr);
   }
@@ -486,21 +499,21 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
     switch (bibFieldEnum)
     {
-      case bfTitle : return convertMultiLineStrToStrList(jData.getStrSafe(getFieldKey(bibFieldEnum)), false);
+      case bfTitle : return convertMultiLineStrToStrList(getFieldText(getFieldKey(bibFieldEnum)), false);
 
       case bfContainerTitle :
 
-        String                        containerTitle = jData.getStrSafe("publicationTitle");
-        if (containerTitle.isEmpty()) containerTitle = jData.getStrSafe("bookTitle");
-        if (containerTitle.isEmpty()) containerTitle = jData.getStrSafe("seriesTitle");
+        String                        containerTitle = getFieldText("publicationTitle");
+        if (containerTitle.isEmpty()) containerTitle = getFieldText("bookTitle");
+        if (containerTitle.isEmpty()) containerTitle = getFieldText("seriesTitle");
 
         return convertMultiLineStrToStrList(containerTitle, false);
 
-      case bfMisc : return convertMultiLineStrToStrList(jData.getStrSafe(getFieldKey(bibFieldEnum)), true);
+      case bfMisc : return convertMultiLineStrToStrList(getFieldText(getFieldKey(bibFieldEnum)), true);
 
-      case bfISBNs : return matchISBN(jData.getStrSafe(getFieldKey(bibFieldEnum)));
+      case bfISBNs : return matchISBN(getFieldText(getFieldKey(bibFieldEnum)));
 
-      case bfISSNs : return matchISSN(jData.getStrSafe(getFieldKey(bibFieldEnum)));
+      case bfISSNs : return matchISSN(getFieldText(getFieldKey(bibFieldEnum)));
 
       default : return null;
     }
@@ -591,8 +604,10 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
 
         if (ed1.getStrSafe("creatorType").equals(ed2.getStrSafe("creatorType")) == false) return true;
 
-        if (ed1.getStrSafe("firstName").equals(ed2.getStrSafe("firstName")) == false) return true;
-        if (ed1.getStrSafe("lastName" ).equals(ed2.getStrSafe("lastName" )) == false) return true;
+        // Composed on both sides, as every comparison of an entry's text is (see getFieldText)
+
+        if (toNFC(ed1.getStrSafe("firstName")).equals(toNFC(ed2.getStrSafe("firstName"))) == false) return true;
+        if (toNFC(ed1.getStrSafe("lastName" )).equals(toNFC(ed2.getStrSafe("lastName" ))) == false) return true;
       }
     }
 

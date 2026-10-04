@@ -41,6 +41,31 @@ import org.hypernomicon.util.json.JsonObj;
 
 //---------------------------------------------------------------------------
 
+/**
+ * An entry of the reference manager library, an item in Zotero or a document in Mendeley, as Hypernomicon
+ * holds it: the JSON the server sent for it ({@code jObj}) and, beside it, the server's version as last
+ * seen ({@code backupItem}, an entry of the same class flagged {@code thisIsBackup}), against which
+ * {@link #isSynced} detects local changes and which the merge dialog shows next to the local data when
+ * the server and Hypernomicon have both changed an entry.
+ * <p>
+ * An entry is a {@link BibData}, so the rest of the application reads and writes its fields as it does
+ * any other bibliographic data. An entry may be linked to a work record, which stores the entry's key:
+ * the fields a work record holds itself (title, authors, editors and translators, date, DOI, URL, ISBNs,
+ * miscellaneous information and the work type) are then read from and written to the record, and only
+ * the others, publisher, volume and so on (see
+ * {@link org.hypernomicon.bib.data.BibField.BibFieldEnum#requiresBibEntry}), live in the JSON. Each
+ * subclass's {@code exportStandaloneJsonObj} builds the complete object for the server by writing the
+ * work's fields back into a copy of the JSON. Text read from the JSON is composed to NFC on the way out
+ * (see {@link BibData#setStr}); the JSON itself stays as the reference manager sent it.
+ * <p>
+ * The entries for a book and for its chapters are related: {@code updateRelative} carries an entry's
+ * publication details, the shared title and the book's authors to a parent, child or sibling entry
+ * ({@code RelatedBibEntry}).
+ * <p>
+ * The two type parameters let a {@link LibraryWrapper} and the entries it holds refer to each other by
+ * their concrete classes: {@code BibEntry_T} is the subclass itself, {@code BibCollection_T} the
+ * collection class of the same reference manager.
+ */
 public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollection_T>, BibCollection_T extends BibCollection> extends BibData implements BibEntity
 {
 
@@ -134,6 +159,18 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * {@inheritDoc}
+   * <p>
+   * An entry also takes its backup copy from the data: an object read from the library file carries the
+   * copy nested under {@code backupItem}, where {@link #saveToJsonArray} put it, while data from the server
+   * is its own copy. A backup copy keeps none of its own.
+   * <p>
+   * When the data is the server's current version and the entry is linked to a work record, the fields
+   * the record stores (title, ISBNs, miscellaneous information, DOI, date, and the URL unless the record's
+   * URL has the {@code ext1://} prefix) are set from the server's values. If the authors differ from the
+   * record's as well, the merge dialog is opened for them, unless the caller is about to open it anyway.
+   */
   @Override public final void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     updateJsonObj(jObj);

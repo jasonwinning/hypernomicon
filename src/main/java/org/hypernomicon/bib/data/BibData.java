@@ -58,8 +58,6 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 
   public abstract EntryType getEntryType();
-  public abstract void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list);
-  public abstract void setStr(BibFieldEnum bibFieldEnum, String newStr);
   public abstract List<String> getMultiStr(BibFieldEnum bibFieldEnum);
   public abstract String getStr(BibFieldEnum bibFieldEnum);
   public abstract BibliographicDate getDate();
@@ -68,9 +66,29 @@ public abstract class BibData
   public abstract HDT_Work getWork();
   public abstract HDT_WorkType getWorkType();
 
+  protected abstract void setMultiStrInternal(BibFieldEnum bibFieldEnum, List<String> list);
+  protected abstract void setStrInternal(BibFieldEnum bibFieldEnum, String newStr);
   protected abstract void setEntryType(EntryType entryType);
   protected abstract void setAllAuthors(Iterable<Author> otherAuthors);
   protected abstract void setWorkType(HDT_WorkType workType);
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Bibliographic text is stored in canonical composition (NFC) form whatever its source and whichever
+   * implementation stores it; see {@link org.hypernomicon.util.StringUtil#toNFC(String)} for what that means.
+   * Sources differ in how they deliver a letter with a diacritic, and the two deliveries are canonically
+   * equivalent but not equal as strings. {@link #fieldsAreEqual} compares strings as they are, and it drives
+   * the reference manager's change detection and the merge dialog's notion of a conflict, so a decomposed
+   * spelling let through would register as a change that nobody can see. These two methods are the funnel
+   * for field text, as {@code HyperPath.assignNameInternal} is for filenames; author names compose in
+   * {@code PersonName}; and a record that stored decomposed text before this rule composes it as it is
+   * loaded (see {@code NameItem} and {@code HDI_OnlineString}). A reference manager entry composes what it
+   * reads from its JSON as well, since that JSON is kept as the reference manager sent it (see
+   * {@code getFieldText} in ZoteroItem and MendeleyDocument).
+   */
+  public final void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list) { setMultiStrInternal(bibFieldEnum, toNFC(list  )); }
+  public final void setStr     (BibFieldEnum bibFieldEnum, String newStr)     { setStrInternal     (bibFieldEnum, toNFC(newStr)); }
 
 //---------------------------------------------------------------------------
 

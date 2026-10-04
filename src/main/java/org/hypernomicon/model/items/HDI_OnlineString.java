@@ -50,7 +50,10 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
 //---------------------------------------------------------------------------
 
-  public void set(String strValue) { this.strValue = strValue; }
+  // Kept in canonical composition (NFC) form, as NameItem keeps a record's name and HyperPath a filename;
+  // loading passes through setFromOfflineValue, so stored decomposed text converges on the next save
+
+  public void set(String strValue) { this.strValue = toNFC(strValue); }
 
   @Override public String getResultTextForTag(Tag tag, boolean limitTo20Items) { return convertToSingleLine(get()); }
 
@@ -92,7 +95,7 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   @Override public void setFromOfflineValue(HDI_OfflineString val, Tag tag)
   {
-    strValue = val.get();
+    strValue = toNFC(val.get());
   }
 
 //---------------------------------------------------------------------------
@@ -109,7 +112,8 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   public static boolean valueChanged(String oldValue, String newValue)
   {
-    newValue = safeStr(newValue);
+    newValue = toNFC(safeStr(newValue));  // The stored value is composed, so a change of composition alone is no change
+
     return oldValue.replace("\r", "").equalsIgnoreCase(newValue.replace("\r", "")) == false;
   }
 

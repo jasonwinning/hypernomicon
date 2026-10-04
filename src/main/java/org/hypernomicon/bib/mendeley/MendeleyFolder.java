@@ -54,6 +54,9 @@ public class MendeleyFolder extends BibCollection implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * {@inheritDoc}
+   */
   @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     this.jObj = jObj;

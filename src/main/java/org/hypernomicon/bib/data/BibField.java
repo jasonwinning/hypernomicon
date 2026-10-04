@@ -94,6 +94,10 @@ public class BibField
 
   private final BibFieldEnum bibFieldEnum;
   private final BibFieldType type;
+
+  // Held in canonical composition (NFC) form like all bibliographic text (see BibData.setStr). The setters
+  // compose on their own because addStr and the page setters write here without passing through that funnel.
+
   private final List<String> strList = new ArrayList<>();
 
   private String str;
@@ -121,7 +125,7 @@ public class BibField
       return;
     }
 
-    str = newStr;
+    str = toNFC(newStr);
   }
 
 //---------------------------------------------------------------------------
@@ -183,7 +187,7 @@ public class BibField
     }
 
     strList.clear();
-    strList.addAll(otherList);
+    strList.addAll(toNFC(otherList));
   }
 
 //---------------------------------------------------------------------------
@@ -215,9 +219,9 @@ public class BibField
 
     switch (bibFieldEnum)
     {
-      case bfISBNs : matchISBN(newStr, strList); break;
-      case bfISSNs : matchISSN(newStr, strList); break;
-      default      : strList.add(newStr);        break;
+      case bfISBNs : matchISBN(newStr, strList);  break;
+      case bfISSNs : matchISSN(newStr, strList);  break;
+      default      : strList.add(toNFC(newStr)); break;
     }
   }
 

@@ -58,14 +58,18 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
 //---------------------------------------------------------------------------
 
+  // Names are kept in canonical composition (NFC) form like all bibliographic text (see BibData.setStr):
+  // they are compared as strings when deciding whether a reference manager entry's authors changed, and
+  // the parsing below looks for letters, which a combining mark is not.
+
   public PersonName(String first, String last)
   {
-    this.first = stripSafe(first); this.last = stripSafe(last);
+    this.first = toNFC(stripSafe(first)); this.last = toNFC(stripSafe(last));
   }
 
   public PersonName(String name)
   {
-    name = convertToSingleLine(safeStr(name)).strip();
+    name = toNFC(convertToSingleLine(safeStr(name)).strip());
 
     name = NORMALIZE_WHITESPACE_PATTERN.matcher(name).replaceAll(" ");
 

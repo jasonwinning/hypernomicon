@@ -91,7 +91,7 @@ public class WorkBibData extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list)
+  @Override protected void setMultiStrInternal(BibFieldEnum bibFieldEnum, List<String> list)
   {
     switch (bibFieldEnum)
     {
@@ -116,7 +116,7 @@ public class WorkBibData extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
+  @Override protected void setStrInternal(BibFieldEnum bibFieldEnum, String newStr)
   {
     switch (bibFieldEnum)
     {

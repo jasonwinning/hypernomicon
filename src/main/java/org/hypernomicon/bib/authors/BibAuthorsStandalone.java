@@ -46,7 +46,7 @@ public class BibAuthorsStandalone extends BibAuthors
   @Override public boolean isEmpty()  { return authors.isEmpty() && strNullOrBlank(oneLiner); }
 
   public void add(Author author)      { authors.add(author); }
-  public void setOneLiner(String str) { oneLiner = convertToSingleLine(safeStr(str)).strip(); }
+  public void setOneLiner(String str) { oneLiner = toNFC(convertToSingleLine(safeStr(str)).strip()); }
 
   public final void add(AuthorType authorType, PersonName name) { add(new AuthorStandalone(authorType, name)); }
 
