@@ -27,6 +27,7 @@ import org.hypernomicon.bib.authors.BibAuthorsStandalone;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
@@ -98,9 +99,9 @@ class MendeleyAuthorSyncTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addCreatorToWork(HDT_Work work, int nameNumber, boolean isEd, boolean isTrans)
+  private static void addCreatorToWork(HDT_Work work, int nameNumber, Roles roles)
   {
-    work.getAuthors().add(new RecordAuthor(work, new PersonName("firstName" + nameNumber, "lastName" + nameNumber), isEd, isTrans, Ternary.Unset));
+    work.getAuthors().add(new RecordAuthor(work, new PersonName("firstName" + nameNumber, "lastName" + nameNumber), roles, Ternary.Unset));
   }
 
 //---------------------------------------------------------------------------
@@ -125,11 +126,11 @@ class MendeleyAuthorSyncTest
     assertEquals(2, work.getAuthors().size());
     assertTrue(chapterEntry.isSynced());
 
-    addCreatorToWork(work, 4, true, false);
+    addCreatorToWork(work, 4, Roles.EDITOR);
 
     assertTrue(chapterEntry.isSynced());
 
-    addCreatorToWork(work, 5, true, true);
+    addCreatorToWork(work, 5, new Roles(true, true));
 
     assertFalse(chapterEntry.isSynced());
 
@@ -176,7 +177,7 @@ class MendeleyAuthorSyncTest
 
     person.setName(new PersonName("firstName1", "lastName1"));
 
-    RecordAuthor author1 = new RecordAuthor(work, new PersonName("firstName2", "lastName2"), true, true, Ternary.Unset),
+    RecordAuthor author1 = new RecordAuthor(work, new PersonName("firstName2", "lastName2"), new Roles(true, true), Ternary.Unset),
                  author2 = new RecordAuthor(work, person);
 
     work.getAuthors().add(author1);

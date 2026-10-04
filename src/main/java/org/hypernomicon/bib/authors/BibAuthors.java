@@ -18,7 +18,6 @@
 package org.hypernomicon.bib.authors;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.*;
 
 import javafx.concurrent.Worker.State;
@@ -27,6 +26,7 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.model.authors.*;
 import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
@@ -63,14 +63,7 @@ public abstract class BibAuthors implements Iterable<Author>
 
   public String getStr(AuthorType authorType)
   {
-    Predicate<Author> predicate = bibAuthor -> switch (authorType)
-    {
-      case author     -> bibAuthor.getIsAuthor();
-      case editor     -> bibAuthor.getIsEditor();
-      case translator -> bibAuthor.getIsTrans ();
-    };
-
-    return stream().filter(predicate)
+    return stream().filter(bibAuthor -> bibAuthor.getRoles().matches(authorType))
                    .map(bibAuthor -> bibAuthor.getName().getLastFirst())
                    .collect(Collectors.joining("; "));
   }
@@ -82,12 +75,11 @@ public abstract class BibAuthors implements Iterable<Author>
   {
     HDT_Person person = nullSwitch(bibAuthor1.getPerson(), bibAuthor2.getPerson());
 
-    boolean notAuthor = (bibAuthor1.getIsAuthor() == false) && (bibAuthor2.getIsAuthor() == false),
+    // A name listed anywhere as a plain author is a plain author; otherwise its editor and translator roles accumulate
 
-            ed = notAuthor && (bibAuthor1.getIsEditor() || bibAuthor2.getIsEditor()),
-            tr = notAuthor && (bibAuthor1.getIsTrans () || bibAuthor2.getIsTrans ());
+    Roles roles = (bibAuthor1.getIsAuthor() || bibAuthor2.getIsAuthor()) ? Roles.AUTHOR : bibAuthor1.getRoles().combinedWith(bibAuthor2.getRoles());
 
-    return new AuthorStandalone(bibAuthor1.getName(), person, ed, tr);
+    return new AuthorStandalone(bibAuthor1.getName(), person, roles);
   }
 
 //---------------------------------------------------------------------------
@@ -136,9 +128,11 @@ public abstract class BibAuthors implements Iterable<Author>
 //---------------------------------------------------------------------------
 
   /**
-   * Return a consolidated version of the passed in iterable so that there are no authors that
-   * are duplicates in terms of associated person record or exact name match, unless
-   * one was an author and the other was an editor and/or translator.
+   * Return a consolidated version of the passed in iterable so that no two authors have the same
+   * person record or, where either has none, the same name (compared in English characters,
+   * ignoring case and parentheticals). Duplicates are merged whatever their roles: if any of them
+   * was a plain author, the merged author is a plain author; otherwise their editor and translator
+   * roles combine.
    * @param origAuthors Source for the authors to consolidate
    * @param doLookup Whether to lookup person records by name
    * @return The consolidated list
@@ -160,7 +154,7 @@ public abstract class BibAuthors implements Iterable<Author>
         continue;
 
       if (doLookup && (person == null))
-        bibAuthor = new AuthorStandalone(name, HDT_Person.lookUpByName(name), bibAuthor.getIsEditor(), bibAuthor.getIsTrans());
+        bibAuthor = new AuthorStandalone(name, HDT_Person.lookUpByName(name), bibAuthor.getRoles());
 
       BibAuthorKey newKey = new BibAuthorKey(bibAuthor);
 
@@ -204,9 +198,8 @@ public abstract class BibAuthors implements Iterable<Author>
 //---------------------------------------------------------------------------
 
   /**
-   * Return a consolidated version of this BibAuthors so that there are no authors that
-   * are duplicates in terms of associated person record or exact name match, unless
-   * one was an author and the other was an editor and/or translator.
+   * Return a consolidated version of this BibAuthors, with duplicates merged as
+   * {@link #normalizeAuthors(Iterable, boolean)} merges them.
    * <p>
    * This also uses a duplicate search algorithm and prompts the user to merge authors
    * that appear to be a duplicate with one in the database.
@@ -217,9 +210,7 @@ public abstract class BibAuthors implements Iterable<Author>
   {
     List<Author> outputList = normalizeAuthors(this, true);
 
-    // At this point, the output list represents a consolidated version of this BibAuthors so that
-    // there are no authors that are duplicates in terms of associated person record or exact name
-    // match, unless one was an author and the other was an editor and/or translator.
+    // At this point no two authors in the output list are duplicates of each other, as normalizeAuthors defines them
 
     List<PersonForDupCheck> nonRecordAuthors = new ArrayList<>();
     List<Integer>           outputIndices    = new ArrayList<>(); // index into outputList for this non-record author
@@ -256,11 +247,11 @@ public abstract class BibAuthors implements Iterable<Author>
         int outputListNdx = outputIndices.get(ndx);
         Author origAuthor = person.getAuthor();
 
-        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(origAuthor.getName(), null, new RecordAuthor(null, origAuthor.getName(), origAuthor.getIsEditor(), origAuthor.getIsTrans(), Ternary.Unset), matcher.getMatches(person));
+        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(origAuthor.getName(), null, new RecordAuthor(null, origAuthor.getName(), origAuthor.getRoles(), Ternary.Unset), matcher.getMatches(person));
 
         if (npdc.showModal() == false) continue;
 
-        outputList.set(outputListNdx, new AuthorStandalone(npdc.getName(), npdc.getPerson(), origAuthor.getIsEditor(), origAuthor.getIsTrans()));
+        outputList.set(outputListNdx, new AuthorStandalone(npdc.getName(), npdc.getPerson(), origAuthor.getRoles()));
 
         startNdx = ndx + 1;
         break;

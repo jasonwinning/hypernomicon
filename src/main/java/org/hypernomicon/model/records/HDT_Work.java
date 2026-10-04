@@ -37,6 +37,7 @@ import org.hypernomicon.dialogs.UpdateISBNsDlgCtrlr;
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.authors.*;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -119,12 +120,10 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithFi
 
 //---------------------------------------------------------------------------
 
-  public Ternary personIsInFileName(HDT_Person person)                       { return db.getNestedTernary(this, person, tagInFileName); }
-  public void setPersonIsInFileName(HDT_Person person, Ternary inFileName)   { db.updateNestedTernary(this, person, tagInFileName, inFileName); }
-  public boolean personIsEditor(HDT_Person person)                           { return db.getNestedBoolean(this, person, tagEditor); }
-  public void setPersonIsEditor(HDT_Person person, boolean isEditor)         { db.updateNestedBoolean(this, person, tagEditor, isEditor); }
-  public boolean personIsTranslator(HDT_Person person)                       { return db.getNestedBoolean(this, person, tagTranslator); }
-  public void setPersonIsTranslator(HDT_Person person, boolean isTranslator) { db.updateNestedBoolean(this, person, tagTranslator, isTranslator); }
+  public Ternary personIsInFileName(HDT_Person person)                     { return db.getNestedTernary(this, person, tagInFileName); }
+  public void setPersonIsInFileName(HDT_Person person, Ternary inFileName) { db.updateNestedTernary(this, person, tagInFileName, inFileName); }
+  public Roles personRoles(HDT_Person person)                              { return new Roles(db.getNestedBoolean(this, person, tagEditor), db.getNestedBoolean(this, person, tagTranslator)); }
+  public void setPersonRoles(HDT_Person person, Roles roles)               { db.updateNestedBoolean(this, person, tagEditor, roles.isEditor()); db.updateNestedBoolean(this, person, tagTranslator, roles.isTrans()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -593,12 +592,12 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithFi
 
   private static Author getSingleAuthorForSearchKey(List<? extends Author> authors)
   {
-    for (Author author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
-    for (Author author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() != null)) return author;
-    for (Author author : authors) if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
-    for (Author author : authors) if (                                   (author.getIsTrans() == false) && (author.getPerson() == null)) return author;
-    for (Author author : authors) if                                                                       (author.getPerson() != null)  return author;
-    for (Author author : authors) if                                                                       (author.getPerson() == null)  return author;
+    for (Author author : authors) if (author.getIsAuthor()           && (author.getPerson() != null)) return author;
+    for (Author author : authors) if ((author.getIsTrans() == false) && (author.getPerson() != null)) return author;
+    for (Author author : authors) if (author.getIsAuthor()           && (author.getPerson() == null)) return author;
+    for (Author author : authors) if ((author.getIsTrans() == false) && (author.getPerson() == null)) return author;
+    for (Author author : authors) if                                    (author.getPerson() != null)  return author;
+    for (Author author : authors) if                                    (author.getPerson() == null)  return author;
 
     return null;
   }
@@ -618,10 +617,7 @@ public class HDT_Work extends HDT_RecordWithMainText implements HDT_RecordWithFi
     if (collEmpty(list) || strNullOrBlank(yearToUse))
       return "";
 
-    if (list.stream().anyMatch(Author::getIsAuthor))
-      list = list.stream().filter(Author::getIsAuthor).toList();
-    else if (list.stream().anyMatch(Author::getIsEditor))
-      list = list.stream().filter(Author::getIsEditor).toList();
+    list = Author.representativeAuthors(list);
 
     WorkSearchKeySettings settings = WorkSearchKeySettings.loadFromPrefNode();
     String singleAuthorName = getSingleAuthorForSearchKey(list).singleName();

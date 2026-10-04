@@ -65,7 +65,7 @@ public final class WorkQueries
         if (work.authorRecords.isEmpty()) return false;
         if (work.getWorkTypeEnum() == WorkTypeEnum.wtPaper) return false;
 
-        if (work.authorRecords.stream().allMatch(author -> work.personIsEditor(author) || work.personIsTranslator(author)))
+        if (work.authorRecords.stream().noneMatch(author -> work.personRoles(author).isAuthor()))
           return false;
 
         for (HDT_Work subWork : work.subWorks)

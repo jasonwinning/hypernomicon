@@ -20,6 +20,7 @@ package org.hypernomicon.query.personMatch;
 import java.util.*;
 
 import org.hypernomicon.model.TestHyperDB;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
@@ -172,7 +173,7 @@ class PersonDupTest
       new PersonForDupCheck(new RecordAuthor(createWork("Alt Work"), p1)),                       // C20: same person, new work
       new PersonForDupCheck(new RecordAuthor(w2, p1)),                                           // C21: p1 linked to a different work
       new PersonForDupCheck(new RecordAuthor(createWork("Clone Work"),
-                            new PersonName("Jean", "St. James"), false, false, Ternary.Unset)),  // C22 deep-clone name
+                            new PersonName("Jean", "St. James"), Roles.AUTHOR, Ternary.Unset)),  // C22 deep-clone name
       new PersonForDupCheck(new RecordAuthor(w4, p1)),                                           // C23: work4 contains p1
       new PersonForDupCheck(p16),                                                                // C24: Unicode (composed)
       new PersonForDupCheck(p17),                                                                // C25: Unicode (decomposed)
@@ -215,9 +216,9 @@ class PersonDupTest
     matchResult = findMatches(new PersonForDupCheck(new RecordAuthor(p9), new PersonName(p9.getNameLastFirst(false))), candidates);  // Reject match if Person object is the same, even if name is the same
     assertEquals(0, matchResult.numMatches());
 
-    RecordAuthor a2 = new RecordAuthor(w5, new PersonName("Nancy Cartwright"), false, false, Ternary.Unset),
-                 a3 = new RecordAuthor(w5, new PersonName("Nancy Cartwright"), false, false, Ternary.Unset),
-                 a4 = new RecordAuthor(w5, new PersonName("Noam Chomsky"    ), false, false, Ternary.Unset);
+    RecordAuthor a2 = new RecordAuthor(w5, new PersonName("Nancy Cartwright"), Roles.AUTHOR, Ternary.Unset),
+                 a3 = new RecordAuthor(w5, new PersonName("Nancy Cartwright"), Roles.AUTHOR, Ternary.Unset),
+                 a4 = new RecordAuthor(w5, new PersonName("Noam Chomsky"    ), Roles.AUTHOR, Ternary.Unset);
 
     w5.getAuthors().add(a2);
     w5.getAuthors().add(a3);

@@ -23,11 +23,11 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
@@ -231,28 +231,7 @@ public class HDT_Argument extends HDT_RecordWithMainText
 
   public Stream<ArgumentAuthor> getPeople()
   {
-    Function<? super HDT_Work, ? extends Stream<ArgumentAuthor>> mapFunction = work ->
-    {
-      Stream<RecordAuthor> stream = work.getAuthors().stream();
-
-      boolean hasEditor = false;
-
-      for (RecordAuthor author : work.getAuthors())
-      {
-        if (author.getIsAuthor())
-          return stream.filter(RecordAuthor::getIsAuthor).map(ArgumentAuthor::new);
-
-        if (author.getIsEditor())
-          hasEditor = true;
-      }
-
-      return hasEditor ?
-        stream.filter(RecordAuthor::getIsEditor).map(ArgumentAuthor::new)
-      :
-        stream.map(ArgumentAuthor::new);
-    };
-
-    return works.stream().flatMap(mapFunction);
+    return works.stream().flatMap(work -> Author.representativeAuthors(work.getAuthors()).stream().map(ArgumentAuthor::new));
   }
 
 //---------------------------------------------------------------------------

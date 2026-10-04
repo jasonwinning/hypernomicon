@@ -282,7 +282,7 @@ public final class CrossrefBibData extends BibDataStandalone
 
   static String getQueryUrl(String title, String yearStr, Iterable<Author> authors, boolean engCharForAuthors, CharSequence doi)
   {
-    String url = "https://api.crossref.org/works", auths = "", eds = "";
+    String url = "https://api.crossref.org/works", auths = "";
 
     // The mailto parameter (Crossref's own convention, also carried by the User-Agent)
     // routes the request to Crossref's "polite" service pool
@@ -296,25 +296,18 @@ public final class CrossrefBibData extends BibDataStandalone
 
     if (authors != null)
     {
-      for (Author author : authors)
+      for (Author author : Author.representativeAuthors(authors))
       {
-        boolean ed = author.getIsEditor(),
-                tr = author.getIsTrans();
-
         String name = engCharForAuthors ?
           author.getName().toEngChar().getLast()
         :
           author.getName().getLast();
 
-        if (ed)
-          eds = eds + ' ' + name;
-        else if (tr == false)
-          auths = auths + ' ' + name;
+        auths = auths + ' ' + name;
       }
     }
 
     auths = auths.strip();
-    if (auths.isEmpty()) auths = eds.strip();
 
     title = convertToEnglishChars(title.strip());
     title = title.replace(":", "");

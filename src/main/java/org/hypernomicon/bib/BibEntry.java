@@ -326,14 +326,8 @@ public abstract class BibEntry<BibEntry_T extends BibEntry<BibEntry_T, BibCollec
   {
     return (e1, e2) ->
     {
-      List<Author> list1 = e1.getAuthors().normalizedList(false),
-                   list2 = e2.getAuthors().normalizedList(false);
-
-      List<Author> authors1 = list1.stream().filter(Author::getIsAuthor).toList();
-      if (authors1.isEmpty()) authors1 = list1.stream().filter(Author::getIsEditor).toList();
-
-      List<Author> authors2 = list2.stream().filter(Author::getIsAuthor).toList();
-      if (authors2.isEmpty()) authors2 = list2.stream().filter(Author::getIsEditor).toList();
+      List<Author> authors1 = Author.representativeAuthors(e1.getAuthors().normalizedList(false)),
+                   authors2 = Author.representativeAuthors(e2.getAuthors().normalizedList(false));
 
       int cResult, numAuthors = Math.max(authors1.size(), authors2.size());
 

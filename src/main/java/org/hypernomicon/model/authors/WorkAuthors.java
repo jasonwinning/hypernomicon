@@ -33,6 +33,7 @@ import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Tag;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -120,7 +121,7 @@ public class WorkAuthors extends RecordAuthors
       }
     }
 
-    authorList.add(new RecordAuthor(work, name, editor, translator, inFileName));
+    authorList.add(new RecordAuthor(work, name, new Roles(editor, translator), inFileName));
   }
 
 //---------------------------------------------------------------------------
@@ -231,8 +232,7 @@ public class WorkAuthors extends RecordAuthors
         (
           work,
           new PersonName(objGroup.getPrimaryStr()),
-          objGroup.getValue(tagEditor).bool,
-          objGroup.getValue(tagTranslator).bool,
+          Roles.of(objGroup),
           objGroup.getValue(tagInFileName).ternary
         ));
   }
@@ -265,7 +265,7 @@ public class WorkAuthors extends RecordAuthors
 
   public void add(HDT_Person person)
   {
-    add(person, false, false, Ternary.Unset);
+    add(person, Roles.AUTHOR, Ternary.Unset);
   }
 
 //---------------------------------------------------------------------------
@@ -274,33 +274,32 @@ public class WorkAuthors extends RecordAuthors
   public void add(RecordAuthor author)
   {
     if (author.getPerson() == null)
-      add(author.getName(), author.getIsEditor(), author.getIsTrans(), author.getInFileName());
+      add(author.getName  (), author.getRoles(), author.getInFileName());
     else
-      add(author.getPerson(), author.getIsEditor(), author.getIsTrans(), author.getInFileName());
+      add(author.getPerson(), author.getRoles(), author.getInFileName());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void add(PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
+  private void add(PersonName name, Roles roles, Ternary inFileName)
   {
     if (allRecords)
       initAuthorList();
 
-    authorList.add(new RecordAuthor(work, name, isEditor, isTrans, inFileName));
+    authorList.add(new RecordAuthor(work, name, roles, inFileName));
     work.modifyNow();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void add(HDT_Person person, boolean isEditor, boolean isTrans, Ternary inFileName)
+  private void add(HDT_Person person, Roles roles, Ternary inFileName)
   {
-    objList.add(person);
+    if (objList.add(person) == false) return;  // Already one of this work's authors; adding does not edit an existing author
 
-    if (isEditor) work.setPersonIsEditor(person, true);
-    if (isTrans) work.setPersonIsTranslator(person, true);
-    if (inFileName != Ternary.Unset) work.setPersonIsInFileName(person, inFileName);
+    work.setPersonRoles       (person, roles);
+    work.setPersonIsInFileName(person, inFileName);
 
     if (allRecords == false)
       authorList.add(new RecordAuthor(work, person));
@@ -334,8 +333,7 @@ public class WorkAuthors extends RecordAuthors
 
         objListNoMod.add(insertAfter == null ? 0 : objListNoMod.indexOf(insertAfter) + 1, person);
 
-        work.setPersonIsEditor    (person, author.getIsEditor  ());
-        work.setPersonIsTranslator(person, author.getIsTrans   ());
+        work.setPersonRoles       (person, author.getRoles     ());
         work.setPersonIsInFileName(person, author.getInFileName());
 
         RecordAuthor newAuthor = new RecordAuthor(work, person);
@@ -361,9 +359,9 @@ public class WorkAuthors extends RecordAuthors
     bibAuthors.getListForWorkMerge(work).forEach(bibAuthor ->
     {
       if (bibAuthor.getPerson() == null)
-        add(bibAuthor.getName(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), Ternary.Unset);
+        add(bibAuthor.getName(), bibAuthor.getRoles(), Ternary.Unset);
       else
-        add(bibAuthor.getPerson(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), Ternary.Unset);
+        add(bibAuthor.getPerson(), bibAuthor.getRoles(), Ternary.Unset);
     });
   }
 

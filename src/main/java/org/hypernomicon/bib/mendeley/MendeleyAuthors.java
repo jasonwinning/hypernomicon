@@ -23,6 +23,7 @@ import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
@@ -136,10 +137,10 @@ class MendeleyAuthors extends BibAuthors
         nextAuthorInsertNdx = add(otherAuthor, nextAuthorInsertNdx);
 
       if (otherAuthor.getIsEditor())
-        nextEditorInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), true, false), nextEditorInsertNdx);
+        nextEditorInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), Roles.EDITOR), nextEditorInsertNdx);
 
       if (otherAuthor.getIsTrans())
-        nextTransInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), false, true), nextTransInsertNdx);
+        nextTransInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), Roles.TRANSLATOR), nextTransInsertNdx);
     }
 
     // No need to remove anything here since we cleared the author types that are

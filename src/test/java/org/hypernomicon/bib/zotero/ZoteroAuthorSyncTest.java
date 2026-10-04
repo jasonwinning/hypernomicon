@@ -30,6 +30,7 @@ import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
@@ -112,9 +113,9 @@ class ZoteroAuthorSyncTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addCreatorToWork(HDT_Work work, int nameNumber, boolean isEd, boolean isTrans)
+  private static void addCreatorToWork(HDT_Work work, int nameNumber, Roles roles)
   {
-    work.getAuthors().add(new RecordAuthor(work, new PersonName("firstName" + nameNumber, "lastName" + nameNumber), isEd, isTrans, Ternary.Unset));
+    work.getAuthors().add(new RecordAuthor(work, new PersonName("firstName" + nameNumber, "lastName" + nameNumber), roles, Ternary.Unset));
   }
 
 //---------------------------------------------------------------------------
@@ -145,11 +146,11 @@ class ZoteroAuthorSyncTest
     assertEquals(1, work.getAuthors().size());
     assertTrue(chapterEntry.isSynced());
 
-    addCreatorToWork(work, 4, true, false);
+    addCreatorToWork(work, 4, Roles.EDITOR);
 
     assertTrue(chapterEntry.isSynced());
 
-    addCreatorToWork(work, 5, true, true);
+    addCreatorToWork(work, 5, new Roles(true, true));
 
     assertFalse(chapterEntry.isSynced());
 
@@ -203,22 +204,22 @@ class ZoteroAuthorSyncTest
     assertFalse(work.getAuthors().get(1).getIsTrans());
     assertFalse(work.getAuthors().get(1).getIsEditor());
 
-    addCreatorToWork(work, 5, true, false);
+    addCreatorToWork(work, 5, Roles.EDITOR);
 
     assertTrue(magArtEntry.isSynced());
 
     work.getAuthors().setAll(new BibAuthorsStandalone());  // Clear it out
 
-    addCreatorToWork(work, 6, true, false);
-    addCreatorToWork(work, 7, true, false);
-    addCreatorToWork(work, 8, true, false);
+    addCreatorToWork(work, 6, Roles.EDITOR);
+    addCreatorToWork(work, 7, Roles.EDITOR);
+    addCreatorToWork(work, 8, Roles.EDITOR);
 
     JsonArray newCreatorsArr = exportCreatorsArray(magArtEntry);
 
     assertEquals(2, newCreatorsArr.size());
 
-    addCreatorToWork(work, 9, false, false);
-    addCreatorToWork(work, 10, true, false);
+    addCreatorToWork(work, 9, Roles.AUTHOR);
+    addCreatorToWork(work, 10, Roles.EDITOR);
 
     newCreatorsArr = exportCreatorsArray(magArtEntry);
 

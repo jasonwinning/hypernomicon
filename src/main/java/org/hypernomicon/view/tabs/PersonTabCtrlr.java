@@ -38,6 +38,7 @@ import org.hypernomicon.TestConfig;
 import org.hypernomicon.dialogs.*;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
 import org.hypernomicon.model.authors.*;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -490,9 +491,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
         row.setCellValue(1, HDT_Record.getIDSafe(workType), typeName, hdtWorkType);
 
+        Roles roles = work.personRoles(curPerson);
+
         String roleText = "";
-        if (work.personIsEditor(curPerson)) roleText = "Ed";
-        if (work.personIsTranslator(curPerson)) roleText = roleText.isEmpty() ? "Tr" : roleText + ", Tr";
+        if (roles.isEditor()) roleText = "Ed";
+        if (roles.isTrans()) roleText = roleText.isEmpty() ? "Tr" : roleText + ", Tr";
 
         row.setCellValue(2, work, roleText);
 

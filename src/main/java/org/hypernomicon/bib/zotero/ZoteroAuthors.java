@@ -26,6 +26,7 @@ import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
@@ -114,10 +115,10 @@ class ZoteroAuthors extends BibAuthors
         nextInsertNdx = add(otherAuthor, nextInsertNdx);
 
       if (otherAuthor.getIsEditor())
-        nextInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), true, false), nextInsertNdx);
+        nextInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), Roles.EDITOR), nextInsertNdx);
 
       if (otherAuthor.getIsTrans())
-        nextInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), false, true), nextInsertNdx);
+        nextInsertNdx = add(new AuthorStandalone(otherAuthor.getName(), otherAuthor.getPerson(), Roles.TRANSLATOR), nextInsertNdx);
     }
 
     // Now remove any authors that do map to a Hypernomicon author type, unless it

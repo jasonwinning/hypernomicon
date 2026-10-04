@@ -534,7 +534,7 @@ public final class TestHyperDB extends AbstractHyperDB
     work.getBibData().copyAllFieldsFrom(entry, false, false);
 
     entry.getAuthors().normalizedList(false).forEach(bibAuthor ->
-      work.getAuthors().add(new RecordAuthor(work, bibAuthor.getName(), bibAuthor.getIsEditor(), bibAuthor.getIsTrans(), Ternary.Unset)));
+      work.getAuthors().add(new RecordAuthor(work, bibAuthor.getName(), bibAuthor.getRoles(), Ternary.Unset)));
 
     work.setBibEntryKey(entry.getKey());
 

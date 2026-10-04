@@ -156,8 +156,8 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
   /** A title or series value: the ISBD separators go, and so does the terminal period, which for these is punctuation */
   private static String titlePart(String str)      { return Strings.CS.removeEnd(stripISBD(str), ".").strip(); }
 
-  /** The same test HDT_Work and BibEntry apply when choosing whose names represent a work */
-  private boolean hasEditorsButNoAuthors()          { return authors.stream().noneMatch(Author::getIsAuthor) && authors.stream().anyMatch(Author::getIsEditor); }
+  /** Whether editors' names are the ones that stand for the record: the same test HDT_Work and BibEntry apply when choosing whose names represent a work */
+  private boolean hasEditorsButNoAuthors()          { return Author.representativeAuthors(authors).stream().anyMatch(Author::getIsEditor); }
 
   @Override public boolean fromOnlineSource()       { return true; }
 
@@ -374,21 +374,17 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
    */
   private static Roles rolesFrom(DataField field)
   {
-    boolean isEditor = false, isTrans = false, sawKnownRole = false;
+    Roles roles = null;
 
     for (String relator : relatorsOf(field))
     {
       AuthorType authorType = normalizeRole(relator);
 
-      if (authorType == null) continue;
-
-      sawKnownRole = true;
-
-      if      (authorType == editor    ) isEditor = true;
-      else if (authorType == translator) isTrans  = true;
+      if (authorType != null)
+        roles = Roles.of(authorType).combinedWith(roles);
     }
 
-    return sawKnownRole ? new Roles(isEditor, isTrans) : null;
+    return roles;
   }
 
 //---------------------------------------------------------------------------
@@ -862,26 +858,9 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
       return sruUrl("bath.isbn=" + isbn.toString().replaceAll("[^0-9Xx]", ""), MAX_RECORDS_ISBN);
 
     authKeywords.clear();
-    List<String> edKeywords = new ArrayList<>();
 
     if (authors != null)
-    {
-      for (Author author : authors)
-      {
-        boolean ed = author.getIsEditor(),
-                tr = author.getIsTrans();
-
-        String name = author.getName().toEngChar().getLast();
-
-        if (ed)
-          edKeywords.add(name);
-        else if (tr == false)
-          authKeywords.add(name);
-      }
-    }
-
-    if (authKeywords.isEmpty())
-      authKeywords.addAll(edKeywords);
+      Author.representativeAuthors(authors).forEach(author -> authKeywords.add(author.getName().toEngChar().getLast()));
 
     String cqlTitle = sanitizeForCql(title);
 

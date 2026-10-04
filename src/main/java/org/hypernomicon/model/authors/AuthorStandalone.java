@@ -39,74 +39,24 @@ public final class AuthorStandalone extends Author implements Cloneable
 
   private final PersonName name;
   private final HDT_Person person;
-  private final boolean isEditor, isTrans;
+  private final Roles roles;
   private final Ternary inFileName;
 
 //---------------------------------------------------------------------------
 
-  private AuthorStandalone(AuthorType type, HDT_Person person, PersonName name)
-  {
-    Objects.requireNonNull(type);
-
-    this.person = person;
-    this.name = name;
-
-    inFileName = Ternary.Unset;
-
-    switch (type)
-    {
-      case author:
-
-        isEditor = false;
-        isTrans  = false;
-        break;
-
-      case editor:
-
-        isEditor = true;
-        isTrans  = false;
-        break;
-
-      case translator:
-
-        isTrans  = true;
-        isEditor = false;
-        break;
-
-      default:
-
-        throw new AssertionError("Invalid author type");
-    }
-  }
+  public AuthorStandalone(AuthorType type, PersonName name)                { this(name, null, Roles.of(type)); }
+  public AuthorStandalone(Roles roles, PersonName name)                    { this(name, null, roles); }
+  public AuthorStandalone(Author srcAuthor)                                { this(srcAuthor.getName(), srcAuthor.getPerson(), srcAuthor.getRoles()); }
+  public AuthorStandalone(PersonName name, HDT_Person person, Roles roles) { this(name, person, roles, Ternary.Unset); }
 
 //---------------------------------------------------------------------------
 
-  public AuthorStandalone(AuthorType type, PersonName name)   { this(type, null, name);   }
-  public AuthorStandalone(Roles roles, PersonName name)       { this(name, null, roles.isEditor(), roles.isTrans()); }
-
-//---------------------------------------------------------------------------
-
-  public AuthorStandalone(Author srcAuthor)
-  {
-    this(srcAuthor.getName(), srcAuthor.getPerson(), srcAuthor.getIsEditor(), srcAuthor.getIsTrans());
-  }
-
-//---------------------------------------------------------------------------
-
-  public AuthorStandalone(PersonName name, HDT_Person person, boolean isEditor, boolean isTrans)
-  {
-    this(name, person, isEditor, isTrans, Ternary.Unset);
-  }
-
-//---------------------------------------------------------------------------
-
-  private AuthorStandalone(PersonName name, HDT_Person person, boolean isEditor, boolean isTrans, Ternary inFileName)
+  private AuthorStandalone(PersonName name, HDT_Person person, Roles roles, Ternary inFileName)
   {
     this.person = person;
     this.name = person != null ? null : name;
 
-    this.isEditor   = isEditor;
-    this.isTrans    = isTrans;
+    this.roles      = Objects.requireNonNull(roles);
     this.inFileName = inFileName;
   }
 
@@ -114,8 +64,7 @@ public final class AuthorStandalone extends Author implements Cloneable
 
   @Override public PersonName getName   () { return person == null ? name : person.getName(); }
   @Override public HDT_Person getPerson () { return person; }
-  @Override public boolean getIsEditor  () { return isEditor; }
-  @Override public boolean getIsTrans   () { return isTrans; }
+  @Override public Roles getRoles       () { return roles; }
   @Override public Ternary getInFileName() { return inFileName; }
 
 //---------------------------------------------------------------------------
@@ -143,8 +92,7 @@ public final class AuthorStandalone extends Author implements Cloneable
     result = prime * result + safeStr(last).hashCode();
     result = prime * result + safeStr(first).hashCode();
     result = prime * result + (person == null ? 0 : person.hashCode());
-    result = prime * result + (isEditor ? 1231 : 1237);
-    result = prime * result + (isTrans ? 1231 : 1237);
+    result = prime * result + roles.hashCode();
 
     return result;
   }
@@ -169,8 +117,7 @@ public final class AuthorStandalone extends Author implements Cloneable
     if (author1 == author2) return true;
     if ((author1 == null) != (author2 == null)) return false;
 
-    if (author1.getIsEditor() != author2.getIsEditor()) return false;
-    if (author1.getIsTrans () != author2.getIsTrans ()) return false;
+    if (author1.getRoles().equals(author2.getRoles()) == false) return false;
 
     if ((ignorePersonRecords == false) && (author1.getPerson() != author2.getPerson())) return false;
 
@@ -198,8 +145,7 @@ public final class AuthorStandalone extends Author implements Cloneable
     (
       new PersonName(objGroup.getPrimaryStr()),
       objGroup.getPrimary(),
-      objGroup.getValue(tagEditor    ).bool,
-      objGroup.getValue(tagTranslator).bool,
+      Roles.of(objGroup),
       objGroup.getValue(tagInFileName).ternary)
     );
   }

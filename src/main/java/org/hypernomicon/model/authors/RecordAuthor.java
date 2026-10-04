@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.authors;
 
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -40,39 +39,38 @@ public final class RecordAuthor extends Author implements Cloneable, Comparable<
   private final HDT_Person person;
   private final HDT_Work work;
   private final PersonName name;
-  private final boolean isEditor, isTrans;
+  private final Roles roles;          // Consulted only when there is no person record; a person's roles live on the work
   private final Ternary inFileName;
 
 //---------------------------------------------------------------------------
 
   public RecordAuthor(PersonName name)
-  { this(null, null, Objects.requireNonNull(name), false, false, Ternary.Unset); }
+  { this(null, null, Objects.requireNonNull(name), Roles.AUTHOR, Ternary.Unset); }
 
   public RecordAuthor(HDT_Person person)
   { this(person.works.isEmpty() ? null : person.works.getFirst(), person); }
 
   public RecordAuthor(HDT_Work work, HDT_Person person)
-  { this(work, person, null, false, false, Ternary.Unset); }
+  { this(work, person, null, Roles.AUTHOR, Ternary.Unset); }
 
-  public RecordAuthor(HDT_Work work, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
-  { this(work, null, name, isEditor, isTrans, inFileName); }
+  public RecordAuthor(HDT_Work work, PersonName name, Roles roles, Ternary inFileName)
+  { this(work, null, name, roles, inFileName); }
 
 //---------------------------------------------------------------------------
 
   public RecordAuthor(HDT_Work work, Author srcAuthor, Ternary inFileName)
   {
-    this(work, srcAuthor.getPerson(), srcAuthor.getName(), srcAuthor.getIsEditor(), srcAuthor.getIsTrans(), inFileName);
+    this(work, srcAuthor.getPerson(), srcAuthor.getName(), srcAuthor.getRoles(), inFileName);
   }
 
 //---------------------------------------------------------------------------
 
-  private RecordAuthor(HDT_Work work, HDT_Person person, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
+  private RecordAuthor(HDT_Work work, HDT_Person person, PersonName name, Roles roles, Ternary inFileName)
   {
     this.work = work;
     this.person = person;
     this.name = name;
-    this.isEditor = isEditor;
-    this.isTrans = isTrans;
+    this.roles = Objects.requireNonNull(roles);
     this.inFileName = inFileName;
   }
 
@@ -89,9 +87,8 @@ public final class RecordAuthor extends Author implements Cloneable, Comparable<
   @Override public PersonName getName()    { return person == null ? name : person.getName(); }
   @Override public HDT_Person getPerson()  { return person; }
 
-  @Override public boolean getIsEditor()   { return person == null ? isEditor   : (work == null ? false         : db.getNestedBoolean(work, person, tagEditor    )); }
-  @Override public boolean getIsTrans()    { return person == null ? isTrans    : (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
-  @Override public Ternary getInFileName() { return person == null ? inFileName : (work == null ? Ternary.Unset : db.getNestedTernary(work, person, tagInFileName)); }
+  @Override public Roles getRoles()        { return person == null ? roles      : (work == null ? Roles.AUTHOR  : work.personRoles       (person)); }
+  @Override public Ternary getInFileName() { return person == null ? inFileName : (work == null ? Ternary.Unset : work.personIsInFileName(person)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -101,8 +98,7 @@ public final class RecordAuthor extends Author implements Cloneable, Comparable<
     final int prime = 31;
     int result = 1;
     result = prime * result + ((inFileName == null) ? 0 : inFileName.hashCode());
-    result = prime * result + (isEditor ? 1231 : 1237);
-    result = prime * result + (isTrans ? 1231 : 1237);
+    result = prime * result + roles.hashCode();
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((person == null) ? 0 : person.hashCode());
     result = prime * result + ((work == null) ? 0 : work.hashCode());
@@ -123,9 +119,7 @@ public final class RecordAuthor extends Author implements Cloneable, Comparable<
     if ((person == null) && (name.equals(other.name) == false))
       return false;
 
-    return (getInFileName() == other.getInFileName()) &&
-           (getIsEditor  () == other.getIsEditor  ()) &&
-           (getIsTrans   () == other.getIsTrans   ());
+    return (getInFileName() == other.getInFileName()) && getRoles().equals(other.getRoles());
   }
 
 //---------------------------------------------------------------------------

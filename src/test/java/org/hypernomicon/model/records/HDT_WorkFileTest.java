@@ -18,6 +18,7 @@
 package org.hypernomicon.model.records;
 
 import org.hypernomicon.model.TestHyperDB;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -151,9 +152,9 @@ class HDT_WorkFileTest
    * A regular author. The name follows the "Last, First" form produced by
    * {@code PersonName.getLastFirst()}, which is what reaches the filename pipeline.
    */
-  private static FileNameAuthor author    (String name) { return new FileNameAuthor(name, false, false); }
-  private static FileNameAuthor editor    (String name) { return new FileNameAuthor(name, true , false); }
-  private static FileNameAuthor translator(String name) { return new FileNameAuthor(name, false, true ); }
+  private static FileNameAuthor author    (String name) { return new FileNameAuthor(name, Roles.AUTHOR    ); }
+  private static FileNameAuthor editor    (String name) { return new FileNameAuthor(name, Roles.EDITOR    ); }
+  private static FileNameAuthor translator(String name) { return new FileNameAuthor(name, Roles.TRANSLATOR); }
 
   /**
    * Writes the given naming scheme to preferences and returns the loaded component list.

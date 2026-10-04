@@ -37,6 +37,7 @@ import org.hypernomicon.fts.FullTextIndexer;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
+import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.FilePathSet;
@@ -247,7 +248,7 @@ class SearchResultFileList
 
         HDT_Work work = (HDT_Work)record;
 
-        if ((includeEdited == false) && (work.getAuthors().isEmpty() == false) && work.getAuthors().stream().allMatch(author -> author.getIsEditor() || author.getIsTrans()))
+        if ((includeEdited == false) && (work.getAuthors().isEmpty() == false) && work.getAuthors().stream().noneMatch(Author::getIsAuthor))
           return;
 
         if (work.workFiles.isEmpty())

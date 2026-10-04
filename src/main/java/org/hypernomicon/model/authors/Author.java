@@ -26,8 +26,11 @@ import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
+import org.hypernomicon.model.relations.ObjectGroup;
 
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
@@ -57,14 +60,48 @@ public abstract class Author
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   /**
    * The roles a contributor plays in a work. Editor and translator are independent flags
    * rather than alternatives: a contributor can be both, as in "translated and edited by".
+   * A contributor who is neither is a plain author.
    */
   public record Roles(boolean isEditor, boolean isTrans)
   {
-    public static final Roles AUTHOR = new Roles(false, false);
+    public static final Roles AUTHOR     = new Roles(false, false),
+                              EDITOR     = new Roles(true , false),
+                              TRANSLATOR = new Roles(false, true );
+
+    /** The roles of a contributor listed under one heading of a bibliographic source */
+    public static Roles of(AuthorType authorType)
+    {
+      return switch (authorType)
+      {
+        case author     -> AUTHOR;
+        case editor     -> EDITOR;
+        case translator -> TRANSLATOR;
+      };
+    }
+
+    /** The roles an authors-table row records for its contributor */
+    public static Roles of(ObjectGroup objGroup)
+    {
+      return new Roles(objGroup.getValue(tagEditor).bool, objGroup.getValue(tagTranslator).bool);
+    }
+
+    public boolean isAuthor() { return (isEditor == false) && (isTrans == false); }
+
+    /** Whether a contributor with these roles belongs under the given heading */
+    public boolean matches(AuthorType authorType)
+    {
+      return switch (authorType)
+      {
+        case author     -> isAuthor();
+        case editor     -> isEditor;
+        case translator -> isTrans;
+      };
+    }
 
     /** The union of these roles with another set; a null argument contributes nothing. */
     public Roles combinedWith(Roles other)
@@ -74,13 +111,13 @@ public abstract class Author
   }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private PersonName nameEngChar;
 
   public abstract PersonName getName();
   public abstract HDT_Person getPerson();
-  public abstract boolean getIsEditor();
-  public abstract boolean getIsTrans();
+  public abstract Roles getRoles();
   public abstract Ternary getInFileName();
 
   public final String lastName()                     { return lastName(false); }
@@ -93,7 +130,26 @@ public abstract class Author
   public final String singleName(boolean engChar)    { return getName(engChar).getSingle(); }
   public final String nameLastFirst()                { return nameLastFirst(false); }
   public final String getBibName()                   { return getName().getBibName(); }
-  public final boolean getIsAuthor()                 { return (getIsEditor() == false) && (getIsTrans() == false); }
+  public final boolean getIsEditor()                 { return getRoles().isEditor(); }
+  public final boolean getIsTrans()                  { return getRoles().isTrans(); }
+  public final boolean getIsAuthor()                 { return getRoles().isAuthor(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The contributors whose names stand for a work: its plain authors if it has any, otherwise its
+   * editors if it has any, otherwise everyone it does have (its translators). Search keys, citations,
+   * the sorting of bibliographic entries, the people behind an argument and the author names sent
+   * with a bibliographic lookup all choose this way.
+   */
+  public static <T extends Author> List<T> representativeAuthors(Iterable<T> authors)
+  {
+    List<T> plainAuthors = iterableToStream(authors).filter(Author::getIsAuthor).toList(),
+            namers       = plainAuthors.isEmpty() ? iterableToStream(authors).filter(Author::getIsEditor).toList() : plainAuthors;
+
+    return namers.isEmpty() ? iterableToStream(authors).toList() : namers;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -246,11 +302,13 @@ public abstract class Author
 
       for (Author author : authors)
       {
-        if (author.getIsEditor()) someEd = true;
-        else                      allEd = false;
+        Roles roles = author.getRoles();
 
-        if (author.getIsTrans())  someTr = true;
-        else                      allTr = false;
+        if (roles.isEditor()) someEd = true;
+        else                  allEd = false;
+
+        if (roles.isTrans())  someTr = true;
+        else                  allTr = false;
       }
 
       if ((allEd == someEd) && (allTr == someTr))
@@ -307,15 +365,14 @@ public abstract class Author
 
   private String getRoleSuffix(boolean capitalize)
   {
-    boolean ed = getIsEditor(),
-            tr = getIsTrans();
+    Roles roles = getRoles();
 
     String edStr = capitalize ? "Ed." : "ed",
            trStr = capitalize ? "Tr." : "tr";
 
-    if (ed && tr) return " (" + edStr + ", " + trStr + ')';
-    if (ed)       return " (" + edStr + ')';
-    if (tr)       return " (" + trStr + ')';
+    if (roles.isEditor() && roles.isTrans()) return " (" + edStr + ", " + trStr + ')';
+    if (roles.isEditor())                    return " (" + edStr + ')';
+    if (roles.isTrans())                     return " (" + trStr + ')';
     return "";
   }
 

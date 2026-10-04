@@ -184,26 +184,9 @@ public final class GoogleBibData extends BibDataStandalone
     if (strNullOrBlank(title)) return withApiKey(url);
 
     authKeywords.clear();
-    List<String> edKeywords = new ArrayList<>();
 
     if (authors != null)
-    {
-      for (Author author : authors)
-      {
-        boolean ed = author.getIsEditor(),
-                tr = author.getIsTrans();
-
-        String name = author.getName().toEngChar().getLast();
-
-        if (ed)
-          edKeywords.add(name);
-        else if (tr == false)
-          authKeywords.add(name);
-      }
-    }
-
-    if (authKeywords.isEmpty())
-      authKeywords.addAll(edKeywords);
+      Author.representativeAuthors(authors).forEach(author -> authKeywords.add(author.getName().toEngChar().getLast()));
 
     String auths = authKeywords.stream().map(keyword -> escapeURL('"' + keyword + '"', false))
                                         .collect(Collectors.joining("+"));

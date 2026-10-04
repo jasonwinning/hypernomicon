@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.stream.*;
 
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
@@ -425,9 +426,9 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     List<FileNameAuthor> authors = new ArrayList<>();
 
-    addAuthorsToList(authors, author, false, false);
-    addAuthorsToList(authors, trans , false, true );
-    addAuthorsToList(authors, editor, true , false);
+    addAuthorsToList(authors, author, Roles.AUTHOR    );
+    addAuthorsToList(authors, trans , Roles.TRANSLATOR);
+    addAuthorsToList(authors, editor, Roles.EDITOR    );
 
     tfExample.setText(HDT_WorkFile.makeFileName(authors, null, year, title, container, publisher, "pdf", Collections.unmodifiableList(components)));
   }
@@ -435,11 +436,11 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addAuthorsToList(List<FileNameAuthor> authors, String authorsStr, boolean isEditor, boolean isTrans)
+  private static void addAuthorsToList(List<FileNameAuthor> authors, String authorsStr, Roles roles)
   {
     new SplitString(authorsStr, ';').stream().map(String::strip)
                                              .filter(StringUtil::strNotNullOrEmpty)
-                                             .forEach(str -> authors.add(new FileNameAuthor(str, isEditor, isTrans)));
+                                             .forEach(str -> authors.add(new FileNameAuthor(str, roles)));
   }
 
 //---------------------------------------------------------------------------

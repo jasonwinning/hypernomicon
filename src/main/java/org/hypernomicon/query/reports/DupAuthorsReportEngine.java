@@ -164,7 +164,7 @@ public class DupAuthorsReportEngine extends ReportEngine
       {
         HDT_Work work = author1.getWork();
 
-        work.getAuthors().update(author1, new RecordAuthor(work, npdc.getName(), author1.getIsEditor(), author1.getIsTrans(), author1.getInFileName()));
+        work.getAuthors().update(author1, new RecordAuthor(work, npdc.getName(), author1.getRoles(), author1.getInFileName()));
       }
 
       ui.queryHyperTab().btnExecuteClick();

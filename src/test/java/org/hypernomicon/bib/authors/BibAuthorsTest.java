@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
@@ -73,7 +74,7 @@ class BibAuthorsTest
 
   //---------------------------------------------------------------------------
 
-    inputList = List.of(new AuthorStandalone(new PersonName("First1","Last1"), null, false, true));
+    inputList = List.of(new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.TRANSLATOR));
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
@@ -86,8 +87,8 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, true )
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.TRANSLATOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -101,8 +102,8 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, true )
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.TRANSLATOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -115,8 +116,8 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, true ),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -129,8 +130,8 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true, true ),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true, false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, new Roles(true, true)),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -144,10 +145,10 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, false, false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, true , true ),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, true )
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, new Roles(true, true)),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.TRANSLATOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -164,22 +165,22 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, false, false),
-      new AuthorStandalone(new PersonName("First3","Last3"), null, true , false),
-      new AuthorStandalone(new PersonName("First4","Last4"), null, false, true ),
-      new AuthorStandalone(new PersonName("First5","Last5"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First3","Last3"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First4","Last4"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First5","Last5"), null, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     expectedList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, false, false),
-      new AuthorStandalone(new PersonName("First3","Last3"), null, true , false),
-      new AuthorStandalone(new PersonName("First4","Last4"), null, false, true ),
-      new AuthorStandalone(new PersonName("First5","Last5"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First3","Last3"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First4","Last4"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First5","Last5"), null, Roles.EDITOR)
     );
 
     assertEquals(expectedList, outputList);
@@ -188,22 +189,22 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First2","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First3","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First4","Last1"), null, false, true ),
-      new AuthorStandalone(new PersonName("First5","Last1"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First2","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First3","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First4","Last1"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First5","Last1"), null, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     expectedList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First2","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First3","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First4","Last1"), null, false, true ),
-      new AuthorStandalone(new PersonName("First5","Last1"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First2","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First3","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First4","Last1"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First5","Last1"), null, Roles.EDITOR)
     );
 
     assertEquals(expectedList, outputList);
@@ -212,18 +213,18 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, true ),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     expectedList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR)
     );
 
     assertEquals(expectedList, outputList);
@@ -232,11 +233,11 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, false, false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, false, false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, true , false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, false, true ),
-      new AuthorStandalone(new PersonName("First3","Last3"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First3","Last3"), null, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -255,27 +256,27 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, true , false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, false, true ),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First3","Last3"), null, false, true ),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, true , true ),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First3","Last3"), null, false, false),
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, false, true ),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First3","Last3"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, new Roles(true, true)),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First3","Last3"), null, Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     expectedList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null, true , false),
-      new AuthorStandalone(new PersonName("First2","Last2"), null, true , true ),
-      new AuthorStandalone(new PersonName("First3","Last3"), null, false, false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null, Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), null, new Roles(true, true)),
+      new AuthorStandalone(new PersonName("First3","Last3"), null, Roles.AUTHOR)
     );
 
     assertEquals(expectedList, outputList);
@@ -294,8 +295,8 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null   , true , false),
-      new AuthorStandalone(null                            , person1, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null   , Roles.EDITOR),
+      new AuthorStandalone(null                            , person1, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -310,8 +311,8 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null   , true , false),
-      new AuthorStandalone(new PersonName("First1","Last1"), person2, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null   , Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), person2, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -330,8 +331,8 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null   , true , false),
-      new AuthorStandalone(new PersonName("First1","Last1"), person2, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null   , Roles.EDITOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), person2, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -350,8 +351,8 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First2","Last2"), null   , false, true ),
-      new AuthorStandalone(new PersonName("First1","Last1"), person2, true , false)
+      new AuthorStandalone(new PersonName("First2","Last2"), null   , Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), person2, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
@@ -370,17 +371,17 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1"), null        , false, true ),
-      new AuthorStandalone(new PersonName("First2","Last2"), person1     , false, false),
-      new AuthorStandalone(new PersonName("First1","Last1"), otherPerson1, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1"), null        , Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("First2","Last2"), person1     , Roles.AUTHOR),
+      new AuthorStandalone(new PersonName("First1","Last1"), otherPerson1, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     expectedList = List.of
     (
-      new AuthorStandalone(null, person1     , false, false),
-      new AuthorStandalone(null, otherPerson1, true,  false)
+      new AuthorStandalone(null, person1     , Roles.AUTHOR),
+      new AuthorStandalone(null, otherPerson1, Roles.EDITOR)
     );
 
     assertEquals(expectedList, outputList);
@@ -389,19 +390,19 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1")      , null, false, true ),
-      new AuthorStandalone(new PersonName("Фіŕşт2","Лàşт2")      , null, true , false),         // English characters replaced with non-English homoglyphs
-      new AuthorStandalone(new PersonName("Фіrşт2","Лaşт2")      , null, false, true ),         // English characters replaced with non-English homoglyphs
-      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1")      , null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("Фіŕşт2","Лàşт2")      , null, Roles.EDITOR),         // English characters replaced with non-English homoglyphs
+      new AuthorStandalone(new PersonName("Фіrşт2","Лaşт2")      , null, Roles.TRANSLATOR),         // English characters replaced with non-English homoglyphs
+      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, true);
 
     expectedList = List.of
     (
-      new AuthorStandalone(null, person1, false, true ),
-      new AuthorStandalone(null, person2, true , true ),
-      new AuthorStandalone(null, person3, true , false)
+      new AuthorStandalone(null, person1, Roles.TRANSLATOR),
+      new AuthorStandalone(null, person2, new Roles(true, true)),
+      new AuthorStandalone(null, person3, Roles.EDITOR)
     );
 
     assertEquals(expectedList, outputList);
@@ -410,19 +411,19 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1")      , null, false, true ),
-      new AuthorStandalone(new PersonName("Фіŕşт2","Лàşт2")      , null, true , false),         // English characters replaced with non-English homoglyphs
-      new AuthorStandalone(new PersonName("Фіrşт2","Лaşт2")      , null, false, true ),         // English characters replaced with non-English homoglyphs
-      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1")      , null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("Фіŕşт2","Лàşт2")      , null, Roles.EDITOR),         // English characters replaced with non-English homoglyphs
+      new AuthorStandalone(new PersonName("Фіrşт2","Лaşт2")      , null, Roles.TRANSLATOR),         // English characters replaced with non-English homoglyphs
+      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null, Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     expectedList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1")      , null, false, true ),
-      new AuthorStandalone(new PersonName("Фіŕşт2","Лàşт2")      , null, true , true ),
-      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null, true , false)
+      new AuthorStandalone(new PersonName("First1","Last1")      , null, Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("Фіŕşт2","Лàşт2")      , null, new Roles(true, true)),
+      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null, Roles.EDITOR)
     );
 
     assertEquals(expectedList, outputList);
@@ -431,19 +432,19 @@ class BibAuthorsTest
 
     inputList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1")      , null   , false, true ),
-      new AuthorStandalone(new PersonName("Фіŕşт2","Лàşт2")      , null   , true , false),         // English characters replaced with non-English homoglyphs
-      new AuthorStandalone(new PersonName("Фіrşт2","Лaşт2")      , person2, false, true ),         // English characters replaced with non-English homoglyphs
-      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null   , true , false)
+      new AuthorStandalone(new PersonName("First1","Last1")      , null   , Roles.TRANSLATOR),
+      new AuthorStandalone(new PersonName("Фіŕşт2","Лàşт2")      , null   , Roles.EDITOR),         // English characters replaced with non-English homoglyphs
+      new AuthorStandalone(new PersonName("Фіrşт2","Лaşт2")      , person2, Roles.TRANSLATOR),         // English characters replaced with non-English homoglyphs
+      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null   , Roles.EDITOR)
     );
 
     outputList = BibAuthors.normalizeAuthors(inputList, false);
 
     expectedList = List.of
     (
-      new AuthorStandalone(new PersonName("First1","Last1")      , null   , false, true ),
-      new AuthorStandalone(null                                  , person2, true , true ),
-      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null   , true , false)
+      new AuthorStandalone(new PersonName("First1","Last1")      , null   , Roles.TRANSLATOR),
+      new AuthorStandalone(null                                  , person2, new Roles(true, true)),
+      new AuthorStandalone(new PersonName("First3 (Bob)","Last3"), null   , Roles.EDITOR)
     );
 
     assertEquals(expectedList, outputList);
@@ -469,26 +470,26 @@ class BibAuthorsTest
 
   //---------------------------------------------------------------------------
 
-    authors.add(new AuthorStandalone(new PersonName("Saul", "Kripke"), null, false, false));
+    authors.add(new AuthorStandalone(new PersonName("Saul", "Kripke"), null, Roles.AUTHOR));
 
     assertFalse(authors.notAllEngCharLastNames(), "Already-English last name");
 
   //---------------------------------------------------------------------------
 
-    authors.add(new AuthorStandalone(new PersonName("José", "Smith"), null, false, false));
+    authors.add(new AuthorStandalone(new PersonName("José", "Smith"), null, Roles.AUTHOR));
 
     assertFalse(authors.notAllEngCharLastNames(), "Non-English first name alone should not matter; only last names are queried");
 
   //---------------------------------------------------------------------------
 
-    authors.add(new AuthorStandalone(new PersonName("José", "García"), null, false, false));
+    authors.add(new AuthorStandalone(new PersonName("José", "García"), null, Roles.AUTHOR));
 
     assertTrue(authors.notAllEngCharLastNames(), "One transliteration-changed last name among English ones is enough");
 
   //---------------------------------------------------------------------------
 
     authors = new BibAuthorsStandalone();
-    authors.add(new AuthorStandalone(new PersonName("Фіŕşт", "Лàşт"), null, false, false));
+    authors.add(new AuthorStandalone(new PersonName("Фіŕşт", "Лàşт"), null, Roles.AUTHOR));
 
     assertTrue(authors.notAllEngCharLastNames(), "Non-English homoglyph last name");
   }

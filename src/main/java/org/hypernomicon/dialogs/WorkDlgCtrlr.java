@@ -53,6 +53,7 @@ import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.authors.RecordAuthor;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.records.*;
@@ -591,7 +592,7 @@ public class WorkDlgCtrlr extends ModalDialog
         author = work.getAuthors().getAuthor(new PersonName(text));
 
         if (author == null)
-          author = new RecordAuthor(work, new PersonName(text), false, false, Ternary.Unset);
+          author = new RecordAuthor(work, new PersonName(text), Roles.AUTHOR, Ternary.Unset);
       }
 
       NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(true, text, author);
@@ -717,7 +718,7 @@ public class WorkDlgCtrlr extends ModalDialog
     {
       if ((row.getRecord() != null) || strNotNullOrEmpty(row.getText(0)))
         if (row.getCheckboxValue(2))
-          authors.add(new FileNameAuthor(row.getText(0), row.getCheckboxValue(3), row.getCheckboxValue(4)));
+          authors.add(new FileNameAuthor(row.getText(0), new Roles(row.getCheckboxValue(3), row.getCheckboxValue(4))));
     });
 
     // Only a reference manager entry can store the container title and publisher, so with no

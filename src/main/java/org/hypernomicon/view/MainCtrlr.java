@@ -3912,13 +3912,8 @@ public final class MainCtrlr
         HDT_Work.sourceUnenteredWork.getAuthors().forEach(authors::add);
     }
 
-    if ((bdToUse == null) || BibAuthors.isEmpty(bdToUse.getAuthors()))
-    {
-      WorkAuthors authors = work.getAuthors();
-
-      if ((person != null) && (authors.containsPerson(person) == false))
-        authors.add(person);
-    }
+    if ((person != null) && ((bdToUse == null) || BibAuthors.isEmpty(bdToUse.getAuthors())))
+      work.getAuthors().add(person);
 
     goToRecord(work, false);
 

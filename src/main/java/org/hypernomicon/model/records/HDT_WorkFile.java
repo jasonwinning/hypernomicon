@@ -26,6 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.hypernomicon.Const.FileNamePrefKey;
 import org.hypernomicon.model.DatasetAccessor;
+import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.settings.WorkFileNamingSettingsCtrlr.WorkFileNameComponent;
@@ -90,18 +92,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithFilePa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class FileNameAuthor
-  {
-    private final String name;
-    private final boolean isEditor, isTrans;
-
-    public FileNameAuthor(String name, boolean isEditor, boolean isTrans)
-    {
-      this.name = name;
-      this.isEditor = isEditor;
-      this.isTrans = isTrans;
-    }
-  }
+  public record FileNameAuthor(String name, Roles roles) {}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -186,17 +177,15 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithFilePa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getAuthorStr(Iterable<FileNameAuthor> authors, boolean isEditor, boolean isTrans)
+  private static String getAuthorStr(Iterable<FileNameAuthor> authors, AuthorType authorType)
   {
     String comp = "";
 
     for (FileNameAuthor author : authors)
     {
-      if (((author.isEditor == false) && (author.isTrans == false) && (isEditor == false) && (isTrans == false)) ||
-          (author.isEditor && isEditor) ||
-          (author.isTrans && isTrans))
+      if (author.roles().matches(authorType))
       {
-        String authorStr = author.name;
+        String authorStr = author.name();
         int pos = authorStr.indexOf(',');
 
         if (pos >= 0)
@@ -220,21 +209,21 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithFilePa
     {
       case fncAuthorLastNames :
 
-        compStr = getAuthorStr(authors, false, false);
+        compStr = getAuthorStr(authors, AuthorType.author);
         break;
 
       case fncEditors :
 
         if (db.prefs.getBoolean(FileNamePrefKey.TREAT_ED_AS_AUTHOR, true) && (authComponent != null) &&
-            authors.stream().allMatch(author -> author.isEditor || author.isTrans))
+            authors.stream().noneMatch(author -> author.roles().isAuthor()))
           component = authComponent;
 
-        compStr = getAuthorStr(authors, true, false);
+        compStr = getAuthorStr(authors, AuthorType.editor);
         break;
 
       case fncTranslators :
 
-        compStr = getAuthorStr(authors, false, true);
+        compStr = getAuthorStr(authors, AuthorType.translator);
         break;
 
       case fncTitleNoSub :

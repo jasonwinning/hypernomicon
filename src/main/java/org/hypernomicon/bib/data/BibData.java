@@ -26,6 +26,7 @@ import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.reports.ReportGenerator;
 import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.Author.AuthorType;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.BibliographicDate;
 import org.hypernomicon.model.items.PersonName;
@@ -39,7 +40,6 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -338,8 +338,7 @@ public abstract class BibData
   {
     setAllAuthors(streamToIterable(iterableToStream(authGroups).map(authGroup -> new AuthorStandalone(new PersonName(authGroup.getPrimaryStr()),
                                                                                                       authGroup.getPrimary(),
-                                                                                                      authGroup.getValue(tagEditor).bool,
-                                                                                                      authGroup.getValue(tagTranslator).bool))));
+                                                                                                      Roles.of(authGroup)))));
   }
 
 //---------------------------------------------------------------------------
@@ -353,10 +352,7 @@ public abstract class BibData
       {
         AuthorType authorType = AuthorType.fromBibFieldEnum(bibFieldEnum);
 
-        yield (int) getAuthors().stream().filter(auth ->
-          ((authorType == author    ) && auth.getIsAuthor())   ||
-          ((authorType == editor    ) && auth.getIsEditor())   ||
-          ((authorType == translator) && auth.getIsTrans ())).count();
+        yield (int) getAuthors().stream().filter(auth -> auth.getRoles().matches(authorType)).count();
       }
       case bftBibDate     -> BibliographicDate.isEmpty(getDate()) ? 0 : 1;
       case bftMultiString -> nullSwitch(getMultiStr(bibFieldEnum), 0, List::size);

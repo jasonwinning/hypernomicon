@@ -34,6 +34,7 @@ import org.hypernomicon.dialogs.base.ModalDialog;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.authors.Author;
+import org.hypernomicon.model.authors.Author.Roles;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.*;
@@ -463,15 +464,7 @@ public class NewArgDlgCtrlr extends ModalDialog
 
     if (work.getAuthors().isEmpty()) return "";
 
-    String authorNames = settings.format(work.getAuthors().stream().filter(Author::getIsAuthor).map(Author::singleName).toList());
-
-    if (strNullOrBlank(authorNames))
-    {
-      authorNames = settings.format(work.getAuthors().stream().filter(Author::getIsEditor).map(Author::singleName).toList());
-
-      if (strNullOrBlank(authorNames))
-        authorNames = settings.format(work.getAuthors().stream().map(Author::singleName).toList());
-    }
+    String authorNames = settings.format(Author.representativeAuthors(work.getAuthors()).stream().map(Author::singleName).toList());
 
     return strNullOrBlank(authorNames) ? "" : (authorNames + "'s ");
   }
@@ -607,11 +600,11 @@ public class NewArgDlgCtrlr extends ModalDialog
     authoredWork.setName("Authored Work");
     authoredWork.getAuthors().add(personA);
     authoredWork.getAuthors().add(personB);
-    authoredWork.setPersonIsEditor(personB, true);
+    authoredWork.setPersonRoles(personB, Roles.EDITOR);
 
     editedWork.setName("Edited Work");
     editedWork.getAuthors().add(personB);
-    editedWork.setPersonIsEditor(personB, true);
+    editedWork.setPersonRoles(personB, Roles.EDITOR);
 
     NewArgDlgCtrlr dlg = new NewArgDlgCtrlr(position);
 
