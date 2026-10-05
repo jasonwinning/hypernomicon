@@ -65,18 +65,22 @@ public final class KeywordLinkScanner
   }
 
   /**
-   * Variant of {@link #scan(String, Function)} with optional separator-insensitive matching.
+   * Variant of {@link #scan(String, Function)} that can scan for full-text search hits
+   * instead of for links.
    *
-   * @param separatorInsensitive when true, a separator (whitespace, dash, or slash) in a
-   *        keyword matches any run of separators in the text, so a multi-word key matches
-   *        regardless of how the text punctuates the gap (e.g. a "well-being" key matches
-   *        "well being", "well/being", or a dash variant). Used by full-text-search
-   *        highlighting so a hand-typed key still finds the occurrences a Lucene phrase
-   *        query would. The 3-character prefix bucket is still matched literally, so this
-   *        only bridges separators after the first three characters of a key; a key whose
-   *        first word is one or two characters (e.g. "x-ray") won't bridge.
+   * @param forSearchHits when true, two things change, both so that a hand-typed key finds
+   *        the occurrences a Lucene search does. A separator (whitespace, dash, or slash)
+   *        in a keyword matches any run of separators in the text, so a multi-word key
+   *        matches regardless of how the text punctuates the gap (e.g. a "well-being" key
+   *        matches "well being", "well/being", or a dash variant), as a Lucene phrase query
+   *        would. And web addresses and anchor tags are scanned like any other text instead
+   *        of being skipped, since a search matches inside them too; nothing found there is
+   *        made into a link, because the caller keeps only the spans that overlap a search
+   *        hit. The 3-character prefix bucket is still matched literally, so separators are
+   *        bridged only after the first three characters of a key; a key whose first word
+   *        is one or two characters (e.g. "x-ray") won't bridge.
    */
-  public static List<KeywordLink> scan(String text, Function<String, Iterable<Keyword>> prefixToKeys, boolean separatorInsensitive)
+  public static List<KeywordLink> scan(String text, Function<String, Iterable<Keyword>> prefixToKeys, boolean forSearchHits)
   {
     List<KeywordLink> keywordLinks = new ArrayList<>();
 
@@ -91,7 +95,7 @@ public final class KeywordLinkScanner
 
     while (ndx < text.length())
     {
-      if (toLowerAscii(text.charAt(ndx)) == 'h')
+      if ((forSearchHits == false) && (toLowerAscii(text.charAt(ndx)) == 'h'))
       {
         String fourChars = safeSubstring(text, ndx, ndx + 4);
 
@@ -127,8 +131,8 @@ public final class KeywordLinkScanner
       {
         int matchLen;
 
-        if (checkPeriods || separatorInsensitive)
-          matchLen = matchNormalizedLength(text, ndx, key.normalizedText, separatorInsensitive);
+        if (checkPeriods || forSearchHits)
+          matchLen = matchNormalizedLength(text, ndx, key.normalizedText, forSearchHits);
         else if ((text.length() - ndx) >= key.normalizedText.length())
           matchLen = text.regionMatches(true, ndx, key.normalizedText, 0, key.normalizedText.length()) ? key.normalizedText.length() : -1;
         else

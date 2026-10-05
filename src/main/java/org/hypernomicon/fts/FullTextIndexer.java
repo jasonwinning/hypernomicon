@@ -3172,8 +3172,8 @@ public class FullTextIndexer
   /**
    * Highlights a batch of previously returned light search results using a pre-built query.
    * When {@code keyLookup} is non-null (search-key mode), each passage's hit ranges are
-   * recomputed from the search keys via {@link FTSUtil#rescanHitRanges} so multi-word keys
-   * read as a single highlight; otherwise Lucene's per-term offsets are kept.
+   * reshaped by {@link FTSUtil#rescanHitRanges} into one span per keyword occurrence, so a
+   * multi-word key reads as a single highlight; otherwise Lucene's per-term offsets are kept.
    */
   public List<SearchResult> highlightResults(Query prebuiltQuery, Function<String, Iterable<Keyword>> keyLookup,
                                              List<SearchResult> lightResults, int maxPassages)

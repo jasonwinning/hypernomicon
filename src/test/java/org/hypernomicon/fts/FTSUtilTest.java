@@ -37,8 +37,9 @@ import java.util.function.Function;
 /**
  * Unit tests for pure (no-database) {@link FTSUtil} helpers:
  * <ul>
- *   <li>{@link FTSUtil#rescanHitRanges}: the search-key highlight refinement that replaces
- *       Lucene's per-term offsets with one separator-insensitive span per keyword occurrence.</li>
+ *   <li>{@link FTSUtil#rescanHitRanges}: the search-key highlight refinement that reshapes
+ *       Lucene's per-term offsets into one separator-insensitive span per keyword occurrence,
+ *       without adding or dropping a match.</li>
  *   <li>{@link FTSUtil#stripConvertedPdfHeaders}: removal of LibreOffice page-header metadata
  *       (source path + date/time) from converted-PDF text, with page-offset adjustment.</li>
  *   <li>{@link FTSUtil#findPdfNormPos}: locating a normalized-Tika position in the normalized
@@ -54,9 +55,16 @@ class FTSUtilTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static PageMatch passage(String snippet)
+  private static PageMatch passage(String snippet, HitRange... luceneHits)
   {
-    return new PageMatch(1, 0, snippet.length(), snippet, 1.0f, List.of());
+    return new PageMatch(1, 0, snippet.length(), snippet, 1.0f, List.of(luceneHits));
+  }
+
+  /** Where Lucene marks {@code term} in {@code snippet}: at its first occurrence. */
+  private static HitRange hit(String snippet, String term)
+  {
+    int start = snippet.indexOf(term);
+    return new HitRange(start, start + term.length());
   }
 
   private static String spanText(PageMatch pm, int rangeNdx)
@@ -80,7 +88,10 @@ class FTSUtilTest
   {
     Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("Friedrich Nietzsche; ^Nietzsche");
 
-    List<PageMatch> result = rescanHitRanges(List.of(passage("As Friedrich Nietzsche later argued, ...")), lookup);
+    // Lucene marks each term of the phrase, and marks "Nietzsche" a second time for the ^Nietzsche key
+
+    String snippet = "As Friedrich Nietzsche later argued, ...";
+    List<PageMatch> result = rescanHitRanges(List.of(passage(snippet, hit(snippet, "Friedrich"), hit(snippet, "Nietzsche"), hit(snippet, "Nietzsche"))), lookup);
 
     assertEquals(1, result.size());
     assertEquals(1, result.getFirst().hitRanges().size(), "the phrase is one span, not duplicated by ^Nietzsche");
@@ -91,13 +102,18 @@ class FTSUtilTest
 //---------------------------------------------------------------------------
 
   @Test
-  void testRescanDropsPassageWithNoOccurrence()
+  void testRescanDropsPassageWithoutLuceneHits()
   {
+    // A key occurrence that the search did not mark never adds a match, let alone a passage
+
     Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("Nietzsche");
 
-    List<PageMatch> result = rescanHitRanges(List.of(passage("Nietzsche wrote this."), passage("This passage is about cats.")), lookup);
+    String marked   = "Nietzsche wrote this.",
+           unmarked = "Nietzsche appears here too.";
 
-    assertEquals(1, result.size(), "the passage with no occurrence is dropped");
+    List<PageMatch> result = rescanHitRanges(List.of(passage(marked, hit(marked, "Nietzsche")), passage(unmarked)), lookup);
+
+    assertEquals(1, result.size(), "the passage without Lucene hits is dropped");
     assertEquals("Nietzsche", spanText(result.getFirst(), 0));
   }
 
@@ -105,13 +121,13 @@ class FTSUtilTest
 //---------------------------------------------------------------------------
 
   @Test
-  void testRescanFallsBackToLuceneWhenFileHasNoOccurrence()
+  void testRescanFallsBackToLuceneWhenNoPassageHasHits()
   {
     Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("Nietzsche");
 
     List<PageMatch> input = List.of(passage("Only cats here."), passage("And more cats."));
 
-    assertSame(input, rescanHitRanges(input, lookup), "with no occurrence anywhere, the original Lucene matches are kept (no blank row)");
+    assertSame(input, rescanHitRanges(input, lookup), "with no Lucene hit in any passage, the original matches are kept (no blank row)");
   }
 
 //---------------------------------------------------------------------------
@@ -122,10 +138,85 @@ class FTSUtilTest
   {
     Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("dual-aspect");
 
-    List<PageMatch> result = rescanHitRanges(List.of(passage("the dual aspect theory of mind")), lookup);
+    String snippet = "the dual aspect theory of mind";
+    List<PageMatch> result = rescanHitRanges(List.of(passage(snippet, hit(snippet, "dual"), hit(snippet, "aspect"))), lookup);
 
     assertEquals(1, result.size());
+    assertEquals(1, result.getFirst().hitRanges().size());
     assertEquals("dual aspect", spanText(result.getFirst(), 0), "hyphenated key matches the spaced text");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testRescanKeepsMatchInsideWebAddress()
+  {
+    // The search matches words inside a web address, so neither its match there nor that
+    // match's passage may be dropped (with another passage present, so the whole-file
+    // fallback cannot mask a drop)
+
+    Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("utilitaria");
+
+    String prose   = "Utilitarianism is discussed here.",
+           address = "See https://example.org/library/utilitarianism-and-rules for more.";
+
+    List<PageMatch> result = rescanHitRanges(List.of(passage(prose, hit(prose, "Utilitarianism")), passage(address, hit(address, "utilitarianism"))), lookup);
+
+    assertEquals(2, result.size(), "the passage whose only match is inside the address is kept");
+    assertEquals(1, result.get(1).hitRanges().size());
+    assertTrue(spanText(result.get(1), 0).startsWith("utilitarianism"), "the match inside the address is highlighted");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testRescanJoinsMultiWordKeyInsideWebAddress()
+  {
+    Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("original position");
+
+    String snippet = "See https://example.org/entries/original-position/ for more.";
+    List<PageMatch> result = rescanHitRanges(List.of(passage(snippet, hit(snippet, "original"), hit(snippet, "position"))), lookup);
+
+    assertEquals(1, result.getFirst().hitRanges().size(), "one span for the key, not one per word");
+    assertEquals("original-position", spanText(result.getFirst(), 0));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testRescanIgnoresKeyInsideWordTheSearchDidNotMatch()
+  {
+    // The index keeps "www.ethics.org" as one word, which ^ethic does not match, so only
+    // the occurrence Lucene marked is highlighted
+
+    Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("^ethic");
+
+    String snippet = "Its site (www.ethics.org) describes the Ethics Centre.";
+    List<PageMatch> result = rescanHitRanges(List.of(passage(snippet, hit(snippet, "Ethics"))), lookup);
+
+    assertEquals(1, result.getFirst().hitRanges().size());
+    assertEquals(snippet.indexOf("Ethics"), result.getFirst().hitRanges().getFirst().start());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Test
+  void testRescanKeepsLuceneHitThatNoKeyOccurrenceCovers()
+  {
+    // A Lucene hit the key scan does not find (here a word the key does not even contain)
+    // is kept as Lucene marked it, and the duplicate mark collapses into one span
+
+    Function<String, Iterable<Keyword>> lookup = SearchKeys.buildAdHocLookup("Nietzsche");
+
+    String snippet = "The philosopher wrote this.";
+    List<PageMatch> result = rescanHitRanges(List.of(passage(snippet, hit(snippet, "philosopher"), hit(snippet, "philosopher"))), lookup);
+
+    assertEquals(1, result.getFirst().hitRanges().size());
+    assertEquals("philosopher", spanText(result.getFirst(), 0));
   }
 
 //---------------------------------------------------------------------------

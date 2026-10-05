@@ -856,4 +856,17 @@ class KeywordLinkScannerTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Test
+  void testSearchHitScanReadsWebAddressesAndTags()
+  {
+    String text = "Visit http://domain.com/test or <a href=\"test\">here</a> and test.";
+    Keyword kw = createKeyword("test", false, false);
+
+    assertEquals(1, KeywordLinkScanner.scan(text, mapOf(kw)).size(), "linking skips the address and the anchor tag");
+    assertEquals(3, KeywordLinkScanner.scan(text, mapOf(kw), true).size(), "scanning for search hits reads both, as a search does");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

@@ -500,17 +500,23 @@ public final class FTSUtil
 //---------------------------------------------------------------------------
 
   /**
-   * Recomputes each page match's hit ranges by scanning its snippet for occurrences of the
-   * given search keys, replacing Lucene's per-term offsets with one span per keyword
-   * occurrence (so a multi-word key reads as a single highlight rather than a duplicated
-   * one). Scanning is separator-insensitive, so a key matches whichever way the text
-   * punctuates it. Passages with no occurrence are dropped; if that empties the whole file
-   * (a Lucene match the scanner can't pin down), the original matches are returned unchanged
-   * so the result is never blank.
+   * Reshapes each page match's hit ranges into one span per keyword occurrence. Lucene marks
+   * each term of a multi-word key separately, and marks a term again for each key it belongs
+   * to (with the keys "Friedrich Nietzsche; ^Nietzsche", "Nietzsche" is marked twice), so the
+   * snippet is scanned for the keys, separator-insensitively, to find the spans to show
+   * instead.
+   * <p>
+   * The scan only reshapes what the search matched; it never adds or drops a match. A key
+   * occurrence counts only where it overlaps a Lucene hit, so text the index does not treat as
+   * a match (such as a key inside a dotted word like "www.example.com") is not highlighted, and
+   * a Lucene hit that no key occurrence covers is kept as Lucene marked it. Overlapping spans
+   * are then merged, so every match is one span. Passages without Lucene hits are dropped; if
+   * that empties the whole file, the original matches are returned unchanged so the result is
+   * never blank.
    *
    * @param matches   the Lucene-highlighted page matches for one file
    * @param keyLookup the ad-hoc keyword lookup (see {@code SearchKeys.buildAdHocLookup})
-   * @return rescanned matches, or {@code matches} unchanged when the scanner finds nothing
+   * @return the reshaped matches, or {@code matches} unchanged when no passage has a Lucene hit
    */
   public static List<PageMatch> rescanHitRanges(List<PageMatch> matches, Function<String, Iterable<Keyword>> keyLookup)
   {
@@ -521,18 +527,53 @@ public final class FTSUtil
     for (PageMatch pm : matches)
     {
       String snippet = pm.snippet();
-      if (snippet == null) continue;
+      if ((snippet == null) || collEmpty(pm.hitRanges())) continue;
 
-      List<HitRange> ranges = new ArrayList<>();
+      List<HitRange> keyRanges = KeywordLinkScanner.scan(snippet, keyLookup, true).stream()
+        .map(link -> new HitRange(link.getOffset(), link.getOffset() + link.getLength()))
+        .filter(keyRange -> overlapsAny(keyRange, pm.hitRanges()))
+        .toList();
 
-      for (KeywordLink link : KeywordLinkScanner.scan(snippet, keyLookup, true))
-        ranges.add(new HitRange(link.getOffset(), link.getOffset() + link.getLength()));
+      List<HitRange> ranges = new ArrayList<>(keyRanges);
 
-      if (ranges.isEmpty() == false)
-        rescanned.add(new PageMatch(pm.pageNumber(), pm.startOffset(), pm.endOffset(), snippet, pm.score(), ranges));
+      for (HitRange luceneRange : pm.hitRanges())
+        if (overlapsAny(luceneRange, keyRanges) == false)
+          ranges.add(luceneRange);
+
+      rescanned.add(new PageMatch(pm.pageNumber(), pm.startOffset(), pm.endOffset(), snippet, pm.score(), mergeOverlapping(ranges)));
     }
 
     return rescanned.isEmpty() ? matches : rescanned;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean overlapsAny(HitRange range, List<HitRange> others)
+  {
+    return others.stream().anyMatch(other -> (other.start() < range.end()) && (other.end() > range.start()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Sorts the ranges and merges each run of overlapping ones into a single range. */
+  private static List<HitRange> mergeOverlapping(List<HitRange> ranges)
+  {
+    List<HitRange> sorted = ranges.stream().sorted(Comparator.comparingInt(HitRange::start).thenComparingInt(HitRange::end)).toList(),
+                   merged = new ArrayList<>();
+
+    for (HitRange range : sorted)
+    {
+      HitRange last = merged.isEmpty() ? null : merged.getLast();
+
+      if ((last != null) && (range.start() < last.end()))
+        merged.set(merged.size() - 1, new HitRange(last.start(), Math.max(last.end(), range.end())));
+      else
+        merged.add(range);
+    }
+
+    return merged;
   }
 
 //---------------------------------------------------------------------------
