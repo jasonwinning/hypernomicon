@@ -917,8 +917,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
         try
         {
           count = useSearchKey
-            ? indexer.countMatches(finalSearchKeyQuery)
-            : indexer.countMatches(finalQueryStr);
+            ? indexer.countMatches(finalSearchKeyQuery, finalFileMask, pathScope, folderPrefix)
+            : indexer.countMatches(finalQueryStr,       finalFileMask, pathScope, folderPrefix);
         }
         catch (Exception e) { /* keep -1 */ }
       }

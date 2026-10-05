@@ -2618,35 +2618,66 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
-   * Counts the number of documents matching a Lucene query string.
-   *
-   * @param queryStr the Lucene query
-   * @return the number of matching documents, or 0 on error
+   * Counts the files that a Lucene query string matches within a search scope; see
+   * {@link #countMatches(Query, String, Set, String)}.
    */
-  public int countMatches(String queryStr) throws ParseException
+  public int countMatches(String queryStr, String fileMask, Set<String> pathScope, String folderPrefix) throws ParseException
   {
     if ((searcherMgr == null) || (analyzer == null)) return 0;
 
-    return countMatches(parseQuery(analyzer, queryStr));
+    return countMatches(parseQuery(analyzer, queryStr), fileMask, pathScope, folderPrefix);
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Counts the files that a pre-built query matches anywhere in the index.
+   *
+   * @return the number of matching files, or 0 on error
+   */
+  public int countMatches(Query query)
+  {
+    return countMatches(query, null, null, null);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * Counts the number of documents matching a pre-built query. Uses
-   * {@link IndexSearcher#count(Query)} which is fast (no document retrieval).
+   * Counts the files that a search with this scope finds, applying the same path-scope,
+   * folder and file-mask filters as {@link #searchLight(Query, int, String, Set, String)}.
+   * Without a file mask the count comes straight from {@link IndexSearcher#count(Query)},
+   * which retrieves no documents. A file mask is matched against file names, which the
+   * index cannot filter by, so with one, each matching file's path is read.
    *
-   * @param query the pre-built query
-   * @return the number of matching documents, or 0 on error
+   * @param pathScope    DB-relative paths to restrict the count to, or null for all files
+   * @param folderPrefix DB-relative folder prefix to restrict the count to, or null for all folders
+   * @return the number of matching files, or 0 on error
    */
-  public int countMatches(Query query)
+  public int countMatches(Query query, String fileMask, Set<String> pathScope, String folderPrefix)
   {
     if (searcherMgr == null) return 0;
 
+    Query searchQuery = scopedQuery(query, pathScope, folderPrefix);
+    List<PathMatcher> matchers = parseFileMask(fileMask);
+
     try
     {
-      return withSearcher(searcher -> searcher.count(query));
+      return withSearcher(searcher ->
+      {
+        int total = searcher.count(searchQuery);
+
+        if (matchers.isEmpty() || (total == 0)) return total;
+
+        StoredFields storedFields = searcher.storedFields();
+        int count = 0;
+
+        for (ScoreDoc scoreDoc : searcher.search(searchQuery, total).scoreDocs)
+          if (fileNameMatches(readPath(storedFields, scoreDoc.doc), matchers))
+            count++;
+
+        return count;
+      });
     }
     catch (IOException e)
     {
@@ -3318,30 +3349,7 @@ public class FullTextIndexer
     if ((query instanceof BooleanQuery bq) && bq.clauses().isEmpty())
       return new SearchBatch(results, false);
 
-    // Apply path scope filter at the Lucene level via TermInSetQuery
-
-    Query searchQuery;
-
-    if (collEmpty(pathScope) == false)
-    {
-      List<BytesRef> terms = pathScope.stream().map(BytesRef::new).toList();
-      searchQuery = new BooleanQuery.Builder()
-        .add(query, BooleanClause.Occur.MUST)
-        .add(new TermInSetQuery("path", terms), BooleanClause.Occur.FILTER)
-        .build();
-    }
-    else if (strNotNullOrEmpty(folderPrefix))
-    {
-      searchQuery = new BooleanQuery.Builder()
-        .add(query, BooleanClause.Occur.MUST)
-        .add(new PrefixQuery(new Term("path", folderPrefix)), BooleanClause.Occur.FILTER)
-        .build();
-    }
-    else
-    {
-      searchQuery = query;
-    }
-
+    Query searchQuery = scopedQuery(query, pathScope, folderPrefix);
     List<PathMatcher> matchers = parseFileMask(fileMask);
     boolean hasMore;
 
@@ -3370,15 +3378,10 @@ public class FullTextIndexer
           {
             String path = readPath(storedFields, scoreDoc.doc);
 
-            if (matchers.isEmpty() == false)
+            if (fileNameMatches(path, matchers) == false)
             {
-              String filename = Path.of(path).getFileName().toString();
-
-              if (matchesAnyPattern(filename, matchers) == false)
-              {
-                cursor = scoreDoc;
-                continue;
-              }
+              cursor = scoreDoc;
+              continue;
             }
 
             if (results.size() >= maxResults)
@@ -3444,6 +3447,48 @@ public class FullTextIndexer
                  .filter(p -> p.isEmpty() == false)
                  .map(p -> FileSystems.getDefault().getPathMatcher("glob:" + p.toLowerCase(Locale.ROOT)))
                  .toList();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Whether a search's file mask lets a file through, judged by the file name in its
+   *  DB-relative path; with no patterns, every file gets through. */
+  private static boolean fileNameMatches(String path, List<PathMatcher> matchers)
+  {
+    return matchers.isEmpty() || matchesAnyPattern(Path.of(path).getFileName().toString(), matchers);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Restricts a query to a search scope at the Lucene level: to the given DB-relative paths
+   * (a record-query scope) if there are any, or else to a folder. With neither, the query is
+   * returned as it is. The file mask is not applied here, since the index cannot filter by
+   * file name; see {@link #fileNameMatches}.
+   */
+  private static Query scopedQuery(Query query, Set<String> pathScope, String folderPrefix)
+  {
+    if (collEmpty(pathScope) == false)
+    {
+      List<BytesRef> terms = pathScope.stream().map(BytesRef::new).toList();
+
+      return new BooleanQuery.Builder()
+        .add(query, BooleanClause.Occur.MUST)
+        .add(new TermInSetQuery("path", terms), BooleanClause.Occur.FILTER)
+        .build();
+    }
+
+    if (strNotNullOrEmpty(folderPrefix))
+    {
+      return new BooleanQuery.Builder()
+        .add(query, BooleanClause.Occur.MUST)
+        .add(new PrefixQuery(new Term("path", folderPrefix)), BooleanClause.Occur.FILTER)
+        .build();
+    }
+
+    return query;
   }
 
 //---------------------------------------------------------------------------

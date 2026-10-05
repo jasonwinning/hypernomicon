@@ -776,6 +776,29 @@ class FullTextIndexerTest
   }
 
 //---------------------------------------------------------------------------
+
+  @Test void countMatchesCountsOnlyFilesInTheSearchScope() throws Exception
+  {
+    Path subDir = Files.createDirectory(dbRoot.resolve("sub")),
+         inRoot = writeDbFile("a.txt", "alpha"),
+         first  = writeDbFile("sub/b.txt", "alpha"),
+         second = writeDbFile("sub/c.txt", "alpha"),
+         other  = writeDbFile("d.txt", "bravo");
+
+    activateRegistry(subDir, inRoot, first, second, other);
+
+    buildAndAwait(openSession(SCHEMA_V1));
+    awaitTrue(() -> indexer.countMatches("alpha", null, null, null) == 3, "with no scope, every matching file should be counted");
+
+    assertEquals(2, indexer.countMatches("alpha", null, null, "sub/"), "a folder counts only the files under it");
+    assertEquals(2, indexer.countMatches("alpha", "a*, c*", null, null), "a file mask counts only the files whose names it matches");
+    assertEquals(1, indexer.countMatches("alpha", "c*", null, "sub/"), "a folder and a file mask both apply");
+    assertEquals(2, indexer.countMatches("alpha", null, Set.of("a.txt", "sub/b.txt", "d.txt"), null), "a path scope counts only its matching files");
+
+    closeSession();
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }
