@@ -2549,6 +2549,42 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
+   * Reads a document's "path" field and stops. Asking for the field by name instead would
+   * still be slow for PDFs: Lucene skips past each unrequested field unless it is the
+   * document's last, and a PDF's path is followed by its whole text and then its page
+   * offsets, so reading just the path would decompress the whole text. The path is stored
+   * first (see {@link #buildLuceneDocument}), so stopping after it reads almost nothing else.
+   *
+   * @return the path, or {@code null} if the document has none
+   */
+  private static String readPath(StoredFields storedFields, int docID) throws IOException
+  {
+    PathFieldVisitor visitor = new PathFieldVisitor();
+    storedFields.document(docID, visitor);
+    return visitor.path;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final class PathFieldVisitor extends StoredFieldVisitor
+  {
+    private String path;
+
+    @Override public Status needsField(FieldInfo fieldInfo)
+    {
+      if (path != null) return Status.STOP;
+
+      return "path".equals(fieldInfo.name) ? Status.YES : Status.NO;
+    }
+
+    @Override public void stringField(FieldInfo fieldInfo, String value) { path = value; }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Retrieves the page offset array for a document from the Lucene index.
    * Used by FTS hit highlighting to convert absolute text offsets to page-relative offsets.
    *
@@ -3316,7 +3352,6 @@ public class FullTextIndexer
         boolean more = false;
 
         StoredFields storedFields = searcher.storedFields();
-        Set<String> fieldSet = Set.of("path");
 
         // Pull batches from Lucene until we have enough filtered results or Lucene is exhausted
 
@@ -3333,9 +3368,7 @@ public class FullTextIndexer
 
           for (ScoreDoc scoreDoc : topDocs.scoreDocs)
           {
-            Document doc = storedFields.document(scoreDoc.doc, fieldSet);
-
-            String path = doc.get("path");
+            String path = readPath(storedFields, scoreDoc.doc);
 
             if (matchers.isEmpty() == false)
             {
