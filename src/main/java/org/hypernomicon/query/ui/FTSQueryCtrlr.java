@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -117,10 +118,11 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   private final ObservableList<FTSResultRow> allRows = FXCollections.observableArrayList();
   private final FilteredList<FTSResultRow> filteredRows = new FilteredList<>(allRows);
+  private final SortedList<FTSResultRow> sortedRows = new SortedList<>(filteredRows);
 
   /** Owns match computation and caching for this controller's searches: the
-   *  per-file match cache, request deduplication, search-generation staleness,
-   *  and the "FTS-highlight" worker thread. */
+   *  per-file match cache and match counts, request deduplication,
+   *  search-generation staleness, and the "FTS-highlight" worker thread. */
   private final HitSetService hitSetService = new HitSetService();
 
   private static final int PAGE_SIZE = 200;
@@ -190,9 +192,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     tabPane.getTabs().add(tabPane.getTabs().size() - 1, tab);
     tab.setOnCloseRequest(event -> queriesTabCtrlr.deleteSubView((Tab) event.getSource()));
 
-    SortedList<FTSResultRow> sortedRows = new SortedList<>(filteredRows);
     tvResults.setItems(sortedRows);
-    sortedRows.comparatorProperty().bind(tvResults.comparatorProperty());
+    tvResults.setSortPolicy(this::sortRows);
 
     chkIncludeUnassociated.selectedProperty().addListener((ob, ov, nv) ->
     {
@@ -293,6 +294,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   @Override void onClear(TabPane tabPane) { tabPane.getTabs().remove(getTab()); }
 
   boolean hasResults() { return allRows.isEmpty() == false; }
+
+  private static List<String> pathsOf(List<SearchResult> results) { return results.stream().map(SearchResult::path).toList(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -463,19 +466,15 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       }
     });
 
+    // No highlighting is requested from here: sorting by this column reads every row's value,
+    // so a request per row would queue the whole result list. Counts come from the index as
+    // rows load; in a record-scoped search they come from highlighting, which the Excerpt
+    // column requests for the rows on screen.
+
     colMatches.setCellValueFactory(cellData ->
     {
-      String path = cellData.getValue().path();
-      List<PageMatch> matches = hitSetService.cachedMatches(path);
-
-      if (matches == null)
-      {
-        requestHighlight(path);
-        return new SimpleStringProperty("");
-      }
-
-      int count = matches.stream().mapToInt(pm -> nullSwitch(pm.hitRanges(), 0, List::size)).sum();
-      return new SimpleStringProperty(count > 0 ? String.valueOf(count) : "");
+      Integer count = hitSetService.matchCount(cellData.getValue().path());
+      return new SimpleStringProperty(((count == null) || (count == 0)) ? "" : String.valueOf(count));
     });
 
     colMatches.setStyle("-fx-alignment: CENTER-RIGHT;");
@@ -773,21 +772,12 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 
   /**
-   * Variant of {@link #runSearchTask} that passes the underlying
-   * {@link HyperTask} into the lambda so it can drive a determinate progress
-   * bar via {@link HyperTask#updateProgress(double, double)}. Use this when
-   * the work is a known-size sequence of sub-tasks (e.g., paginated batch
-   * loading), so the user sees real progress instead of an indeterminate
-   * spinner.
+   * The task behind {@link #runSearchTask}, for lambdas that take the {@link HyperTask}.
+   *
+   * @param withProgressUpdates whether the lambda drives a determinate progress bar through
+   *                            {@link HyperTask#updateProgress(double, double)}; otherwise
+   *                            the dialog shows an indeterminate spinner
    */
-  private static <T> T runSearchTaskWithProgress(String dialogMessage, ProgressSearchCall<T> call)
-  {
-    return runSearchTaskImpl(dialogMessage, true, call);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private static <T> T runSearchTaskImpl(String dialogMessage, boolean withProgressUpdates, ProgressSearchCall<T> call)
   {
     final class SearchTask extends HyperTask
@@ -829,6 +819,30 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     }
 
     return task.result;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * A progress listener for the indexer's loops: reports {@code offset} plus the number done
+   * against {@code total} on the task's progress bar, and stops the work once the task has
+   * been cancelled.
+   */
+  private static IntPredicate progressReporter(HyperTask task, int offset, int total)
+  {
+    return done ->
+    {
+      try
+      {
+        task.updateProgress(offset + done, total);
+        return true;
+      }
+      catch (CancelledTaskException e)
+      {
+        return false;
+      }
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -896,9 +910,11 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     convertedAlignmentPath = null;
     convertedLaunchPath = null;
 
-    // Fast light search: no highlighting, just paths and scores. Both the
-    // searchLight and the countMatches run off the FX thread inside one
-    // HyperTask so the UI doesn't freeze on long queries.
+    // Fast light search: no highlighting, just paths and scores. The searchLight,
+    // the per-file match counts and the countMatches all run off the FX thread
+    // inside one HyperTask so the UI doesn't freeze on long queries; the counts
+    // are in place before the rows reach the table, so a sort by Matches is
+    // right from the start.
 
     String finalQueryStr = queryStr,
            finalFileMask = fileMask;
@@ -909,6 +925,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       SearchBatch b = useSearchKey
         ? indexer.searchLight(finalSearchKeyQuery, PAGE_SIZE, finalFileMask, pathScope, folderPrefix)
         : indexer.searchLight(finalQueryStr,       PAGE_SIZE, finalFileMask, pathScope, folderPrefix);
+
+      hitSetService.countMatchesFromIndex(pathsOf(b.results()), null);
 
       int count = -1;
 
@@ -949,35 +967,13 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       // For record-scoped searches, highlight and filter up front so rows with
       // no in-range matches never appear in the table.
 
-      hitSetService.computeMatchesForBatch(lightResults, highlighted ->
-      {
-        List<FTSResultRow> rows = new ArrayList<>();
-
-        for (SearchResult sr : highlighted)
-        {
-          FilePath filePath = db.getRootPath(sr.path());
-          List<PageMatch> matches = sr.pageMatches();
-          IntStream pages = (matches != null) ? matches.stream().mapToInt(PageMatch::pageNumber) : IntStream.empty();
-          HDT_RecordWithFilePath record = HDT_WorkFile.resolveRecordForPages(filePath, pages, HyperPath.resolveRecord(filePath, 0));
-          rows.add(new FTSResultRow(sr, record));
-        }
-
-        showResults(rows);
-      });
+      hitSetService.computeMatchesForBatch(lightResults, highlighted -> showResults(rowsForHighlighted(highlighted)));
     }
     else
     {
       // For folder/file-mask searches, show rows immediately; highlighting is lazy.
 
-      List<FTSResultRow> rows = new ArrayList<>();
-
-      for (SearchResult sr : lightResults)
-      {
-        FilePath filePath = db.getRootPath(sr.path());
-        rows.add(new FTSResultRow(sr, HyperPath.resolveRecord(filePath, 0)));
-      }
-
-      showResults(rows);
+      showResults(rowsFor(lightResults));
     }
   }
 
@@ -986,7 +982,26 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   private void showResults(List<FTSResultRow> rows)
   {
-    allRows.setAll(rows);
+    List<FTSResultRow> shown = rows;
+
+    // A table still sorted by match count from an earlier search ranks these results the
+    // same way, over all of them, so the rest are loaded before any are shown; if that is
+    // cancelled, the sort is dropped rather than shown over the first page alone
+
+    if (isSortedByMatches() && hasMore)
+    {
+      List<FTSResultRow> rest = loadMoreResults(true, rows.size());
+
+      if (rest == null)
+        tvResults.getSortOrder().clear();
+      else
+      {
+        shown = new ArrayList<>(rows);
+        shown.addAll(rest);
+      }
+    }
+
+    allRows.setAll(shown);
 
     if (allRows.isEmpty())
       loadContextHtml("");
@@ -1001,16 +1016,16 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   /** Captures the query parameters and indexer reference needed to fetch
    *  successive {@link SearchBatch}es after the initial search. Built once at
-   *  the start of {@link #showMore} / {@link #showAll} and reused for every
-   *  batch in the load. */
+   *  the start of {@link #loadMoreResults} and reused for every batch in the
+   *  load. */
   private record FetchContext(FullTextIndexer indexer, Query searchKeyQuery, String queryStr,
                               String fileMask, String folderPrefix, Set<String> pathScope)
   {
-    private SearchBatch fetch(ScoreDoc cursor) throws ParseException, IndexSearcher.TooManyNestedClauses
+    private SearchBatch fetch(ScoreDoc cursor, int maxResults, IntPredicate onProgress) throws ParseException, IndexSearcher.TooManyNestedClauses
     {
       return (searchKeyQuery != null)
-        ? indexer.searchLightAfter(cursor, searchKeyQuery, PAGE_SIZE, fileMask, pathScope, folderPrefix)
-        : indexer.searchLightAfter(cursor, queryStr,       PAGE_SIZE, fileMask, pathScope, folderPrefix);
+        ? indexer.searchLightAfter(cursor, searchKeyQuery, maxResults, fileMask, pathScope, folderPrefix, onProgress)
+        : indexer.searchLightAfter(cursor, queryStr,       maxResults, fileMask, pathScope, folderPrefix, onProgress);
     }
   }
 
@@ -1032,100 +1047,200 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Appends each {@link SearchResult} as an {@link FTSResultRow} to
-   *  {@link #allRows}, resolving the associated record from the file path. */
-  private void appendBatchResults(List<SearchResult> results)
+  /** A row for each light {@link SearchResult}, with the record resolved from its file path. */
+  private static List<FTSResultRow> rowsFor(List<SearchResult> results)
   {
+    List<FTSResultRow> rows = new ArrayList<>(results.size());
+
     for (SearchResult sr : results)
-    {
-      FilePath filePath = db.getRootPath(sr.path());
-      allRows.add(new FTSResultRow(sr, HyperPath.resolveRecord(filePath, 0)));
-    }
+      rows.add(new FTSResultRow(sr, HyperPath.resolveRecord(db.getRootPath(sr.path()), 0)));
+
+    return rows;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void showMore()
+  /** A row for each highlighted {@link SearchResult} of a record-scoped search, with the
+   *  record narrowed to the most specific work covering all of its match pages. */
+  private static List<FTSResultRow> rowsForHighlighted(List<SearchResult> highlighted)
   {
-    if ((lastScoreDoc == null) || (hasMore == false)) return;
+    List<FTSResultRow> rows = new ArrayList<>(highlighted.size());
 
-    FetchContext ctx = buildFetchContext();
-    if (ctx == null) return;
-
-    ScoreDoc finalAfter = lastScoreDoc;
-
-    SearchBatch batch = runSearchTask("Loading more results...", () -> ctx.fetch(finalAfter));
-
-    if (batch == null) return;
-
-    hasMore = batch.hasMore();
-
-    List<SearchResult> lightResults = batch.results();
-
-    if (lightResults.isEmpty() == false)
+    for (SearchResult sr : highlighted)
     {
-      lastScoreDoc = lightResults.getLast().scoreDoc();
-      appendBatchResults(lightResults);
+      FilePath filePath = db.getRootPath(sr.path());
+      List<PageMatch> matches = sr.pageMatches();
+      IntStream pages = (matches != null) ? matches.stream().mapToInt(PageMatch::pageNumber) : IntStream.empty();
+
+      rows.add(new FTSResultRow(sr, HDT_WorkFile.resolveRecordForPages(filePath, pages, HyperPath.resolveRecord(filePath, 0))));
     }
 
+    return rows;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void showMore() { appendLoadedResults(loadMoreResults(false, allRows.size())); }
+  private void showAll () { appendLoadedResults(loadMoreResults(true , allRows.size())); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Adds the rows {@link #loadMoreResults} loaded, if it was not cancelled. */
+  private void appendLoadedResults(List<FTSResultRow> rows)
+  {
+    if (rows == null) return;
+
+    allRows.addAll(rows);
     updateStatusLabel();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Carries the accumulated batches plus the final cursor/hasMore state
-   *  produced by {@link #showAll}'s background loop. */
-  private record ShowAllResult(List<SearchResult> results, ScoreDoc lastScoreDoc, boolean hasMore) {}
+  /** Carries the results a load fetched plus the cursor and hasMore state it ended with. */
+  private record LoadedResults(List<SearchResult> results, ScoreDoc lastScoreDoc, boolean hasMore) {}
 
-  private void showAll()
+  /**
+   * Loads the next page of results, or every result not loaded yet, as rows ready for the
+   * table: counted, and in a record-scoped search highlighted and filtered as its first page
+   * was, so that every row has its count. Advances the result cursor.
+   *
+   * @param all         whether to load every remaining result instead of one page
+   * @param loadedCount how many results are loaded already; not always the size of
+   *                    {@link #allRows}, since a new search's rows may not be in it yet
+   * @return the rows, or null if there was nothing to load, or loading was cancelled or failed
+   */
+  private List<FTSResultRow> loadMoreResults(boolean all, int loadedCount)
   {
-    if ((lastScoreDoc == null) || (hasMore == false)) return;
+    if ((lastScoreDoc == null) || (hasMore == false)) return null;
 
     FetchContext ctx = buildFetchContext();
-    if (ctx == null) return;
+    if (ctx == null) return null;
 
     ScoreDoc startAfter = lastScoreDoc;
+    boolean recordScope = lastScopeList != null;
 
-    // Total work for the determinate progress bar = results still to load.
-    // totalMatchCount is set when the initial search runs; capped lazily by
-    // the loop's hasMore check if Lucene returns fewer than expected.
+    // Every search looks up the terms the query's wildcards match, which takes a while in
+    // a large index, so when every result is wanted and the total is known, they come in
+    // one search instead of a batch per page. The total runs short only when rows have
+    // been removed (record scope); the loop then fetches what is left.
 
-    int totalToLoad = Math.max(1, totalMatchCount - allRows.size());
+    int batchSize = all ? Math.max(PAGE_SIZE, totalMatchCount - loadedCount) : PAGE_SIZE,
+        expected  = all ? Math.max(1        , totalMatchCount - loadedCount) : PAGE_SIZE,
+        totalWork = 2 * expected;  // Each result is read from the index, then counted or highlighted
 
-    ShowAllResult outcome = runSearchTaskWithProgress("Loading all results...", task ->
+    LoadedResults outcome = runSearchTaskImpl(all ? "Loading all results..." : "Loading more results...", true, task ->
     {
       List<SearchResult> accumulated = new ArrayList<>();
       ScoreDoc cursor = startAfter;
-      boolean moreFlag = true;
+      boolean moreFlag;
 
-      while (moreFlag && (cursor != null))
+      do
       {
-        SearchBatch batch = ctx.fetch(cursor);
+        SearchBatch batch = ctx.fetch(cursor, batchSize, progressReporter(task, accumulated.size(), totalWork));
+        List<SearchResult> batchResults = batch.results();
 
         moreFlag = batch.hasMore();
-        List<SearchResult> batchResults = batch.results();
 
         if (batchResults.isEmpty()) break;
 
         accumulated.addAll(batchResults);
         cursor = batchResults.getLast().scoreDoc();
+      }
+      while (all && moreFlag);
 
-        task.updateProgress(Math.min(accumulated.size(), totalToLoad), totalToLoad);
+      HyperTask.throwExceptionIfCancelled(task);  // A cancelled search returns what it had read
+
+      if (recordScope == false)
+      {
+        hitSetService.countMatchesFromIndex(pathsOf(accumulated), progressReporter(task, expected, totalWork));
+        return new LoadedResults(accumulated, cursor, moreFlag);
       }
 
-      return new ShowAllResult(accumulated, cursor, moreFlag);
+      // Record scope: highlight and filter now, as the first page was, so that rows with no
+      // in-range matches never appear and every row has its count
+
+      List<SearchResult> highlighted = new ArrayList<>();
+
+      for (int ndx = 0; ndx < accumulated.size(); ndx++)
+      {
+        SearchResult sr = accumulated.get(ndx);
+        List<PageMatch> matches = hitSetService.computeMatchesNow(sr.path());
+
+        if ((matches != null) && (matches.isEmpty() == false))
+          highlighted.add(new SearchResult(sr.path(), sr.score(), matches, sr.scoreDoc()));
+
+        task.updateProgress(expected + ndx + 1, totalWork);
+      }
+
+      return new LoadedResults(highlighted, cursor, moreFlag);
     });
 
-    if (outcome == null) return;  // cancelled / parse error / too-many-clauses
-
-    appendBatchResults(outcome.results());
+    if (outcome == null) return null;  // cancelled / parse error / too-many-clauses
 
     lastScoreDoc = outcome.lastScoreDoc();
     hasMore = outcome.hasMore();
 
-    updateStatusLabel();
+    return recordScope ? rowsForHighlighted(outcome.results()) : rowsFor(outcome.results());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Whether the table is sorted by match count (first, if it is sorted by several columns). */
+  private boolean isSortedByMatches()
+  {
+    List<TableColumn<FTSResultRow, ?>> sortOrder = tvResults.getSortOrder();
+
+    return (sortOrder.isEmpty() == false) && (sortOrder.getFirst() == colMatches);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The table's sort policy, which sets the rows' comparator. The rows are not simply bound
+   * to the table's comparator because JavaFX sets that before it runs the policy, so bound
+   * rows would re-sort the instant a header is clicked. A sort by match count has to cover
+   * every result, so a click on the Matches header while results are still unloaded is
+   * refused here, which makes JavaFX take the column back out of the sort order with
+   * nothing re-sorted; the sort is then made once the rest are loaded.
+   */
+  private boolean sortRows(TableView<FTSResultRow> table)
+  {
+    if (isSortedByMatches() && hasMore)
+    {
+      Platform.runLater(this::sortByMatchesAfterLoadingAll);
+      return false;
+    }
+
+    sortedRows.setComparator(table.getComparator());
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Loads every result not loaded yet, then sorts by match count with the most matches
+   * first, which is what a sort by match count is for (a column's first click would sort
+   * it ascending). If loading is cancelled, the table stays as it was.
+   */
+  private void sortByMatchesAfterLoadingAll()
+  {
+    if (hasMore)
+    {
+      List<FTSResultRow> rows = loadMoreResults(true, allRows.size());
+      if (rows == null) return;
+
+      appendLoadedResults(rows);
+    }
+
+    colMatches.setSortType(TableColumn.SortType.DESCENDING);
+    tvResults.getSortOrder().setAll(List.of(colMatches));
   }
 
 //---------------------------------------------------------------------------
@@ -1167,48 +1282,67 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   {
     hitSetService.requestMatches(path, matches ->
     {
-      // If page-range filtering removed all matches, remove the row entirely
-
-      if ((lastScopeList != null) && matches.isEmpty())
-      {
-        allRows.removeIf(row -> row.path().equals(path));
-      }
-      else
-      {
-        // Update the Record column with the most specific work covering all match pages
-
-        for (int ndx = 0; ndx < allRows.size(); ndx++)
-        {
-          FTSResultRow row = allRows.get(ndx);
-
-          if (row.path().equals(path))
-          {
-            FilePath filePath = db.getRootPath(path);
-            IntStream pages = matches.stream().mapToInt(PageMatch::pageNumber);
-            HDT_RecordWithFilePath newRecord = HDT_WorkFile.resolveRecordForPages(filePath, pages, row.resolvedRecord());
-
-            if (newRecord != row.resolvedRecord())
-              allRows.set(ndx, new FTSResultRow(row.result(), newRecord));
-
-            break;
-          }
-        }
-      }
-
-      tvResults.refresh();
-      updateStatusLabel();
-
-      FTSResultRow selected = tvResults.getSelectionModel().getSelectedItem();
-      if ((selected != null) && selected.path().equals(path))
-      {
-        updateContextView(selected);
-
-        // Re-derive the preview now that match data exists: the intent is
-        // refreshed and the newly-computed hits ship to the pane
-
-        setPreview(selected);
-      }
+      applyMatchesToRow(path, matches);
+      showNewMatches(Set.of(path));
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Updates the row of a file whose matches were just computed: drops it from a
+   * record-scoped search if none of its matches are within the page ranges, and otherwise
+   * narrows its Record column to the most specific work covering all the match pages.
+   */
+  private void applyMatchesToRow(String path, List<PageMatch> matches)
+  {
+    if ((lastScopeList != null) && matches.isEmpty())
+    {
+      allRows.removeIf(row -> row.path().equals(path));
+      return;
+    }
+
+    for (int ndx = 0; ndx < allRows.size(); ndx++)
+    {
+      FTSResultRow row = allRows.get(ndx);
+
+      if (row.path().equals(path))
+      {
+        FilePath filePath = db.getRootPath(path);
+        IntStream pages = matches.stream().mapToInt(PageMatch::pageNumber);
+        HDT_RecordWithFilePath newRecord = HDT_WorkFile.resolveRecordForPages(filePath, pages, row.resolvedRecord());
+
+        if (newRecord != row.resolvedRecord())
+          allRows.set(ndx, new FTSResultRow(row.result(), newRecord));
+
+        return;
+      }
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Shows matches just computed for these files: refreshes the table and status, and if one
+   * of the files is selected, its context view and preview.
+   */
+  private void showNewMatches(Collection<String> paths)
+  {
+    tvResults.refresh();
+    updateStatusLabel();
+
+    FTSResultRow selected = tvResults.getSelectionModel().getSelectedItem();
+    if ((selected != null) && paths.contains(selected.path()))
+    {
+      updateContextView(selected);
+
+      // Re-derive the preview now that match data exists: the intent is
+      // refreshed and the newly-computed hits ship to the pane
+
+      setPreview(selected);
+    }
   }
 
 //---------------------------------------------------------------------------

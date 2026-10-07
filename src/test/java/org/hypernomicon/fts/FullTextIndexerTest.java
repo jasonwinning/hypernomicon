@@ -33,8 +33,11 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.apache.lucene.search.Query;
 import org.hypernomicon.fts.FullTextIndexer.IndexerState;
+import org.hypernomicon.fts.FullTextIndexer.SearchResult;
 import org.hypernomicon.model.TestHyperDB;
+import org.hypernomicon.model.searchKeys.SearchKeys;
 import org.hypernomicon.util.file.*;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
@@ -794,6 +797,55 @@ class FullTextIndexerTest
     assertEquals(2, indexer.countMatches("alpha", "a*, c*", null, null), "a file mask counts only the files whose names it matches");
     assertEquals(1, indexer.countMatches("alpha", "c*", null, "sub/"), "a folder and a file mask both apply");
     assertEquals(2, indexer.countMatches("alpha", null, Set.of("a.txt", "sub/b.txt", "d.txt"), null), "a path scope counts only its matching files");
+
+    closeSession();
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The number of highlights in a file's highlighted passages. */
+  private static int hitCount(List<SearchResult> highlighted)
+  {
+    return highlighted.getFirst().pageMatches().stream().mapToInt(pageMatch -> pageMatch.hitRanges().size()).sum();
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The Matches column shows the count from the index while the context pane counts the
+   *  highlights, so the two must agree, including where a query's matches overlap. */
+  @Test void countMatchesPerFileAgreesWithHighlighting() throws Exception
+  {
+    Path file = writeDbFile("a.txt", "Friedrich Nietzsche wrote this. Later Nietzsche changed his mind. " +
+                                     "An egalitarian view; egalitarianism differs. Behind the veil of ignorance, the veil hides much. " +
+                                     "See https://example.org/library/utilitarianism-and-rules for more.");
+    activateRegistry(file);
+
+    buildAndAwait(openSession(SCHEMA_V1));
+    awaitTrue(() -> found(indexer, "nietzsche", "a.txt"), "initial build should index the file");
+
+    List<SearchResult> light = List.of(new SearchResult("a.txt", 0f, null, null));
+
+    // Search keys: overlapping keys, where "Friedrich Nietzsche" holds a match of the second
+    // key too, and a match inside a web address
+
+    for (Map.Entry<String, Integer> entry : Map.of("Friedrich Nietzsche; ^Nietzsche", 2, "utilitaria", 1).entrySet())
+    {
+      String keys = entry.getKey();
+      Query query = FullTextIndexer.buildSearchKeyQuery(keys);
+
+      assertEquals(entry.getValue(), hitCount(indexer.highlightResults(query, SearchKeys.buildAdHocLookup(keys), light, 10_000)), keys);
+      assertEquals(entry.getValue(), indexer.countMatchesPerFile(query, List.of("a.txt"), null).get("a.txt"), keys);
+    }
+
+    // Plain queries whose clauses match the same word, or a word within a phrase
+
+    for (Map.Entry<String, Integer> entry : Map.of("egalitarian OR egalitarian*", 2, "\"veil of ignorance\" OR veil", 2).entrySet())
+    {
+      String queryStr = entry.getKey();
+
+      assertEquals(entry.getValue(), hitCount(indexer.highlightResults(queryStr, light, 10_000)), queryStr);
+      assertEquals(entry.getValue(), indexer.countMatchesPerFile(queryStr, List.of("a.txt"), null).get("a.txt"), queryStr);
+    }
 
     closeSession();
   }

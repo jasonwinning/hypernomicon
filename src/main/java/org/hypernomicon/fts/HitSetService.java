@@ -172,6 +172,7 @@ public final class HitSetService
   private static final int MAX_PASSAGES_PER_FILE = 10_000;
 
   private final Map<String, List<PageMatch>> matchCache = new ConcurrentHashMap<>();
+  private final Map<String, Integer> indexCounts = new ConcurrentHashMap<>();
   private final Set<String> matchesRequested = ConcurrentHashMap.newKeySet();
 
   private final ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> new HyperThread("FTS-highlight", runnable).asDaemon());
@@ -183,15 +184,18 @@ public final class HitSetService
 
   /**
    * Begins a new search generation: stores the query descriptor, clears the
-   * match cache and request-deduplication state, and invalidates all
-   * outstanding asynchronous work from prior generations. Call on the JavaFX
-   * Application Thread only (single-writer model).
+   * match cache, the match counts and request-deduplication state, and
+   * invalidates all outstanding asynchronous work from prior generations. Call
+   * on the JavaFX Application Thread only (single-writer model).
    */
   public void beginGeneration(QueryDescriptor query)
   {
     generation++;
+
     this.query = query;
-    matchCache.clear();
+
+    matchCache      .clear();
+    indexCounts     .clear();
     matchesRequested.clear();
   }
 
@@ -203,6 +207,20 @@ public final class HitSetService
   /** Cached matches for the file, or {@code null} if not computed yet. An empty
    *  list means the file was computed to have no in-scope matches. */
   public List<PageMatch> cachedMatches(String path) { return matchCache.get(path); }
+
+  /**
+   * The file's number of matches: counted from the index (see {@link #countMatchesFromIndex}),
+   * or else from its cached matches, or {@code null} if neither is known yet.
+   */
+  public Integer matchCount(String path)
+  {
+    Integer count = indexCounts.get(path);
+    if (count != null) return count;
+
+    List<PageMatch> matches = matchCache.get(path);
+
+    return (matches == null) ? null : matches.stream().mapToInt(pm -> nullSwitch(pm.hitRanges(), 0, List::size)).sum();
+  }
 
 //---------------------------------------------------------------------------
 
@@ -231,44 +249,110 @@ public final class HitSetService
     if (matchesRequested.add(path) == false) return;
 
     QueryDescriptor query = this.query;
-
-    if ((query == null) || ((query.queryStr() == null) && (query.searchKeyQuery() == null))) return;
-
     int gen = generation;
 
     executor.submit(() ->
     {
-      if (generation != gen) return;
+      List<PageMatch> matches = computeMatches(path, query, gen);
 
-      FullTextIndexer indexer = db.getFullTextIndexer();
-      if (indexer == null) return;
-
-      try
-      {
-        SearchResult light = new SearchResult(path, 0f, null, null);
-        List<SearchResult> results = (query.searchKeyQuery() != null)
-          ? indexer.highlightResults(query.searchKeyQuery(), query.keyLookup(), List.of(light), MAX_PASSAGES_PER_FILE)
-          : indexer.highlightResults(query.queryStr(), List.of(light), MAX_PASSAGES_PER_FILE);
-
-        if (generation != gen) return;
-
-        if (query.resultFilter() != null)
-          results = query.resultFilter().apply(results);
-
-        List<PageMatch> matches = results.isEmpty()
-          ? List.of()
-          : nullSwitch(results.getFirst().pageMatches(), List.of());
-
-        matchCache.put(path, matches);
-
+      if (matches != null)
         runInFXThread(() ->
         {
           if (generation == gen)
             onMatchesFX.accept(matches);
         });
-      }
-      catch (ParseException e) { /* query was valid when search ran */ }
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Computes and caches the matches for one file against the active query, as
+   * {@link #requestMatches} does, but on the calling thread. Blocking; call it off the
+   * JavaFX Application Thread.
+   *
+   * @return the file's matches, or {@code null} if a new generation began meanwhile
+   */
+  public List<PageMatch> computeMatchesNow(String path)
+  {
+    matchesRequested.add(path);
+
+    return computeMatches(path, query, generation);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Highlights one file against the query and caches its matches, unless generation
+   * {@code gen} is no longer current.
+   *
+   * @return the file's matches, or {@code null} if there is nothing to compute or the
+   *         generation changed
+   */
+  private List<PageMatch> computeMatches(String path, QueryDescriptor query, int gen)
+  {
+    if ((query == null) || ((query.queryStr() == null) && (query.searchKeyQuery() == null)) || (generation != gen)) return null;
+
+    FullTextIndexer indexer = db.getFullTextIndexer();
+    if (indexer == null) return null;
+
+    try
+    {
+      SearchResult light = new SearchResult(path, 0f, null, null);
+      List<SearchResult> results = (query.searchKeyQuery() != null)
+        ? indexer.highlightResults(query.searchKeyQuery(), query.keyLookup(), List.of(light), MAX_PASSAGES_PER_FILE)
+        : indexer.highlightResults(query.queryStr(),                          List.of(light), MAX_PASSAGES_PER_FILE);
+
+      if (generation != gen) return null;
+
+      if (query.resultFilter() != null)
+        results = query.resultFilter().apply(results);
+
+      List<PageMatch> matches = results.isEmpty()
+        ? List.of()
+        : nullSwitch(results.getFirst().pageMatches(), List.of());
+
+      matchCache.put(path, matches);
+      return matches;
+    }
+    catch (ParseException e) { return null; }  // query was valid when search ran
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Counts the files' matches from the index (see {@link FullTextIndexer#countMatchesPerFile})
+   * and keeps the counts for this generation, for {@link #matchCount}. Blocking; call it off
+   * the JavaFX Application Thread. A record-scoped search is left alone: its matches are
+   * restricted to page ranges, which only highlighting can apply, so its counts come from the
+   * cached matches instead.
+   *
+   * @param onProgress called with the number of files counted so far, and stops the counting
+   *                   by returning false; null for no progress reports
+   */
+  public void countMatchesFromIndex(List<String> paths, IntPredicate onProgress)
+  {
+    QueryDescriptor query = this.query;
+    if ((query == null) || (query.resultFilter() != null) || paths.isEmpty()) return;
+
+    FullTextIndexer indexer = db.getFullTextIndexer();
+    if (indexer == null) return;
+
+    int gen = generation;
+
+    try
+    {
+      Map<String, Integer> counts = (query.searchKeyQuery() != null)
+        ? indexer.countMatchesPerFile(query.searchKeyQuery(), paths, onProgress)
+        : indexer.countMatchesPerFile(query.queryStr      (), paths, onProgress);
+
+      if (generation == gen)
+        indexCounts.putAll(counts);
+    }
+    catch (ParseException e) { /* query was valid when search ran */ }
   }
 
 //---------------------------------------------------------------------------
@@ -300,7 +384,7 @@ public final class HitSetService
       {
         List<SearchResult> highlighted = (query.searchKeyQuery() != null)
           ? indexer.highlightResults(query.searchKeyQuery(), query.keyLookup(), lightResults, MAX_PASSAGES_PER_FILE)
-          : indexer.highlightResults(query.queryStr(), lightResults, MAX_PASSAGES_PER_FILE);
+          : indexer.highlightResults(query.queryStr(),                          lightResults, MAX_PASSAGES_PER_FILE);
 
         if (generation != gen) return;
 

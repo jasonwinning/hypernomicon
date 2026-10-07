@@ -558,7 +558,7 @@ public final class FTSUtil
 //---------------------------------------------------------------------------
 
   /** Sorts the ranges and merges each run of overlapping ones into a single range. */
-  private static List<HitRange> mergeOverlapping(List<HitRange> ranges)
+  static List<HitRange> mergeOverlapping(List<HitRange> ranges)
   {
     List<HitRange> sorted = ranges.stream().sorted(Comparator.comparingInt(HitRange::start).thenComparingInt(HitRange::end)).toList(),
                    merged = new ArrayList<>();

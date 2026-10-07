@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -279,6 +280,10 @@ public class FullTextIndexer
   private volatile IndexerState state = IndexerState.CLOSED;
   private volatile boolean stopRequested, rebuildRequested, retryFailedRequested;
   private volatile int buildTotalFiles, buildProcessedFiles;
+
+  /** The last query counted per file, rewritten for the index reader it was counted against;
+   *  see {@link #countingQuery}. */
+  private volatile CountingQuery lastCountingQuery;
 
   /** Overrides {@link #INDEX_SCHEMA_VERSION} in {@link #bringOnline} so tests can
    *  simulate a configuration change between sessions. Null in production. */
@@ -890,16 +895,19 @@ public class FullTextIndexer
     }
 
     analyzer = null;
-    tika = null;
+    tika     = null;
 
     disposePdfJSExtractorPool();
+
     currentManifest = null;
-    manifestPath = null;
-    metadataMap.clear();
-    eventQueue.clear();
+    manifestPath    = null;
+
+    metadataMap       .clear();
+    eventQueue        .clear();
     extractionFailures.clear();
 
     fireStatusListener();
+
     statusListener = null;
   }
 
@@ -1241,9 +1249,11 @@ public class FullTextIndexer
     // MIN_EXTRACTION_INTERVAL_MS.
 
     Long lastStart = lastExtractionStart.get(relPath);
+
     if (lastStart != null)
     {
       long sinceLast = System.currentTimeMillis() - lastStart;
+
       if (sinceLast < MIN_EXTRACTION_INTERVAL_MS)
         if (sleepForMillis(MIN_EXTRACTION_INTERVAL_MS - sinceLast) == false)
           return;
@@ -1578,6 +1588,7 @@ public class FullTextIndexer
       if (extractionFailures.contains(relPath))
       {
         FileIndexEntry entry = metadataMap.get(relPath);
+
         if ((entry != null) && (entry.status() == NO_TEXT))
           noText.incrementAndGet();
         else
@@ -1674,6 +1685,7 @@ public class FullTextIndexer
         if (sleepForMillis(SIZE_STABILITY_DELAY_MS) == false) return false;
 
         long size = filePath.size();
+
         if (size == lastSize) return true;
         lastSize = size;
       }
@@ -2277,7 +2289,7 @@ public class FullTextIndexer
     private int[] pageOffsets;
     private List<SearchResult.PageMatch> lastResult = List.of();
 
-    private void setPageOffsets(int[] offsets) { this.pageOffsets = offsets; }
+    private void setPageOffsets(int[] offsets)           { this.pageOffsets = offsets; }
     private List<SearchResult.PageMatch> getLastResult() { return lastResult; }
 
   //---------------------------------------------------------------------------
@@ -2291,6 +2303,7 @@ public class FullTextIndexer
         String snippet = content.substring(passage.getStartOffset(), passage.getEndOffset());
 
         int pageNum = 0;
+
         if ((pageOffsets != null) && (passage.getNumMatches() > 0))
           pageNum = findPage(pageOffsets, passage.getMatchStarts()[0]);
 
@@ -2310,10 +2323,14 @@ public class FullTextIndexer
             hitRanges.add(new SearchResult.HitRange(hitStart, hitEnd));
         }
 
+        // Hits that overlap become one, since a query's clauses can match the same word (as in
+        // "egalitarian OR egalitarian*"), or a word within a phrase; each match is then
+        // highlighted once and counted once, as countMatchesPerFile counts it
+
         matches.add(new SearchResult.PageMatch
         (
           pageNum, passage.getStartOffset(), passage.getEndOffset(),
-          snippet, passage.getScore(), hitRanges
+          snippet, passage.getScore(), FTSUtil.mergeOverlapping(hitRanges)
         ));
       }
 
@@ -2359,9 +2376,7 @@ public class FullTextIndexer
 
   private static int[] decodePageOffsets(String encoded)
   {
-    if (strNullOrEmpty(encoded)) return null;
-
-    return Arrays.stream(encoded.split(",")).mapToInt(Integer::parseInt).toArray();
+    return strNullOrEmpty(encoded) ? null : Arrays.stream(encoded.split(",")).mapToInt(Integer::parseInt).toArray();
   }
 
 //---------------------------------------------------------------------------
@@ -2369,13 +2384,9 @@ public class FullTextIndexer
 
   private boolean isIndexable(FilePath filePath)
   {
-    if (FilePath.isEmpty(filePath))
-      return false;
-
-    if ((db != null) && db.xmlPath().contains(filePath))   // db is null in unit tests
-      return false;
-
-    if (isExcluded(filePath))
+    if (FilePath.isEmpty(filePath)
+        || ((db != null) && db.xmlPath().contains(filePath))   // db is null in unit tests
+        || isExcluded(filePath))
       return false;
 
     String fileNameStr = filePath.getNameOnly().toString();
@@ -2468,13 +2479,9 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // ---- Excluded folder paths -----------------------------------------------
-
   private boolean isExcluded(FilePath filePath)
   {
-    if (excludedPaths.isEmpty()) return false;
-
-    return isRelPathExcluded(relativePath(filePath));
+    return excludedPaths.isEmpty() ? false : isRelPathExcluded(relativePath(filePath));
   }
 
 //---------------------------------------------------------------------------
@@ -2623,9 +2630,9 @@ public class FullTextIndexer
    */
   public int countMatches(String queryStr, String fileMask, Set<String> pathScope, String folderPrefix) throws ParseException
   {
-    if ((searcherMgr == null) || (analyzer == null)) return 0;
-
-    return countMatches(parseQuery(analyzer, queryStr), fileMask, pathScope, folderPrefix);
+    return (searcherMgr == null) || (analyzer == null)
+      ? 0
+      : countMatches(parseQuery(analyzer, queryStr), fileMask, pathScope, folderPrefix);
   }
 
 //---------------------------------------------------------------------------
@@ -2640,7 +2647,6 @@ public class FullTextIndexer
     return countMatches(query, null, null, null);
   }
 
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
@@ -2684,6 +2690,182 @@ public class FullTextIndexer
       logThrowable(e);
       return 0;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Counts each file's matches for a Lucene query string; see
+   * {@link #countMatchesPerFile(Query, List, IntPredicate)}.
+   */
+  public Map<String, Integer> countMatchesPerFile(String queryStr, List<String> paths, IntPredicate onProgress) throws ParseException
+  {
+    return (searcherMgr == null) || (analyzer == null)
+      ? Map.of()
+      : countMatchesPerFile(parseQuery(analyzer, queryStr), paths, onProgress);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Counts each file's matches from the positions in the index, without reading the files'
+   * text, so a whole result list can be counted in a small fraction of the time highlighting
+   * it would take. Matches that overlap count once, as in the highlighted passages: with the
+   * search keys "Friedrich Nietzsche; ^Nietzsche", an occurrence of "Friedrich Nietzsche" is
+   * one match.
+   *
+   * @param paths      the DB-relative paths of the files to count
+   * @param onProgress called with the number of files counted so far, and stops the counting
+   *                   by returning false; null for no progress reports
+   * @return the match count of each file that is still in the index (of those counted, if the
+   *         listener stopped the counting), or an empty map if the index could not be read
+   */
+  public Map<String, Integer> countMatchesPerFile(Query query, List<String> paths, IntPredicate onProgress)
+  {
+    if (searcherMgr == null) return Map.of();
+
+    try
+    {
+      return withSearcher(searcher ->
+      {
+        Weight weight = searcher.createWeight(countingQuery(searcher, query), ScoreMode.COMPLETE_NO_SCORES, 1f);
+        Map<String, Integer> counts = new HashMap<>();
+
+        for (int ndx = 0; ndx < paths.size(); ndx++)
+        {
+          String path = paths.get(ndx);
+          int docID = findDocIDByPath(searcher, path);
+
+          if (docID >= 0)
+            counts.put(path, countMatchIntervals(weight, searcher.getLeafContexts(), docID));
+
+          if ((onProgress != null) && (onProgress.test(ndx + 1) == false))
+            break;
+        }
+
+        return counts;
+      });
+    }
+    catch (IOException e)
+    {
+      logThrowable(e);
+      return Map.of();
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * A query as {@link #countMatchesPerFile} counts with it, rewritten for one index reader.
+   */
+  private record CountingQuery(Query query, IndexReader.CacheKey readerKey, Query rewritten) { }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Rewrites a query for {@link #countMatchesPerFile}: its wildcard and prefix parts become
+   * the terms they match in the searcher's index, so counting each file takes a few term
+   * lookups instead of a walk through the whole term dictionary, which is what a leading
+   * wildcard would cost per file. The rewrite is cached for the searcher's index reader, so
+   * the batches of one search (the first page, Show More, Show All) look the terms up once;
+   * when the index changes, so does the reader, and the terms are looked up again.
+   */
+  @SuppressWarnings("resource")
+  private Query countingQuery(IndexSearcher searcher, Query query) throws IOException
+  {
+    IndexReader reader = searcher.getIndexReader();
+    IndexReader.CacheHelper cacheHelper = reader.getReaderCacheHelper();
+    IndexReader.CacheKey readerKey = (cacheHelper == null) ? null : cacheHelper.getKey();
+    CountingQuery cached = lastCountingQuery;
+
+    if ((cached != null) && (readerKey != null) && (cached.readerKey() == readerKey) && cached.query().equals(query))
+      return cached.rewritten();
+
+    Query rewritten = searcher.rewrite(expandMultiTermQueries(query, reader));
+
+    if (readerKey != null)
+      lastCountingQuery = new CountingQuery(query, readerKey, rewritten);
+
+    return rewritten;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Replaces each wildcard or prefix query in a query (at the top level or within a boolean
+   * query) with the set of terms it matches in the reader. Span queries are left as they are,
+   * since {@link IndexSearcher#rewrite} already expands their multi-term parts once.
+   */
+  private static Query expandMultiTermQueries(Query query, IndexReader reader) throws IOException
+  {
+    if (query instanceof MultiTermQuery multiTermQuery)
+    {
+      Terms terms = MultiTerms.getTerms(reader, multiTermQuery.getField());
+      List<BytesRef> matchedTerms = new ArrayList<>();
+
+      if (terms != null)
+      {
+        TermsEnum termsEnum = multiTermQuery.getTermsEnum(terms);
+
+        for (BytesRef term = termsEnum.next(); term != null; term = termsEnum.next())
+          matchedTerms.add(BytesRef.deepCopyOf(term));
+      }
+
+      return matchedTerms.isEmpty()
+        ? new MatchNoDocsQuery("No terms match " + multiTermQuery)
+        : new TermInSetQuery(multiTermQuery.getField(), matchedTerms);
+    }
+
+    if (query instanceof BooleanQuery booleanQuery)
+    {
+      BooleanQuery.Builder builder = new BooleanQuery.Builder().setMinimumNumberShouldMatch(booleanQuery.getMinimumNumberShouldMatch());
+
+      for (BooleanClause clause : booleanQuery.clauses())
+        builder.add(expandMultiTermQueries(clause.query(), reader), clause.occur());
+
+      return builder.build();
+    }
+
+    return query;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Counts a document's matches, counting matches that overlap by position once (such as
+   * one key's phrase and another key's word within it).
+   */
+  private static int countMatchIntervals(Weight weight, List<LeafReaderContext> leaves, int docID) throws IOException
+  {
+    LeafReaderContext leaf = leaves.get(ReaderUtil.subIndex(docID, leaves));
+    Matches matches = weight.matches(leaf, docID - leaf.docBase);
+    MatchesIterator iterator = (matches == null) ? null : matches.getMatches("content");
+
+    if (iterator == null) return 0;
+
+    List<int[]> intervals = new ArrayList<>();
+
+    while (iterator.next())
+      intervals.add(new int[] { iterator.startPosition(), iterator.endPosition() });
+
+    intervals.sort(Comparator.comparingInt((int[] interval) -> interval[0]).thenComparingInt(interval -> interval[1]));
+
+    int count = 0, coveredThrough = -1;
+
+    for (int[] interval : intervals)
+    {
+      if (interval[0] > coveredThrough)
+        count++;
+
+      coveredThrough = Math.max(coveredThrough, interval[1]);
+    }
+
+    return count;
   }
 
 //---------------------------------------------------------------------------
@@ -2750,6 +2932,7 @@ public class FullTextIndexer
     catch (Exception e)
     {
       System.out.println("Full-text indexer: failed to load exclusions: " + getThrowableMessage(e));
+
       excludedPaths = List.of();
       excludedFileMasksStr = "";
       excludedFileMasks = List.of();
@@ -3007,7 +3190,7 @@ public class FullTextIndexer
   public SearchBatch searchLight(String queryStr, int maxResults, String fileMask,
                                  Set<String> pathScope, String folderPrefix) throws ParseException
   {
-    return doSearch(null, null, queryStr, maxResults, fileMask, pathScope, folderPrefix);
+    return doSearch(null, null, queryStr, maxResults, fileMask, pathScope, folderPrefix, null);
   }
 
 //---------------------------------------------------------------------------
@@ -3019,7 +3202,7 @@ public class FullTextIndexer
   public SearchBatch searchLight(Query query, int maxResults, String fileMask,
                                  Set<String> pathScope, String folderPrefix)
   {
-    try { return doSearch(null, query, null, maxResults, fileMask, pathScope, folderPrefix); }
+    try { return doSearch(null, query, null, maxResults, fileMask, pathScope, folderPrefix, null); }
     catch (ParseException e) { return new SearchBatch(List.of(), false); }  // cannot happen with pre-built query
   }
 
@@ -3035,12 +3218,15 @@ public class FullTextIndexer
    * @param fileMask     comma-separated glob patterns or null/blank for all files
    * @param pathScope    set of relative paths to restrict results to, or null for all files
    * @param folderPrefix relative path prefix to restrict results to, or null for all folders
+   * @param onProgress   called with the number of results read so far, and stops the search
+   *                     by returning false, in which case the batch holds the results read
+   *                     so far and reports that more are available; null for no progress reports
    * @return batch containing lightweight results and a flag indicating whether more results are available
    */
   public SearchBatch searchLightAfter(ScoreDoc after, String queryStr, int maxResults, String fileMask,
-                                      Set<String> pathScope, String folderPrefix) throws ParseException
+                                      Set<String> pathScope, String folderPrefix, IntPredicate onProgress) throws ParseException
   {
-    return doSearch(after, null, queryStr, maxResults, fileMask, pathScope, folderPrefix);
+    return doSearch(after, null, queryStr, maxResults, fileMask, pathScope, folderPrefix, onProgress);
   }
 
 //---------------------------------------------------------------------------
@@ -3050,9 +3236,9 @@ public class FullTextIndexer
    * Continue a previous light search without highlighting, using a pre-built query.
    */
   public SearchBatch searchLightAfter(ScoreDoc after, Query query, int maxResults, String fileMask,
-                                      Set<String> pathScope, String folderPrefix)
+                                      Set<String> pathScope, String folderPrefix, IntPredicate onProgress)
   {
-    try { return doSearch(after, query, null, maxResults, fileMask, pathScope, folderPrefix); }
+    try { return doSearch(after, query, null, maxResults, fileMask, pathScope, folderPrefix, onProgress); }
     catch (ParseException e) { return new SearchBatch(List.of(), false); }
   }
 
@@ -3276,14 +3462,7 @@ public class FullTextIndexer
     if ((searcherMgr == null) || (analyzer == null) || lightResults.isEmpty())
       return highlighted;
 
-    Query query;
-
-    if (prebuiltQuery != null)
-      query = prebuiltQuery;
-    else
-    {
-      query = parseQuery(analyzer, queryStr);
-    }
+    Query query = prebuiltQuery != null ? prebuiltQuery : parseQuery(analyzer, queryStr);
 
     try
     {
@@ -3326,22 +3505,13 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   private SearchBatch doSearch(ScoreDoc after, Query prebuiltQuery, String queryStr, int maxResults, String fileMask,
-                               Set<String> pathScope, String folderPrefix) throws ParseException
+                               Set<String> pathScope, String folderPrefix, IntPredicate onProgress) throws ParseException
   {
     List<SearchResult> results = new ArrayList<>();
 
     if ((searcherMgr == null) || (analyzer == null)) return new SearchBatch(results, false);
 
-    Query query;
-
-    if (prebuiltQuery != null)
-    {
-      query = prebuiltQuery;
-    }
-    else
-    {
-      query = parseQuery(analyzer, queryStr);
-    }
+    Query query = prebuiltQuery != null ? prebuiltQuery : parseQuery(analyzer, queryStr);
 
     if (query instanceof MatchNoDocsQuery)
       return new SearchBatch(results, false);
@@ -3393,6 +3563,9 @@ public class FullTextIndexer
             results.add(new SearchResult(path, scoreDoc.score, null, scoreDoc));
 
             cursor = scoreDoc;
+
+            if ((onProgress != null) && (onProgress.test(results.size()) == false))
+              return true;  // Stopped by the listener, with results still unread
           }
 
           if (more || (topDocs.scoreDocs.length < fetchSize))
