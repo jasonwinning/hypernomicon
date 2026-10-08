@@ -690,7 +690,8 @@ public class BibDataRetriever
    * since that came from the user.
    * <p>
    * Every book source needs this, for its own reason. The Library of Congress SRU server is
-   * plain HTTP on a nonstandard port, which some networks block outright. Google Books retired
+   * plain HTTP on a nonstandard port, which some networks block outright; a search then goes to
+   * the Library's Linked Data Service instead, but that can fail as well. Google Books retired
    * anonymous access in 2026: an unkeyed request is billed to Google's shared fallback consumer
    * project, whose daily quota is now configured as zero, so every keyless request fails with
    * HTTP 429 by policy. A Google failure must therefore fall through to the stages after it

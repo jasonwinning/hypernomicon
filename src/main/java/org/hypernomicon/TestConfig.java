@@ -44,6 +44,15 @@ public final class TestConfig
   public static boolean runLongTests() { if (Boolean.TRUE) return true;
     return false; }
 
+  /**
+   * Send the Library of Congress SRU requests to a local port that nothing listens on, as if the
+   * network blocked the server's port, so that its searches fall back to the Library's Linked Data
+   * Service. Only when running under a debugger, so that the switch does nothing in a release or a
+   * unit test if it is left on.
+   */
+  public static boolean simulateBlockedSruPort() { if (Boolean.TRUE) return App.debugging();
+    return false; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

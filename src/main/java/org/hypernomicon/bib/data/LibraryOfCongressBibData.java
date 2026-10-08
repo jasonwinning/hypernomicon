@@ -17,6 +17,7 @@
 
 package org.hypernomicon.bib.data;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.MarcRecord.*;
@@ -24,10 +25,14 @@ import static org.hypernomicon.model.authors.Author.AuthorType.*;
 import static org.hypernomicon.model.items.BibliographicDate.DateType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.StringUtil.*;
+import static org.hypernomicon.util.TestContext.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.*;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +42,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import org.hypernomicon.TestConfig;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.Author.AuthorType;
@@ -62,9 +68,11 @@ import org.hypernomicon.util.http.*;
  * <a href="https://www.loc.gov/marc/bibliographic/">https://www.loc.gov/marc/bibliographic/</a>
  * </p>
  * <p>
- * Note that the SRU endpoint is plain HTTP on a nonstandard port, which some networks
- * block. Callers must treat a failure here as a reason to move on to another source
- * rather than as a fatal error.
+ * The SRU endpoint is plain HTTP on a nonstandard port, which some networks block. When
+ * it cannot be used, the same search goes to the Library's Linked Data Service instead,
+ * which serves the same catalog's records over HTTPS (see {@link LocLinkedDataSearch}).
+ * Both can fail, so callers must treat a failure here as a reason to move on to another
+ * source rather than as a fatal error.
  * </p>
  */
 public final class LibraryOfCongressBibData extends BibDataStandalone
@@ -73,8 +81,8 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** One record from a title search that is close enough to be considered, with what {@link #CANDIDATE_ORDER} ranks it by */
-  private record Candidate(LibraryOfCongressBibData bd, double dist, boolean authMatch, boolean yearMatch) { }
+  /** One result of a title search that is close enough to be considered, by its place among the results, with what {@link #CANDIDATE_ORDER} ranks it by */
+  private record Candidate(int ndx, double dist, boolean authMatch, boolean yearMatch) { }
 
   /** The Library of Congress answered with its block page instead of a search result; see {@link #isAccessBlocked(Document)} */
   @SuppressWarnings("serial")
@@ -85,10 +93,26 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
 
 //---------------------------------------------------------------------------
 
-  private static final String SRU_BASE = "http://lx2.loc.gov:210/lcdb";
+  private static final String SRU_BASE             = "http://lx2.loc.gov:210/lcdb",
+                              UNREACHABLE_SRU_BASE = "http://127.0.0.1:1/lcdb";  // Nothing listens there; see TestConfig.simulateBlockedSruPort
 
   private static final int MAX_RECORDS_ISBN  = 10,
                            MAX_RECORDS_TITLE = 20;
+
+  /** How long searches leave the SRU server alone after it could not be used; see {@link #sruRetryTime} */
+  private static final Duration SRU_RETRY_INTERVAL = Duration.ofMinutes(10);
+
+  /**
+   * Until when searches go straight to the Linked Data Service, because the SRU server could not
+   * be used when it was last tried. A network that blocks the port goes on blocking it, and every
+   * attempt would cost the request timeout before the fallback started. The server is tried again
+   * after a while all the same, because it is the better of the two when it can be reached: it
+   * answers a search with the records themselves, and it has the newest records, which the Linked
+   * Data Service has no MARCXML for.
+   */
+  private static volatile Instant sruRetryTime = Instant.MIN;
+
+  private static volatile String sruBaseForTesting = null;
 
   private final String queryIsbn;
 
@@ -160,6 +184,22 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
   private boolean hasEditorsButNoAuthors()          { return Author.representativeAuthors(authors).stream().anyMatch(Author::getIsEditor); }
 
   @Override public boolean fromOnlineSource()       { return true; }
+
+  /** The ISBN as it goes into a search: its digits and its check character, without separators */
+  static String isbnForQuery(CharSequence isbn)     { return isbn.toString().replaceAll("[^0-9Xx]", ""); }
+
+  /**
+   * The SRU response's count of the records found, or null if the document is not an SRU
+   * response. The selector ignores the namespace prefix: LoC has served both zs: and srw:,
+   * and SRU 2.0 drops the prefix.
+   */
+  private static Element numberOfRecords(Document doc) { return doc == null ? null : doc.selectFirst("*|numberOfRecords"); }
+
+  /**
+   * Points searches at a test server instead of LoC's SRU server, or back at LoC's for null, and
+   * forgets any failure of the SRU server, so that the next search tries it first
+   */
+  static void setSruBaseForTesting(String url)      { assertThatThisIsUnitTestThread(); sruBaseForTesting = url; sruRetryTime = Instant.MIN; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -855,7 +895,7 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
   static String getQueryUrl(String title, BibAuthors authors, List<String> authKeywords, CharSequence isbn)
   {
     if (strNotNullOrEmpty(isbn))
-      return sruUrl("bath.isbn=" + isbn.toString().replaceAll("[^0-9Xx]", ""), MAX_RECORDS_ISBN);
+      return sruUrl("bath.isbn=" + isbnForQuery(isbn), MAX_RECORDS_ISBN);
 
     authKeywords.clear();
 
@@ -892,7 +932,9 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
 
   private static String sruUrl(String cql, int maxRecords)
   {
-    return SRU_BASE + "?version=1.1&operation=searchRetrieve&recordSchema=marcxml&recordPacking=xml" +
+    String base = TestConfig.simulateBlockedSruPort() ? UNREACHABLE_SRU_BASE : SRU_BASE;
+
+    return Objects.requireNonNullElse(sruBaseForTesting, base) + "?version=1.1&operation=searchRetrieve&recordSchema=marcxml&recordPacking=xml" +
            "&maximumRecords=" + maxRecords + "&query=" + escapeURL(cql, false);
   }
 
@@ -951,7 +993,7 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
    */
   static boolean isAccessBlocked(Document doc)
   {
-    if ((doc == null) || (doc.selectFirst("*|numberOfRecords") != null)) return false;
+    if ((doc == null) || (numberOfRecords(doc) != null)) return false;
 
     String text = doc.text().toLowerCase(Locale.ROOT);
 
@@ -962,17 +1004,18 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 
   /**
-   * Ranks the records whose title is close enough to the one searched for. An author match
+   * Ranks the results whose title is close enough to the one searched for. An author match
    * outranks everything else. Next comes a date matching the work record's year, which is what
    * tells an original edition from its reprints when their titles are identical. Only then does
-   * title distance decide, and a remaining tie keeps the order LoC returned the records in.
+   * title distance decide, and a remaining tie keeps the order the results came in.
    */
   private static final Comparator<Candidate> CANDIDATE_ORDER =
     Comparator.comparing          (Candidate::authMatch, Comparator.reverseOrder())
               .thenComparing      (Candidate::yearMatch, Comparator.reverseOrder())
-              .thenComparingDouble(Candidate::dist);
+              .thenComparingDouble(Candidate::dist)
+              .thenComparingInt   (Candidate::ndx);
 
-  /** The distance assigned to a record whose title extends the main title being searched for: accepted, but below an exact match */
+  /** The distance assigned to a result whose title extends the main title being searched for: accepted, but below an exact match */
   private static final double PREFIX_MATCH_DISTANCE = 0.1;
 
   private static final int MIN_WORDS_FOR_PREFIX_MATCH = 3;
@@ -981,22 +1024,11 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
 
   static LibraryOfCongressBibData createFromXml(Document doc, String title, String yearStr, List<String> authKeywords, String queryIsbn)
   {
-    if (doc == null) return null;
+    // A response that is not an SRU envelope at all never gets here from doHttpRequest
 
-    // Use a prefix-agnostic selector: LoC has served both zs: and srw:, and SRU 2.0 drops the prefix
+    Element numberOfRecords = numberOfRecords(doc);
 
-    Element numberOfRecords = doc.selectFirst("*|numberOfRecords");
-
-    if (numberOfRecords == null)
-    {
-      // Not an SRU envelope at all. jsoup is lenient enough that a truncated response or an
-      // intercepting proxy's error page would otherwise be indistinguishable from a clean miss.
-
-      System.out.println("Library of Congress: response was not an SRU envelope");
-      return null;
-    }
-
-    if (parseInt(numberOfRecords.text().strip(), 0) == 0) return null;
+    if ((numberOfRecords == null) || (parseInt(numberOfRecords.text().strip(), 0) == 0)) return null;
 
     Element diagnostics = doc.selectFirst("*|diagnostics");
 
@@ -1006,16 +1038,44 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
       return null;
     }
 
-    List<MarcRecord> records = marcRecordsIn(doc);
+    return bestMatch(marcRecordsIn(doc), title, yearStr, authKeywords, queryIsbn);
+  }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The record that answers a search best, whichever service it came from. An ISBN lookup has
+   * no title to check against, so it takes the first record. A title search must check even a
+   * lone record: a single hit is no more likely to be the right book than the best of several.
+   */
+  static LibraryOfCongressBibData bestMatch(List<MarcRecord> records, String title, String yearStr, List<String> authKeywords, String queryIsbn)
+  {
     if (records.isEmpty()) return null;
-
-    // An ISBN lookup has no title to check against. A title search must check even a lone
-    // record: a single hit is no more likely to be the right book than the best of several.
 
     if (strNullOrBlank(title))
       return new LibraryOfCongressBibData(records.getFirst(), queryIsbn);
 
+    List<LibraryOfCongressBibData> bds = records.stream().map(marcRecord -> new LibraryOfCongressBibData(marcRecord, queryIsbn)).toList();
+
+    return bestTitleMatch(bds, title, yearStr, authKeywords, bd -> bd.getStr(bfTitle),
+                                                             bd -> bd.getAuthors().stream().map(author -> author.getName().getLast()).toList(),
+                                                             bd -> bd.getDate().year.numericValueWhereMinusOneEqualsOneBC());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The best of a title search's results, or null if none has a title close enough to the one
+   * searched for. The functions give a result's title, its contributors' surnames, and its year
+   * (zero if unknown), so that the results of either service are ranked alike: the records the
+   * SRU server returns, and the hits of the Linked Data Service, whose record is not fetched
+   * until one has been chosen.
+   */
+  static <T> T bestTitleMatch(List<T> results, String title, String yearStr, List<String> authKeywords,
+                              Function<T, String> titleOf, Function<T, List<String>> lastNamesOf, ToIntFunction<T> yearOf)
+  {
     LevenshteinDistance alg = LevenshteinDistance.getDefaultInstance();
 
     String sortTitle     = HDT_RecordBase.makeSortKeyByType(title, hdtWork),
@@ -1027,17 +1087,17 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
 
     List<Candidate> candidates = new ArrayList<>();
 
-    for (MarcRecord marcRecord : records)
+    for (int ndx = 0; ndx < results.size(); ndx++)
     {
-      LibraryOfCongressBibData curBD = new LibraryOfCongressBibData(marcRecord, queryIsbn);
+      T result = results.get(ndx);
 
-      String curSortTitle = HDT_RecordBase.makeSortKeyByType(curBD.getStr(bfTitle), hdtWork);
+      String curSortTitle = HDT_RecordBase.makeSortKeyByType(titleOf.apply(result), hdtWork);
 
       double dist = titleDistance(alg, sortTitle, curSortTitle);
 
       // LoC often catalogs what a title page presents as a subtitle as part of the title proper
       // ("Messianic idea in Judaism and other essays on Jewish spirituality", no colon), which
-      // the distance measure treats as forty characters of mismatch. A record whose title
+      // the distance measure treats as forty characters of mismatch. A result whose title
       // begins with the whole main title being searched for and goes on from there is a match,
       // ranked just below an exact one. Very short main titles are excluded: "Mind" must not
       // claim "Mind and world".
@@ -1048,15 +1108,14 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
       if (dist > LEVENSHTEIN_THRESHOLD) continue;
 
       boolean authMatch = (collEmpty(authKeywords) == false) &&
-                          curBD.getAuthors().stream().anyMatch(curAuthor ->
-                            authKeywords.stream().anyMatch(keyword -> curAuthor.getName().getLast().equalsIgnoreCase(keyword))),
+                          lastNamesOf.apply(result).stream().anyMatch(lastName -> authKeywords.stream().anyMatch(lastName::equalsIgnoreCase)),
 
-              yearMatch = (year > 0) && (curBD.getDate().year.numericValueWhereMinusOneEqualsOneBC() == year);
+              yearMatch = (year > 0) && (yearOf.applyAsInt(result) == year);
 
-      candidates.add(new Candidate(curBD, dist, authMatch, yearMatch));
+      candidates.add(new Candidate(ndx, dist, authMatch, yearMatch));
     }
 
-    return candidates.stream().min(CANDIDATE_ORDER).map(Candidate::bd).orElse(null);
+    return candidates.stream().min(CANDIDATE_ORDER).map(candidate -> results.get(candidate.ndx())).orElse(null);
   }
 
 //---------------------------------------------------------------------------
@@ -1100,16 +1159,11 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
     List<String> authKeywords = new ArrayList<>();
     String url = getQueryUrl(title, authors, authKeywords, isbn);
 
-    XmlHttpClient.getDocAsync(url, httpClient, doc ->
+    // Whichever service answered, a search that found nothing goes on with the next ISBN, or
+    // for a title, once more without the subtitle
+
+    Consumer<LibraryOfCongressBibData> resultHndlr = bd ->
     {
-      if (isAccessBlocked(doc))
-      {
-        failHndlr.accept(new AccessBlockedException());
-        return;
-      }
-
-      LibraryOfCongressBibData bd = createFromXml(doc, title, yearStr, authKeywords, finalIsbn);
-
       if ((bd == null) && (isbnIt != null) && isbnIt.hasNext())
       {
         doHttpRequest(httpClient, title, yearStr, authors, isbnIt, alreadyCheckedIDs, successHndlr, failHndlr);
@@ -1128,17 +1182,74 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
       }
 
       successHndlr.accept(bd);
+    };
 
-    }, e ->
+    Runnable searchLinkedData = () -> LocLinkedDataSearch.search(httpClient, title, yearStr, authKeywords, finalIsbn, resultHndlr, failHndlr);
+
+    if (sruRetryTime.isAfter(Instant.now()))
     {
-      if ((e instanceof HttpResponseException hre) && (hre.getStatusCode() == HttpStatusCode.SC_NOT_FOUND))
+      searchLinkedData.run();
+      return;
+    }
+
+    XmlHttpClient.getDocAsync(url, httpClient, doc ->
+    {
+      if (isAccessBlocked(doc))
       {
-        successHndlr.accept(null);
+        failHndlr.accept(new AccessBlockedException());
         return;
       }
 
-      failHndlr.accept(e);
+      // jsoup is lenient enough that a truncated response or an intercepting proxy's error page
+      // would otherwise pass for a search that found nothing
+
+      if (numberOfRecords(doc) == null)
+      {
+        searchLinkedDataInstead("the response was not an SRU envelope", searchLinkedData);
+        return;
+      }
+
+      resultHndlr.accept(createFromXml(doc, title, yearStr, authKeywords, finalIsbn));
+
+    }, e ->
+    {
+      if (sruUnusable(e))
+        searchLinkedDataInstead(getThrowableMessage(e), searchLinkedData);
+      else
+        failHndlr.accept(e);
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether a failed request to the SRU server means that the server cannot be used from here:
+   * there was no connection or no answer in time, the answer broke off, or it was an error
+   * status. The server answers a search that finds nothing with an envelope that holds no
+   * records, so even a 404 means that the endpoint is not there. Anything else is not about the
+   * server: a cancellation is the user's, and an exception thrown while the records were read is
+   * a fault in the reading, which the same records from the other service would only repeat.
+   */
+  static boolean sruUnusable(Exception e) { return e instanceof IOException; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Sends a search to the Linked Data Service because the SRU server could not be used, which
+   * searches then leave alone for a while (see {@link #sruRetryTime})
+   */
+  private static void searchLinkedDataInstead(String reason, Runnable searchLinkedData)
+  {
+    sruRetryTime = Instant.now().plus(SRU_RETRY_INTERVAL);
+
+    System.out.println("Library of Congress SRU server could not be used (" + reason + "); searching id.loc.gov instead");
+
+    if (TestConfig.simulateBlockedSruPort())
+      debugLog("That failure was simulated: TestConfig.simulateBlockedSruPort sends the SRU requests to a port that nothing listens on");
+
+    searchLinkedData.run();
   }
 
 //---------------------------------------------------------------------------

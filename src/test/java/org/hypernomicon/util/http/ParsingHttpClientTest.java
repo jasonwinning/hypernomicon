@@ -354,8 +354,8 @@ class ParsingHttpClientTest
 
 //---------------------------------------------------------------------------
 
-  /** Callers branch on the status code the exception carries: Crossref and the
-   *  Library of Congress both treat 404 as a clean miss. */
+  /** Callers branch on the status code the exception carries: Crossref treats
+   *  404 as a clean miss. */
   @ParameterizedTest
   @EnumSource(ClientKind.class)
   void anErrorStatusIsReportedAsAnHttpResponseException(ClientKind kind)
