@@ -196,6 +196,10 @@ public class FullTextIndexer
 
                               EMPTY_FILE_SUFFIX = " (empty file)";
 
+  private static final Object TIKA_LOCK = new Object();
+
+  private static volatile Tika sharedTika;
+
   private final LinkedBlockingQueue<IndexEvent> eventQueue = new LinkedBlockingQueue<>();
 
   /** Paths with a CREATE or MODIFY event currently in the queue or being
@@ -748,8 +752,9 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /**
-   * Start active background indexing. Launches the background thread, which
-   * initializes Tika, runs the initial build, and then processes filesystem events.
+   * Start active background indexing. Launches the background thread, which obtains
+   * Tika (building it in the first session), runs the initial build, and then processes
+   * filesystem events.
    * Transitions the indexer from {@code ONLINE_INDEXING_DISABLED} to {@code BUILDING};
    * must be called after {@link #bringOnline}.
    *
@@ -930,17 +935,52 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * The Tika instance that every indexer session in this process shares, built by the first
+   * session's background thread. Construction takes seconds as of Tika 4: each parser that
+   * detects encodings builds its own DefaultEncodingDetector, and each of those loads the
+   * charset detection models again. Sharing spares each later session that cost (one starts
+   * at every database switch). A session's worker threads already extract text through one
+   * instance concurrently, and nothing changes its configuration once it is built, so
+   * sessions can share it as well.
+   */
+  private static Tika getSharedTika()
+  {
+    if (sharedTika == null)
+    {
+      synchronized (TIKA_LOCK)
+      {
+        if (sharedTika == null)
+        {
+          Tika newTika = new Tika();
+          newTika.setMaxStringLength(MAX_TEXT_LENGTH);
+          sharedTika = newTika;
+        }
+      }
+    }
+
+    return sharedTika;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void backgroundLoop()
   {
-    // Tika is constructed here rather than in startIndexing because startIndexing runs on
-    // the FX thread while the database is loading, and construction takes seconds as of
-    // Tika 4: each parser that detects encodings builds its own DefaultEncodingDetector,
-    // and each of those loads the charset detection models again. Only this thread and
+    // Tika is obtained here rather than in startIndexing because startIndexing runs on
+    // the FX thread while the database is loading, and the first session's call builds
+    // the instance, which takes seconds (see getSharedTika). Only this thread and
     // the workers it starts ever extract text, and the loop must never run without a
     // Tika instance (extractText would return null and every file would be marked failed).
 
-    tika = new Tika();
-    tika.setMaxStringLength(MAX_TEXT_LENGTH);
+    tika = getSharedTika();
+
+    // Until the first build attempt, each pass takes only the events already queued instead of
+    // waiting up to a second for more, so a new session's build starts as soon as the queue is
+    // empty. From then on the second-long poll paces the loop, which also spaces out further
+    // attempts if a build ends incomplete.
+
+    boolean buildAttempted = false;
 
     while (stopRequested == false)
     {
@@ -962,8 +1002,11 @@ public class FullTextIndexer
           retryFailedRequested = false;
         }
 
-        if ((drainAndProcessEvents(1000) == false) && (isInitialBuildComplete() == false))
+        if ((drainAndProcessEvents(buildAttempted ? 1000 : 0) == false) && (isInitialBuildComplete() == false))
+        {
+          buildAttempted = true;
           initialBuild();
+        }
 
         long now = System.currentTimeMillis();
 
@@ -1420,14 +1463,21 @@ public class FullTextIndexer
    * Blocks until {@code executor} terminates, draining and processing queued
    * filesystem events during the wait so that file creates, deletes, renames,
    * and modifications are reflected in search before the whole build finishes,
-   * and committing once per {@link #COMMIT_INTERVAL_MS}. Returns early if a stop
-   * has been requested or the waiting thread is interrupted.
+   * and committing once per {@link #COMMIT_INTERVAL_MS}. When no event is queued
+   * it waits on the executor itself, which returns the moment the last worker
+   * finishes; the wait is cut into tenth-of-a-second slices so that an arriving
+   * event is not held up for long. Returns early if a stop has been requested or
+   * the waiting thread is interrupted.
    */
   private void waitForExecutorToFinish(ExecutorService executor)
   {
     while ((stopRequested == false) && (executor.isTerminated() == false))
     {
-      try { drainAndProcessEvents(500); }
+      try
+      {
+        if (drainAndProcessEvents(0) == false)
+          executor.awaitTermination(100, TimeUnit.MILLISECONDS);
+      }
       catch (InterruptedException e) { Thread.currentThread().interrupt(); return; }
       catch (IOException e) { logThrowable(e); }
 

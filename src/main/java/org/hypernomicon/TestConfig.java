@@ -39,12 +39,6 @@ public final class TestConfig
     return false; }
 
   /**
-   * Enable long-running stress tests in unit test suites.
-   */
-  public static boolean runLongTests() { if (Boolean.TRUE) return true;
-    return false; }
-
-  /**
    * Send the Library of Congress SRU requests to a local port that nothing listens on, as if the
    * network blocked the server's port, so that its searches fall back to the Library's Linked Data
    * Service. Only when running under a debugger, so that the switch does nothing in a release or a

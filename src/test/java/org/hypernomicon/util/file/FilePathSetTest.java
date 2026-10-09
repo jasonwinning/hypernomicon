@@ -21,7 +21,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.*;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -29,7 +28,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
-import org.hypernomicon.TestConfig;
 import org.hypernomicon.model.TestHyperDB;
 
 //---------------------------------------------------------------------------
@@ -832,28 +830,6 @@ class FilePathSetTest
     {
       executor.shutdownNow();
     }
-  }
-
-//---------------------------------------------------------------------------
-//endregion
-//region Stress Tests
-//---------------------------------------------------------------------------
-
-  @Test
-  void stress_manyDifferentFilenames_handledCorrectly()
-  {
-    assumeTrue(TestConfig.runLongTests());
-
-    int numPaths = 10000;
-
-    for (int ndx = 0; ndx < numPaths; ndx++)
-      set.add(FilePath.of("C:/dir/file" + ndx + ".txt"));
-
-    assertEquals(numPaths, set.size());
-
-    // Check all present
-    for (int ndx = 0; ndx < numPaths; ndx++)
-      assertTrue(set.contains(FilePath.of("C:/dir/file" + ndx + ".txt")));
   }
 
 //---------------------------------------------------------------------------

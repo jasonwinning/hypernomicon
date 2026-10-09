@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.hypernomicon.App;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 //---------------------------------------------------------------------------
 
@@ -300,7 +301,9 @@ class VersionNumberTest
     assertEquals(version1.hashCode(), version2.hashCode());
   }
 
+  /** Fetches the list of releases from GitHub, so it runs only when online tests are enabled with {@code HN_ONLINE_TESTS=true} */
   @Test
+  @EnabledIfEnvironmentVariable(named = "HN_ONLINE_TESTS", matches = "true")
   void testNewVersionCheck()
   {
     App.checkForNewVersionInThisThread(version ->
