@@ -43,8 +43,9 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
 
 /**
  * Test runner for the FileManager paste-move pipeline, plus the New Folder button's
- * refresh-and-highlight choreography (Phase 27) and the window's catch-up after a directory
- * is deleted through FileDeletion rather than the File Manager (Phase 28), launched from the
+ * refresh-and-highlight choreography (Phase 27), the window's catch-up after a directory
+ * is deleted through FileDeletion rather than the File Manager (Phase 28), and the folder
+ * lookup for a directory that has vanished from disk (Phase 29), launched from the
  * Test Console's File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
@@ -3799,6 +3800,44 @@ public final class FileManagerTestRunner
       FileManager.close(false);
     });
 
+    // =====================================================================
+    //  Phase 29: Folder Lookup for a Vanished Directory (1 step)
+    // =====================================================================
+
+    // Step 124: A directory's path resolves to its own folder record after the directory is gone, not to the parent's
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir   = createTestDir("p29s124", "vanishing"),
+               aside = extRoot.resolve("p29s124", "vanishing");
+      HDT_Folder parent = HyperPath.getFolderFromFilePath(dir.getParent(), false),
+                 folder = HyperPath.getFolderFromFilePath(dir, false);
+
+      assertNotNull(folder, "folder record should exist");
+      assertNotSame(parent, folder, "folder should resolve to its own record while the directory exists");
+
+      // Move the directory out from under the app with the watcher paused, so that nothing reacts and the
+      // registry keeps the folder's entry: the state of a folder found missing when the database loads
+
+      boolean restartWatcher = folderTreeWatcher.stop();
+
+      try
+      {
+        Files.createDirectories(aside.getParent().toPath());
+        Files.move(dir.toPath(), aside.toPath());
+
+        assertFalse(dir.exists(), "directory should be gone");
+        assertSame(folder, HyperPath.getFolderFromFilePath(dir, false),
+          "vanished directory's path should resolve to its own record, not the parent's");
+
+        Files.move(aside.toPath(), dir.toPath());
+      }
+      catch (IOException e) { throw new AssertionError(e); }
+      finally
+      {
+        if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
+      }
+    });
+
     // Start the sequence
     seq.start();
   }
@@ -4373,6 +4412,10 @@ public final class FileManagerTestRunner
 
     setupFile(testRoot, "p28s119", "parent", "doomed", "file.txt");
     setupFile(testRoot, "p28s119", "parent", "inuse", "work.pdf");
+
+    // Phase 29: Folder lookup for a vanished directory (Step 124)
+
+    setupDir(testRoot, "p29s124", "vanishing");
   }
 
 //---------------------------------------------------------------------------

@@ -19,9 +19,7 @@ package org.hypernomicon;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.PathInfo.FileKind.*;
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.Util.*;
 
 import java.util.Set;
 
@@ -82,7 +80,7 @@ class PathInfo
 
     if (db.getRootPath().contains(filePath))
     {
-      parentFolder = getParentFolderOfPath(filePath);
+      parentFolder = HyperPath.existingFolderRecordAtExactly(filePath.getParent());
 
       Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
 
@@ -129,16 +127,6 @@ class PathInfo
     if (filePath.exists() == false)  fileKind = fkUnknown;
     else if (filePath.isDirectory()) fileKind = fkFolder;
     else                             fileKind = fkFile;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static HDT_Folder getParentFolderOfPath(FilePath filePath)
-  {
-    return (HDT_Folder) findFirst(HyperPath.getHyperPathSetForFilePath(filePath.getParent()),
-                                  hp -> hp.getRecordType() == hdtFolder,
-                                  HyperPath::getRecord);
   }
 
 //---------------------------------------------------------------------------

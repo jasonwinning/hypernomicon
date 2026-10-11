@@ -220,7 +220,7 @@ public class FolderTreeWatcher
             {
               FilePath dirPath = FilePath.of((Path) watchKey.watchable());
 
-              watchKeyToDir.put(watchKey, folder = HyperPath.getFolderFromFilePath(dirPath, false));
+              watchKeyToDir.put(watchKey, folder = HyperPath.existingFolderRecordAtExactly(dirPath));
 
               if (folder == null)
               {
@@ -744,7 +744,7 @@ public class FolderTreeWatcher
           // discipline the deletion path follows. A null map value is fine: the
           // event loop re-resolves it lazily, by which time the batch has run.
 
-          HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
+          HDT_Folder folder = HyperPath.existingFolderRecordAtExactly(filePath);
 
           if (folder == null)
             dirsMissingRecords.add(filePath);

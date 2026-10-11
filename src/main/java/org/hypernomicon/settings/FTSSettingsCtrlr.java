@@ -236,7 +236,7 @@ public class FTSSettingsCtrlr implements SettingsControl
         return;
       }
 
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
+      HDT_Folder folder = HyperPath.existingFolderRecordAtExactly(filePath);
 
       if (folder == null)
       {
@@ -318,7 +318,7 @@ public class FTSSettingsCtrlr implements SettingsControl
     {
       if (folderPath.exists() == false) continue;
 
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(folderPath, false);
+      HDT_Folder folder = HyperPath.existingFolderRecordAtExactly(folderPath);
 
       if (folder == null) continue;
 

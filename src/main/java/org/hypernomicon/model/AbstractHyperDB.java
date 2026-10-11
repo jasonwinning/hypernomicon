@@ -2999,9 +2999,9 @@ public abstract class AbstractHyperDB
   {
     if (filePath.equals(rootFilePath)) return true;
 
-    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
+    HDT_Folder folder = HyperPath.existingFolderRecordAtExactly(filePath);
 
-    if ((folder != null) && folder.filePath().equals(filePath) && isProtectedRecord(folder, checkSubfolders))
+    if ((folder != null) && isProtectedRecord(folder, checkSubfolders))
       return true;
 
     FilePath xmlPath = xmlPath();

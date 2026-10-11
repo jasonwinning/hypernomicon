@@ -321,8 +321,10 @@ public class HyperPath
    * root have records, then creates a new {@code HDT_Folder} record for this path. The new
    * record's creation/modified/view dates are taken from the directory's filesystem attributes.
    * <p>
-   * When {@code doCreateRecord} is {@code false}, the method only returns a record if one already
-   * exists in the registry for the exact path. No records are created and no side effects occur.
+   * When {@code doCreateRecord} is {@code false}, the method only returns a record that already
+   * exists in the registry, for the path as given or for the directory it normalizes to. No
+   * records are created and no side effects occur. To look up the record registered for exactly
+   * a path, with no normalization, use {@link #existingFolderRecordAtExactly(FilePath)}.
    * <p>
    * This method is {@code synchronized} because it is called from both the FX thread (UI
    * operations, FileManager paste) and the FolderTreeWatcher thread ({@code registerTree}).
@@ -330,8 +332,12 @@ public class HyperPath
    * {@code createNewRecordFromState}) must be atomic to prevent duplicate records or stale
    * state when both threads attempt to create a folder record for the same path.
    *
-   * @param dirFilePath    The filesystem path of the directory. If this points to a file rather
-   *                       than a directory, it is normalized to the containing directory first.
+   * @param dirFilePath    The filesystem path of the directory. A path that has a folder record is
+   *                       taken as a directory's whether or not the directory still exists on disk.
+   *                       Otherwise, if it points to a file rather than a directory, it is normalized
+   *                       to the containing directory first; a vanished directory whose record has
+   *                       been evicted from the registry can't be told from a file's path and so
+   *                       resolves to its parent folder.
    * @param doCreateRecord If {@code true}, create new folder records as needed for this path and
    *                       any ancestor paths that lack records. If {@code false}, only return an
    *                       existing record or {@code null}.
@@ -341,15 +347,19 @@ public class HyperPath
    */
   public static synchronized HDT_Folder getFolderFromFilePath(FilePath dirFilePath, boolean doCreateRecord)
   {
+    // Look the path up as given before normalizing it: getDirOnly() can't tell a vanished directory
+    // from a file and would resolve it to the parent folder, but a folder record settles the question
+
+    HDT_Folder folder = existingFolderRecordAtExactly(dirFilePath);
+    if (folder != null) return folder;
+
     dirFilePath = dirFilePath.getDirOnly();
 
     if (db.getRootPath().contains(dirFilePath) == false)  // the path is not in the database folder tree
       return null;
 
-    Set<HyperPath> set = getHyperPathSetForFilePath(dirFilePath);
-
-    HDT_RecordWithPath folder = findFirst(set, hyperPath -> hyperPath.getRecordType() == hdtFolder, HyperPath::getRecord);
-    if (folder != null) return (HDT_Folder) folder;
+    folder = existingFolderRecordAtExactly(dirFilePath);
+    if (folder != null) return folder;
 
     if ((doCreateRecord == false) || (dirFilePath.exists() == false)) return null;
 
@@ -388,6 +398,23 @@ public class HyperPath
     newFolder.getPath().assignInternal(parentRecord, dirFilePath.getNameOnly());
 
     return newFolder;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Returns the folder record registered for exactly the given path, whether or not the directory
+   * still exists on disk. Unlike {@link #getFolderFromFilePath(FilePath, boolean)}, this never
+   * normalizes a file's path to its containing directory and never creates a record.
+   *
+   * @param filePath The filesystem path of the directory
+   * @return The {@code HDT_Folder} record registered for exactly {@code filePath}, or {@code null}
+   *         if there is none
+   */
+  public static HDT_Folder existingFolderRecordAtExactly(FilePath filePath)
+  {
+    return (HDT_Folder) findFirst(getHyperPathSetForFilePath(filePath), hyperPath -> hyperPath.getRecordType() == hdtFolder, HyperPath::getRecord);
   }
 
 //---------------------------------------------------------------------------

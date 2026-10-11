@@ -796,7 +796,7 @@ public final class FileManager extends NonmodalWindow
             incrementAndUpdateProgress();
 
             FilePath destRootPath = srcToDest.get(srcRootPath);
-            HDT_Folder srcFolder = HyperPath.getFolderFromFilePath(srcRootPath, false),
+            HDT_Folder srcFolder = HyperPath.existingFolderRecordAtExactly(srcRootPath),
                        destParent = HyperPath.getFolderFromFilePath(destRootPath.getParent(), true);
 
             boolean firstFailure = true;
@@ -937,7 +937,7 @@ public final class FileManager extends NonmodalWindow
             {
               if (srcFilePath.isUnderDbRoot())
               {
-                HDT_Folder emptyFolder = HyperPath.getFolderFromFilePath(srcFilePath, false);
+                HDT_Folder emptyFolder = HyperPath.existingFolderRecordAtExactly(srcFilePath);
                 if (emptyFolder != null)
                   internalEmptyFolders.add(emptyFolder);
               }
