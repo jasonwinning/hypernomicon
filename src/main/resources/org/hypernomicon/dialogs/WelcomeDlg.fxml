@@ -45,6 +45,7 @@
             <Hyperlink fx:id="linkIntroVideo" layoutX="6.0" layoutY="3.0" text="Introductory Tutorial" />
             <Hyperlink fx:id="linkFileMgmtVideo" layoutX="6.0" layoutY="22.0" text="Managing PDFs, Other Files, and Folders" />
             <Hyperlink fx:id="linkRefMgmtVideo" layoutX="6.0" layoutY="41.0" text="Integration with Zotero and Mendeley" />
+            <Hyperlink fx:id="linkQueriesVideo" layoutX="6.0" layoutY="60.0" text="Queries" />
           </AnchorPane>
         </TitledPane>
         <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="360.0" layoutY="172.0" prefHeight="112.0" prefWidth="399.0" text="Links">

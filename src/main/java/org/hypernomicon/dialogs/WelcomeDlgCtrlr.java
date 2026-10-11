@@ -44,7 +44,7 @@ public class WelcomeDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 
   @FXML private Button btnNew, btnOpen;
-  @FXML private Hyperlink linkIntroVideo, linkFileMgmtVideo, linkRefMgmtVideo, linkForums, linkWiki, linkNews, linkMore;
+  @FXML private Hyperlink linkIntroVideo, linkFileMgmtVideo, linkRefMgmtVideo, linkQueriesVideo, linkForums, linkWiki, linkNews, linkMore;
   @FXML private AnchorPane apRecent;
 
   private boolean newClicked = false, openClicked = false;
@@ -81,6 +81,7 @@ public class WelcomeDlgCtrlr extends ModalDialog
     linkIntroVideo   .setOnAction(event -> openWebLink("https://hypernomicon.org/support.html"));
     linkFileMgmtVideo.setOnAction(event -> openWebLink("https://hypernomicon.org/support.html"));
     linkRefMgmtVideo .setOnAction(event -> openWebLink("https://www.youtube.com/watch?v=uw8UylPXDYU"));
+    linkQueriesVideo .setOnAction(event -> openWebLink("https://www.youtube.com/watch?v=tAl7AJorfVQ"));
     linkForums       .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/discussion/"));
     linkWiki         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/wiki/Home/"));
     linkNews         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/news/"));
