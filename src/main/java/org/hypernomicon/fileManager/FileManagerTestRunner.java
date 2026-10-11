@@ -3695,7 +3695,7 @@ public final class FileManagerTestRunner
     });
 
     // =====================================================================
-    //  Phase 28: Directory Deletion Outside the File Manager (3 steps)
+    //  Phase 28: Directory Deletion Outside the File Manager (5 steps)
     // =====================================================================
 
     // Step 119: Records and window for a folder that will be deleted through FileDeletion, not the File Manager
@@ -3738,17 +3738,58 @@ public final class FileManagerTestRunner
       FileManager.refresh();  // what opening the window would do; a plain refresh must pick up the owed prune
     });
 
-    // Step 121: The refresh pruned the deleted folder's record and node; park the window at the root and close it
+    // Step 121: The refresh pruned the deleted folder; set up a folder whose in-use file keeps its record alive, and delete it
     seq.thenRunAfterDelay(() ->
     {
-      FilePath parentDir = testRoot.resolve("p28s119", "parent");
+      FilePath parentDir = testRoot.resolve("p28s119", "parent"),
+               inuseDir  = parentDir.resolve("inuse"),
+               workPdf   = inuseDir.resolve("work.pdf");
       HDT_Folder parent = HyperPath.getFolderFromFilePath(parentDir, false);
 
       assertNull(childFolderRecord(parent, "doomed"), "deleted folder's record should be pruned");
       assertFalse(folderTreeShows(parent, "doomed"), "deleted folder's node should be pruned");
       assertSame(parent, FileManager.instance().folderTree.selectedRecord(), "parent folder should still be selected");
 
-      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      HyperPath.getFolderFromFilePath(inuseDir, true);
+      assertNotNull(HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf), "WorkFile record should be created");
+
+      FileDeletion.ofDirWithContents(inuseDir).nonInteractiveLogErrors().execute();
+
+      assertFalse(inuseDir.exists(), "in-use folder should be gone from disk");
+
+      FileManager.refresh();
+    });
+
+    // Step 122: The prune rightly kept the in-use folder; selecting its node must enter it, not its parent
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parentDir = testRoot.resolve("p28s119", "parent");
+      HDT_Folder parent = HyperPath.getFolderFromFilePath(parentDir, false),
+                 inuse  = childFolderRecord(parent, "inuse");
+      FileManager fileManager = FileManager.instance();
+
+      assertNotNull(inuse, "in-use folder's record should survive the prune");
+      assertTrue(folderTreeShows(parent, "inuse"), "in-use folder's node should survive the prune");
+
+      // Resolving the folder from its path would land on the parent here: with the directory gone,
+      // getDirOnly() takes the path for a file's. The selection listener must go by the row's record.
+
+      fileManager.folderTree.selectRecord(inuse, 0, false);
+
+      assertSame(inuse, fileManager.folderTree.selectedRecord(), "in-use folder should be selected in the folder tree");
+
+      FileRow folderRow = fileManager.getFolderRow();
+      assertNotNull(folderRow, "File Manager should have entered the in-use folder");
+
+      HDT_RecordWithPath entered = folderRow.getRecord();
+      assertSame(inuse, entered, "File Manager should have entered the in-use folder, not its parent");
+    });
+
+    // Step 123: Park the window at the root, outside the tree the cleanup removes, and close it. A step of its
+    // own, so that the scroll and focus selectRecord deferred in the last step run while the window still shows.
+    seq.thenRunAfterDelay(() ->
+    {
+      selectRootFolder();
       FileManager.close(false);
     });
 
@@ -4322,9 +4363,10 @@ public final class FileManagerTestRunner
 
     setupFile(testRoot, "p27s114", "parent", "file.txt");
 
-    // Phase 28: Directory deletion outside the File Manager (Steps 119-121)
+    // Phase 28: Directory deletion outside the File Manager (Steps 119-123)
 
     setupFile(testRoot, "p28s119", "parent", "doomed", "file.txt");
+    setupFile(testRoot, "p28s119", "parent", "inuse", "work.pdf");
   }
 
 //---------------------------------------------------------------------------

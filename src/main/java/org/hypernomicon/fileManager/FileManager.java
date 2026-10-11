@@ -285,11 +285,13 @@ public final class FileManager extends NonmodalWindow
     {
       if ((newValue == null) || (newValue == oldValue)) return;
 
-      FilePath filePath = newValue.getValue().getFilePath();
+      // The row holds the record. Resolving it from the path instead goes wrong once the directory
+      // is gone: getDirOnly() then takes the path for a file's and resolves to the parent folder, so
+      // selecting a deleted folder's node showed its parent's contents under the wrong selection.
 
-      if (filePath == null) return;  // Folder record expired during deletion; ignore transient selection
+      HDT_Folder folder = newValue.getValue().getRecord();
 
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
+      if (HDT_Record.isEmpty(folder, false)) return;  // Folder record expired during deletion; ignore transient selection
 
       curFolder = folder;
 
