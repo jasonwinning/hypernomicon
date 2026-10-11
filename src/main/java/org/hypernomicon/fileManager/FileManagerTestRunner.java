@@ -43,8 +43,9 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
 
 /**
  * Test runner for the FileManager paste-move pipeline, plus the New Folder button's
- * refresh-and-highlight choreography (Phase 27), launched from the Test Console's
- * File Manager tab.
+ * refresh-and-highlight choreography (Phase 27) and the window's catch-up after a directory
+ * is deleted through FileDeletion rather than the File Manager (Phase 28), launched from the
+ * Test Console's File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
@@ -95,15 +96,20 @@ public final class FileManagerTestRunner
 
     seq.setFinalizer(() -> runDelayedInFXThread(1, 200, () ->
     {
-      PopupRobot.setActive(false);
-      PopupRobot.clear();
-
       FileManager.close(false);  // Phase 27 opens it; close it before the folders it shows are deleted
 
-      // Best-effort cleanup
+      // Best-effort cleanup: fixture records first, so that no folder is "in use" when the
+      // deletion's deferred prune reaches it. Deleting a record with a file asks whether to
+      // delete the file too; answer no, and let the tree deletion below take the files in one go.
+
+      PopupRobot.setDefaultResponse(mrNo);
+      deleteFixtureRecords();
 
       FileDeletion.ofDirsWithContents(List.of(testRoot)).nonInteractiveLogErrors().execute();
       FileDeletion.ofDirsWithContents(List.of(extRoot )).nonInteractiveLogErrors().execute();
+
+      PopupRobot.setActive(false);  // after the cleanup, so that nothing it pops up can block
+      PopupRobot.clear();
 
       if (onFinished != null)
         onFinished.run();
@@ -3684,6 +3690,65 @@ public final class FileManagerTestRunner
       assertSame(HyperPath.getFolderFromFilePath(parentDir, false), fileManager.folderTree.selectedRecord(),
         "parent folder should be selected in the folder tree");
 
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
+    // =====================================================================
+    //  Phase 28: Directory Deletion Outside the File Manager (3 steps)
+    // =====================================================================
+
+    // Step 119: Records and window for a folder that will be deleted through FileDeletion, not the File Manager
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parentDir = createTestDir("p28s119", "parent");
+
+      HyperPath.getFolderFromFilePath(parentDir.resolve("doomed"), true);
+
+      assertExists(parentDir.resolve("doomed", "file.txt"), "doomed file");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show();
+    });
+
+    // Step 120: Delete the folder through FileDeletion; its record and node must survive until the deferred prune
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parentDir = testRoot.resolve("p28s119", "parent"),
+               doomedDir = parentDir.resolve("doomed");
+      HDT_Folder parent = HyperPath.getFolderFromFilePath(parentDir, false),
+                 doomed = childFolderRecord(parent, "doomed");
+
+      assertNotNull(parent, "parent folder record should exist");
+      assertNotNull(doomed, "doomed folder record should exist");
+
+      FileManager.show(parentDir);
+
+      assertTrue(folderTreeShows(parent, "doomed"), "folder tree should show the folder before deletion");
+
+      FileDeletion.ofDirWithContents(doomedDir).nonInteractiveLogErrors().execute();
+
+      assertFalse(doomedDir.exists(), "folder should be gone from disk");
+
+      // The prune is owed, not run: callers such as HDT_Folder.delete() go on using the record after execute() returns
+
+      assertFalse(HDT_Record.isEmpty(doomed, false), "folder record should survive until the deferred prune");
+      assertTrue(folderTreeShows(parent, "doomed"), "folder tree node should survive until the deferred prune");
+
+      FileManager.refresh();  // what opening the window would do; a plain refresh must pick up the owed prune
+    });
+
+    // Step 121: The refresh pruned the deleted folder's record and node; park the window at the root and close it
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parentDir = testRoot.resolve("p28s119", "parent");
+      HDT_Folder parent = HyperPath.getFolderFromFilePath(parentDir, false);
+
+      assertNull(childFolderRecord(parent, "doomed"), "deleted folder's record should be pruned");
+      assertFalse(folderTreeShows(parent, "doomed"), "deleted folder's node should be pruned");
+      assertSame(parent, FileManager.instance().folderTree.selectedRecord(), "parent folder should still be selected");
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
       FileManager.close(false);
     });
 
@@ -4256,6 +4321,10 @@ public final class FileManagerTestRunner
     // Phase 27: New Folder button (Steps 114-118)
 
     setupFile(testRoot, "p27s114", "parent", "file.txt");
+
+    // Phase 28: Directory deletion outside the File Manager (Steps 119-121)
+
+    setupFile(testRoot, "p28s119", "parent", "doomed", "file.txt");
   }
 
 //---------------------------------------------------------------------------
@@ -4274,6 +4343,70 @@ public final class FileManagerTestRunner
     FilePath dir = testRoot.resolve(phase, name);
     HyperPath.getFolderFromFilePath(dir, true);
     return dir;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Deletes the records the suite assigned to test files (work files, misc. files, person
+   * pictures) and the notes it assigned to test folders. Left behind, they would keep those
+   * folders "in use", which the prune after the test tree's deletion rightly refuses to remove.
+   */
+  private static void deleteFixtureRecords()
+  {
+    List<HDT_Record> fixtures = new ArrayList<>();
+
+    for (HDT_WorkFile workFile : db.workFiles) if (isFixturePath(workFile.filePath())) fixtures.add(workFile);
+    for (HDT_MiscFile miscFile : db.miscFiles) if (isFixturePath(miscFile.filePath())) fixtures.add(miscFile);
+    for (HDT_Person   person   : db.persons  ) if (isFixturePath(person  .filePath())) fixtures.add(person  );
+
+    for (HDT_Note note : db.notes)
+      if (isFixturePath(nullSwitch(note.folder.get(), null, HDT_Folder::filePath)))
+        fixtures.add(note);
+
+    fixtures.forEach(db::deleteRecord);
+  }
+
+  private static boolean isFixturePath(FilePath filePath)
+  {
+    return (FilePath.isEmpty(filePath) == false) && (testRoot.contains(filePath) || extRoot.contains(filePath));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The live folder record named {@code name} directly under {@code parent}, or null. Goes by the
+   * records rather than the path registry, which a deletion evicts.
+   */
+  private static HDT_Folder childFolderRecord(HDT_Folder parent, String name)
+  {
+    for (HDT_Folder folder : db.folders)
+      if ((folder.parentFolder() == parent) && name.equals(folder.getPath().getNameStr()))
+        return folder;
+
+    return null;
+  }
+
+  /**
+   * Whether the File Manager's folder tree shows a node named {@code childName} under {@code parent}'s node.
+   */
+  private static boolean folderTreeShows(HDT_Folder parent, String childName)
+  {
+    return FileManager.instance().folderTree.getRowsForRecord(parent).getFirst().getTreeItem().getChildren().stream()
+      .anyMatch(item -> childName.equals(item.getValue().getFileName()));
+  }
+
+  /**
+   * Selects the root folder in the folder tree synchronously. {@code selectRecord} would defer its
+   * scroll and focus to a later pulse, which lands on a closed window when the step closes it next.
+   */
+  private static void selectRootFolder()
+  {
+    FolderTreeWrapper folderTree = FileManager.instance().folderTree;
+
+    folderTree.getSelectionModel().select(folderTree.getRowsForRecord(db.getRootFolder()).getFirst().getTreeItem());
   }
 
 //---------------------------------------------------------------------------

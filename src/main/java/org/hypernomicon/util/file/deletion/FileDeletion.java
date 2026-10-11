@@ -141,8 +141,11 @@ import org.hypernomicon.util.file.FilePath;
  * deletion is running on the watcher's own thread.
  * <p>
  * Similarly, {@code FileManager.setNeedRefresh()} is automatically called after successful deletion
- * of paths under the database root folder. Paths outside the database root do not trigger a refresh
- * since they are not displayed in the FileManager.
+ * of paths under the database root folder. When a directory (or a directory's contents) was deleted,
+ * {@code FileManager.setNeedPruneAndRefresh()} is called instead: the paused watcher could not
+ * report the deleted folders, so the deferred refresh also prunes their records and folder tree
+ * nodes, as the watcher would have requested. Paths outside the database root do not trigger a
+ * refresh since they are not displayed in the FileManager.
  *
  * <h2>Thread Safety</h2>
  * <ul>

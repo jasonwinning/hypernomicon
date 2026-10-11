@@ -109,12 +109,16 @@ public final class FileManager extends NonmodalWindow
 
   private enum RefreshLevel { NONE, REFRESH, PRUNE_AND_REFRESH }
 
-  /** Guards {@link #pendingRefresh} and {@link #lastRefreshTime}, which the
+  /** Guards {@link #pendingRefresh}, {@link #deferredRefresh} and {@link #lastRefreshTime}, which the
    *  refresh-coalescing logic reads and writes from the watcher and FX threads. */
   private final Object refreshLock = new Object();
-  private RefreshLevel pendingRefresh = RefreshLevel.NONE;
 
-  private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false, programmaticSelectionChange = false;
+  /** pendingRefresh: a request already scheduled through {@link #requestRefresh}. deferredRefresh: the
+   *  level {@link #setNeedRefresh} owes the window, absorbed by the next refresh that runs; a focus gain
+   *  requests one. */
+  private RefreshLevel pendingRefresh = RefreshLevel.NONE, deferredRefresh = RefreshLevel.NONE;
+
+  private boolean clipboardCopying, alreadyRefreshing = false, suppressNeedRefresh = false, programmaticSelectionChange = false;
   private long lastRefreshTime = 0;
 
 //---------------------------------------------------------------------------
@@ -123,7 +127,8 @@ public final class FileManager extends NonmodalWindow
   FileRow selectedFileRow()             { return fileTV.getSelectionModel().getSelectedItem(); }
   public static void clearHistory()     { instance.history.clear(); }
 
-  public static void setNeedRefresh()   { if ((instance != null) && (instance.suppressNeedRefresh == false)) instance.needRefresh = true; }
+  public static void setNeedRefresh()         { setNeedRefresh(RefreshLevel.REFRESH          ); }
+  public static void setNeedPruneAndRefresh() { setNeedRefresh(RefreshLevel.PRUNE_AND_REFRESH); }
 
   public static void close(boolean exitingApp) { close(instance, exitingApp); }
 
@@ -214,7 +219,11 @@ public final class FileManager extends NonmodalWindow
       if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
         return;
 
-      if (needRefresh) refresh();
+      RefreshLevel level;
+
+      synchronized (refreshLock) { level = deferredRefresh; }
+
+      if (level != RefreshLevel.NONE) requestRefresh(level);
     });
 
     stage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
@@ -1404,6 +1413,25 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /**
+   * Records a refresh the window owes itself, at least at the given level, for the next refresh
+   * that runs to absorb; a focus gain requests one. Callable from any thread. Ignored while the
+   * window's own file operations have suppressed it, since those refresh (and prune) on their own.
+   */
+  private static void setNeedRefresh(RefreshLevel level)
+  {
+    if ((instance == null) || instance.suppressNeedRefresh) return;
+
+    synchronized (instance.refreshLock)
+    {
+      if (instance.deferredRefresh.ordinal() < level.ordinal())
+        instance.deferredRefresh = level;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Requests a refresh at the given level. Thread-safe; can be called from any thread. The refresh
    * runs on the FX thread right away if none ran within {@link #REFRESH_THROTTLE_MS}, and otherwise
    * once that window has passed; a request arriving while one is already scheduled only raises the
@@ -1450,8 +1478,9 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /**
-   * Runs on the FX thread. Performs the pending refresh, raised to at least the given level, and
-   * stamps the throttle clock so that requests arriving right afterward are throttled as usual.
+   * Runs on the FX thread. Performs the pending refresh, raised to at least the given level and to
+   * the level {@link #setNeedRefresh} has recorded as owed, and stamps the throttle clock so that
+   * requests arriving right afterward are throttled as usual.
    * The throttle's callbacks pass {@code NONE}: they run whatever has been requested, and do
    * nothing when a refresh run in the meantime has already satisfied the request. Callers that
    * need a refresh right away pass the level they need. A prune runs even while the window is
@@ -1462,13 +1491,14 @@ public final class FileManager extends NonmodalWindow
   {
     RefreshLevel level;
 
-  // Claim the pending request
-  // -------------------------
+  // Claim the pending request and the owed level
+  // --------------------------------------------
 
     synchronized (refreshLock)
     {
-      level = ObjectUtils.max(pendingRefresh, atLeast);
-      pendingRefresh = RefreshLevel.NONE;
+      level = ObjectUtils.max(pendingRefresh, deferredRefresh, atLeast);
+      pendingRefresh  = RefreshLevel.NONE;
+      deferredRefresh = RefreshLevel.NONE;
 
       if (level == RefreshLevel.NONE)
         return;
@@ -1486,7 +1516,6 @@ public final class FileManager extends NonmodalWindow
   // --------------------------------------------------------------------
 
     if (alreadyRefreshing || (stage.isShowing() == false)) return;
-    needRefresh = false;
     alreadyRefreshing = true;
 
     try

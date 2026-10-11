@@ -166,6 +166,7 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
       return SUCCESS;
 
     List<FilePath> originalPaths = tasks.stream().map(DeletionTask::getFilePath).toList();
+    List<DeletionTask> allTasks = List.copyOf(tasks);  // the retry loop drops tasks from the list as they succeed
 
     boolean underDbRoot = anyUnderDbRoot(tasks),
             startWatcher = underDbRoot && (folderTreeWatcher.isOnWatcherThread() == false) && folderTreeWatcher.stop();
@@ -175,7 +176,16 @@ abstract class DeletionBuilderBase<T extends DeletionBuilderBase<T>>
       DeletionResult result = executeWithRetry();
 
       if (((result == SUCCESS) || (result == PARTIAL)) && underDbRoot)
-        FileManager.setNeedRefresh();
+      {
+        // The watcher was paused for this deletion, so it can't report it. A deleted directory
+        // leaves its folder record and File Manager tree node behind until a prune, which the
+        // watcher would otherwise have requested on seeing the directory go.
+
+        if (allTasks.stream().anyMatch(DeletionTask::isDirectoryDeletion))
+          FileManager.setNeedPruneAndRefresh();
+        else
+          FileManager.setNeedRefresh();
+      }
 
       if ((result == SUCCESS) || (result == PARTIAL))
       {

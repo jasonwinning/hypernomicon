@@ -42,6 +42,7 @@ class DeletionTask
 
   private final FilePath filePath;
   private final DeletionType type;
+  private DeletionType resolvedType = null;  // what the first attempt found the type to be; the path is gone afterward, so it can't be re-derived
   private IOException lastError;
 
 //---------------------------------------------------------------------------
@@ -56,6 +57,9 @@ class DeletionTask
 
   FilePath getFilePath()     { return filePath; }
   IOException getLastError() { return lastError; }
+
+  /** Whether this task deletes a directory or a directory's contents, as resolved by its first attempt; false before one */
+  boolean isDirectoryDeletion() { return (resolvedType != null) && (resolvedType != FILE_ONLY); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -138,14 +142,18 @@ class DeletionTask
 //---------------------------------------------------------------------------
 
   /**
-   * Resolves FILE_OR_DIR_WITH_CONTENTS to the actual type based on the filePath.
+   * Resolves FILE_OR_DIR_WITH_CONTENTS to the actual type based on the filePath. Resolved once,
+   * on the first attempt: after a successful attempt the path no longer exists to be asked.
    */
   private DeletionType effectiveType()
   {
-    return type == FILE_OR_DIR_WITH_CONTENTS ?
-      (filePath.isDirectory() ? DIR_WITH_CONTENTS : FILE_ONLY)
-    :
-      type;
+    if (resolvedType == null)
+      resolvedType = type == FILE_OR_DIR_WITH_CONTENTS ?
+        (filePath.isDirectory() ? DIR_WITH_CONTENTS : FILE_ONLY)
+      :
+        type;
+
+    return resolvedType;
   }
 
 //---------------------------------------------------------------------------
