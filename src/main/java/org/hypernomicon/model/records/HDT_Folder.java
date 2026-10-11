@@ -257,6 +257,31 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithFolderPa
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Deletes a folder's record and the records of all its descendant folders. Records only: the
+   * directories were deleted beforehand by {@link #delete()}, or had already vanished from the disk
+   * when the File Manager's prune found them. Those are this method's two callers.
+   * <p>
+   * The order matters. Folder records form a tree through the parent-folder pointer, and the
+   * database does not cascade a deletion down it. Moreover, deleting a folder record takes a
+   * shortcut in {@code AbstractHyperDB.deleteRecord} ({@code folderDeletionBypassEnabled}): instead
+   * of the database-wide pointer cleanup that other record types get, the expired record is removed
+   * from its HyperCore directly, on the strength of {@code doFolderDeletionCheck}'s assertion that
+   * nothing points at it any more. The depth-first walk here is what makes that true for child
+   * folders. The callers see to everything else that could point at a folder in the subtree:
+   * {@link #delete()} detaches the folder's notes first, and both callers only reach a folder whose
+   * contents are not in use (no work files, misc. files or pictures), the File Manager refusing such
+   * a deletion and the prune skipping such a folder.
+   * <p>
+   * Each record's expiry severs its relation to the parent, which is why the child list is copied
+   * before it is walked, and runs the delete handlers, through which the File Manager's tree model
+   * and folder history drop the folder. A folder whose record is already gone (its ID is no longer
+   * positive) is skipped. Call this on the FX thread only: the folder tree watcher's deletion case
+   * deliberately leaves it to the prune, since calling it from the watcher thread would race with
+   * the prune's walk.
+   *
+   * @param folder The root of the subtree to delete; its own record goes last
+   */
   public static void deleteFolderRecordTree(HDT_Folder folder)
   {
     if (folder.childFolders.isEmpty() == false)

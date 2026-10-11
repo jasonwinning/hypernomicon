@@ -80,6 +80,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
     db.addCloseDBHandler    (this::reset);
     db.addPreDBChangeHandler(this::reset);
+    db.addDeleteHandler     (this::recordDeleted);
 
     tv.setCellFactory(treeView ->
     {
@@ -145,6 +146,23 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Purges a deleted folder from the tree model's record-keyed maps and from the folder history, by
+   * identity, as anything holding record references must on deletion. During a prune the model leaves
+   * the tree items to the prune's own pass; otherwise it removes the folder's node as well.
+   */
+  private void recordDeleted(HDT_Record record)
+  {
+    if (record instanceof HDT_Folder folder)
+    {
+      treeModel.removeRecord(folder);
+      folderHistory.removeRecord(folder);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public FileRow newRow(HDT_Record record, TreeModel<FileRow> treeModel)
   {
     if (record.getType() == hdtFolder)
@@ -187,6 +205,27 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Reconciles the folder records with the disk. Walks the tree and, for each folder that is not in
+   * use ({@link HyperPath#isInUse()}: no records associated with it or its subfolders, and not a
+   * special folder) whose directory no longer exists, deletes its record tree and removes its node;
+   * a node whose record is already gone is removed as well. A folder that is still in use keeps its
+   * record and node even without its directory, so that no association is dropped silently;
+   * {@code HDT_Folder.checkExists} reports such folders at load.
+   * <p>
+   * Apart from {@link HDT_Folder#delete()}, which handles a folder the File Manager deletes itself,
+   * this is where the records of vanished directories are deleted. A directory removed outside the
+   * application, by another instance, or through {@code FileDeletion} elsewhere in it reaches the
+   * File Manager only as a prune-and-refresh request, and the check of {@code exists()} here does
+   * not depend on which watcher events arrived, if any. That is also why the Refresh button runs a
+   * prune, and why the File Manager's delete flow calls one itself while the watcher is stopped.
+   * <p>
+   * Runs on the FX thread. The watcher thread leaves folder-record deletion to this walk because
+   * doing it there raced with it (see the deletion case in {@code FolderTreeWatcher}). While the
+   * walk runs, {@code pruningOperationInProgress} tells the model's delete handler to leave the tree
+   * items alone, since {@code removeIf} is iterating the children here; the handler still purges the
+   * records' rows and their folder-history entries.
+   */
   void prune()
   {
     treeModel.pruningOperationInProgress = true; // prevent ConcurrentModificationException
@@ -216,8 +255,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
           if (FilePath.isEmpty(filePath) || (filePath.exists() == false))
           {
-            folderHistory.removeRecord(folder);
-            HDT_Folder.deleteFolderRecordTree(folder);
+            HDT_Folder.deleteFolderRecordTree(folder);  // the delete handler purges the records' rows and history entries
             return true;
           }
         }

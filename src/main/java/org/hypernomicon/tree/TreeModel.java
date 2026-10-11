@@ -135,7 +135,11 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void removeRecord(HDT_Record record)
+  /**
+   * Purges a deleted record from the model: its rows, its parent-child entries and, except during a
+   * prune (which removes tree items itself), its tree items. For a tree wrapper's delete handler.
+   */
+  public void removeRecord(HDT_Record record)
   {
     ImmutableSet.<HDT_Record>copyOf(parentToChildren.getForwardRecordSet(record)).forEach(child  -> unassignParent(child , record));
     ImmutableSet.<HDT_Record>copyOf(parentToChildren.getReverseRecordSet(record)).forEach(parent -> unassignParent(record, parent));

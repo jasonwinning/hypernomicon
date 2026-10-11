@@ -3698,6 +3698,8 @@ public final class FileManagerTestRunner
     //  Phase 28: Directory Deletion Outside the File Manager (5 steps)
     // =====================================================================
 
+    HDT_Folder[] doomedHolder = new HDT_Folder[1];  // carries the record from step 120 to step 121; once pruned, no path finds it
+
     // Step 119: Records and window for a folder that will be deleted through FileDeletion, not the File Manager
     seq.thenRunAfterDelay(() ->
     {
@@ -3721,6 +3723,8 @@ public final class FileManagerTestRunner
 
       assertNotNull(parent, "parent folder record should exist");
       assertNotNull(doomed, "doomed folder record should exist");
+
+      doomedHolder[0] = doomed;
 
       FileManager.show(parentDir);
 
@@ -3748,6 +3752,8 @@ public final class FileManagerTestRunner
 
       assertNull(childFolderRecord(parent, "doomed"), "deleted folder's record should be pruned");
       assertFalse(folderTreeShows(parent, "doomed"), "deleted folder's node should be pruned");
+      assertTrue(FileManager.instance().folderTree.getRowsForRecord(doomedHolder[0]).isEmpty(),
+        "tree model should have purged the pruned folder's rows");
       assertSame(parent, FileManager.instance().folderTree.selectedRecord(), "parent folder should still be selected");
 
       HyperPath.getFolderFromFilePath(inuseDir, true);
