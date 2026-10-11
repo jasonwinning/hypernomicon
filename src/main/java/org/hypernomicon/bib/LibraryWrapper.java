@@ -190,9 +190,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private volatile boolean fxThreadReturnValue;
-
-  public boolean doMerge(BibEntry_T entry, JsonObj jObj)
+  public void doMerge(BibEntry_T entry, JsonObj jObj)
   {
     runInFXThread(() ->
     {
@@ -206,7 +204,11 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
       catch (IOException e)
       {
         errorPopup("Unable to initialize merge dialog window.");
-        fxThreadReturnValue = false;
+
+        // The entry still holds only the local changes, so uploading it would overwrite the
+        // remote changes or be rejected as out of date. End the sync instead.
+
+        stop();
         return;
       }
 
@@ -215,13 +217,9 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry<BibEntry_T, Bib
       mwd.showModal();       // Just do the merge because the cancel button gets
       mwd.mergeInto(entry);  // removed from the merge window in this situation
 
-      fxThreadReturnValue = true;
-
     }, true);
 
     didMergeDuringSync = true;
-
-    return fxThreadReturnValue;
   }
 
 //---------------------------------------------------------------------------

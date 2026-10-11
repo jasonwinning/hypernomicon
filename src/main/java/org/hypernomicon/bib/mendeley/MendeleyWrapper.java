@@ -386,7 +386,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
           }
         });
 
-        lastSyncTime = Instant.now();
+        Instant readTime = Instant.now();  // Becomes lastSyncTime only once this pass is complete (see below)
 
 // Ignore documents with old modified date --------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
@@ -496,6 +496,11 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
             }
           }
         }
+
+        // A pass cut short by a cancellation or an error keeps the previous sync time, so the next
+        // sync reads these remote changes again instead of skipping any that were never applied.
+
+        lastSyncTime = readTime;
 
 // If 412 status received, start over -------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
