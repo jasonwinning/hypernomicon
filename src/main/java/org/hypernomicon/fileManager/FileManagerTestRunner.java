@@ -42,12 +42,14 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
 //---------------------------------------------------------------------------
 
 /**
- * Test runner for the FileManager paste-move pipeline, launched from the
- * Test Console's File Manager tab.
+ * Test runner for the FileManager paste-move pipeline, plus the New Folder button's
+ * refresh-and-highlight choreography (Phase 27), launched from the Test Console's
+ * File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
- * and the {@link FileRow} constructor.</p>
+ * {@link FileManager#newFolder(HDT_Folder, String)}, {@link FileManager#openFileRow}, and the
+ * {@link FileRow} constructor.</p>
  *
  * <p>All test files are created under the transient database's
  * {@code _test_fm/} directory (internal) and a sibling {@code _test_fm_ext/}
@@ -95,6 +97,8 @@ public final class FileManagerTestRunner
     {
       PopupRobot.setActive(false);
       PopupRobot.clear();
+
+      FileManager.close(false);  // Phase 27 opens it; close it before the folders it shows are deleted
 
       // Best-effort cleanup
 
@@ -3591,6 +3595,98 @@ public final class FileManagerTestRunner
       catch (Exception e) { throw new AssertionError(e); }
     });
 
+    // =====================================================================
+    //  Phase 27: New Folder Button (5 steps)
+    // =====================================================================
+
+    // Step 114: Open the File Manager; the parent folder's tree node appears a pulse after its record
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parentDir = createTestDir("p27s114", "parent");
+
+      assertExists(parentDir.resolve("file.txt"), "parent file");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show();
+    });
+
+    // Step 115: Enter the parent folder, then create a folder the way the New Folder button does
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parentDir = testRoot.resolve("p27s114", "parent");
+      HDT_Folder parent = HyperPath.getFolderFromFilePath(parentDir, false);
+
+      assertNotNull(parent, "parent folder record should exist");
+
+      FileManager.show(parentDir);
+
+      assertSame(parent, FileManager.instance().folderTree.selectedRecord(),
+        "parent folder should be selected in the folder tree");
+
+      FileManager.instance().newFolder(parent, "newfolder");
+    });
+
+    // Step 116: The new folder's row is highlighted and has its record and its folder tree item
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath newDir = testRoot.resolve("p27s114", "parent", "newfolder");
+
+      assertTrue(newDir.isDirectory(), "new folder should exist on disk");
+
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(newDir, false);
+      assertNotNull(folder, "new folder should have a record");
+
+      FileManager fileManager = FileManager.instance();
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "new folder's row should be selected in the file table");
+
+      HDT_RecordWithPath rowRecord = row.getRecord();
+      assertSame(folder, rowRecord, "selected row should be the new folder's");
+
+      assertNotNull(row.getTreeItem(), "new folder's row should have its folder tree item");
+      assertSame(fileManager.folderTree.getRowsForRecord(folder).getFirst().getTreeItem(), row.getTreeItem(),
+        "row's tree item should be the folder tree's node for the new folder");
+
+      assertTrue(folderTreeWatcher.isRunning(), "FolderTreeWatcher should be running after creating a folder");
+
+      fileManager.openFileRow(row);  // the double-click
+    });
+
+    // Step 117: The double-click entered the new folder; go back and select a file row (the gesture that used to throw)
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parentDir = testRoot.resolve("p27s114", "parent");
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(parentDir.resolve("newfolder"), false);
+      FileManager fileManager = FileManager.instance();
+
+      assertSame(folder, fileManager.folderTree.selectedRecord(),
+        "double-click should select the new folder in the folder tree");
+
+      FileRow folderRow = fileManager.getFolderRow();
+      assertNotNull(folderRow, "File Manager should have a current folder");
+
+      HDT_RecordWithPath entered = folderRow.getRecord();
+      assertSame(folder, entered, "double-click should enter the new folder");
+
+      FileManager.show(parentDir.resolve("file.txt"));
+    });
+
+    // Step 118: The file row is selected under the parent folder; close the window
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parentDir = testRoot.resolve("p27s114", "parent");
+      FileManager fileManager = FileManager.instance();
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "file row should be selected");
+      assertEquals(parentDir.resolve("file.txt"), row.getFilePath(), "selected row should be the file");
+      assertSame(HyperPath.getFolderFromFilePath(parentDir, false), fileManager.folderTree.selectedRecord(),
+        "parent folder should be selected in the folder tree");
+
+      FileManager.close(false);
+    });
+
     // Start the sequence
     seq.start();
   }
@@ -4156,6 +4252,10 @@ public final class FileManagerTestRunner
     setupFile(testRoot, "p26s113", "src", "mixed", "tracked.txt");
     setupFile(testRoot, "p26s113", "src", "mixed", "loose.txt");
     setupDir (testRoot, "p26s113", "dest");
+
+    // Phase 27: New Folder button (Steps 114-118)
+
+    setupFile(testRoot, "p27s114", "parent", "file.txt");
   }
 
 //---------------------------------------------------------------------------

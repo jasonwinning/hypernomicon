@@ -38,6 +38,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.dialogs.*;
@@ -118,6 +120,7 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   FileRow getFolderRow()                { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).getFirst()); }
+  FileRow selectedFileRow()             { return fileTV.getSelectionModel().getSelectedItem(); }
   public static void clearHistory()     { instance.history.clear(); }
 
   public static void setNeedRefresh()   { if ((instance != null) && (instance.suppressNeedRefresh == false)) instance.needRefresh = true; }
@@ -318,7 +321,7 @@ public final class FileManager extends NonmodalWindow
         PreviewWindow.setPreview(pvsManager, newValue.getFilePath());
     });
 
-    recordTable.setOnShowMore(() -> updateRecordTable(fileTV.getSelectionModel().getSelectedItem(), true));
+    recordTable.setOnShowMore(() -> updateRecordTable(selectedFileRow(), true));
 
     fileTV.setRowFactory(thisTV ->
     {
@@ -327,15 +330,7 @@ public final class FileManager extends NonmodalWindow
       row.setOnMouseClicked(mouseEvent ->
       {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
-        {
-          nullSwitch(row.getItem(), fileRow ->
-          {
-            if (fileRow.isDirectory())
-              folderTree.getSelectionModel().select(fileRow.getTreeItem());
-            else
-              launchFile(fileRow.getFilePath());
-          });
-        }
+          nullSwitch(row.getItem(), this::openFileRow);
       });
 
       fileTable.setupDragHandlers(row);
@@ -352,7 +347,7 @@ public final class FileManager extends NonmodalWindow
       if (newValue != null)
       {
         HDT_Record record = HyperTableCell.getRecord(newValue.getCell(1));
-        history.updateCurrent(new FolderHistoryItem(folderTree.selectedItem().getValue(), fileTV.getSelectionModel().getSelectedItem(), record));
+        history.updateCurrent(new FolderHistoryItem(folderTree.selectedItem().getValue(), selectedFileRow(), record));
 
         if (record != null)
         {
@@ -1020,7 +1015,7 @@ public final class FileManager extends NonmodalWindow
     if (srcRow != null)
       return List.of(new EntityWithRow(srcRow));
 
-    FileRow fileRow = fileTV.getSelectionModel().getSelectedItem();
+    FileRow fileRow = selectedFileRow();
 
     if (fileRow != null)
       return List.of(new EntityWithRow(fileRow));
@@ -1247,32 +1242,34 @@ public final class FileManager extends NonmodalWindow
 
     if (dlg.showModal() == false) return;
 
-    FilePath newFilePath;
+    newFolder(parentFolder, dlg.getNewName());
+  }
 
-    suppressNeedRefresh = true;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    try
-    {
-      newFilePath = parentFolder.filePath().resolve(dlg.getNewName());
-      newFilePath.createDirectory();
-    }
-    catch (FileAlreadyExistsException e)
-    {
-      errorPopup("Unable to create the folder: A file with that name already exists.");
-      return;
-    }
-    catch (IOException e)
-    {
-      errorPopup("Unable to create the folder: " + getThrowableMessage(e));
-      return;
-    }
-    finally
-    {
-      suppressNeedRefresh = false;
-    }
+  /**
+   * Creates the folder on disk and in the database, then refreshes the file table and
+   * highlights the new folder's row. Package-private so the test runner can drive it
+   * without the name dialog.
+   */
+  void newFolder(HDT_Folder parentFolder, String folderName)
+  {
+    HDT_Folder subfolder = parentFolder.createSubfolder(folderName);
 
-    pruneAndRefresh(true);
-    goToFilePath(newFilePath, true);
+    if (subfolder == null) return;
+
+    // The folder tree adds the new folder's node from a relation change handler that runs in a
+    // Platform.runLater call. The refresh has to run after that, or the file table row for the
+    // new folder is built before its tree item exists and never gets one. The watcher stays
+    // running: createSubfolder already paused it around the change on disk, and there is
+    // nothing to prune.
+
+    Platform.runLater(() ->
+    {
+      runPendingRefresh(RefreshLevel.REFRESH);
+      goToFilePath(subfolder.filePath(), true);
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -1282,7 +1279,7 @@ public final class FileManager extends NonmodalWindow
   {
     if (ui.cantSaveRecord()) return;
 
-    if (fileRow == null) fileRow = fileTV.getSelectionModel().getSelectedItem();
+    if (fileRow == null) fileRow = selectedFileRow();
     if (fileRow == null) fileRow = getFolderRow();
     if (fileRow == null) return;
 
@@ -1366,34 +1363,28 @@ public final class FileManager extends NonmodalWindow
 
   /**
    * Callable from any thread. Prunes deleted folders from the tree, then refreshes.
-   * When {@code ensureWatcherIsStopped} is true, the watcher is stopped before
-   * pruning and restarted after; this bypasses throttling so the full
-   * stop/prune/refresh/restart sequence is atomic. When false, the request goes
-   * through the throttle.
+   * When {@code ensureWatcherIsStopped} is true, the watcher is stopped first and
+   * the prune and refresh run on the FX thread without waiting for the throttle,
+   * after which the watcher is restarted if it was running, so it never sees the
+   * changes the prune makes. When false, the request goes through the throttle.
    */
   public static void pruneAndRefresh(boolean ensureWatcherIsStopped)
   {
     if (instance == null) return;
 
     if (ensureWatcherIsStopped)
-      instance.doPruneAndRefreshWithWatcherManagement();
+    {
+      boolean restartWatcher = folderTreeWatcher.stop();
+
+      runInFXThread(() ->
+      {
+        instance.runPendingRefresh(RefreshLevel.PRUNE_AND_REFRESH);
+
+        if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
+      });
+    }
     else
       instance.requestRefresh(RefreshLevel.PRUNE_AND_REFRESH);
-  }
-
-  private void doPruneAndRefreshWithWatcherManagement()
-  {
-    boolean restartWatcher = folderTreeWatcher.stop();
-
-    runInFXThread(() ->
-    {
-      folderTree.prune();
-      doRefresh();
-
-      synchronized (refreshLock) { lastRefreshTime = System.currentTimeMillis(); }
-
-      if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
-    });
   }
 
 //---------------------------------------------------------------------------
@@ -1413,12 +1404,14 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /**
-   * Schedules or immediately executes a refresh at the given level.
-   * Thread-safe; can be called from any thread.
+   * Requests a refresh at the given level. Thread-safe; can be called from any thread. The refresh
+   * runs on the FX thread right away if none ran within {@link #REFRESH_THROTTLE_MS}, and otherwise
+   * once that window has passed; a request arriving while one is already scheduled only raises the
+   * scheduled level.
    */
   private void requestRefresh(RefreshLevel level)
   {
-    // Ignore recursive calls from within doRefresh() (e.g., sort handlers)
+    // Ignore recursive calls from within the rebuild in runPendingRefresh() (e.g., sort handlers)
 
     if (Platform.isFxApplicationThread() && alreadyRefreshing)
       return;
@@ -1445,80 +1438,104 @@ public final class FileManager extends NonmodalWindow
       if (executeNow == false)
       {
         long delay = REFRESH_THROTTLE_MS - elapsed;
-        runDelayedInFXThread(1, delay, this::executeRefresh);
+        runDelayedInFXThread(1, delay, () -> runPendingRefresh(RefreshLevel.NONE));
       }
     }
 
     if (executeNow)
-      runInFXThread(this::executeRefresh);
+      runInFXThread(() -> runPendingRefresh(RefreshLevel.NONE));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * Runs on the FX thread. Reads and resets the pending refresh level,
-   * then performs the appropriate refresh.
+   * Runs on the FX thread. Performs the pending refresh, raised to at least the given level, and
+   * stamps the throttle clock so that requests arriving right afterward are throttled as usual.
+   * The throttle's callbacks pass {@code NONE}: they run whatever has been requested, and do
+   * nothing when a refresh run in the meantime has already satisfied the request. Callers that
+   * need a refresh right away pass the level they need. A prune runs even while the window is
+   * hidden; the rebuild of the tree and tables is skipped while the window is hidden, since
+   * showing it requests a refresh of its own, and while a rebuild is already in progress.
    */
-  private void executeRefresh()
+  private void runPendingRefresh(RefreshLevel atLeast)
   {
     RefreshLevel level;
 
+  // Claim the pending request
+  // -------------------------
+
     synchronized (refreshLock)
     {
-      level = pendingRefresh;
+      level = ObjectUtils.max(pendingRefresh, atLeast);
       pendingRefresh = RefreshLevel.NONE;
+
+      if (level == RefreshLevel.NONE)
+        return;
+
       lastRefreshTime = System.currentTimeMillis();
     }
 
-    if (level == RefreshLevel.NONE)
-      return;
+  // Prune deleted folders from the tree
+  // -----------------------------------
 
     if (level == RefreshLevel.PRUNE_AND_REFRESH)
       folderTree.prune();
 
-    doRefresh();
-  }
+  // Skip the rebuild if the window is hidden or a rebuild is in progress
+  // --------------------------------------------------------------------
 
-  private void doRefresh()
-  {
     if (alreadyRefreshing || (stage.isShowing() == false)) return;
     needRefresh = false;
     alreadyRefreshing = true;
 
-    if (folderTree.selectedRecord() == null)
-      folderTree.selectRecord(db.getRootFolder(), -1, false);
-
-    folderTree.refresh();
-
-    if (HDT_Record.isEmpty(curFolder, false))
-      curFolder = null;
-
-    if (curFolder == null)
+    try
     {
-      fileTable.clear();
-      recordTable.clear();
-      stage.setTitle(dialogTitle);
-      alreadyRefreshing = false;
-      return;
+
+  // Re-sort the folder tree and recreate its cells
+  // ----------------------------------------------
+
+      if (folderTree.selectedRecord() == null)
+        folderTree.selectRecord(db.getRootFolder(), -1, false);
+
+      folderTree.refresh();
+
+  // If there is no current folder, clear the tables and exit
+  // --------------------------------------------------------
+
+      if (HDT_Record.isEmpty(curFolder, false))
+        curFolder = null;
+
+      if (curFolder == null)
+      {
+        fileTable.clear();
+        recordTable.clear();
+        stage.setTitle(dialogTitle);
+        return;
+      }
+
+  // Otherwise rebuild the file table, keeping the selected file's row selected
+  // --------------------------------------------------------------------------
+
+      FileRow fileRow = selectedFileRow();
+      FilePath filePath = fileRow == null ? null : fileRow.getFilePath();
+
+      fileTable.update(curFolder, folderTree.selectedItem());
+
+      if (FilePath.isEmpty(filePath))
+        updateRecordTable(null, false);
+
+      stage.setTitle(dialogTitle + " - " + curFolder.filePath());
+
+      fileTV.sort();
+
+      if (FilePath.isEmpty(filePath) == false)
+        fileTable.selectByFileName(filePath);
     }
-
-    FileRow fileRow = fileTV.getSelectionModel().getSelectedItem();
-    FilePath filePath = fileRow == null ? null : fileRow.getFilePath();
-
-    fileTable.update(curFolder, folderTree.selectedItem());
-
-    if (FilePath.isEmpty(filePath))
-      updateRecordTable(null, false);
-
-    stage.setTitle(dialogTitle + " - " + curFolder.filePath());
-
-    fileTV.sort();
-
-    if (FilePath.isEmpty(filePath) == false)
-      fileTable.selectByFileName(filePath);
-
-    alreadyRefreshing = false;
+    finally
+    {
+      alreadyRefreshing = false;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1623,7 +1640,7 @@ public final class FileManager extends NonmodalWindow
     if (record instanceof HDT_RecordWithPath recordWithPath)
       filePath = recordWithPath.filePath();
 
-    FilePath fileTablePath = nullSwitch(fileTV.getSelectionModel().getSelectedItem(), null, FileRow::getFilePath);
+    FilePath fileTablePath = nullSwitch(selectedFileRow(), null, FileRow::getFilePath);
 
     if ((record != null) && EnumSet.of(hdtWork, hdtMiscFile, hdtWorkFile).contains(record.getType()) == false)
     {
@@ -1782,6 +1799,21 @@ public final class FileManager extends NonmodalWindow
       else
         PreviewWindow.clearPreview(pvsManager);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * What a double-click on a file table row does: enters a folder or launches a file.
+   * Package-private so the test runner can drive it without a mouse.
+   */
+  void openFileRow(FileRow fileRow)
+  {
+    if (fileRow.isDirectory())
+      nullSwitch(fileRow.getTreeItem(), folderTree.getSelectionModel()::select);  // select(null) would clear the folder tree selection
+    else
+      launchFile(fileRow.getFilePath());
   }
 
 //---------------------------------------------------------------------------
