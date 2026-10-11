@@ -626,7 +626,7 @@ public class ZoteroItem extends BibEntry<ZoteroItem, ZoteroCollection> implement
   {
     JsonObj jStandaloneObj = jObj.deepCopy();
 
-    boolean missingKeysOK = !forUploadToServer;
+    boolean missingKeysOK = (forUploadToServer == false);
 
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum)
     {

@@ -53,13 +53,6 @@ public final class JsonObj
       return new CondJsonObj(jBaseObj.getObj(key));
     }
 
-    public CondJsonArray condArray(String key)
-    {
-      if (jBaseObj == null) return new CondJsonArray(null);
-
-      return new CondJsonArray(jBaseObj.getArray(key));
-    }
-
     /**
      * This only calls the consumer function if the string value exists and is non-blank.
      * @param key Key
@@ -72,20 +65,6 @@ public final class JsonObj
       String val = jBaseObj.getStrSafe(key);
 
       if (val.isBlank() == false) consumer.accept(val);
-    }
-
-    /**
-     * Calls the consumer function if the string value exists.
-     * @param key Key
-     * @param consumer Function to pass the string value to
-     */
-    public void condStrBlankOk(String key, Consumer<String> consumer)
-    {
-      if ((jBaseObj == null) || (jBaseObj.containsKey(key) == false)) return;
-
-      String val = jBaseObj.getStrSafe(key);
-
-      consumer.accept(val);
     }
 
     public String condStrOrBlank(String key)
@@ -127,7 +106,6 @@ public final class JsonObj
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()                        { jObj.clear(); }
   public boolean containsKey(String key)     { return jObj.containsKey(key); }
   public void remove(String key)             { jObj.remove(key); }
   public JsonNodeType getType(String key)    { return determineType(jObj.get(key)); }
@@ -230,9 +208,6 @@ public final class JsonObj
 
   public static JsonArray parseJson(String str) throws ParseException
   { return wrapJSONObject(parse(str)); }
-
-  public static JsonArray parseJson(Reader in) throws IOException, ParseException
-  { return wrapJSONObject(parse(in)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

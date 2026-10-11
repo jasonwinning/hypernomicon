@@ -21,8 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 
 import java.io.IOException;
@@ -118,12 +117,12 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
     tfFolder.setEditable(false);
 
     GridPane.setColumnIndex(bp, 1);
-    gpToolBar.getColumnConstraints().getFirst().setMinWidth(560.0);
+    gpToolBar.getColumnConstraints().get(0).setMinWidth(560.0);
     gpToolBar.getColumnConstraints().get(0).setMaxWidth(560.0);
-    gpToolBar.getColumnConstraints().get(0).setHgrow(javafx.scene.layout.Priority.NEVER);
+    gpToolBar.getColumnConstraints().get(0).setHgrow(Priority.NEVER);
 
-    gpToolBar.getColumnConstraints().get(1).setMinWidth(Control.USE_COMPUTED_SIZE);
-    gpToolBar.getColumnConstraints().get(1).setMaxWidth(Control.USE_COMPUTED_SIZE);
+    gpToolBar.getColumnConstraints().get(1).setMinWidth (Control.USE_COMPUTED_SIZE);
+    gpToolBar.getColumnConstraints().get(1).setMaxWidth (Control.USE_COMPUTED_SIZE);
     gpToolBar.getColumnConstraints().get(1).setPrefWidth(Control.USE_COMPUTED_SIZE);
     gpToolBar.getColumnConstraints().get(1).setHgrow(javafx.scene.layout.Priority.ALWAYS);
     gpToolBar.getChildren().set(1, bp);

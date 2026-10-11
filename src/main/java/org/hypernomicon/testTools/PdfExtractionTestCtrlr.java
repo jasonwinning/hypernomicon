@@ -19,7 +19,6 @@ package org.hypernomicon.testTools;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.testTools.TestConsoleDlgCtrlr.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -79,9 +78,9 @@ public class PdfExtractionTestCtrlr implements TestConsoleTab
 
   @Override public void init(TestConsoleDlgCtrlr console)
   {
-    initTextField(app.prefs, tfPdfPath , PrefKey.PDF_EXTRACTION_TEST_PATH  , "", null);
-    initTextField(app.prefs, tfPdfPath2, PrefKey.PDF_EXTRACTION_TEST_PATH_2, "", null);
-    initTextField(app.prefs, tfPdfPath3, PrefKey.PDF_EXTRACTION_TEST_PATH_3, "", null);
+    initPrefTextField(app.prefs, tfPdfPath , PrefKey.PDF_EXTRACTION_TEST_PATH  , "", null);
+    initPrefTextField(app.prefs, tfPdfPath2, PrefKey.PDF_EXTRACTION_TEST_PATH_2, "", null);
+    initPrefTextField(app.prefs, tfPdfPath3, PrefKey.PDF_EXTRACTION_TEST_PATH_3, "", null);
 
     if (jxBrowserDisabled)
     {

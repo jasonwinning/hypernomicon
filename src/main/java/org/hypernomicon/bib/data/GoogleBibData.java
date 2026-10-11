@@ -227,7 +227,7 @@ public final class GoogleBibData extends BibDataStandalone
    * fails with HTTP 429, and callers skip the Google stages entirely. There is no settings
    * UI for the key yet; until one exists, the preference can be set externally.
    */
-  static String apiKey()
+  private static String apiKey()
   {
     if (apiKeyForTesting != null) return apiKeyForTesting;
 

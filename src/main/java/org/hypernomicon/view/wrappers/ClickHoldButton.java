@@ -166,7 +166,7 @@ public class ClickHoldButton
   {
     if (parent == null) return;
 
-    if ((parent instanceof Pane pane) && !(parent instanceof GridPane))
+    if ((parent instanceof Pane pane) && ((parent instanceof GridPane) == false))
     {
       // Find the index of the button in the parent's children list
       int ndxInParent = pane.getChildren().indexOf(btn);

@@ -111,7 +111,7 @@ public abstract class BibDataStandalone extends BibData
                         (date.hasMonth() && newDate.hasMonth() && (Objects.equals(date.month, newDate.month) == false))  ||
                         (date.hasDay  () && newDate.hasDay  () && (Objects.equals(date.day  , newDate.day  ) == false));
 
-      if (!noMerge)
+      if (noMerge == false)
       {
         date = BibliographicDate.combine(date, newDate);
 

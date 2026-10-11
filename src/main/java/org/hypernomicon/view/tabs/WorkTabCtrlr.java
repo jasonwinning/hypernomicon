@@ -839,7 +839,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       htWorkFiles.getTV().getSortOrder().setAll(List.copyOf(htWorkFiles.getTV().getSortOrder()));
 
-      updatePreview = FilePath.isEmpty(filePath) || (filePath.equals(PreviewWindow.instance().getFilePath(pvsWorkTab)) == false);
+      updatePreview = FilePath.isEmpty(filePath) || (filePath.equals(PreviewWindow.getFilePath(pvsWorkTab)) == false);
     }
     else
     {
@@ -853,7 +853,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       else if (tpsm.getSelectedItem() != tabBibDetails) tpsm.select(tabWorkFiles);
 
       if (FilePath.isEmpty(filePath) == false)
-        if (filePath.equals(PreviewWindow.instance().getFilePath(pvsWorkTab)))
+        if (filePath.equals(PreviewWindow.getFilePath(pvsWorkTab)))
           if (curWork.getStartPageNum() < 2)
             updatePreview = false;
     }

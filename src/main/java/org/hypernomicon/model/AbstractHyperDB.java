@@ -331,7 +331,7 @@ public abstract class AbstractHyperDB
   public void replaceMainText(MainText oldMT, MainText newMT) { displayedAtIndex.replaceItem(oldMT, newMT); }
 
   public void rebuildMentions()                               { rebuildMentions(""); }
-  public void rebuildMentions(String logFileName)             { if (isOnline() && !recordDeletionTestInProgress) mentionsIndex.startRebuild(logFileName); }
+  public void rebuildMentions(String logFileName)             { if (isOnline() && (recordDeletionTestInProgress == false)) mentionsIndex.startRebuild(logFileName); }
   public void updateMentioner(HDT_Record record)              { if (isOnline()) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                     { return mentionsIndex.waitUntilRebuildIsDone(); }
 

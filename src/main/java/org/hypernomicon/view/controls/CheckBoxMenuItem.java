@@ -53,7 +53,7 @@ public class CheckBoxMenuItem extends CustomMenuItem
 
     hbox.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
     {
-      checkBox.setSelected(!checkBox.isSelected());
+      checkBox.setSelected(checkBox.isSelected() == false);
       event.consume();
     });
 

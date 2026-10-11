@@ -172,7 +172,7 @@ class SearchResultFileList
             if (excludeAnnots && (startPage == 1) && (numPages == endPage))
               excludeAnnots = hasAnnotations(srcPdf);
 
-            if ((startPage == 1) && (numPages == endPage) && !excludeAnnots)
+            if ((startPage == 1) && (numPages == endPage) && (excludeAnnots == false))
             {
               filePath.copyTo(destFilePath, false);
             }
@@ -478,14 +478,8 @@ class SearchResultFileList
         continue;
       }
 
-      for (SearchResultFile entry : entries)
-      {
-        if ((pm.pageNumber() >= entry.startPage) && (pm.pageNumber() <= entry.endPage))
-        {
-          filtered.add(pm);
-          break;
-        }
-      }
+      if (entries.stream().anyMatch(entry -> (pm.pageNumber() >= entry.startPage) && (pm.pageNumber() <= entry.endPage)))
+        filtered.add(pm);
     }
 
     return filtered;

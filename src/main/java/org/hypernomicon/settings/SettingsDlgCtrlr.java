@@ -21,16 +21,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
-import java.util.prefs.Preferences;
 
 import com.github.scribejava.core.exceptions.OAuthException;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuth10aService;
 import com.github.scribejava.core.oauth.OAuth20Service;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 
 import org.hypernomicon.App;
 import org.hypernomicon.bib.BibCollection;
@@ -51,7 +46,6 @@ import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
@@ -227,11 +221,11 @@ public class SettingsDlgCtrlr extends ModalDialog
     lblStep4            .visibleProperty().bind(authUrl.isNotEmpty());
     lblStep4Instructions.visibleProperty().bind(authUrl.isNotEmpty());
 
-    initTextField(app.prefs, tfImageEditor, PrefKey.IMAGE_EDITOR, "");
-    initTextField(app.prefs, tfPDFReader  , PrefKey.PDF_READER  , "");
-    initTextField(app.prefs, tfLogPath    , PrefKey.LOG_PATH    , "");
-    initTextField(app.prefs, tfExtFiles   , PrefKey.EXT_FILES_1 , "");
-    initTextField(app.prefs, tfOffice     , PrefKey.OFFICE_PATH , "");
+    initPrefTextField(app.prefs, tfImageEditor, PrefKey.IMAGE_EDITOR, "");
+    initPrefTextField(app.prefs, tfPDFReader  , PrefKey.PDF_READER  , "");
+    initPrefTextField(app.prefs, tfLogPath    , PrefKey.LOG_PATH    , "");
+    initPrefTextField(app.prefs, tfExtFiles   , PrefKey.EXT_FILES_1 , "");
+    initPrefTextField(app.prefs, tfOffice     , PrefKey.OFFICE_PATH , "");
 
     btnImgEditorAdvanced.setOnAction(event ->
     {
@@ -265,15 +259,15 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     setToolTip(sliderFontSize, "Base font size");
 
-    initCheckBox(app.prefs, chkInternet              , PrefKey.CHECK_INTERNET           , true );
-    initCheckBox(app.prefs, chkNewVersionCheck       , PrefKey.CHECK_FOR_NEW_VERSION    , true );
-    initCheckBox(app.prefs, chkAutoOpenPDF           , PrefKey.AUTO_OPEN_PDF            , true );
-    initCheckBox(app.prefs, chkAutoRetrieveBib       , PrefKey.AUTO_RETRIEVE_BIB        , true );
-    initCheckBox(app.prefs, chkCompDontExpandKeyWorks, PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false);
+    initPrefCheckBox(app.prefs, chkInternet              , PrefKey.CHECK_INTERNET           , true );
+    initPrefCheckBox(app.prefs, chkNewVersionCheck       , PrefKey.CHECK_FOR_NEW_VERSION    , true );
+    initPrefCheckBox(app.prefs, chkAutoOpenPDF           , PrefKey.AUTO_OPEN_PDF            , true );
+    initPrefCheckBox(app.prefs, chkAutoRetrieveBib       , PrefKey.AUTO_RETRIEVE_BIB        , true );
+    initPrefCheckBox(app.prefs, chkCompDontExpandKeyWorks, PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false);
 
     chkLinuxWorkaround.setVisible(IS_OS_LINUX);
 
-    initCheckBox(app.prefs, chkLinuxWorkaround, PrefKey.LINUX_WORKAROUND, false);
+    initPrefCheckBox(app.prefs, chkLinuxWorkaround, PrefKey.LINUX_WORKAROUND, false);
 
     disableAllIff(noDB, tabDBSpecific, tabFolders, tabNaming, tabArgNaming);
 
@@ -283,11 +277,11 @@ public class SettingsDlgCtrlr extends ModalDialog
 
     if (noDB == false)
     {
-      initCheckBox(db.prefs, chkUseSentenceCase     , PrefKey.SENTENCE_CASE            , false);
-      initCheckBox(db.prefs, chkDBDontExpandKeyWorks, PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false);
-      initCheckBox(db.prefs, chkTermRequireSearchKey, PrefKey.TERM_REQUIRE_SEARCH_KEY  , true );
-      initCheckBox(db.prefs, chkPersonSKStartAnchor , PrefKey.PERSON_SK_START_ANCHOR   , true );
-      initCheckBox(db.prefs, chkPersonSKEndAnchor   , PrefKey.PERSON_SK_END_ANCHOR     , false);
+      initPrefCheckBox(db.prefs, chkUseSentenceCase     , PrefKey.SENTENCE_CASE            , false);
+      initPrefCheckBox(db.prefs, chkDBDontExpandKeyWorks, PrefKey.DONT_OPEN_EMPTY_KEY_WORKS, false);
+      initPrefCheckBox(db.prefs, chkTermRequireSearchKey, PrefKey.TERM_REQUIRE_SEARCH_KEY  , true );
+      initPrefCheckBox(db.prefs, chkPersonSKStartAnchor , PrefKey.PERSON_SK_START_ANCHOR   , true );
+      initPrefCheckBox(db.prefs, chkPersonSKEndAnchor   , PrefKey.PERSON_SK_END_ANCHOR     , false);
       initDefaultChapterWorkType();
     }
 
@@ -380,86 +374,6 @@ public class SettingsDlgCtrlr extends ModalDialog
     }
 
     return null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static void initTextField(Preferences prefs, TextField tf, String prefKey, String defValue)
-  {
-    initTextField(prefs, tf, prefKey, defValue, null);
-  }
-
-  static void initTextField(Preferences prefs, TextField tf, String prefKey, String defValue, Consumer<String> handler)
-  {
-    tf.setText(prefs.get(prefKey, defValue));
-
-    tf.textProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null) return;
-
-      prefs.put(prefKey, newValue);
-      if (handler != null) handler.accept(newValue);
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static void initCheckBox(Preferences prefs, CheckBox chk, String prefKey, boolean defValue)
-  {
-    initCheckBox(prefs, chk, prefKey, defValue, null);
-  }
-
-  static void initCheckBox(Preferences prefs, CheckBox chk, String prefKey, boolean defValue, Consumer<Boolean> handler)
-  {
-    chk.setSelected(prefs.getBoolean(prefKey, defValue));
-    chk.selectedProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null) return;
-
-      prefs.putBoolean(prefKey, newValue);
-      if (handler != null) handler.accept(newValue);
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * Initializes a group of {@link ToggleButton}s with persistent preferences and behavior management.
-   * Ensures that the correct button is selected based on stored preferences,
-   * and updates preferences dynamically when a button is toggled.<br>
-   * Each ToggleButton is associated with a String value that will be saved to the preference key
-   * when the button is selected.
-   *
-   * @param prefs          The {@link Preferences} object used to persist user settings.
-   * @param prefKey        The key in the preferences to store the selected toggle button.
-   * @param refreshHandler A {@link Runnable} that is executed whenever a toggle button is selected.
-   *                       Can be null if no refresh action is required.
-   * @param defValue       The default {@link ToggleButton} to select if no preference is set or an invalid preference exists.
-   * @param map            A map linking preference keys to {@link ToggleButton} instances.
-   *                       Keys represent the preference value associated with each button.
-   */
-  static void initToggleButtons(Preferences prefs, String prefKey, Runnable refreshHandler, ToggleButton defValue, Map<String, ToggleButton> map)
-  {
-    BiMap<String, ToggleButton> biMap = HashBiMap.create(map);
-
-    String startStr = prefs.get(prefKey, "");
-    ToggleButton startButton = startStr.isBlank() ? defValue : map.get(startStr);
-    if (startButton == null) startButton = defValue;
-
-    if (startButton != null)
-      startButton.setSelected(true);
-    else
-      map.values().forEach(toggleButton -> toggleButton.setSelected(false));
-
-    map.values().forEach(toggleButton -> toggleButton.setOnAction(event -> Platform.runLater(() ->
-    {
-      prefs.put(prefKey, nullSwitch(toggleButton.getToggleGroup().getSelectedToggle(), "", biMap.inverse()::get));
-
-      if (refreshHandler != null) refreshHandler.run();
-    })));
   }
 
 //---------------------------------------------------------------------------

@@ -89,11 +89,8 @@ public final class DPIScaleAudit
       {
         if (change.wasAdded() == false) continue;
 
-        change.getAddedSubList().forEach(window ->
-        {
-          if ((window instanceof PopupWindow) == false)
-            runInFXThreadAfterPulses(2, () -> audit(window));
-        });
+        change.getAddedSubList().stream().filter(window -> (window instanceof PopupWindow) == false)
+                                         .forEach(window -> runInFXThreadAfterPulses(2, () -> audit(window)));
       }
     });
   }

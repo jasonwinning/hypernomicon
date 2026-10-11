@@ -27,8 +27,8 @@ import static org.hypernomicon.util.Util.*;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
+import java.util.prefs.Preferences;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
@@ -81,6 +81,49 @@ public final class UIUtil
     double pos = sp.getDividerPositions()[ndx];
     if (Double.valueOf(pos).equals(dividerMap.get(key)) == false)
       app.prefs.putDouble(key, sp.getDividerPositions()[ndx]);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Binds a text field to a preference: shows the stored value and stores every edit. */
+  public static void initPrefTextField(Preferences prefs, TextField tf, String prefKey, String defValue)
+  {
+    initPrefTextField(prefs, tf, prefKey, defValue, null);
+  }
+
+  public static void initPrefTextField(Preferences prefs, TextField tf, String prefKey, String defValue, Consumer<String> handler)
+  {
+    tf.setText(prefs.get(prefKey, defValue));
+
+    tf.textProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (newValue == null) return;
+
+      prefs.put(prefKey, newValue);
+      if (handler != null) handler.accept(newValue);
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Binds a check box to a preference: shows the stored value and stores every change. */
+  public static void initPrefCheckBox(Preferences prefs, CheckBox chk, String prefKey, boolean defValue)
+  {
+    initPrefCheckBox(prefs, chk, prefKey, defValue, null);
+  }
+
+  public static void initPrefCheckBox(Preferences prefs, CheckBox chk, String prefKey, boolean defValue, Consumer<Boolean> handler)
+  {
+    chk.setSelected(prefs.getBoolean(prefKey, defValue));
+    chk.selectedProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (newValue == null) return;
+
+      prefs.putBoolean(prefKey, newValue);
+      if (handler != null) handler.accept(newValue);
+    });
   }
 
 //---------------------------------------------------------------------------

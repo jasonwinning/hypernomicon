@@ -17,6 +17,7 @@
 
 package org.hypernomicon.util.http;
 
+import static org.hypernomicon.util.TestUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
@@ -305,36 +306,28 @@ class ParsingHttpClientTest
    * request thread's own failure reporting instead of the clients'. The thread is
    * recognized by a {@code handleResponse} frame, so this has to follow a rename.
    */
-  private static void awaitBlockedInResponseHandling()
+  private static void awaitBlockedInResponseHandling() throws Exception
   {
-    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(TIMEOUT_SECONDS);
+    awaitTrue(ParsingHttpClientTest::isRequestThreadBlockedInResponseHandling, TIMEOUT_SECONDS * 1000L, "No request thread started reading the body");
+  }
 
-    while (System.nanoTime() < deadline)
+//---------------------------------------------------------------------------
+
+  private static boolean isRequestThreadBlockedInResponseHandling()
+  {
+    for (var entry : Thread.getAllStackTraces().entrySet())
     {
-      for (var entry : Thread.getAllStackTraces().entrySet())
-      {
-        Thread.State state = entry.getKey().getState();
+      Thread.State state = entry.getKey().getState();
 
-        if ((state != Thread.State.WAITING) && (state != Thread.State.TIMED_WAITING))
-          continue;
+      if ((state != Thread.State.WAITING) && (state != Thread.State.TIMED_WAITING))
+        continue;
 
-        for (StackTraceElement element : entry.getValue())
-          if ("handleResponse".equals(element.getMethodName()) && element.getClassName().startsWith("org.hypernomicon.util.http."))
-            return;
-      }
-
-      try
-      {
-        Thread.sleep(10);
-      }
-      catch (InterruptedException e)
-      {
-        Thread.currentThread().interrupt();
-        fail("Interrupted while waiting for the request thread to read the body", e);
-      }
+      for (StackTraceElement element : entry.getValue())
+        if ("handleResponse".equals(element.getMethodName()) && element.getClassName().startsWith("org.hypernomicon.util.http."))
+          return true;
     }
 
-    fail("No request thread started reading the body");
+    return false;
   }
 
 //---------------------------------------------------------------------------
@@ -398,7 +391,7 @@ class ParsingHttpClientTest
    *  stay quiet about the former. */
   @ParameterizedTest
   @EnumSource(ClientKind.class)
-  void stoppingARequestWhileItsBodyIsBeingReadReportsCancellation(ClientKind kind)
+  void stoppingARequestWhileItsBodyIsBeingReadReportsCancellation(ClientKind kind) throws Exception
   {
     AsyncHttpClient httpClient = new AsyncHttpClient();
 
@@ -430,7 +423,7 @@ class ParsingHttpClientTest
    *  failed download and stop the new one. */
   @ParameterizedTest
   @EnumSource(StallPoint.class)
-  void aRequestItsClientReplacedReportsCancellation(StallPoint stallPoint)
+  void aRequestItsClientReplacedReportsCancellation(StallPoint stallPoint) throws Exception
   {
     ClientKind kind = ClientKind.jsonObj;
     CountDownLatch firstArrived = new CountDownLatch(1), secondArrived = new CountDownLatch(1);

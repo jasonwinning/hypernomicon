@@ -76,9 +76,9 @@ class HDI_OfflineBaseTest
 
     HDI_OfflineBase.writePointerTagWithNestedPointers(xml, tagWork, 5, 2, "Title", Map.of(tagPages, nestedPages("12-14")));
 
-    assertEquals(HDX_INDENT + "<" + tagWork.name + " id=\"5\" ord=\"2\">Title" + NL +
-                 HDX_INDENT + HDX_INDENT + "<" + tagPages.name + ">12-14</" + tagPages.name + ">" + NL +
-                 HDX_INDENT + "</" + tagWork.name + ">" + NL, xml.toString());
+    assertEquals(HDX_INDENT + '<' + tagWork.name + " id=\"5\" ord=\"2\">Title" + NL +
+                 HDX_INDENT + HDX_INDENT + '<' + tagPages.name + ">12-14</" + tagPages.name + '>' + NL +
+                 HDX_INDENT + "</" + tagWork.name + '>' + NL, xml.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ class HDI_OfflineBaseTest
 
     HDI_OfflineBase.writePointerTagWithNestedPointers(xml, tagWork, 5, 2, "Title", Map.of());
 
-    assertEquals(HDX_INDENT + "<" + tagWork.name + " id=\"5\" ord=\"2\">Title</" + tagWork.name + ">" + NL, xml.toString());
+    assertEquals(HDX_INDENT + '<' + tagWork.name + " id=\"5\" ord=\"2\">Title</" + tagWork.name + '>' + NL, xml.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -102,9 +102,9 @@ class HDI_OfflineBaseTest
 
     HDI_OfflineBase.writePointerTagWithNestedPointers(xml, tagWork, 5, "Title", Map.of(tagPages, nestedPages("12-14")));
 
-    assertEquals(HDX_INDENT + "<" + tagWork.name + " id=\"5\">Title" + NL +
-                 HDX_INDENT + HDX_INDENT + "<" + tagPages.name + ">12-14</" + tagPages.name + ">" + NL +
-                 HDX_INDENT + "</" + tagWork.name + ">" + NL, xml.toString());
+    assertEquals(HDX_INDENT + '<' + tagWork.name + " id=\"5\">Title" + NL +
+                 HDX_INDENT + HDX_INDENT + '<' + tagPages.name + ">12-14</" + tagPages.name + '>' + NL +
+                 HDX_INDENT + "</" + tagWork.name + '>' + NL, xml.toString());
   }
 
 //---------------------------------------------------------------------------

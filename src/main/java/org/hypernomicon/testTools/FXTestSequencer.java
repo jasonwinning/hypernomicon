@@ -345,7 +345,7 @@ public final class FXTestSequencer
    * Prints progress messages for each step and halts on any
    * {@code AssertionError} or exception.
    */
-  public void start()
+  public synchronized void start()
   {
     if (running == false)
     {
@@ -384,8 +384,11 @@ public final class FXTestSequencer
 
     Runnable runner = () ->
     {
-      if (entry.printStep)
-        System.out.println("Step " + ++stepCounter + " of " + stepTotal);
+      synchronized (FXTestSequencer.this)
+      {
+        if (entry.printStep)
+          System.out.println("Step " + ++stepCounter + " of " + stepTotal);
+      }
 
       try
       {

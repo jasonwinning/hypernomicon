@@ -672,10 +672,11 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     boolean startWatcher = folderTreeWatcher.stop();
 
-    mnuClearSearchFolderClick();
-
-    if (copyFilesToFolder(fileList))
+    if (mnuClearSearchFolderClick())
+    {
+      copyFilesToFolder(fileList);
       mnuShowSearchFolderClick(false);
+    }
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();
@@ -755,7 +756,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean copyFilesToFolder(SearchResultFileList fileList)
+  private void copyFilesToFolder(SearchResultFileList fileList)
   {
     boolean startWatcher = folderTreeWatcher.stop();
 
@@ -765,16 +766,19 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       folderTreeWatcher.createNewWatcherAndStart();
 
     fileList.showErrors();
-
-    return true;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void mnuClearSearchFolderClick()
+  /**
+   * Deletes the contents of the search results folder.
+   * @return false if the folder was not cleared: the database is offline, something in the
+   * folder is in use by the database, or the user cancelled the deletion
+   */
+  private static boolean mnuClearSearchFolderClick()
   {
-    if (db.isOffline()) return;
+    if (db.isOffline()) return false;
 
     HDT_Folder resultsFolder = db.getResultsFolder();
 
@@ -782,13 +786,14 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         resultsFolder.childFolders.stream().anyMatch(childFolder -> childFolder.isSpecial(true)))
     {
       errorPopup("One or more file(s)/folder(s) in the search results folder are in use by the database.");
-      return;
+      return false;
     }
 
     if (FileDeletion.ofDirContentsOnly(db.resultsPath()).interactive().execute() == DeletionResult.ABORTED)
-      return;
+      return false;
 
     FileManager.pruneAndRefresh(true);
+    return true;
   }
 
 //---------------------------------------------------------------------------

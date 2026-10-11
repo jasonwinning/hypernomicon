@@ -213,7 +213,7 @@ class OpenCoordinatorTest
 
     coordinator.requestOpen(B, 1);
 
-    assertEquals("open:b.pdf@1", calls().get(calls().size() - 1));
+    assertEquals("open:b.pdf@1", calls().getLast());
   }
 
 //---------------------------------------------------------------------------

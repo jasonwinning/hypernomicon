@@ -101,7 +101,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
      * The caption shown in the settings table: the qualifier and, while it applies, the
      * reference manager note share one parenthetical
      */
-    String getCaption()
+    private String getCaption()
     {
       List<String> qualifiers = new ArrayList<>();
 
@@ -117,7 +117,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
      * Tooltip for the component's cell in the settings table: the cell text, spelling out the
      * reference manager note while it applies
      */
-    Tooltip getToolTip()
+    private Tooltip getToolTip()
     {
       String plainCaption = qualifier == null ? caption : caption + " (" + qualifier + ')';
 
@@ -187,11 +187,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       {
         String trimmedWorkTypeStr = workTypeStr.strip();
 
-        db.workTypes.forEach(workType ->
-        {
-          if (trimmedWorkTypeStr.equalsIgnoreCase(workType.name()))
-            excludedWorkTypes.add(workType);
-        });
+        db.workTypes.stream().filter(workType -> trimmedWorkTypeStr.equalsIgnoreCase(workType.name())).forEach(excludedWorkTypes::add);
       });
     }
 
@@ -270,11 +266,11 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     lblExample.setOnMouseClicked(event -> refreshExample());
 
-    initCheckBox(db.prefs, chkTreatEdAsAuthor, FileNamePrefKey.TREAT_ED_AS_AUTHOR, true , nv -> refreshExample());
-    initCheckBox(db.prefs, chkAddInitial     , FileNamePrefKey.ADD_INITIAL       , false, nv -> refreshExample());
-    initCheckBox(db.prefs, chkYearLetter     , FileNamePrefKey.YEAR_LETTER       , false, nv -> refreshExample());
-    initCheckBox(db.prefs, chkPosix          , FileNamePrefKey.POSIX             , false, nv -> refreshExample());
-    initCheckBox(db.prefs, chkLowercase      , FileNamePrefKey.LOWERCASE         , false, nv -> refreshExample());
+    initPrefCheckBox(db.prefs, chkTreatEdAsAuthor, FileNamePrefKey.TREAT_ED_AS_AUTHOR, true , nv -> refreshExample());
+    initPrefCheckBox(db.prefs, chkAddInitial     , FileNamePrefKey.ADD_INITIAL       , false, nv -> refreshExample());
+    initPrefCheckBox(db.prefs, chkYearLetter     , FileNamePrefKey.YEAR_LETTER       , false, nv -> refreshExample());
+    initPrefCheckBox(db.prefs, chkPosix          , FileNamePrefKey.POSIX             , false, nv -> refreshExample());
+    initPrefCheckBox(db.prefs, chkLowercase      , FileNamePrefKey.LOWERCASE         , false, nv -> refreshExample());
 
     initMaxChar(spnMaxChar, FileNamePrefKey.MAX_CHAR);
 

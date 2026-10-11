@@ -25,12 +25,12 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 
+import static org.hypernomicon.util.TestUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.lucene.search.Query;
@@ -236,21 +236,6 @@ class FullTextIndexerTest
   {
     return indexer.searchLight(queryStr, 10, null, null, null).results().stream()
       .anyMatch(result -> result.path().equals(relPath));
-  }
-
-//---------------------------------------------------------------------------
-
-  private static void awaitTrue(Callable<Boolean> condition, String message) throws Exception
-  {
-    long deadline = System.currentTimeMillis() + 15_000;
-
-    while (condition.call() == false)
-    {
-      if (System.currentTimeMillis() > deadline)
-        fail(message);
-
-      Thread.sleep(50);
-    }
   }
 
 //---------------------------------------------------------------------------

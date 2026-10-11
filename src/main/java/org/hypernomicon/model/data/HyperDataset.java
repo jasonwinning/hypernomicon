@@ -95,7 +95,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
   public static <HDT_DT extends HDT_Record> HyperDataset<HDT_DT> create(RecordType type)
   {
-    if (AbstractHyperDB.isCreatingDataset() == false)
+    if (isCreatingDataset() == false)
       throw new IllegalStateException("HyperDataset can only be created by HyperDB");
 
     return new HyperDataset<>(type);

@@ -65,7 +65,7 @@ public class FTSSettingsCtrlr implements SettingsControl
 
   @Override public void init(boolean noDB)
   {
-    initCheckBox(app.prefs, chkFTSIndexingEnabled, FTS_INDEXING_ENABLED, true, null);
+    initPrefCheckBox(app.prefs, chkFTSIndexingEnabled, FTS_INDEXING_ENABLED, true, null);
 
     int maxThreads = Runtime.getRuntime().availableProcessors(),
         stored = app.prefs.getInt(FTS_THREAD_COUNT, -1),
@@ -164,7 +164,7 @@ public class FTSSettingsCtrlr implements SettingsControl
     if (noDB)
       chkFTSDisabledForThisDb.setDisable(true);
     else
-      initCheckBox(app.prefs.node(FTS_DISABLED_DBS), chkFTSDisabledForThisDb, db.getDBID(), false, disabled ->
+      initPrefCheckBox(app.prefs.node(FTS_DISABLED_DBS), chkFTSDisabledForThisDb, db.getDBID(), false, disabled ->
       {
         if (disabled && (confirmDialog("""
             Disabling full-text search for this database will DELETE its full-text index on this computer the next time the application starts.

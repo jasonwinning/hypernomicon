@@ -467,10 +467,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 // Populate the debates
 // --------------------
 
-      work.arguments.forEach(argument -> {
+      work.arguments.forEach(argument ->
+      {
         if (htArguments.containsRecord(argument) == false)
           if (addArgToTopicTable(argument, topicRecordsAdded, emptySet(), emptySet()))
-            topicRecordsAdded.add(work); });
+            topicRecordsAdded.add(work);
+      });
 
 // Populate the works
 // ------------------
@@ -636,11 +638,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
 
   private static void addMentioners(HDT_RecordWithAuthors<? extends RecordAuthors> mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, Set<HDT_Record> topicRecordsAdded)
   {
-    mentioned.labelStream().forEach(label ->
-    {
-      if ((label.hasHub() == false) && (topicRecordsAdded.contains(label) == false))
-        otherToAdd.add(label);
-    });
+    mentioned.labelStream().filter(label -> (label.hasHub() == false) && (topicRecordsAdded.contains(label) == false))
+                           .forEach(otherToAdd::add);
 
     db.keyWorkMentionerStream(mentioned, true).forEachOrdered(mentioner ->
     {

@@ -37,7 +37,6 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   private final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
   private final HDT_SubjType subj;
   private final boolean modTracking;
-  private Exception lastException;
 
 //---------------------------------------------------------------------------
 
@@ -46,8 +45,6 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
     this.relSet = relSet;
     this.subj = subj;
     this.modTracking = modTracking;
-
-    lastException = null;
   }
 
 //---------------------------------------------------------------------------
@@ -92,11 +89,6 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 
         if (modTracking) subj.modifyNow();
       }
-      catch (HyperDataException e)
-      {
-        lastException = e;
-        throw e;
-      }
       finally
       {
         globalLock.unlock();
@@ -111,15 +103,6 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
     }
 
     return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void throwLastException() throws RelationCycleException
-  {
-    if (lastException instanceof RelationCycleException rce)
-      throw rce;
   }
 
 //---------------------------------------------------------------------------

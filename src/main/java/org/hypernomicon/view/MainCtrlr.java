@@ -1377,7 +1377,7 @@ public final class MainCtrlr
 
     lblStatus.setText("");
 
-    if (!showSearch(true, fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new GenericNonRecordHTC(query, hdtNone), null, query))
+    if (false == showSearch(true, fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new GenericNonRecordHTC(query, hdtNone), null, query))
     {
       discardLastQuery(backClick);
       return;
@@ -1448,7 +1448,7 @@ public final class MainCtrlr
         }
 
         if (cantSaveRecord(shutDownMode == ShutDownMode.Normal) && (shutDownMode == ShutDownMode.Normal))
-          if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?", false))
+          if (false == confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?", false))
             return;
 
         PopupRobot.setActive(popupRobotWasActive);
@@ -1550,7 +1550,7 @@ public final class MainCtrlr
 
   private void enableControls(boolean enabled)
   {
-    boolean disabled = !enabled;
+    boolean disabled = (enabled == false);
 
     bottomToolBar.getChildren().stream().filter(node -> node.disableProperty().isBound() == false).forEach(node -> node.setDisable(disabled));
 
@@ -3993,7 +3993,7 @@ public final class MainCtrlr
 
     ImportBibEntryDlgCtrlr ibed = new ImportBibEntryDlgCtrlr(lines, filePath);
 
-    if (ibed.getFailedToLoad() || !ibed.showModal()) return;
+    if (ibed.getFailedToLoad() || (ibed.showModal() == false)) return;
 
     lines = ibed.getLines();
     filePath = ibed.getFilePath();

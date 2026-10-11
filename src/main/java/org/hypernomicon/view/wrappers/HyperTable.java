@@ -987,7 +987,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     Platform.runLater(() ->  // This has to be done because of bugginess of constrained resize policies. The column widths may not be correctly initialized until you force it to be redrawn.
     {
-      tv.getColumns().getFirst().setVisible(!colZeroVisible);
+      tv.getColumns().getFirst().setVisible(colZeroVisible == false);
 
       Platform.runLater(() -> tv.getColumns().getFirst().setVisible(colZeroVisible));
     });

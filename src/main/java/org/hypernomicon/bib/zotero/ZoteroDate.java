@@ -79,7 +79,7 @@ public final class ZoteroDate
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static synchronized void setLocale(String newLocale)
+  private static synchronized void setLocale(String newLocale)
   {
     if (strNullOrBlank(newLocale))
       return;
@@ -385,7 +385,7 @@ public final class ZoteroDate
       if (((date.month == null) || (date.month <= 12)) && ((date.day == null) || (date.day <= 31)))
       {
         // Parse pre-100 years with leading zeros (001, 0001, 012, 0012, 0123, but not 08)
-        if ((date.year != null) && (yearInt < 100) && !longYear)
+        if ((date.year != null) && (yearInt < 100) && (longYear == false))
         {
           int year = Year.now().getValue();
           int twoDigitYear = year % 100;

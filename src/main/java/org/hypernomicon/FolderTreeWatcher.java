@@ -795,11 +795,7 @@ public class FolderTreeWatcher
         // The walk collected these in pre-order, so parents come before children
         // (and creation fills in any still-missing parents itself)
 
-        dirsMissingRecords.forEach(dir ->
-        {
-          if (dir.exists())
-            HyperPath.getFolderFromFilePath(dir, true);
-        });
+        dirsMissingRecords.stream().filter(FilePath::exists).forEach(dir -> HyperPath.getFolderFromFilePath(dir, true));
       });
     }
 

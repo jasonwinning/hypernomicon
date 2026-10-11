@@ -129,17 +129,18 @@ public final class PreviewWindow extends NonmodalWindow
    *  their change listeners do not navigate or write back. */
   private boolean refreshingControls = false;
 
+//---------------------------------------------------------------------------
+
   /** Whether the Preview Window is currently updating its controls programmatically. */
   static boolean isRefreshingControls()
   {
     return (instance != null) && instance.refreshingControls;
   }
 
-//---------------------------------------------------------------------------
-
   /** The file the pane for {@code src} is about (see {@link PreviewPaneHost#intendedFile}). */
-  public FilePath getFilePath(PreviewSource src) { return hostFor(src).intendedFile(); }
-  PreviewSource curSource()                      { return tabToSource.get(tpPreview.getSelectionModel().getSelectedItem()); }
+  public static FilePath getFilePath(PreviewSource src) { return hostFor(src).intendedFile(); }
+
+  private PreviewSource curSource()              { return tabToSource.get(tpPreview.getSelectionModel().getSelectedItem()); }
   private PreviewPaneHost curHost()              { return hostFor(curSource()); }
   int curPage()                                  { return (int) sldPreview.getValue(); }
   int getMax()                                   { return (int) sldPreview.getMax(); }
@@ -645,7 +646,7 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /** Whether the window exists and {@code src} is the pane it is showing. */
-  static boolean isShowingSource(PreviewSource src)
+  private static boolean isShowingSource(PreviewSource src)
   {
     return (instance != null) && (instance.curSource() == src);
   }
@@ -860,7 +861,7 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void clearControls()
+  private void clearControls()
   {
     stage.setTitle(dialogTitle);
     tfPath.setText("");

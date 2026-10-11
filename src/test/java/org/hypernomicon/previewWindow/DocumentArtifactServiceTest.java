@@ -17,6 +17,7 @@
 
 package org.hypernomicon.previewWindow;
 
+import static org.hypernomicon.util.TestUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
@@ -25,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.BooleanSupplier;
 
 import org.hypernomicon.previewWindow.ConversionSession.ConversionState;
 import org.hypernomicon.previewWindow.ConversionSession.NoOfficeInstallationException;
@@ -58,6 +58,8 @@ class DocumentArtifactServiceTest
                               FAKE_OFFICE_PATH = "C:\\fake\\office";
 
   private static final byte[] COMPLETE_PDF_BYTES = "%PDF-1.4 fake artifact content padding padding %%EOF".getBytes(StandardCharsets.US_ASCII);
+
+  private static final long EVICTION_TIMEOUT_MS = 5_000;
 
   @TempDir Path tempDirPath;
 
@@ -175,26 +177,6 @@ class DocumentArtifactServiceTest
     CompletableFuture<FilePath> future = session.subscribeExtraction();
     DocumentArtifactService.enqueue(session);
     return future.get(10, TimeUnit.SECONDS);
-  }
-
-//---------------------------------------------------------------------------
-
-  /**
-   * Waits for a condition that becomes true asynchronously: cache eviction runs
-   * in the worker's post-conversion bookkeeping, which executes after the
-   * extraction future (used for test synchronization) has already completed.
-   */
-  private static void awaitTrue(BooleanSupplier condition, String message) throws InterruptedException
-  {
-    long deadline = System.currentTimeMillis() + 5000;
-
-    while (condition.getAsBoolean() == false)
-    {
-      if (System.currentTimeMillis() > deadline)
-        fail(message);
-
-      Thread.sleep(25);
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -442,7 +424,10 @@ class DocumentArtifactServiceTest
     ConversionSession third = sessionFor(newSourceDoc("third.docx"));
     FilePath thirdArtifact = convertAndAwait(third);
 
-    awaitTrue(() -> firstArtifact.exists() == false, "oldest artifact should have been evicted and deleted");
+    // Cache eviction runs in the worker's post-conversion bookkeeping, after the extraction future
+    // that convertAndAwait waits on has already completed, so there is nothing to block on.
+
+    awaitTrue(() -> firstArtifact.exists() == false, EVICTION_TIMEOUT_MS, "oldest artifact should have been evicted and deleted");
     assertTrue(secondArtifact.exists());
     assertTrue(thirdArtifact.exists());
   }
@@ -472,7 +457,7 @@ class DocumentArtifactServiceTest
 
     convertAndAwait(sessionFor(newSourceDoc("fourth.docx")));
 
-    awaitTrue(() -> firstArtifact.exists() == false, "released artifact should be evictable again");
+    awaitTrue(() -> firstArtifact.exists() == false, EVICTION_TIMEOUT_MS, "released artifact should be evictable again");
   }
 
 //---------------------------------------------------------------------------

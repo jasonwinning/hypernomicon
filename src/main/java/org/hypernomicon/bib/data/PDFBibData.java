@@ -268,11 +268,8 @@ public class PDFBibData extends BibDataStandalone
 
               bd.setMultiStr(bfTitle, Collections.emptyList());
 
-              elements.forEach(child ->
-              {
-                if ("untitled".equalsIgnoreCase(child.value) == false)
-                  bd.addStr(bfTitle, child.value);
-              });
+              elements.stream().filter(child -> "untitled".equalsIgnoreCase(child.value) == false)
+                               .forEach(child -> bd.addStr(bfTitle, child.value));
 
               break;
 

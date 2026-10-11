@@ -445,7 +445,7 @@ public final class TermTabCtrlr extends HyperNodeTab<HDT_Term, HDT_Concept>
     {
       if (alreadyChangingTab) return;
 
-      if ((milliDiff(Instant.now(), lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) || !super.saveToRecord())
+      if ((milliDiff(Instant.now(), lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) || (super.saveToRecord() == false))
       {
         alreadyChangingTab = true;
         tpConcepts.getSelectionModel().select(oldTab);

@@ -17,6 +17,7 @@
 
 package org.hypernomicon;
 
+import static org.hypernomicon.util.TestUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
@@ -228,12 +229,7 @@ class HyperTaskTest
 
       task.cancel();
 
-      long deadline = System.currentTimeMillis() + (TIMEOUT_SECS * 1000);
-
-      while (task.threadIsAlive() && (System.currentTimeMillis() < deadline))
-        Thread.sleep(10);
-
-      assertFalse(task.threadIsAlive(), "The task thread must end while the FX thread is still held");
+      awaitTrue(() -> task.threadIsAlive() == false, TIMEOUT_SECS * 1000, "The task thread must end while the FX thread is still held");
       assertTrue(raisedByTheWait.get(), "The wait must raise the cancellation");
     }
     finally

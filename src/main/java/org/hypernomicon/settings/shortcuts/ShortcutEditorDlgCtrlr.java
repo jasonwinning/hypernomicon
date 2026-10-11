@@ -141,13 +141,13 @@ public final class ShortcutEditorDlgCtrlr extends ModalDialog
 
     // Letters and numbers
     for (KeyCode code : KeyCode.values())
-      if (code.isLetterKey() || (code.isDigitKey() && !code.isKeypadKey()))
+      if (code.isLetterKey() || (code.isDigitKey() && (code.isKeypadKey() == false)))
         keys.add(code);
 
     // Function keys
     int fMax = IS_OS_MAC ? 19 : 24;
-    for (int i = 1; i <= fMax; i++)
-      keys.add(KeyCode.valueOf("F" + i));
+    for (int fNum = 1; fNum <= fMax; fNum++)
+      keys.add(KeyCode.valueOf("F" + fNum));
 
     // Navigation / editing
     keys.addAll(List.of

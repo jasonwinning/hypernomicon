@@ -754,7 +754,6 @@ public final class Util
    *
    * @param runnable the Runnable to be executed
    * @throws NullPointerException if the runnable is null
-   * @throws InterruptedException if the current thread is interrupted while waiting for the Runnable to complete
    */
   public static void runInFXThread(Runnable runnable)
   {
@@ -770,11 +769,12 @@ public final class Util
    * If the current thread is the JavaFX Application Thread, the Runnable is executed immediately.<br>
    * If waitForCompletion is false, the Runnable is scheduled to run on the JavaFX Application Thread and this method returns immediately.<br>
    * If waitForCompletion is true, the Runnable is scheduled to run on the JavaFX Application Thread and this method waits for its completion.
+   * If the calling thread is interrupted while waiting, this method returns early with the thread's interrupt status set; the Runnable
+   * still runs later on the JavaFX Application Thread.
    *
    * @param runnable the Runnable to be executed in the JavaFX Application Thread
    * @param waitForCompletion if true, waits for the Runnable to finish execution before returning; if false, returns immediately after scheduling the Runnable
    * @throws NullPointerException if the runnable is null
-   * @throws InterruptedException if the current thread is interrupted while waiting for the Runnable to complete
    */
   public static void runInFXThread(Runnable runnable, boolean waitForCompletion)
   {

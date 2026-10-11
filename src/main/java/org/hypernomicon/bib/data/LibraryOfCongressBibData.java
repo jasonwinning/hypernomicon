@@ -444,7 +444,7 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
 
   /**
    * Normalizes a relator to an AuthorType. LoC records these inconsistently: as a bare MARC
-   * relator code ("aut"), as a full relator URI ("http://id.loc.gov/vocabulary/relators/edt"),
+   * relator code ("aut"), as a full relator URI ("<a href="http://id.loc.gov/vocabulary/relators/edt">http://id.loc.gov/vocabulary/relators/edt</a>"),
    * or as free text ("author", "editor", "tr", "translator"). Records cataloged under older
    * rules prefix the text form with "joint" ("joint author", "joint ed.") for a co-responsible
    * added entry; the prefix carries no information about the role itself.

@@ -17,6 +17,10 @@
 
 package org.hypernomicon.fts;
 
+import static org.hypernomicon.util.Util.*;
+
+import java.util.EnumSet;
+
 import org.apache.commons.io.FilenameUtils;
 
 //---------------------------------------------------------------------------
@@ -52,11 +56,7 @@ enum ExtractorKind
   /** Returns the kind with the given name in the metadata snapshot, or {@code null} if there is none. */
   static ExtractorKind fromJsonName(String jsonName)
   {
-    for (ExtractorKind kind : values())
-      if (kind.jsonName.equals(jsonName))
-        return kind;
-
-    return null;
+    return findFirst(EnumSet.allOf(ExtractorKind.class), kind -> kind.jsonName.equals(jsonName));
   }
 
 //---------------------------------------------------------------------------

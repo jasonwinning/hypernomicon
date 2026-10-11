@@ -150,7 +150,7 @@ final class PreviewPaneHost
   }
 
   /** The production scanner: {@link PDFAnnotationScanner} on a daemon thread. */
-  static final AnnotationScanner BACKGROUND_SCANNER = (displayPath, onResult) ->
+  private static final AnnotationScanner BACKGROUND_SCANNER = (displayPath, onResult) ->
     new HyperThread("AnnotationScan", () -> onResult.accept(PDFAnnotationScanner.scan(displayPath))).asDaemon().start();
 
 //---------------------------------------------------------------------------

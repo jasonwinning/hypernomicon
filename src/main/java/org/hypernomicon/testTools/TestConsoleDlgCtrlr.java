@@ -29,8 +29,6 @@ import static org.hypernomicon.util.Util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.prefs.Preferences;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
@@ -73,6 +71,7 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   /** A tab of the console loaded from its own FXML file. The console calls
    *  {@code init} once the controls are injected; a tab that needs the
    *  console (the transient-database helpers) keeps the reference. */
+  @FunctionalInterface
   interface TestConsoleTab { void init(TestConsoleDlgCtrlr console); }
 
 //---------------------------------------------------------------------------
@@ -94,8 +93,8 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   {
     super("testTools/TestConsoleDlg", appTitle + " Test Console", true, true);
 
-    initTextField(app.prefs, tfParent    , PrefKey.TRANSIENT_TEST_PARENT_PATH, "", null);
-    initTextField(app.prefs, tfFolderName, PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
+    initPrefTextField(app.prefs, tfParent    , PrefKey.TRANSIENT_TEST_PARENT_PATH, "", null);
+    initPrefTextField(app.prefs, tfFolderName, PrefKey.TRANSIENT_TEST_FOLDER_NAME, "", null);
 
     enableAllIff(db.isOnline(), btnFromExisting, btnCloseDB, btnZoteroItemTemplates, btnZoteroCreatorTypes, btnTermsTabTests, tabLinkGen);
 
@@ -177,24 +176,6 @@ public class TestConsoleDlgCtrlr extends ModalDialog
     stage.hide();
 
     Platform.runLater(ui::showWelcomeWindow);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /** Binds a text field to a preference: shows the stored value and stores
-   *  every edit. Shared with the tab controllers. */
-  static void initTextField(Preferences prefs, TextField tf, String prefKey, String defValue, Consumer<String> handler)
-  {
-    tf.setText(prefs.get(prefKey, defValue));
-
-    tf.textProperty().addListener((ob, ov, nv) ->
-    {
-      if (nv == null) return;
-
-      prefs.put(prefKey, nv);
-      if (handler != null) handler.accept(nv);
-    });
   }
 
 //---------------------------------------------------------------------------

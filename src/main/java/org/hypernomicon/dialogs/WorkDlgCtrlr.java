@@ -254,7 +254,7 @@ public class WorkDlgCtrlr extends ModalDialog
       {
         case True  : boolVal = true; break;
         case False : boolVal = false; break;
-        default    : boolVal = !atLeastOneInFilename; atLeastOneInFilename = true; break;
+        default    : boolVal = (atLeastOneInFilename == false); atLeastOneInFilename = true; break;
       }
 
       newRow.setCheckboxValue(2, boolVal);

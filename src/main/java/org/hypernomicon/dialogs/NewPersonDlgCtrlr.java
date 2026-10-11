@@ -475,10 +475,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
         person = null;
       }
 
-      return e instanceof SearchKeyTooShortException ?
-        falseWithErrorPopup("Unable to modify record. Search key must be at least 3 characters: " + e.getKey(), tfSearchKey)
-      :
-        false;
+      return (e instanceof SearchKeyTooShortException) && falseWithErrorPopup("Unable to modify record. Search key must be at least 3 characters: " + e.getKey(), tfSearchKey);
     }
 
     if (rbMerge.isSelected())

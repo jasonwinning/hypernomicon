@@ -713,7 +713,12 @@ public final class QueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void executeReport(HyperTableRow row, boolean setCaption)
+  /**
+   * Generate the report selected in {@code row}.
+   * @return True if the report was generated, regardless of whether it has any rows;
+   * false if the row does not select a known report, or generating it failed or was cancelled by the user.
+   */
+  private boolean executeReport(HyperTableRow row, boolean setCaption)
   {
     switchToReportMode();
 
@@ -725,7 +730,7 @@ public final class QueryCtrlr extends QuerySubCtrlr
     if (reportEngine == null)
     {
       reportTable.clear();
-      return;
+      return false;
     }
 
     reportTable.format(reportEngine);
@@ -734,12 +739,14 @@ public final class QueryCtrlr extends QuerySubCtrlr
     {
       reportEngine.generate(this, row.getCell(OPERAND_1_COL_NDX), row.getCell(OPERAND_2_COL_NDX), row.getCell(OPERAND_3_COL_NDX));
 
-    }}.setShowDialogImmediately(true).runWithProgressDialog() != State.SUCCEEDED) return;
+    }}.setShowDialogImmediately(true).runWithProgressDialog() != State.SUCCEEDED) return false;
 
     reportTable.inject(reportEngine);
 
     if (reportEngine.autoShowDescription() && (reportEngine.getRows().size() > 0))
       lowerOneTouchExpandableWrapper.setCollapsedState(CollapsedState.Expanded);
+
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -801,10 +808,7 @@ public final class QueryCtrlr extends QuerySubCtrlr
     for (HyperTableRow row : htFields.dataRows())
     {
       if (QueryType.codeToVal(row.getID(QUERY_TYPE_COL_NDX)) == qtReport)
-      {
-        executeReport(row, setCaption);
-        return true;
-      }
+        return executeReport(row, setCaption);
     }
 
     if (db.isOffline()) return false;

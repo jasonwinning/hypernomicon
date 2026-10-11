@@ -336,14 +336,11 @@ public class SelectWorkDlgCtrlr extends ModalDialog
         {
           for (HDT_Work curWork : db.works)
           {
-            if (curWork.getWorkTypeEnum() == WorkTypeEnum.wtBook) for (String isbn : curWork.getISBNs())
+            if ((curWork.getWorkTypeEnum() == WorkTypeEnum.wtBook) && curWork.getISBNs().stream().anyMatch(isbns::contains))
             {
-              if (isbns.contains(isbn))
-              {
-                work = curWork;
-                updateFields();
-                return;
-              }
+              work = curWork;
+              updateFields();
+              return;
             }
           }
 
@@ -351,13 +348,9 @@ public class SelectWorkDlgCtrlr extends ModalDialog
           {
             db.getBibLibrary().getNonTrashEntries().forEach(entry ->
             {
-              if ((entry.linkedToWork() == false) && (HDT_WorkType.getEnumVal(entry.getWorkType()) == WorkTypeEnum.wtBook))
-                for (String isbn : entry.getMultiStr(BibFieldEnum.bfISBNs))
-                  if (isbns.contains(isbn))
-                  {
-                    bibEntry = entry;
-                    break;
-                  }
+              if ((entry.linkedToWork() == false) && (HDT_WorkType.getEnumVal(entry.getWorkType()) == WorkTypeEnum.wtBook) &&
+                  entry.getMultiStr(BibFieldEnum.bfISBNs).stream().anyMatch(isbns::contains))
+                bibEntry = entry;
             });
           }
         }

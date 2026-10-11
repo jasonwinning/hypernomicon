@@ -63,7 +63,7 @@ public class NestedValue
 //---------------------------------------------------------------------------
 
   public static boolean isEmpty(String str)        { return strNullOrEmpty(str); }
-  public static boolean isEmpty(boolean bool)      { return !bool; }
+  public static boolean isEmpty(boolean bool)      { return bool == false; }
   public static boolean isEmpty(Ternary ternary)   { return ternary.isUnset(); }
   public static boolean isEmpty(int id)            { return id < 1; }
   public static boolean isEmpty(HDT_Record target) { return HDT_Record.isEmpty(target, false); }

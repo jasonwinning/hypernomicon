@@ -235,7 +235,7 @@ class FilenameRulesTest
   @Test
   void detect_throwsNullPointerException_whenGivenNull()
   {
-    assertThrows(NullPointerException.class, () -> FilenameRules.detect((Path) null));
+    assertThrows(NullPointerException.class, () -> FilenameRules.detect(null));
   }
 
 //---------------------------------------------------------------------------

@@ -41,7 +41,7 @@ import org.hypernomicon.util.file.FilePath;
  * recovered; their order and structure are not, which is acceptable for search. A few
  * short runs that binary data happens to spell come along with them.
  */
-public final class OneNoteStringScrape
+final class OneNoteStringScrape
 {
 
 //---------------------------------------------------------------------------

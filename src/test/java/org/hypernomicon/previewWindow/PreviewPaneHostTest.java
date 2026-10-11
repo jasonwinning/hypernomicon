@@ -350,7 +350,7 @@ class PreviewPaneHostTest
     host.navClick(false);              // back to 5, not to 7 again
 
     assertEquals(5, host.pageNum());
-    assertEquals("goToPage:5", calls().get(calls().size() - 1));
+    assertEquals("goToPage:5", calls().getLast());
   }
 
 //---------------------------------------------------------------------------
@@ -370,7 +370,7 @@ class PreviewPaneHostTest
     // file that does not exist derives to direct content, so the re-issue is
     // a direct load here; the page it asks for is pinned in the history tests.
 
-    assertEquals("direct:a.pdf", calls().get(calls().size() - 1), "A is re-previewed");
+    assertEquals("direct:a.pdf", calls().getLast(), "A is re-previewed");
     assertEquals(A, host.intendedFile());
     assertTrue(host.canStepFile(true), "B is still ahead");
   }
@@ -431,7 +431,7 @@ class PreviewPaneHostTest
     host.setPreview(A, null, false, 1, false, null);
 
     assertEquals(1, count("direct:a.pdf"));
-    assertEquals("unable:a.pdf", calls().get(calls().size() - 1));
+    assertEquals("unable:a.pdf", calls().getLast());
     assertEquals(A, host.intendedFile(), "the controls still name the file the pane is about");
   }
 

@@ -1057,7 +1057,7 @@ public final class StringUtil
 
            domainPattern.matcher(selText).matches() ||
 
-           (pathPattern.matcher(selText).matches() && fileExtensionPattern.matcher(selText).matches() && !whitespaceExtensionPattern.matcher(selText).matches());
+           (pathPattern.matcher(selText).matches() && fileExtensionPattern.matcher(selText).matches() && (false == whitespaceExtensionPattern.matcher(selText).matches()));
   }
 
 //---------------------------------------------------------------------------

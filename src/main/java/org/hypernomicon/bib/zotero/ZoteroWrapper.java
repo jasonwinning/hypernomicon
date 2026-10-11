@@ -548,15 +548,15 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
         while (statusCode == SC_PRECONDITION_FAILED)
         {
-          if (!getRemoteUpdates(ZoteroCmd.readChangedCollVersions, ZoteroCmd.readCollections, keyToColl)) return;
+          if (false == getRemoteUpdates(ZoteroCmd.readChangedCollVersions, ZoteroCmd.readCollections, keyToColl)) return;
 
           if (onlineLibVersion <= offlineLibVersion)
             return;
 
           changed = true;
 
-          if (!getRemoteUpdates(ZoteroCmd.readChangedItemVersions, ZoteroCmd.readItems, keyToAllEntry  )) return;
-          if (!getRemoteUpdates(ZoteroCmd.readTrashVersions,       ZoteroCmd.readTrash, keyToTrashEntry)) return;
+          if (false == getRemoteUpdates(ZoteroCmd.readChangedItemVersions, ZoteroCmd.readItems, keyToAllEntry  )) return;
+          if (false == getRemoteUpdates(ZoteroCmd.readTrashVersions,       ZoteroCmd.readTrash, keyToTrashEntry)) return;
 
       /* ******************************************* */
       /*       Retrieve remote deletions             */

@@ -214,29 +214,13 @@ final class NameMatcher
    *
    * @param source The list to check for unmatched spelled-out tokens.
    * @param reference The list providing potential matches.
-   * @return true if an unmatched full-name token exists in the source.
+   * @return false if an unmatched full-name token exists in the source; true otherwise.
    */
   private static boolean hasNoUnmatchedSpelled(List<String> source, List<String> reference)
   {
-    for (String s : source)
-    {
-      if (s.length() == 1) continue;
-
-      boolean matched = false;
-
-      for (String r : reference)
-      {
-        if (tokensMatch(s.toLowerCase(Locale.ROOT), r.toLowerCase(Locale.ROOT)))
-        {
-          matched = true;
-          break;
-        }
-      }
-
-      if (matched == false) return false;
-    }
-
-    return true;
+    return source.stream()
+      .filter(s -> s.length() > 1)
+      .allMatch(s -> reference.stream().anyMatch(r -> tokensMatch(s.toLowerCase(Locale.ROOT), r.toLowerCase(Locale.ROOT))));
   }
 
 //---------------------------------------------------------------------------
@@ -253,20 +237,9 @@ final class NameMatcher
    */
   private static boolean hasSpelledOutBridge(List<String> a, List<String> b)
   {
-    for (String s : a)
-    {
-      if (s.length() == 1) continue;
-
-      for (String t : b)
-      {
-        if (t.length() == 1) continue;
-
-        if (tokensMatch(s.toLowerCase(Locale.ROOT), t.toLowerCase(Locale.ROOT)))
-          return true;
-      }
-    }
-
-    return false;
+    return a.stream()
+      .filter(s -> s.length() > 1)
+      .anyMatch(s -> b.stream().anyMatch(t -> (t.length() > 1) && tokensMatch(s.toLowerCase(Locale.ROOT), t.toLowerCase(Locale.ROOT))));
   }
 
 //---------------------------------------------------------------------------

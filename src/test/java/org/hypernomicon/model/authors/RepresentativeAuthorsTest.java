@@ -122,7 +122,7 @@ class RepresentativeAuthorsTest
   @Test
   void nobodyStandsForNobody()
   {
-    assertEquals(List.of(), Author.representativeAuthors(List.<Author>of()));
+    assertEquals(List.of(), Author.representativeAuthors(List.of()));
   }
 
 //---------------------------------------------------------------------------

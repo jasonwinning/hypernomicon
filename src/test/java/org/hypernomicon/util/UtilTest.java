@@ -50,6 +50,8 @@ class UtilTest
     assertEquals(expected, result, "The list should have duplicates removed and maintain the order of first occurrence.");
   }
 
+//---------------------------------------------------------------------------
+
   @Test
   void testRemoveDuplicatesInPlace_NoDuplicates()
   {
@@ -60,6 +62,8 @@ class UtilTest
 
     assertEquals(expected, result, "The list should remain unchanged as there are no duplicates.");
   }
+
+//---------------------------------------------------------------------------
 
   @Test
   void testRemoveDuplicatesInPlace_EmptyList()
@@ -72,6 +76,8 @@ class UtilTest
     assertEquals(expected, result, "An empty list should remain empty.");
   }
 
+//---------------------------------------------------------------------------
+
   @Test
   void testRemoveDuplicatesInPlace_SingleElementList()
   {
@@ -82,6 +88,8 @@ class UtilTest
 
     assertEquals(expected, result, "A single-element list should remain unchanged.");
   }
+
+//---------------------------------------------------------------------------
 
   @Test
   void testRemoveDuplicatesInPlace_AllDuplicates()

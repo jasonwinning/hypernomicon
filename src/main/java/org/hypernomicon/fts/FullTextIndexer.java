@@ -230,11 +230,11 @@ public class FullTextIndexer
    *  require a per-file term lookup on startup to reconstruct the same map,
    *  versus a single JSON deserialize into a HashMap.
    *  @see #writeMetadataSnapshot(String)
-   *  @see #loadMetadata() */
+   *  @see #loadMetadata(IndexManifest) */
   private final ConcurrentHashMap<String, FileIndexEntry> metadataMap = new ConcurrentHashMap<>();
 
   /** In-session skip set for files that failed extraction. Populated from
-   *  {@link #metadataMap} NO_TEXT and ABANDONED entries on startup by {@link #loadMetadata()};
+   *  {@link #metadataMap} NO_TEXT and ABANDONED entries on startup by {@link #loadMetadata(IndexManifest)};
    *  FAILED entries are deliberately excluded so they get a retry during the
    *  initial build. Also populated during the current session when extraction
    *  fails. Cleared for a file on CREATE or MODIFY events. */
@@ -2481,7 +2481,7 @@ public class FullTextIndexer
 
   private boolean isExcluded(FilePath filePath)
   {
-    return excludedPaths.isEmpty() ? false : isRelPathExcluded(relativePath(filePath));
+    return (excludedPaths.size() > 0) && isRelPathExcluded(relativePath(filePath));
   }
 
 //---------------------------------------------------------------------------
@@ -2798,7 +2798,7 @@ public class FullTextIndexer
   /**
    * Replaces each wildcard or prefix query in a query (at the top level or within a boolean
    * query) with the set of terms it matches in the reader. Span queries are left as they are,
-   * since {@link IndexSearcher#rewrite} already expands their multi-term parts once.
+   * since {@link IndexSearcher#rewrite(Query)} already expands their multi-term parts once.
    */
   private static Query expandMultiTermQueries(Query query, IndexReader reader) throws IOException
   {

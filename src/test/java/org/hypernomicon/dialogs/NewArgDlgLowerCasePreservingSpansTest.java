@@ -21,6 +21,7 @@ import static org.hypernomicon.dialogs.NewArgDlgCtrlr.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ class NewArgDlgLowerCasePreservingSpansTest
   {
     assertEquals(0, offsetLengthPairs.length % 2, "spans() requires pairs of (offset, length)");
 
-    List<int[]> result = new java.util.ArrayList<>();
+    List<int[]> result = new ArrayList<>();
     for (int ndx = 0; ndx < offsetLengthPairs.length; ndx += 2)
       result.add(new int[] { offsetLengthPairs[ndx], offsetLengthPairs[ndx + 1] });
 

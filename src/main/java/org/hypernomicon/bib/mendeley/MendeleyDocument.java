@@ -575,11 +575,8 @@ public class MendeleyDocument extends BibEntry<MendeleyDocument, MendeleyFolder>
 
       JsonObj jBackupObj = ((MendeleyDocument) backupItem).jObj;
 
-      jBackupObj.keySet().forEach(key ->
-      {
-        if ((Noneditable_Document_JSON_Keys.contains(key) == false) && (jStandaloneObj.containsKey(key) == false))
-          jStandaloneObj.putNull(key);
-      });
+      jBackupObj.keySet().stream().filter(key -> (Noneditable_Document_JSON_Keys.contains(key) == false) && (jStandaloneObj.containsKey(key) == false))
+                                  .forEach(jStandaloneObj::putNull);
 
       Noneditable_Document_JSON_Keys.forEach(jStandaloneObj::remove);
     }

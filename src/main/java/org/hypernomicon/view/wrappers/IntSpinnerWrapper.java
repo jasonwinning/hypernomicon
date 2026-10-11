@@ -31,7 +31,7 @@ import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
  * sentinel value such as {@code -1} (never) or {@code 0} (no limit). Read the current value, sentinel-aware,
  * with {@link #getValue()}.
  */
-public class IntSpinnerWrapper
+public final class IntSpinnerWrapper
 {
 
 //---------------------------------------------------------------------------

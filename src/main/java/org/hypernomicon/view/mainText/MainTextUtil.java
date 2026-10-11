@@ -240,7 +240,7 @@ public final class MainTextUtil
 
       case JS_EVENT_DETAILED_KEY_WORKS :
 
-        textViewInfo.detailedWorks = !textViewInfo.detailedWorks;
+        textViewInfo.detailedWorks = (textViewInfo.detailedWorks == false);
 
         Document doc = Jsoup.parse(htmlToUse);
 
@@ -335,14 +335,6 @@ public final class MainTextUtil
     });
 
     return doc;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String makeLinksExternal(String s)
-  {
-    return makeDocLinksExternal(jsoupParse(s)).html();
   }
 
 //---------------------------------------------------------------------------
@@ -648,7 +640,7 @@ public final class MainTextUtil
 
     sortedKeys.forEach(key ->
     {
-      if (firstOne.isFalse() || !topmost)
+      if (firstOne.isFalse() || (topmost == false))
         innerHtml.append("<br>");
 
       firstOne.setFalse();

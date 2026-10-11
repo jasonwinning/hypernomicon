@@ -159,7 +159,7 @@ public class PictureDlgCtrlr extends ModalDialog
 
     tfName.focusedProperty().addListener((ob, oldValue, newValue) -> Platform.runLater(() ->
     {
-      if (tfName.isFocused() && !tfName.getText().isEmpty())
+      if (tfName.isFocused() && (tfName.getText().isEmpty() == false))
       {
         try
         {

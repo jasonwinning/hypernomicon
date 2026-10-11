@@ -47,7 +47,7 @@ public class AsyncHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final class RequestThread extends HyperThread
+  private final class RequestThread extends HyperThread
   {
     private final HttpRequest request;
     private final Consumer<HttpResponse<InputStream>> responseHndlr;

@@ -121,12 +121,12 @@ class SubjectOrderTest
 
   private static String pointerTag(String tagName, HDT_Record obj, int ord)
   {
-    return "<" + tagName + " id=\"" + obj.getID() + "\" ord=\"" + ord + "\">";
+    return '<' + tagName + " id=\"" + obj.getID() + "\" ord=\"" + ord + "\">";
   }
 
   private static String pointerTag(String tagName, HDT_Record obj)
   {
-    return "<" + tagName + " id=\"" + obj.getID() + "\">";
+    return '<' + tagName + " id=\"" + obj.getID() + "\">";
   }
 
 //---------------------------------------------------------------------------

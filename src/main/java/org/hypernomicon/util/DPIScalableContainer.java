@@ -39,6 +39,7 @@ import javafx.scene.Node;
  * the chain does not need a branch per house type (JavaFX and third-party types
  * still need one); {@link DPIScaleAudit} catches whatever both miss.
  */
+@FunctionalInterface
 public interface DPIScalableContainer
 {
   /**

@@ -90,7 +90,7 @@ public abstract class BibFieldCtrlr
    * Caption for a field's label. A read-only row (see {@link BibFieldRow}) says up front that
    * its values are not going to be saved.
    */
-  static String caption(BibFieldEnum bibFieldEnum, boolean readOnly)
+  private static String caption(BibFieldEnum bibFieldEnum, boolean readOnly)
   {
     return bibFieldEnum.getUserFriendlyName() + (readOnly ? " (not saved)" : "");
   }
@@ -103,7 +103,7 @@ public abstract class BibFieldCtrlr
    * is saved, while making it plain that the value is not on offer: the selector is disabled and
    * the text can be neither edited nor tabbed into.
    */
-  static void makeReadOnly(Node selector, TextInputControl textCtrl)
+  private static void makeReadOnly(Node selector, TextInputControl textCtrl)
   {
     selector.setDisable(true);
 
