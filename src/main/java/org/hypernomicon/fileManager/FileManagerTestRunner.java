@@ -44,14 +44,15 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
 /**
  * Test runner for the FileManager paste-move pipeline, plus the New Folder button's
  * refresh-and-highlight choreography (Phase 27), the window's catch-up after a directory
- * is deleted through FileDeletion rather than the File Manager (Phase 28), and the folder
- * lookup for a directory that has vanished from disk (Phase 29), launched from the
- * Test Console's File Manager tab.
+ * is deleted through FileDeletion rather than the File Manager (Phase 28), the folder
+ * lookup for a directory that has vanished from disk (Phase 29), and the record lookups
+ * that must precede a deletion's or an outside rename's eviction of the path from the
+ * registry (Phase 30), launched from the Test Console's File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
- * {@link FileManager#newFolder(HDT_Folder, String)}, {@link FileManager#openFileRow}, and the
- * {@link FileRow} constructor.</p>
+ * {@link FileManager#newFolder(HDT_Folder, String)}, {@link FileManager#delete},
+ * {@link FileManager#openFileRow}, and the {@link FileRow} constructor.</p>
  *
  * <p>All test files are created under the transient database's
  * {@code _test_fm/} directory (internal) and a sibling {@code _test_fm_ext/}
@@ -3838,6 +3839,112 @@ public final class FileManagerTestRunner
       }
     });
 
+    // =====================================================================
+    //  Phase 30: Record Lookups Around Deletion and Outside Rename (5 steps)
+    // =====================================================================
+
+    HDT_RecordWithPath[] deletedHolder = new HDT_RecordWithPath[1],  // carries the misc. file record from step 126 to step 127
+                         renamedHolder = new HDT_RecordWithPath[1];  // carries the misc. file record from step 128 to step 129
+
+    // Step 125: A file assigned to a misc. file record; open the File Manager on it
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir  = createTestDir("p30s125", "dir"),
+               file = dir.resolve("doomed.txt");
+
+      assertExists(file, "doomed file");
+
+      assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, file), "MiscFile record should be created");
+      assertFalse(HyperPath.getHyperPathSetForFilePath(file).isEmpty(), "file should be tracked by the registry");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show(file);
+    });
+
+    // Step 126: Delete it through the File Manager, answering yes to deleting the record too
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath file = testRoot.resolve("p30s125", "dir", "doomed.txt");
+      FileManager fileManager = FileManager.instance();
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "file row should be selected");
+      assertEquals(file, row.getFilePath(), "selected row should be the file");
+
+      HDT_RecordWithPath miscFile = row.getRecord();
+      assertNotNull(miscFile, "row should carry the misc. file record");
+
+      deletedHolder[0] = miscFile;
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrYes);  // "Okay to permanently delete the file as well as the associated record?"
+
+      fileManager.delete(row);
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should prompt once, about the record");
+
+      PopupRobot.setDefaultResponse(mrOk);
+    });
+
+    // Step 127: The file and its record are both gone. Before the fix, the deletion evicted the path from
+    // the registry before the record lookup, so the file went and the record stayed
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath file = testRoot.resolve("p30s125", "dir", "doomed.txt");
+
+      assertGone(file, "deleted file");
+      assertNull(db.miscFiles.getByID(deletedHolder[0].getID()), "misc. file record should be deleted with its file");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(file).isEmpty(), "deleted file's path should have no records");
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
+    // Step 128: Rename a tracked misc. file on disk from outside the program, with the watcher running
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir     = createTestDir("p30s128", "dir"),
+               tracked = dir.resolve("tracked.txt"),
+               renamed = dir.resolve("renamed.txt");
+
+      assertExists(tracked, "tracked file");
+
+      HDT_RecordWithPath miscFile = HyperPath.createRecordAssignedToPath(hdtMiscFile, tracked);
+      assertNotNull(miscFile, "MiscFile record should be created");
+
+      renamedHolder[0] = miscFile;
+
+      assertTrue(folderTreeWatcher.isRunning(), "FolderTreeWatcher should be running");
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrYes);  // "Should the record be reassigned to ...?"
+
+      // A plain Files.move, not FilePath.filesMove, so that the watcher sees the rename as an outside change
+
+      try { Files.move(tracked.toPath(), renamed.toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+    });
+
+    // Step 129: After the watcher has paired the events and waited its two seconds, the record follows the file.
+    // Before the fix, the watcher evicted the old path and then asked whether the file was in use, which for a
+    // misc. file is answered from the registry under that path, so it took the file for untracked and never asked
+    seq.setDelayMS(4000);
+
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath tracked = testRoot.resolve("p30s128", "dir", "tracked.txt"),
+               renamed = testRoot.resolve("p30s128", "dir", "renamed.txt");
+
+      assertExists(renamed, "renamed file");
+      assertEquals(renamed, renamedHolder[0].filePath(), "record should be reassigned to the renamed file");
+      assertFalse(HyperPath.getHyperPathSetForFilePath(renamed).isEmpty(), "renamed path should be tracked by the registry");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(tracked).isEmpty(), "old path should no longer be tracked");
+
+      PopupRobot.setDefaultResponse(mrOk);
+    });
+
+    seq.setDelayMS(400);
+
     // Start the sequence
     seq.start();
   }
@@ -4416,6 +4523,11 @@ public final class FileManagerTestRunner
     // Phase 29: Folder lookup for a vanished directory (Step 124)
 
     setupDir(testRoot, "p29s124", "vanishing");
+
+    // Phase 30: Record lookups around deletion and outside rename (Steps 125-129)
+
+    setupFile(testRoot, "p30s125", "dir", "doomed.txt");
+    setupFile(testRoot, "p30s128", "dir", "tracked.txt");
   }
 
 //---------------------------------------------------------------------------

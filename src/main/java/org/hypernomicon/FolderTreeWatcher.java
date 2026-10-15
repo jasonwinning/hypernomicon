@@ -558,13 +558,18 @@ public class FolderTreeWatcher
 
           case wekRename:
           {
+            HyperPath hyperPath = oldPathInfo.getHyperPath();
+
+            // Decide whether the file is tracked before evicting its old path: for pictures and misc.
+            // files, the answer comes from the registry under that path
+
+            boolean inUse = HyperPath.isInUseByRecords(hyperPath);
+
             // Evict old path from registry; new path will be interned via FilePath.of() as needed
 
             nullSwitch(evictionHook, hook -> hook.accept(oldPathInfo.getFilePath()));
 
-            HyperPath hyperPath = oldPathInfo.getHyperPath();
-            boolean untrackedFile = ((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
-                                    (HyperPath.isInUseByRecords(hyperPath) == false);
+            boolean untrackedFile = ((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) && (inUse == false);
 
             if (untrackedFile)
             {
@@ -576,7 +581,7 @@ public class FolderTreeWatcher
                 doImport(newPath);
               }
             }
-            else if (HyperPath.isInUseByRecords(hyperPath))
+            else if (inUse)
             {
               if (watcherEvent.isDirectory())
                 warningPopup("A folder that is in use by the database, \"" + oldPathInfo.getFilePath().toDbRelativeStr() +

@@ -1040,7 +1040,12 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void delete(FileRow fileRow)
+  /**
+   * Deletes the selected rows, or the given row when nothing is selected, after confirming, along
+   * with the misc. file and work file records assigned to the deleted files. Package-private so
+   * the test runner can drive it.
+   */
+  void delete(FileRow fileRow)
   {
     if (ui.cantSaveRecord()) return;
 
@@ -1148,6 +1153,15 @@ public final class FileManager extends NonmodalWindow
           .map(AbstractEntityWithPath::getFilePath)
           .toList();
 
+        // Resolve the records now: the deletion evicts the paths from the registry, so the
+        // lookup finds nothing afterward
+
+        Map<FilePath, Set<HyperPath>> relatedPaths = new LinkedHashMap<>();
+
+        for (AbstractEntityWithPath item : fileItems)
+          if (item.isRelated())
+            relatedPaths.put(item.getFilePath(), HyperPath.getHyperPathSetForFilePath(item.getFilePath()));
+
         BatchBuilder batch = FileDeletion.ofFiles(filePaths).interactive();
         DeletionResult result = batch.execute();
 
@@ -1155,22 +1169,15 @@ public final class FileManager extends NonmodalWindow
         {
           Set<FilePath> failedPaths = batch.getFailedPaths();
 
-          for (AbstractEntityWithPath item : fileItems)
+          for (Entry<FilePath, Set<HyperPath>> entry : relatedPaths.entrySet())
           {
-            FilePath filePath = item.getFilePath();
-
-            if (failedPaths.contains(filePath))
+            if (failedPaths.contains(entry.getKey()))
               continue;
 
-            if (item.isRelated())
+            for (HyperPath setPath : entry.getValue())
             {
-              Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
-
-              for (HyperPath setPath : set)
-              {
-                if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
-                  db.deleteRecord(setPath.getRecord());
-              }
+              if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
+                db.deleteRecord(setPath.getRecord());
             }
           }
         }
@@ -1207,10 +1214,10 @@ public final class FileManager extends NonmodalWindow
       return (FileDeletion.ofFile(filePath).interactive().execute() != DeletionResult.ABORTED);
     }
 
+    Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);  // before the deletion evicts the path from the registry
+
     if (FileDeletion.ofFile(filePath).interactive().execute() == DeletionResult.ABORTED)
       return false;
-
-    Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
 
     for (HyperPath setPath : set)
       if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
