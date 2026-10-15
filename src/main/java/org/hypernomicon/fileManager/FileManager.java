@@ -492,7 +492,11 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void cutCopy(FileRow srcRow, boolean copying)
+  /**
+   * Cut or Copy: marks the selected rows, or the given row when nothing is selected, as the source
+   * of the next paste. Package-private so the test runner can drive it.
+   */
+  void cutCopy(FileRow srcRow, boolean copying)
   {
     moveCopy(getMarkedRows(srcRow), copying, false);
   }
@@ -1305,26 +1309,53 @@ public final class FileManager extends NonmodalWindow
     if (fileRow == null) fileRow = getFolderRow();
     if (fileRow == null) return;
 
-    HDT_RecordWithPath fileRecord = fileRow.getRecord();
-    boolean isDir = fileRow.isDirectory(), cantRename;
-    String noun;
+    if (canRenameRow(fileRow) == false) return;
 
-    if (isDir) { noun = "Folder"; cantRename = isUnstoredRecord(fileRecord.getID(), hdtFolder) || fileRow.getFilePath().equals(db.xmlPath()); }
-    else       { noun = "File";   cantRename = db.isProtectedFile(fileRow.getFilePath(), false); }
+    boolean isDir = fileRow.isDirectory();
 
-    if (cantRename)
-    {
-      infoPopup("That " + noun.toLowerCase() + " cannot be renamed.");
-      return;
-    }
-
-    RenameDlgCtrlr dlg = new RenameDlgCtrlr("Rename " + noun + ": " + fileRow.getFilePath(), isDir ? ntFolder : ntFile, fileRow.getFileName());
+    RenameDlgCtrlr dlg = new RenameDlgCtrlr("Rename " + (isDir ? "Folder" : "File") + ": " + fileRow.getFilePath(), isDir ? ntFolder : ntFile, fileRow.getFileName());
 
     if (dlg.showModal() == false) return;
 
+    rename(fileRow, dlg.getNewName());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * False, after telling the user, if the row's file or folder is one that cannot be renamed: a
+   * special folder, the XML folder, or a protected file.
+   */
+  private static boolean canRenameRow(FileRow fileRow)
+  {
+    boolean isDir = fileRow.isDirectory(),
+            cantRename = isDir ? (isUnstoredRecord(fileRow.getRecord().getID(), hdtFolder) || fileRow.getFilePath().equals(db.xmlPath()))
+                               : db.isProtectedFile(fileRow.getFilePath(), false);
+
+    if (cantRename == false) return true;
+
+    infoPopup("That " + (isDir ? "folder" : "file") + " cannot be renamed.");
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Renames the row's file or folder, within its directory, to the given name; a file's record,
+   * or a folder's record tree, follows it. Package-private so the test runner can drive it
+   * without the name dialog.
+   */
+  void rename(FileRow fileRow, String newName)
+  {
+    if (canRenameRow(fileRow) == false) return;
+
+    HDT_RecordWithPath fileRecord = fileRow.getRecord();
+    boolean isDir = fileRow.isDirectory();
+
     FilePath srcFilePath = fileRow.getFilePath(),
-             parentFilePath = srcFilePath.getParent(),
-             destFilePath = parentFilePath.resolve(dlg.getNewName());
+             destFilePath = srcFilePath.getParent().resolve(newName);
 
     if (destFilePath.exists())
     {
@@ -1336,7 +1367,7 @@ public final class FileManager extends NonmodalWindow
     {
       suppressNeedRefresh = true;
 
-      boolean renamed = fileRow.rename(dlg.getNewName());
+      boolean renamed = fileRow.rename(newName);
 
       suppressNeedRefresh = false;
 
@@ -1356,16 +1387,13 @@ public final class FileManager extends NonmodalWindow
       suppressNeedRefresh = true;
 
       if (fileRecord == null)
-      {
-        FilePath filePath = fileRow.getFilePath();
-        filePath.renameTo(dlg.getNewName());
-      }
+        srcFilePath.renameTo(newName);
       else
-        success = HyperPath.renameFile(fileRecord.filePath(), dlg.getNewName());
+        success = HyperPath.renameFile(fileRecord.filePath(), newName);
     }
     catch (IOException | HDB_InternalError e)
     {
-      errorPopup("Unable to rename the " + noun.toLowerCase() + ": " + getThrowableMessage(e));
+      errorPopup("Unable to rename the file: " + getThrowableMessage(e));
       return;
     }
     finally
@@ -1583,7 +1611,9 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void userRequestsToGoBackward()
+  // The Back and Forward buttons. Package-private so the test runner can drive them.
+
+  void userRequestsToGoBackward()
   {
     if (btnBack.isDisabled()) return;
 
@@ -1593,7 +1623,7 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void userRequestsToGoForward()
+  void userRequestsToGoForward()
   {
     if (btnForward.isDisabled()) return;
 
@@ -1888,6 +1918,23 @@ public final class FileManager extends NonmodalWindow
 
     fileTable.selectByFileName(filePath.getNameOnly());
     fileTV.requestFocus();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Replaces the file table's selection with the rows named by the given paths, for an operation
+   * on several rows at once. Package-private so the test runner can drive one.
+   */
+  void selectRows(FilePath... filePaths)
+  {
+    fileTV.getSelectionModel().clearSelection();
+
+    for (FileRow row : fileTV.getItems())
+      for (FilePath filePath : filePaths)
+        if (row.getFilePath().getNameOnly().equals(filePath.getNameOnly()))
+          fileTV.getSelectionModel().select(row);
   }
 
 //---------------------------------------------------------------------------

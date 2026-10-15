@@ -48,14 +48,19 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
  * lookup for a directory that has vanished from disk (Phase 29), and the record lookups
  * that must precede a deletion's or an outside rename's eviction of the path from the
  * registry (Phase 30), the main window keeping a view when the record its only view shows
- * is deleted from outside it (Phase 31), and the deletion of a note's folder through the
- * File Manager (Phase 32), launched from the Test Console's File Manager tab.
+ * is deleted from outside it (Phase 31), the deletion of a note's folder through the File
+ * Manager (Phase 32), renaming through the File Manager (Phase 33), the watcher's reactions
+ * to changes made outside the program (Phase 34), the deletion flow's variants (Phase 35),
+ * the clipboard and drag variants of paste (Phase 36), and the folder history with the
+ * Refresh button (Phase 37), launched from the Test Console's File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
- * {@link FileManager#newFolder(HDT_Folder, String)}, {@link FileManager#delete},
- * {@link FileManager#goToFilePath}, {@link FileManager#openFileRow}, and the
- * {@link FileRow} constructor.</p>
+ * {@link FileManager#cutCopy}, {@link FileManager#newFolder(HDT_Folder, String)},
+ * {@link FileManager#delete}, {@link FileManager#rename(FileRow, String)},
+ * {@link FileManager#goToFilePath}, {@link FileManager#selectRows},
+ * {@link FileManager#userRequestsToGoBackward}, {@link FileManager#userRequestsToGoForward},
+ * {@link FileManager#openFileRow}, and the {@link FileRow} constructor.</p>
  *
  * <p>All test files are created under the transient database's
  * {@code _test_fm/} directory (internal) and a sibling {@code _test_fm_ext/}
@@ -4060,6 +4065,991 @@ public final class FileManagerTestRunner
       FileManager.close(false);
     });
 
+    // =====================================================================
+    //  Phase 33: Rename Through the File Manager (10 steps)
+    // =====================================================================
+
+    // Step 134: Open the File Manager on a folder holding a plain file, a misc. file, a work file and a name to collide with
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = createTestDir("p33s134", "dir");
+
+      assertExists(dir.resolve("plain.txt"), "plain file");
+      assertExists(dir.resolve("misc.dat"),  "misc. file");
+      assertExists(dir.resolve("work.pdf"),  "work file");
+      assertExists(dir.resolve("taken.txt"), "file whose name is taken");
+
+      assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, dir.resolve("misc.dat")), "MiscFile record should be created");
+      assertNotNull(HyperPath.createRecordAssignedToPath(hdtWorkFile, dir.resolve("work.pdf")), "WorkFile record should be created");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show(dir);
+    });
+
+    // Step 135: Rename a file with no record; nothing but the file changes
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir     = testRoot.resolve("p33s134", "dir"),
+               plain   = dir.resolve("plain.txt"),
+               renamed = dir.resolve("renamed.txt");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(plain, false);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "file row should be selected");
+      assertEquals(plain, row.getFilePath(), "selected row should be the plain file");
+
+      fileManager.rename(row, "renamed.txt");
+
+      assertExists(renamed, "renamed file");
+      assertGone(plain, "old name");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(renamed).isEmpty(), "a file without a record should stay untracked");
+    });
+
+    // Step 136: Rename a file assigned to a misc. file record; the record and the registry follow the file
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir     = testRoot.resolve("p33s134", "dir"),
+               misc    = dir.resolve("misc.dat"),
+               renamed = dir.resolve("misc2.dat");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(misc, false);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "misc. file row should be selected");
+
+      HDT_RecordWithPath miscFile = row.getRecord();
+
+      assertNotNull(miscFile, "row should carry the misc. file record");
+
+      fileManager.rename(row, "misc2.dat");
+
+      assertExists(renamed, "renamed misc. file");
+      assertGone(misc, "old name");
+      assertEquals(renamed, miscFile.filePath(), "misc. file record should follow the file");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(renamed).contains(miscFile.getPath()), "registry should track the new name");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(misc).isEmpty(), "registry should have dropped the old name");
+    });
+
+    // Step 137: The same for a file assigned to a work file record
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir     = testRoot.resolve("p33s134", "dir"),
+               work    = dir.resolve("work.pdf"),
+               renamed = dir.resolve("work2.pdf");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(work, false);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "work file row should be selected");
+
+      HDT_RecordWithPath workFile = row.getRecord();
+
+      assertNotNull(workFile, "row should carry the work file record");
+
+      fileManager.rename(row, "work2.pdf");
+
+      assertExists(renamed, "renamed work file");
+      assertGone(work, "old name");
+      assertEquals(renamed, workFile.filePath(), "work file record should follow the file");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(renamed).contains(workFile.getPath()), "registry should track the new name");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(work).isEmpty(), "registry should have dropped the old name");
+    });
+
+    // Step 138: A name that is already taken is refused and nothing changes
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir     = testRoot.resolve("p33s134", "dir"),
+               renamed = dir.resolve("renamed.txt"),
+               taken   = dir.resolve("taken.txt");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(renamed, false);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "file row should be selected");
+
+      PopupRobot.clear();
+
+      fileManager.rename(row, "taken.txt");
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should complain once");
+      assertTrue(PopupRobot.getLastMessage().contains("already exists"), "complaint should be about the taken name");
+      assertExists(renamed, "file keeps its name");
+      assertExists(taken, "file with the taken name");
+    });
+
+    // Step 139: A folder holding a misc. file and a subfolder with a file; records for all of it, then show its parent
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath outer = createTestDir("p33s139", "outer"),
+               sub   = outer.resolve("sub"),
+               inner = outer.resolve("inner.dat");
+
+      assertNotNull(HyperPath.getFolderFromFilePath(sub, true), "subfolder record should exist");
+      assertExists(sub.resolve("deep.txt"), "file in the subfolder");
+      assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, inner), "MiscFile record should be created");
+
+      FileManager.show(outer.getParent());
+    });
+
+    // Step 140: Rename the folder; the records and the registry follow the whole subtree
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath outer  = testRoot.resolve("p33s139", "outer"),
+               sub    = outer.resolve("sub"),
+               inner  = outer.resolve("inner.dat"),
+               outer2 = testRoot.resolve("p33s139", "outer2");
+      HDT_Folder folder    = HyperPath.getFolderFromFilePath(outer, false),
+                 subFolder = HyperPath.getFolderFromFilePath(sub, false);
+      HDT_RecordWithPath miscFile = HyperPath.getHyperPathSetForFilePath(inner).iterator().next().getRecord();
+      FileManager fileManager = FileManager.instance();
+
+      assertNotNull(folder, "folder record should exist");
+      assertNotNull(subFolder, "subfolder record should exist");
+      assertNotNull(miscFile, "misc. file record should exist");
+
+      fileManager.goToFilePath(outer, true);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "folder row should be selected");
+      assertEquals(outer, row.getFilePath(), "selected row should be the folder");
+
+      fileManager.rename(row, "outer2");
+
+      assertTrue(outer2.isDirectory(), "renamed folder should exist");
+      assertGone(outer, "old folder name");
+      assertEquals(outer2, folder.filePath(), "folder record should follow the directory");
+      assertEquals(outer2.resolve("sub"), subFolder.filePath(), "subfolder record should follow its parent");
+      assertEquals(outer2.resolve("inner.dat"), miscFile.filePath(), "misc. file record should follow its folder");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(outer2.resolve("inner.dat")).contains(miscFile.getPath()), "registry should track the file under the new name");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(inner).isEmpty(), "registry should have dropped the file's old path");
+      assertSame(subFolder, HyperPath.getFolderFromFilePath(outer2.resolve("sub"), false), "subfolder should resolve to the same record under the new name");
+    });
+
+    // Step 141: A folder assigned to a note, then show its parent
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath notedir = createTestDir("p33s141", "notedir");
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(notedir, false);
+
+      assertNotNull(folder, "folder record should exist");
+
+      HDT_Note note = db.createNewBlankRecord(hdtNote);
+      note.setName("Test note p33s141");
+      note.folder.set(folder);
+
+      FileManager.show(notedir.getParent());
+    });
+
+    // Step 142: Rename the note's folder; the note keeps the same folder record, which follows the directory
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath notedir  = testRoot.resolve("p33s141", "notedir"),
+               notedir2 = testRoot.resolve("p33s141", "notedir2");
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(notedir, false);
+      FileManager fileManager = FileManager.instance();
+
+      assertNotNull(folder, "folder record should exist");
+      assertEquals(1, folder.notes.size(), "folder should have its note");
+
+      HDT_Note note = folder.notes.getFirst();
+
+      fileManager.goToFilePath(notedir, true);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "folder row should be selected");
+
+      fileManager.rename(row, "notedir2");
+
+      assertTrue(notedir2.isDirectory(), "renamed folder should exist");
+      assertEquals(notedir2, folder.filePath(), "folder record should follow the directory");
+      assertSame(folder, note.folder.get(), "note should keep its folder record");
+    });
+
+    // Step 143: The XML folder cannot be renamed, and the refusal says so
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath xmlPath = db.xmlPath();
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(xmlPath, true);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "XML folder row should be selected");
+      assertEquals(xmlPath, row.getFilePath(), "selected row should be the XML folder");
+
+      PopupRobot.clear();
+
+      fileManager.rename(row, "xml2");
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should refuse once");
+      assertTrue(PopupRobot.getLastMessage().contains("cannot be renamed"), "refusal should say the folder cannot be renamed");
+      assertTrue(xmlPath.isDirectory(), "XML folder should be untouched");
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
+    // =====================================================================
+    //  Phase 34: Outside Changes Seen by the Watcher (14 steps)
+    // =====================================================================
+
+    int[] watcherIDHolder = new int[2];                 // [0] carries a folder record's ID, [1] a file record's ID, between steps
+    HDT_Person[] personHolder = new HDT_Person[1];      // carries the person from step 154 to step 155
+
+    // Step 144: A directory created outside the program, with the watcher running
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parent  = createTestDir("p34s144", "parent"),
+               outside = parent.resolve("outside");
+
+      assertTrue(folderTreeWatcher.isRunning(), "FolderTreeWatcher should be running");
+      assertFalse(outside.exists(), "directory should not exist yet");
+
+      try { Files.createDirectories(outside.toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+    });
+
+    // Step 145: The watcher's batch gave it a folder record, and the folder tree has its node
+    seq.setDelayMS(3000);
+
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parent  = testRoot.resolve("p34s144", "parent"),
+               outside = parent.resolve("outside");
+      HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(parent, false);
+
+      assertNotNull(parentFolder, "parent folder record should exist");
+      assertTrue(outside.isDirectory(), "directory should still exist");
+      assertNotNull(childFolderRecord(parentFolder, "outside"), "watcher should have created the new directory's folder record");
+      assertTrue(folderTreeShows(parentFolder, "outside"), "folder tree should show the new directory");
+    });
+
+    seq.setDelayMS(400);
+
+    // Step 146: A file in use by a misc. file record, deleted outside the program
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parent = createTestDir("p34s146", "parent"),
+               inuse  = parent.resolve("inuse.dat");
+
+      assertExists(inuse, "in-use file");
+
+      HDT_RecordWithPath miscFile = HyperPath.createRecordAssignedToPath(hdtMiscFile, inuse);
+
+      assertNotNull(miscFile, "MiscFile record should be created");
+
+      watcherIDHolder[1] = miscFile.getID();
+
+      assertTrue(folderTreeWatcher.isRunning(), "FolderTreeWatcher should be running");
+
+      PopupRobot.clear();
+
+      try { Files.delete(inuse.toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+    });
+
+    // Step 147: After the watcher's grace period and debounce, it warns about the in-use file; the record is kept
+    seq.setDelayMS(6500);
+
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath inuse = testRoot.resolve("p34s146", "parent", "inuse.dat");
+      HDT_MiscFile miscFile = db.miscFiles.getByID(watcherIDHolder[1]);
+
+      assertNotNull(miscFile, "misc. file record should survive an outside deletion of its file");
+      assertEquals(inuse, miscFile.filePath(), "record should still point at the deleted file's path");
+      assertNotNull(PopupRobot.getLastMessage(), "watcher should have warned");
+      assertTrue(PopupRobot.getLastMessage().contains("has been deleted or moved from outside the program"), "warning should be about an outside deletion");
+      assertTrue(PopupRobot.getLastMessage().startsWith("A file"), "warning should be about a file");
+    });
+
+    seq.setDelayMS(400);
+
+    // Step 148: An empty folder with a record but nothing in use, deleted outside the program
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath empty = createTestDir("p34s148", "empty");
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(empty, false);
+
+      assertNotNull(folder, "folder record should exist");
+
+      watcherIDHolder[0] = folder.getID();
+
+      try { Files.delete(empty.toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+    });
+
+    // Step 149: The watcher's prune removed the folder record
+    seq.setDelayMS(3000);
+
+    seq.thenRunAfterDelay(() ->
+    {
+      HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(testRoot.resolve("p34s148"), false);
+
+      assertNotNull(parentFolder, "parent folder record should exist");
+      assertNull(db.folders.getByID(watcherIDHolder[0]), "deleted directory's folder record should be pruned");
+      assertNull(childFolderRecord(parentFolder, "empty"), "parent should no longer have the folder as a child record");
+    });
+
+    seq.setDelayMS(400);
+
+    // Step 150: A folder assigned to a note, deleted outside the program
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath notedir = createTestDir("p34s150", "notedir");
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(notedir, false);
+
+      assertNotNull(folder, "folder record should exist");
+
+      HDT_Note note = db.createNewBlankRecord(hdtNote);
+      note.setName("Test note p34s150");
+      note.folder.set(folder);
+
+      watcherIDHolder[0] = folder.getID();
+
+      PopupRobot.clear();
+
+      try { Files.delete(notedir.toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+    });
+
+    // Step 151: The watcher warns about the in-use folder, and the prune leaves its record alone
+    seq.setDelayMS(6500);
+
+    seq.thenRunAfterDelay(() ->
+    {
+      HDT_Folder folder = db.folders.getByID(watcherIDHolder[0]);
+
+      assertNotNull(folder, "in-use folder record should survive an outside deletion of its directory");
+      assertEquals(1, folder.notes.size(), "note should still be assigned to the folder");
+      assertNotNull(PopupRobot.getLastMessage(), "watcher should have warned");
+      assertTrue(PopupRobot.getLastMessage().contains("has been deleted or moved from outside the program"), "warning should be about an outside deletion");
+      assertTrue(PopupRobot.getLastMessage().startsWith("A folder"), "warning should be about a folder");
+    });
+
+    seq.setDelayMS(400);
+
+    // Step 152: A folder assigned to a note, renamed outside the program
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath notedir  = createTestDir("p34s152", "notedir"),
+               notedir2 = testRoot.resolve("p34s152", "notedir2");
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(notedir, false);
+
+      assertNotNull(folder, "folder record should exist");
+
+      HDT_Note note = db.createNewBlankRecord(hdtNote);
+      note.setName("Test note p34s152");
+      note.folder.set(folder);
+
+      watcherIDHolder[0] = folder.getID();
+
+      PopupRobot.clear();
+
+      try { Files.move(notedir.toPath(), notedir2.toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+    });
+
+    // Step 153: The watcher warns that an in-use folder was renamed outside; the record is kept
+    seq.setDelayMS(3000);
+
+    seq.thenRunAfterDelay(() ->
+    {
+      assertNotNull(db.folders.getByID(watcherIDHolder[0]), "in-use folder record should survive an outside rename");
+      assertNotNull(PopupRobot.getLastMessage(), "watcher should have warned");
+      assertTrue(PopupRobot.getLastMessage().contains("has been renamed from outside the program"), "warning should be about an outside rename");
+    });
+
+    seq.setDelayMS(400);
+
+    // Step 154: A person's picture renamed outside the program; the reassign prompt is answered yes
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parent = createTestDir("p34s154", "parent"),
+               pic    = parent.resolve("pic.jpg");
+      HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(parent, false);
+
+      assertNotNull(parentFolder, "parent folder record should exist");
+      assertExists(pic, "picture");
+
+      HDT_Person person = db.createNewBlankRecord(hdtPerson);
+      person.setName(new PersonName("Test", "Person154"));
+      person.getPath().assign(parentFolder, pic.getNameOnly());
+
+      assertEquals(pic, person.filePath(), "person path should point at the picture");
+
+      personHolder[0] = person;
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrYes);  // "Should the record be reassigned to ...?"
+
+      try { Files.move(pic.toPath(), parent.resolve("pic2.jpg").toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+    });
+
+    // Step 155: The person's path follows the renamed picture. Before the fix of the eviction order, a picture was taken
+    // for untracked, since its in-use answer comes from the registry under the old path
+    seq.setDelayMS(4000);
+
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parent = testRoot.resolve("p34s154", "parent"),
+               pic    = parent.resolve("pic.jpg"),
+               pic2   = parent.resolve("pic2.jpg");
+      HDT_Person person = personHolder[0];
+
+      assertSame(person, db.persons.getByID(person.getID()), "person record should survive");
+      assertEquals(pic2, person.filePath(), "person path should follow the renamed picture");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(pic2).contains(person.getPath()), "registry should track the new name");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(pic).isEmpty(), "registry should have dropped the old name");
+
+      PopupRobot.setDefaultResponse(mrOk);
+    });
+
+    seq.setDelayMS(400);
+
+    // Step 156: A work file attached to a work, renamed outside the program; the reassign prompt is answered yes
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parent = createTestDir("p34s156", "parent"),
+               wf     = parent.resolve("work.pdf");
+
+      assertExists(wf, "work file");
+
+      HDT_RecordWithPath workFile = HyperPath.createRecordAssignedToPath(hdtWorkFile, wf);
+
+      assertNotNull(workFile, "WorkFile record should be created");
+
+      HDT_Work work = db.createNewBlankRecord(hdtWork);
+      work.setName("Test work p34s156");
+      work.addWorkFile(workFile.getID());
+
+      assertEquals(1, work.workFiles.size(), "work should have the work file");
+
+      watcherIDHolder[1] = workFile.getID();
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrYes);  // "Should the record be reassigned to ...?"
+
+      try { Files.move(wf.toPath(), parent.resolve("work2.pdf").toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+    });
+
+    // Step 157: The work file record follows the renamed file, and the work still has it
+    seq.setDelayMS(4000);
+
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parent = testRoot.resolve("p34s156", "parent"),
+               wf     = parent.resolve("work.pdf"),
+               wf2    = parent.resolve("work2.pdf");
+      HDT_WorkFile workFile = db.workFiles.getByID(watcherIDHolder[1]);
+
+      assertNotNull(workFile, "work file record should survive");
+      assertEquals(wf2, workFile.filePath(), "work file record should follow the renamed file");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(wf2).contains(workFile.getPath()), "registry should track the new name");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(wf).isEmpty(), "registry should have dropped the old name");
+      assertEquals(1, workFile.works.size(), "work file should still belong to its work");
+
+      PopupRobot.setDefaultResponse(mrOk);
+    });
+
+    seq.setDelayMS(400);
+
+    // =====================================================================
+    //  Phase 35: Deletion Variants (8 steps)
+    // =====================================================================
+
+    // Step 158: Records for the files to be deleted in various ways, then the File Manager opened on their folder. The
+    // records come first: a row built before its file's record exists knows nothing of it until the table is rebuilt
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = createTestDir("p35s158", "dir");
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(dir, false);
+
+      assertNotNull(folder, "folder record should exist");
+
+      for (String name : List.of("decline.dat", "work.pdf", "pic.jpg", "plain.txt", "mixed.dat"))
+        assertExists(dir.resolve(name), name);
+
+      assertNotNull(HyperPath.getFolderFromFilePath(dir.resolve("sub"), true), "subfolder record should exist");
+      assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, dir.resolve("decline.dat")), "MiscFile record for the declined file should be created");
+      assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, dir.resolve("mixed.dat")), "MiscFile record for the mixed selection should be created");
+
+      HDT_RecordWithPath workFile = HyperPath.createRecordAssignedToPath(hdtWorkFile, dir.resolve("work.pdf"));
+
+      assertNotNull(workFile, "WorkFile record should be created");
+
+      HDT_Work work = db.createNewBlankRecord(hdtWork);
+      work.setName("Test work p35s158");
+      work.addWorkFile(workFile.getID());
+
+      // The picture goes to the person the Persons tab is showing, assigned the way the tab does it
+
+      HDT_Person person = assertInstanceOf(HDT_Person.class, ui.activeRecord(), "Persons tab should be showing a person");
+
+      ui.personHyperTab().assignPicture(dir.resolve("pic.jpg"), false);
+
+      assertFalse(ui.cantSaveRecord(), "the Persons tab should save the picture");
+      assertEquals(dir.resolve("pic.jpg"), person.filePath(), "showing person should have the picture");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show(dir);
+    });
+
+    // Step 159: Declining the confirmation deletes nothing. Going to the file replaces an earlier selection rather than
+    // adding to it, which the single-file prompt proves: two selected rows would get the "selected items" prompt
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir     = testRoot.resolve("p35s158", "dir"),
+               decline = dir.resolve("decline.dat");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.selectRows(dir.resolve("plain.txt"));
+      fileManager.goToFilePath(decline, false);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "file row should be selected");
+      assertEquals(decline, row.getFilePath(), "selected row should be the declined file");
+
+      HDT_RecordWithPath miscFile = row.getRecord();
+
+      assertNotNull(miscFile, "row should carry the misc. file record");
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrNo);
+
+      fileManager.delete(row);
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should ask once");
+      assertTrue(PopupRobot.getLastMessage().contains("misc. file record"), "the question should be about the record");
+      assertExists(decline, "declined file");
+      assertNotNull(db.miscFiles.getByID(miscFile.getID()), "declined file's record should survive");
+
+      PopupRobot.setDefaultResponse(mrOk);
+    });
+
+    // Step 160: Deleting a work file's file deletes the work file record; the work survives without it
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = testRoot.resolve("p35s158", "dir"),
+               wf  = dir.resolve("work.pdf");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(wf, false);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "work file row should be selected");
+
+      HDT_WorkFile workFile = assertInstanceOf(HDT_WorkFile.class, row.getRecord(), "row should carry the work file record");
+      HDT_Work work = workFile.works.getFirst();
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrYes);  // "is assigned to a work file record. Permanently delete it anyway?"
+
+      fileManager.delete(row);
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should ask once");
+      assertGone(wf, "deleted work file");
+      assertNull(db.workFiles.getByID(workFile.getID()), "work file record should be deleted with its file");
+      assertSame(work, db.works.getByID(work.getID()), "work should survive");
+      assertTrue(work.workFiles.isEmpty(), "work should no longer have the work file");
+
+      PopupRobot.setDefaultResponse(mrNo);  // deleting the work must not try to delete files
+      db.deleteRecord(work);
+      PopupRobot.setDefaultResponse(mrOk);
+    });
+
+    // Step 161: Deleting a person's picture keeps the person record
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = testRoot.resolve("p35s158", "dir"),
+               pic = dir.resolve("pic.jpg");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(pic, false);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "picture row should be selected");
+
+      HDT_Person person = assertInstanceOf(HDT_Person.class, row.getRecord(), "row should carry the person record");
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrYes);  // "is assigned as a picture file for a person record. Permanently delete it anyway?"
+
+      fileManager.delete(row);
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should ask once");
+      assertGone(pic, "deleted picture");
+      assertSame(person, db.persons.getByID(person.getID()), "person record should survive its picture's deletion");
+
+      PopupRobot.setDefaultResponse(mrOk);
+    });
+
+    // Step 162: A selection of a folder, an untracked file and a misc. file's file goes in one operation
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir   = testRoot.resolve("p35s158", "dir"),
+               sub   = dir.resolve("sub"),
+               plain = dir.resolve("plain.txt"),
+               mixed = dir.resolve("mixed.dat");
+      HDT_Folder subFolder = HyperPath.getFolderFromFilePath(sub, false);
+      FileManager fileManager = FileManager.instance();
+
+      assertNotNull(subFolder, "subfolder record should exist");
+      assertFalse(HyperPath.getHyperPathSetForFilePath(mixed).isEmpty(), "misc. file should be tracked");
+
+      HDT_RecordWithPath miscFile = HyperPath.getHyperPathSetForFilePath(mixed).iterator().next().getRecord();
+      int subID = subFolder.getID(), miscID = miscFile.getID();
+
+      fileManager.selectRows(sub, plain, mixed);
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrYes);  // "One or more of the selected items is associated with a database record..."
+
+      fileManager.delete(null);
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should ask once for the whole selection");
+      assertTrue(PopupRobot.getLastMessage().contains("associated with a database record"), "the question should mention the record");
+      assertGone(sub, "deleted subfolder");
+      assertGone(plain, "deleted untracked file");
+      assertGone(mixed, "deleted misc. file");
+      assertNull(db.folders.getByID(subID), "subfolder record should be deleted");
+      assertNull(db.miscFiles.getByID(miscID), "misc. file record should be deleted");
+      assertSame(HyperPath.getFolderFromFilePath(dir, false), fileManager.folderTree.selectedRecord(), "folder should still be selected");
+
+      PopupRobot.setDefaultResponse(mrOk);
+    });
+
+    // Step 163: A locked file in the batch is skipped and keeps its record; the other file and its record go
+    seq.thenRunAfterDelay(() ->
+    {
+      Process lockProc = null;
+
+      try
+      {
+        FilePath dir    = createTestDir("p35s163", "dir"),
+                 lockme = dir.resolve("lockme.dat"),
+                 other  = dir.resolve("other.dat");
+        FileManager fileManager = FileManager.instance();
+
+        HDT_RecordWithPath lockedFile = HyperPath.createRecordAssignedToPath(hdtMiscFile, lockme),
+                           otherFile  = HyperPath.createRecordAssignedToPath(hdtMiscFile, other);
+
+        assertNotNull(lockedFile, "MiscFile record for the locked file should be created");
+        assertNotNull(otherFile, "MiscFile record for the other file should be created");
+
+        fileManager.goToFilePath(other, false);
+        fileManager.selectRows(lockme, other);
+
+        lockProc = startLockProcess(lockme);
+
+        PopupRobot.clear();
+        PopupRobot.enqueueResponses(mrYes, mrIgnore);  // the confirmation, then Skip on the batch's failure prompt
+
+        fileManager.delete(null);
+
+        assertGone(other, "unlocked file");
+        assertNull(db.miscFiles.getByID(otherFile.getID()), "unlocked file's record should be deleted");
+        assertExists(lockme, "locked file");
+        assertNotNull(db.miscFiles.getByID(lockedFile.getID()), "locked file's record should survive its failed deletion");
+      }
+      catch (Exception e) { throw new AssertionError(e); }
+      finally
+      {
+        destroyQuietly(lockProc);
+        PopupRobot.clear();
+        PopupRobot.setDefaultResponse(mrOk);
+      }
+    }).windowsOnly();
+
+    // Step 164: A folder with an in-use file inside is refused, with the message that says so
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir   = createTestDir("p35s164", "dir"),
+               inuse = dir.resolve("inuse"),
+               file  = inuse.resolve("file.dat");
+      FileManager fileManager = FileManager.instance();
+
+      assertNotNull(HyperPath.getFolderFromFilePath(inuse, true), "in-use folder record should exist");
+      assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, file), "MiscFile record should be created");
+
+      fileManager.goToFilePath(inuse, true);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "folder row should be selected");
+      assertEquals(inuse, row.getFilePath(), "selected row should be the in-use folder");
+
+      PopupRobot.clear();
+
+      fileManager.delete(row);
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should refuse once");
+      assertTrue(PopupRobot.getLastMessage().contains("cannot be deleted, because it contains"), "refusal should be about in-use contents");
+      assertTrue(inuse.isDirectory(), "folder should be untouched");
+      assertExists(file, "in-use file");
+    });
+
+    // Step 165: The XML folder is refused as protected
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath xmlPath = db.xmlPath();
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(xmlPath, true);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "XML folder row should be selected");
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrNo);  // a guard: were the refusal ever missing, the confirmation would be declined
+
+      fileManager.delete(row);
+
+      PopupRobot.setDefaultResponse(mrOk);
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should refuse once");
+      assertTrue(PopupRobot.getLastMessage().contains("cannot be deleted."), "refusal should be the protected-path message");
+      assertTrue(xmlPath.isDirectory(), "XML folder should be untouched");
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
+    // =====================================================================
+    //  Phase 36: Clipboard and Drag Variants of Paste (6 steps)
+    // =====================================================================
+
+    // Step 166: Open the File Manager on a source folder with files, a folder holding a misc. file, and a sibling destination
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath src     = createTestDir("p36s166", "src"),
+               dest    = createTestDir("p36s166", "dest"),
+               movedir = src.resolve("movedir");
+
+      for (String name : List.of("cut.txt", "copy.txt", "drag.txt"))
+        assertExists(src.resolve(name), name);
+
+      assertTrue(dest.isDirectory(), "destination folder");
+      assertNotNull(HyperPath.getFolderFromFilePath(movedir, true), "folder record for the folder to move should exist");
+      assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, movedir.resolve("inside.dat")), "MiscFile record should be created");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show(src);
+    });
+
+    // Step 167: Cut a file and paste it into the destination folder, the way the buttons do
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath src  = testRoot.resolve("p36s166", "src"),
+               dest = testRoot.resolve("p36s166", "dest"),
+               file = src.resolve("cut.txt");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(file, false);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "file row should be selected");
+
+      fileManager.cutCopy(row, false);
+      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), false, false);
+
+      assertExists(dest.resolve("cut.txt"), "file at the destination");
+      assertGone(file, "file at the source");
+    });
+
+    // Step 168: Copy a file and paste it; both copies exist
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath src  = testRoot.resolve("p36s166", "src"),
+               dest = testRoot.resolve("p36s166", "dest"),
+               file = src.resolve("copy.txt");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(file, false);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "file row should be selected");
+
+      fileManager.cutCopy(row, true);
+      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), true, false);
+
+      assertExists(dest.resolve("copy.txt"), "copy at the destination");
+      assertExists(file, "original at the source");
+    });
+
+    // Step 169: Cut a folder holding a misc. file and paste it; the folder record and the misc. file record move with it
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath src     = testRoot.resolve("p36s166", "src"),
+               dest    = testRoot.resolve("p36s166", "dest"),
+               movedir = src.resolve("movedir"),
+               inside  = movedir.resolve("inside.dat");
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(movedir, false);
+      HDT_RecordWithPath miscFile = HyperPath.getHyperPathSetForFilePath(inside).iterator().next().getRecord();
+      FileManager fileManager = FileManager.instance();
+
+      assertNotNull(folder, "folder record should exist");
+      assertNotNull(miscFile, "misc. file record should exist");
+
+      fileManager.goToFilePath(movedir, true);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "folder row should be selected");
+      assertEquals(movedir, row.getFilePath(), "selected row should be the folder");
+
+      fileManager.cutCopy(row, false);
+      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), false, false);
+
+      assertTrue(dest.resolve("movedir").isDirectory(), "folder at the destination");
+      assertGone(movedir, "folder at the source");
+      assertEquals(dest.resolve("movedir"), folder.filePath(), "folder record should follow the move");
+      assertEquals(dest.resolve("movedir", "inside.dat"), miscFile.filePath(), "misc. file record should follow the move");
+    });
+
+    // Step 170: The drag variant of a move, as a drop from the file table or the folder tree uses it
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath src  = testRoot.resolve("p36s166", "src"),
+               dest = testRoot.resolve("p36s166", "dest"),
+               file = src.resolve("drag.txt");
+      FileManager fileManager = FileManager.instance();
+
+      assertTrue(fileManager.moveCopy(entitiesOf(file), false, true), "moveCopy for a drag should succeed");
+
+      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), false, true);
+
+      assertExists(dest.resolve("drag.txt"), "dragged file at the destination");
+      assertGone(file, "dragged file at the source");
+    });
+
+    // Step 171: A file dragged in from outside the database folder is copied in and left in place outside
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dest = testRoot.resolve("p36s166", "dest"),
+               ext  = extRoot.resolve("p36s171", "ext.txt");
+      FileManager fileManager = FileManager.instance();
+
+      assertExists(ext, "outside file");
+
+      assertTrue(fileManager.moveCopy(entitiesOf(ext), true, true), "moveCopy for an outside drag should succeed");
+
+      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), true, true);
+
+      assertExists(dest.resolve("ext.txt"), "copied file at the destination");
+      assertExists(ext, "outside file left in place");
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
+    // =====================================================================
+    //  Phase 37: Folder History and the Refresh Button (3 steps)
+    // =====================================================================
+
+    // Step 172: Open the File Manager on the first of three sibling folders
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath a = createTestDir("p37s172", "a");
+
+      createTestDir("p37s172", "b");
+      createTestDir("p37s172", "c");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show(a);
+    });
+
+    // Step 173: Visit the other two, then Back twice and Forward once land where they should
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath a = testRoot.resolve("p37s172", "a"),
+               b = testRoot.resolve("p37s172", "b"),
+               c = testRoot.resolve("p37s172", "c");
+      HDT_Folder folderA = HyperPath.getFolderFromFilePath(a, false),
+                 folderB = HyperPath.getFolderFromFilePath(b, false),
+                 folderC = HyperPath.getFolderFromFilePath(c, false);
+      FileManager fileManager = FileManager.instance();
+
+      assertSame(folderA, fileManager.folderTree.selectedRecord(), "first folder should be selected");
+
+      FileManager.show(b);
+      FileManager.show(c);
+
+      assertSame(folderC, fileManager.folderTree.selectedRecord(), "third folder should be selected");
+
+      fileManager.userRequestsToGoBackward();
+      assertSame(folderB, fileManager.folderTree.selectedRecord(), "Back should return to the second folder");
+
+      fileManager.userRequestsToGoBackward();
+      assertSame(folderA, fileManager.folderTree.selectedRecord(), "Back again should return to the first folder");
+
+      fileManager.userRequestsToGoForward();
+      assertSame(folderB, fileManager.folderTree.selectedRecord(), "Forward should return to the second folder");
+    });
+
+    // Step 174: Delete the third folder's directory behind the program's back and press Refresh: its record is pruned, the
+    // history drops it, so Forward from the second folder has nowhere to go while Back still reaches the first
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath a = testRoot.resolve("p37s172", "a"),
+               b = testRoot.resolve("p37s172", "b"),
+               c = testRoot.resolve("p37s172", "c");
+      HDT_Folder folderA = HyperPath.getFolderFromFilePath(a, false),
+                 folderB = HyperPath.getFolderFromFilePath(b, false),
+                 folderC = HyperPath.getFolderFromFilePath(c, false);
+      FileManager fileManager = FileManager.instance();
+
+      assertNotNull(folderC, "third folder record should exist");
+
+      int folderCID = folderC.getID();
+
+      boolean restartWatcher = folderTreeWatcher.stop();
+
+      try { Files.delete(c.toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+      finally
+      {
+        if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
+      }
+
+      assertNotNull(db.folders.getByID(folderCID), "record should survive until the prune, since the watcher was paused");
+
+      FileManager.pruneAndRefresh(true);  // the Refresh button
+
+      assertNull(db.folders.getByID(folderCID), "Refresh should prune the deleted folder's record");
+      assertTrue(folderTreeWatcher.isRunning(), "FolderTreeWatcher should be running after Refresh");
+      assertSame(folderB, fileManager.folderTree.selectedRecord(), "second folder should still be selected");
+
+      fileManager.userRequestsToGoForward();
+      assertSame(folderB, fileManager.folderTree.selectedRecord(), "Forward should have nowhere to go once the third folder left the history");
+
+      fileManager.userRequestsToGoBackward();
+      assertSame(folderA, fileManager.folderTree.selectedRecord(), "Back should still reach the first folder");
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
     // Start the sequence
     seq.start();
   }
@@ -4649,6 +5639,53 @@ public final class FileManagerTestRunner
     // Phase 32: Deleting a note's folder through the File Manager (Steps 131-133)
 
     setupFile(testRoot, "p32s131", "dir", "file.txt");
+
+    // Phase 33: Rename through the File Manager (Steps 134-143)
+
+    setupFile(testRoot, "p33s134", "dir", "plain.txt");
+    setupFile(testRoot, "p33s134", "dir", "misc.dat");
+    setupFile(testRoot, "p33s134", "dir", "work.pdf");
+    setupFile(testRoot, "p33s134", "dir", "taken.txt");
+    setupFile(testRoot, "p33s139", "outer", "inner.dat");
+    setupFile(testRoot, "p33s139", "outer", "sub", "deep.txt");
+    setupDir (testRoot, "p33s141", "notedir");
+
+    // Phase 34: Outside changes seen by the watcher (Steps 144-157)
+
+    setupDir (testRoot, "p34s144", "parent");
+    setupFile(testRoot, "p34s146", "parent", "inuse.dat");
+    setupDir (testRoot, "p34s148", "empty");
+    setupDir (testRoot, "p34s150", "notedir");
+    setupDir (testRoot, "p34s152", "notedir");
+    setupFile(testRoot, "p34s154", "parent", "pic.jpg");
+    setupFile(testRoot, "p34s156", "parent", "work.pdf");
+
+    // Phase 35: Deletion variants (Steps 158-165)
+
+    setupFile(testRoot, "p35s158", "dir", "decline.dat");
+    setupFile(testRoot, "p35s158", "dir", "work.pdf");
+    setupFile(testRoot, "p35s158", "dir", "pic.jpg");
+    setupFile(testRoot, "p35s158", "dir", "plain.txt");
+    setupFile(testRoot, "p35s158", "dir", "mixed.dat");
+    setupDir (testRoot, "p35s158", "dir", "sub");
+    setupFile(testRoot, "p35s163", "dir", "lockme.dat");
+    setupFile(testRoot, "p35s163", "dir", "other.dat");
+    setupFile(testRoot, "p35s164", "dir", "inuse", "file.dat");
+
+    // Phase 36: Clipboard and drag variants of paste (Steps 166-171)
+
+    setupFile(testRoot, "p36s166", "src", "cut.txt");
+    setupFile(testRoot, "p36s166", "src", "copy.txt");
+    setupFile(testRoot, "p36s166", "src", "drag.txt");
+    setupFile(testRoot, "p36s166", "src", "movedir", "inside.dat");
+    setupDir (testRoot, "p36s166", "dest");
+    setupFile(extRoot,  "p36s171", "ext.txt");
+
+    // Phase 37: Folder history and the Refresh button (Steps 172-174)
+
+    setupDir(testRoot, "p37s172", "a");
+    setupDir(testRoot, "p37s172", "b");
+    setupDir(testRoot, "p37s172", "c");
   }
 
 //---------------------------------------------------------------------------
