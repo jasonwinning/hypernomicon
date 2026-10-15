@@ -519,7 +519,7 @@ public final class FileManager extends NonmodalWindow
     if (copying == false)
     {
       for (AbstractEntityWithPath dragItem : items)
-        if (canCutRow(dragItem, false) == false)
+        if (canMoveRow(dragItem) == false)
         {
           clearSrcRows(dragging);
           return false;
@@ -1061,7 +1061,7 @@ public final class FileManager extends NonmodalWindow
   // See if any of it can be ruled out off the bat
   //---------------------------------------------------------------------------
 
-    if (rowInfoList.stream().allMatch(rowInfo -> canCutRow(rowInfo, true)) == false)
+    if (rowInfoList.stream().allMatch(FileManager::canDeleteRow) == false)
       return;
 
   //---------------------------------------------------------------------------
@@ -1229,23 +1229,40 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean canCutRow(AbstractEntityWithPath item, boolean deleting)
+  private static boolean canMoveRow(AbstractEntityWithPath item)
   {
-    String opPast = deleting ? "deleted" : "moved";
+    return isProtected(item, "moved") == false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean canDeleteRow(AbstractEntityWithPath item)
+  {
+    if (isProtected(item, "deleted")) return false;
 
     FilePath filePath = item.getFilePath();
-    boolean isDir = filePath.isDirectory();
 
-    HyperPath hyperPath = item.getHyperPath();
-
-    if (db.isProtectedFile(filePath, true))
-      return falseWithInfoPopup((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
-
-    if (deleting == false) return true;
-
-    if (isDir && HyperPath.isInUse(hyperPath))
+    if (filePath.isDirectory() && HyperPath.isInUse(item.getHyperPath()))
       return falseWithInfoPopup("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
 
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * True, after telling the user, if the item's path is one the database protects. {@code opPast}
+   * names the refused operation in the message: "moved" or "deleted".
+   */
+  private static boolean isProtected(AbstractEntityWithPath item, String opPast)
+  {
+    FilePath filePath = item.getFilePath();
+
+    if (db.isProtectedFile(filePath, true) == false) return false;
+
+    infoPopup((filePath.isDirectory() ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + '.');
     return true;
   }
 
