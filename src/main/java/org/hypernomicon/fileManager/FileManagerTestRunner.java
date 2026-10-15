@@ -47,7 +47,9 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
  * is deleted through FileDeletion rather than the File Manager (Phase 28), the folder
  * lookup for a directory that has vanished from disk (Phase 29), and the record lookups
  * that must precede a deletion's or an outside rename's eviction of the path from the
- * registry (Phase 30), launched from the Test Console's File Manager tab.
+ * registry (Phase 30), and the main window keeping a view when the record its only view
+ * shows is deleted from outside it (Phase 31), launched from the Test Console's File
+ * Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
@@ -3945,6 +3947,44 @@ public final class FileManagerTestRunner
 
     seq.setDelayMS(400);
 
+    // =====================================================================
+    //  Phase 31: Main Window View After an Outside Deletion of Its Record (1 step)
+    // =====================================================================
+
+    // Step 130: Delete, from outside the main window, the record its only view shows; the window must keep a view.
+    // Before the fix, the view sequence lost its only slot and the next main window update threw, as it did after the
+    // suite's cleanup deleted the fixture person the Persons tab had picked up, or after deleting a misc. file's file
+    // and record through the File Manager with the main window on that record
+    seq.thenRunAfterDelay(() ->
+    {
+      HDT_Record shown = ui.activeRecord();
+
+      if (shown == null)
+      {
+        // Nothing is showing: go to a throwaway person, which replaces the empty view's slot rather than adding one
+
+        HDT_Person person = db.createNewBlankRecord(hdtPerson);
+        person.setName(new PersonName("Test", "Person130"));
+        ui.goToRecord(person, false);
+        shown = person;
+      }
+
+      assertSame(shown, ui.activeRecord(), "main window should be showing the record");
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrNo);  // deleting a person with a picture asks whether to delete the picture too
+
+      db.deleteRecord(shown);
+
+      PopupRobot.setDefaultResponse(mrOk);
+
+      assertNotNull(ui.activeTab(), "main window should keep a view after the record its view showed is deleted from outside it");
+
+      ui.update();  // what the File Manager's delete flow does next; it must find a view to update
+
+      assertNotNull(ui.activeTab(), "main window should still have a view after the update");
+    });
+
     // Start the sequence
     seq.start();
   }
@@ -4528,6 +4568,8 @@ public final class FileManagerTestRunner
 
     setupFile(testRoot, "p30s125", "dir", "doomed.txt");
     setupFile(testRoot, "p30s128", "dir", "tracked.txt");
+
+    // Phase 31: Main window view after an outside deletion of its record (Step 130): no artifacts
   }
 
 //---------------------------------------------------------------------------

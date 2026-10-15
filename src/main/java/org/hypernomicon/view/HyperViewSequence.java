@@ -417,6 +417,10 @@ public class HyperViewSequence
 
   void removeRecord(HDT_Record record)
   {
+    if (slots.isEmpty()) return;
+
+    TabEnum curTabEnum = tabEnumOfViewInCurrentSlot();
+
     for (int i = slots.size() - 1; i >= 0; i--)
     {
       var view = slots.get(i);
@@ -431,6 +435,15 @@ public class HyperViewSequence
         slots.remove(i); // actual removal
       }
     }
+
+    // The main window reads its active tab and record from the current slot, so the sequence must
+    // not be left empty while a database is open. The window's own delete button reloads the
+    // sequence afterward, but a deletion from elsewhere, such as the File Manager's, does not. Seed
+    // a slot with an empty view of the tab that was showing; the next update fills it the way a
+    // fresh load does.
+
+    if (slots.isEmpty())
+      slots.add(new HyperView<>(curTabEnum, null));
 
     // Clamp cursor to valid range after all removals
 
