@@ -1756,7 +1756,8 @@ public abstract class AbstractHyperDB
     // and it should not point to any non-folder records (outgoing).
     // The incoming check also covers child folders (via rtParentFolderOfFolder) which
     // deleteFolderRecordTree must delete depth-first before the parent.
-    // Incoming non-folder relations are prevented by FileManager.canCutRow checking isInUse.
+    // Incoming non-folder relations are prevented by FileManager.canDeleteRow refusing a folder
+    // whose contents are in use, and by HDT_Folder.delete detaching the folder's notes first.
     // If this assertion fails, a code path bypassed the guardrail or the schema changed unexpectedly.
 
     if (record.getType() != hdtFolder) return;

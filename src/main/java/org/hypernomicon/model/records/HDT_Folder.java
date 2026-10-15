@@ -18,6 +18,8 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -246,6 +248,12 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithFolderPa
       return false;
     }
 
+    // Notes assigned to the folder keep their text but lose it. Deleting a folder record skips the
+    // general pointer cleanup (folderDeletionBypassEnabled), so their pointers are cleared here,
+    // before the record goes; doFolderDeletionCheck asserts that nothing still points at it.
+
+    List.copyOf(notes).forEach(note -> note.folder.set(null));
+
     deleteFolderRecordTree(this);
 
     if (restartWatcher)
@@ -289,6 +297,28 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithFolderPa
 
     if (folder.getID() > 0)
       db.deleteRecord(folder);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether anything inside this folder is in use by the database: a record with a file path in
+   * it (a work file, misc. file or picture), or a subfolder with records of its own, a subfolder's
+   * notes included. The folder's own notes do not count: deleting the folder leaves them without
+   * one, which the File Manager asks about rather than refuses.
+   * @return The return value just described
+   */
+  public boolean contentsAreInUse()
+  {
+    // A relation whose object is a folder and whose subject has a file path is a kind of file in
+    // the folder. The folder's other subjects are its notes and its child folders.
+
+    for (RelationType relType : getRelationsForObjType(hdtFolder, false))
+      if (HDT_RecordWithFilePath.class.isAssignableFrom(db.getSubjType(relType).getRecordClass()) && (getSubjList(relType).isEmpty() == false))
+        return true;
+
+    return childFolders.stream().anyMatch(childFolder -> childFolder.path.isInUseByRecords());
   }
 
 //---------------------------------------------------------------------------

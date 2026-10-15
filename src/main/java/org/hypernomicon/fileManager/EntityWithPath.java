@@ -25,6 +25,12 @@ import org.hypernomicon.util.file.FilePath;
 
 //---------------------------------------------------------------------------
 
+/**
+ * A file dragged into the File Manager from outside the application. The drag-over handlers
+ * rebuild the list of these on every mouse movement during a drag and need only the path, so the
+ * directory check and the registry lookup for the path's records are deferred to the first call
+ * and then kept, for the drop that may follow.
+ */
 public class EntityWithPath extends AbstractEntityWithPath
 {
 

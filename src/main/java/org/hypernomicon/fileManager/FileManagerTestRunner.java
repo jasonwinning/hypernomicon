@@ -47,14 +47,15 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
  * is deleted through FileDeletion rather than the File Manager (Phase 28), the folder
  * lookup for a directory that has vanished from disk (Phase 29), and the record lookups
  * that must precede a deletion's or an outside rename's eviction of the path from the
- * registry (Phase 30), and the main window keeping a view when the record its only view
- * shows is deleted from outside it (Phase 31), launched from the Test Console's File
- * Manager tab.
+ * registry (Phase 30), the main window keeping a view when the record its only view shows
+ * is deleted from outside it (Phase 31), and the deletion of a note's folder through the
+ * File Manager (Phase 32), launched from the Test Console's File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
  * {@link FileManager#newFolder(HDT_Folder, String)}, {@link FileManager#delete},
- * {@link FileManager#openFileRow}, and the {@link FileRow} constructor.</p>
+ * {@link FileManager#goToFilePath}, {@link FileManager#openFileRow}, and the
+ * {@link FileRow} constructor.</p>
  *
  * <p>All test files are created under the transient database's
  * {@code _test_fm/} directory (internal) and a sibling {@code _test_fm_ext/}
@@ -3985,6 +3986,80 @@ public final class FileManagerTestRunner
       assertNotNull(ui.activeTab(), "main window should still have a view after the update");
     });
 
+    // =====================================================================
+    //  Phase 32: Deleting a Note's Folder Through the File Manager (3 steps)
+    // =====================================================================
+
+    HDT_Note[] noteHolder = new HDT_Note[1];  // carries the note from step 131 to step 133
+    int[] folderIDHolder = new int[1];        // and the folder record's ID, to prove the record is gone
+
+    // Step 131: A folder with a file in it, assigned to a note; open the File Manager on the folder's parent
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = createTestDir("p32s131", "dir");
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(dir, false);
+
+      assertNotNull(folder, "folder record should exist");
+      assertExists(dir.resolve("file.txt"), "file in the folder");
+
+      HDT_Note note = db.createNewBlankRecord(hdtNote);
+      note.setName("Test note p32s131");
+      note.folder.set(folder);
+
+      noteHolder[0] = note;
+      folderIDHolder[0] = folder.getID();
+
+      assertTrue(folder.getPath().isInUseByRecords(), "the note should make the folder related");
+      assertFalse(folder.contentsAreInUse(), "nothing inside the folder should be in use");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show(dir.getParent());
+    });
+
+    // Step 132: Select the folder's row and delete it through the File Manager, confirming the note's loss of its
+    // folder. Before the change, the folder was refused as containing in-use files, which it did not, and could not
+    // be deleted short of detaching the note first
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = testRoot.resolve("p32s131", "dir");
+      FileManager fileManager = FileManager.instance();
+
+      fileManager.goToFilePath(dir, true);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "folder row should be selected");
+      assertEquals(dir, row.getFilePath(), "selected row should be the folder");
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrYes);  // "is assigned to the note record ... Permanently delete it anyway?"
+
+      fileManager.delete(row);
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should prompt once, about the note");
+
+      PopupRobot.setDefaultResponse(mrOk);
+    });
+
+    // Step 133: The directory and the folder record are gone; the note survives without a folder
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = testRoot.resolve("p32s131", "dir");
+
+      assertGone(dir, "deleted folder");
+      assertNull(db.folders.getByID(folderIDHolder[0]), "folder record should be deleted with its directory");
+
+      HDT_Note note = noteHolder[0];
+
+      assertSame(note, db.notes.getByID(note.getID()), "note record should survive");
+      assertNull(note.folder.get(), "note should no longer have a folder");
+
+      db.deleteRecord(note);  // no longer a fixture by path, so the cleanup would not take it
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
     // Start the sequence
     seq.start();
   }
@@ -4570,6 +4645,10 @@ public final class FileManagerTestRunner
     setupFile(testRoot, "p30s128", "dir", "tracked.txt");
 
     // Phase 31: Main window view after an outside deletion of its record (Step 130): no artifacts
+
+    // Phase 32: Deleting a note's folder through the File Manager (Steps 131-133)
+
+    setupFile(testRoot, "p32s131", "dir", "file.txt");
   }
 
 //---------------------------------------------------------------------------

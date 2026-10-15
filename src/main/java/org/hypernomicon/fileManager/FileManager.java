@@ -1042,8 +1042,9 @@ public final class FileManager extends NonmodalWindow
 
   /**
    * Deletes the selected rows, or the given row when nothing is selected, after confirming, along
-   * with the misc. file and work file records assigned to the deleted files. Package-private so
-   * the test runner can drive it.
+   * with the misc. file and work file records assigned to the deleted files and the record trees
+   * of the deleted folders; a note assigned to a deleted folder keeps its text but loses its
+   * folder. Package-private so the test runner can drive it.
    */
   void delete(FileRow fileRow)
   {
@@ -1084,7 +1085,13 @@ public final class FileManager extends NonmodalWindow
           case hdtPerson   : confirmMsg += "is assigned as a picture file for a person record. Permanently delete it anyway?"; break;
           case hdtMiscFile : confirmMsg += "is assigned to a misc. file record. Okay to permanently delete the file as well as the associated record?"; break;
           case hdtWorkFile : confirmMsg += "is assigned to a work file record. Permanently delete it anyway?"; break;
-          case hdtFolder   : confirmMsg += "is assigned to a note record. Permanently delete it anyway?"; break;
+          case hdtFolder   :
+          {
+            String nounPhrase = ((HDT_Folder) hyperPath.getRecord()).notes.size() == 1 ? "a note record" : "multiple note records";
+
+            confirmMsg += "is assigned to " + nounPhrase + ". Permanently delete it anyway?"; break;
+          }
+
           default          : internalErrorPopup(21292); return;
         }
 
@@ -1126,13 +1133,14 @@ public final class FileManager extends NonmodalWindow
 
     suppressNeedRefresh = true;
 
-    // Pass 1: Delete directories one at a time (each needs its own record tree cleanup)
+    // Pass 1: Delete directories one at a time. HDT_Folder.delete takes each one's directory tree and
+    // record tree, and detaches any note assigned to the folder
 
     boolean aborted = false;
 
     for (AbstractEntityWithPath item : rowInfoList)
     {
-      if (item.isDirectory() && (deleteRow(item) == false))
+      if (item.isDirectory() && (((HDT_Folder) item.getHyperPath().getRecord()).delete() == false))
       {
         aborted = true;
         break;
@@ -1200,35 +1208,6 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean deleteRow(AbstractEntityWithPath item)
-  {
-    HyperPath hyperPath = item.getHyperPath();
-    HDT_RecordWithPath fileRecord = hyperPath.getRecord();
-    FilePath filePath = hyperPath.filePath();
-
-    if (item.isRelated() == false)
-    {
-      if (item.isDirectory())
-        return ((HDT_Folder) fileRecord).delete();
-
-      return (FileDeletion.ofFile(filePath).interactive().execute() != DeletionResult.ABORTED);
-    }
-
-    Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);  // before the deletion evicts the path from the registry
-
-    if (FileDeletion.ofFile(filePath).interactive().execute() == DeletionResult.ABORTED)
-      return false;
-
-    for (HyperPath setPath : set)
-      if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
-        db.deleteRecord(setPath.getRecord());
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private static boolean canMoveRow(AbstractEntityWithPath item)
   {
     return isProtected(item, "moved") == false;
@@ -1243,8 +1222,16 @@ public final class FileManager extends NonmodalWindow
 
     FilePath filePath = item.getFilePath();
 
-    if (filePath.isDirectory() && HyperPath.isInUse(item.getHyperPath()))
-      return falseWithInfoPopup("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
+    if (filePath.isDirectory())
+    {
+      HDT_Folder folder = (HDT_Folder) nullSwitch(item.getHyperPath(), null, HyperPath::getRecord);
+
+      // The folder's own notes are not a reason to refuse: deleting it leaves them without a folder,
+      // which the confirmation asks about
+
+      if ((folder != null) && folder.contentsAreInUse())
+        return falseWithInfoPopup("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
+    }
 
     return true;
   }
@@ -1874,7 +1861,12 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void goToFilePath(FilePath filePath, boolean hiliteIfFolder)
+  /**
+   * Shows the given path: enters a directory, or selects a file's row inside its directory. With
+   * {@code hiliteIfFolder}, a directory's own row is selected in its parent instead of being
+   * entered. Package-private so the test runner can select a folder's row.
+   */
+  void goToFilePath(FilePath filePath, boolean hiliteIfFolder)
   {
     if (FilePath.isEmpty(filePath)) return;
 
