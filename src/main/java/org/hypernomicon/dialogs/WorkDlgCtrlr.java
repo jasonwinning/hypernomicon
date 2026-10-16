@@ -781,7 +781,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     if (FilePath.isEmpty(filePath)) return;
 
-    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
+    HDT_Folder folder = HyperPath.folderRecordFor(filePath, true);
 
     if ((folder == null) || (folder.getID() == ROOT_FOLDER_ID))
     {
@@ -825,7 +825,7 @@ public class WorkDlgCtrlr extends ModalDialog
 
     // See if the chosen file is currently assigned to a file record
 
-    HDT_RecordWithPath file = HyperPath.getRecordFromFilePath(chosenFile);
+    HDT_RecordWithPath file = HyperPath.existingFileRecordAt(chosenFile);
 
     if (file != null)
     {
@@ -1370,7 +1370,7 @@ public class WorkDlgCtrlr extends ModalDialog
       :
         destFolder.getValue().filePath().resolve(tfNewFile.getText().strip()));
 
-    HDT_RecordWithPath existingFile = HyperPath.getRecordFromFilePath(newFilePath);
+    HDT_RecordWithPath existingFile = HyperPath.existingFileRecordAt(newFilePath);
 
     if (existingFile != null)
     {
@@ -1426,7 +1426,7 @@ public class WorkDlgCtrlr extends ModalDialog
           }
           else
           {
-            newWorkFile.getPath().assign(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true), newFilePath.getNameOnly());
+            newWorkFile.getPath().assign(HyperPath.folderRecordFor(newFilePath.getDirOnly(), true), newFilePath.getNameOnly());
           }
         }
       }
@@ -1452,7 +1452,7 @@ public class WorkDlgCtrlr extends ModalDialog
         {
           if (origFilePath.moveTo(newFilePath, true) == false) return false;
 
-          newWorkFile.getPath().assign(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true), newFilePath.getNameOnly());
+          newWorkFile.getPath().assign(HyperPath.folderRecordFor(newFilePath.getDirOnly(), true), newFilePath.getNameOnly());
         }
       }
       else
@@ -1460,7 +1460,7 @@ public class WorkDlgCtrlr extends ModalDialog
         if (oldWorkFile != null)
           return falseWithErrorPopup("Unable to move the file. Reason: Cannot change assignment from one file to another that is already assigned to a different file record.");
 
-        HDT_Folder destFolder = HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true);
+        HDT_Folder destFolder = HyperPath.folderRecordFor(newFilePath.getDirOnly(), true);
         if (destFolder == null)
           success = false;
         else

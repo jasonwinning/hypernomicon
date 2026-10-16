@@ -355,7 +355,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
   {
     if (ui.cantSaveRecord(false)) return;
 
-    HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(getParentForNewFolder(), true);
+    HDT_Folder parentFolder = HyperPath.folderRecordFor(getParentForNewFolder(), true);
 
     String folderName = nameOfFolderToCreate();
 
@@ -386,7 +386,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
   {
     String folderName = nameOfFolderToCreate();
 
-    HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(getParentForNewFolder(), true);
+    HDT_Folder parentFolder = HyperPath.folderRecordFor(getParentForNewFolder(), true);
 
     return folderName.isBlank() ?
       "Assign new folder in parent folder: " + parentFolder.filePath().toString()
@@ -424,7 +424,7 @@ public final class NoteTabCtrlr extends HyperNodeTab<HDT_Note, HDT_Note>
 
     if (FilePath.isEmpty(filePath)) return;
 
-    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
+    HDT_Folder folder = HyperPath.folderRecordFor(filePath, true);
 
     if (folder == null)
       errorPopup("You must choose a subfolder of the main database folder.");

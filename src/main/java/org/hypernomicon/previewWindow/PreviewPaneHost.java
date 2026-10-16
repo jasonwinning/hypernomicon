@@ -675,7 +675,7 @@ final class PreviewPaneHost
     if (entry.record() != null)
       ui.goToRecord(entry.record(), true);
     else if (FilePath.isEmpty(entry.filePath()) == false)
-      ui.goToRecord(HyperPath.getRecordFromFilePath(entry.filePath()), true);
+      ui.goToRecord(HyperPath.existingFileRecordAt(entry.filePath()), true);
   }
 
 //---------------------------------------------------------------------------
@@ -800,7 +800,7 @@ final class PreviewPaneHost
   {
     if (record instanceof HDT_Work work)
     {
-      if (HyperPath.getRecordFromFilePath(filePath) instanceof HDT_WorkFile workFile)
+      if (HyperPath.existingFileRecordAt(filePath) instanceof HDT_WorkFile workFile)
         setWorkPageNums(work.getStartPageNum(workFile), work.getEndPageNum(workFile));
       else
         setWorkPageNums(work.getStartPageNum(), work.getEndPageNum());
@@ -836,7 +836,7 @@ final class PreviewPaneHost
       workEndPageNum = pageNum;
 
     HDT_Work work = (HDT_Work) entry.record();
-    HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getRecordFromFilePath(entry.filePath());
+    HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.existingFileRecordAt(entry.filePath());
 
     if (isStart)
       work.setStartPageNum(workFile, pageNum);

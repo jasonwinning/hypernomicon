@@ -1903,7 +1903,7 @@ public abstract class AbstractHyperDB
         topicalFolder   = folders.getByID(6);
         unenteredFolder = folders.getByID(7);
         resultsFolder   = folders.getByID(8);
-        xmlFolder       = HyperPath.getFolderFromFilePath(getRootPath(DEFAULT_XML_PATH), true);
+        xmlFolder       = HyperPath.folderRecordFor(getRootPath(DEFAULT_XML_PATH), true);
 
         writeFolderIDs = true;
       }

@@ -831,7 +831,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
     if (FilePath.isEmpty(curPicture))
       curPerson.getPath().clear();
     else
-      curPerson.getPath().assign(HyperPath.getFolderFromFilePath(curPicture.getDirOnly(), true), curPicture.getNameOnly());
+      curPerson.getPath().assign(HyperPath.folderRecordFor(curPicture.getDirOnly(), true), curPicture.getNameOnly());
 
     curPerson.setViewPort(viewPort);
 

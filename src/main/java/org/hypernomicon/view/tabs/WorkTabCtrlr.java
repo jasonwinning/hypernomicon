@@ -1158,7 +1158,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     try
     {
-      HDT_Folder folderRecord = HyperPath.getFolderFromFilePath(folder, true);
+      HDT_Folder folderRecord = HyperPath.folderRecordFor(folder, true);
 
       for (HDT_WorkFile workFile : curWork.workFiles)
         if (workFile.getPath().moveToFolder(folderRecord.getID(), true, false, "") == false) break;
@@ -1232,7 +1232,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         return;
       }
 
-      HDT_RecordWithPath fileRecord = HyperPath.getRecordFromFilePath(filePath);
+      HDT_RecordWithPath fileRecord = HyperPath.existingFileRecordAt(filePath);
 
       if (fileRecord != null)
       {
@@ -1361,7 +1361,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       if (FilePath.isEmpty(folder)) return null;
 
-      folderRecord = HyperPath.getFolderFromFilePath(folder, true);
+      folderRecord = HyperPath.folderRecordFor(folder, true);
 
       if (folderRecord == null)
         errorPopup("You must choose a subfolder of the main database folder.");

@@ -57,7 +57,7 @@ class ProtectedFileTest
   {
     db = TestHyperDB.instance();
 
-    // isProtectedFile relies on getFolderFromFilePath, which calls getDirOnly().
+    // isProtectedFile relies on folderRecordFor, which calls getDirOnly().
     // getDirOnly() checks isDirectory() on the filesystem, so the special folder
     // directories must physically exist for the lookup to work.
 

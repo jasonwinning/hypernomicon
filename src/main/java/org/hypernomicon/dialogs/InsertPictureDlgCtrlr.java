@@ -417,7 +417,7 @@ public class InsertPictureDlgCtrlr extends ModalDialog
 
     if (FilePath.isEmpty(filePath)) return;
 
-    HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(filePath);
+    HDT_RecordWithPath existingRecord = HyperPath.existingFileRecordAt(filePath);
 
     if (existingRecord != null)
     {

@@ -98,7 +98,7 @@ public class FolderSettingsCtrlr implements SettingsControl
 
       if (FilePath.isEmpty(filePath)) return;
 
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
+      HDT_Folder folder = HyperPath.folderRecordFor(filePath, true);
 
       if (folder == null)
       {

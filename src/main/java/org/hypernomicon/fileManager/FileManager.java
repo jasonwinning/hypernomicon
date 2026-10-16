@@ -691,7 +691,7 @@ public final class FileManager extends NonmodalWindow
       {
         FilePath srcPath = pathItem.getFilePath();
 
-        if (pathItem.isDirectory() && (HyperPath.getFolderFromFilePath(srcPath, true) != null))
+        if (pathItem.isDirectory() && (HyperPath.folderRecordFor(srcPath, true) != null))
           reparentRoots.add(srcPath);
       }
 
@@ -782,7 +782,7 @@ public final class FileManager extends NonmodalWindow
               }
             }
 
-            HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
+            HyperPath.folderRecordFor(destFilePath.getDirOnly(), true);
           }
         }
 
@@ -801,7 +801,7 @@ public final class FileManager extends NonmodalWindow
 
             FilePath destRootPath = srcToDest.get(srcRootPath);
             HDT_Folder srcFolder = HyperPath.existingFolderRecordAtExactly(srcRootPath),
-                       destParent = HyperPath.getFolderFromFilePath(destRootPath.getParent(), true);
+                       destParent = HyperPath.folderRecordFor(destRootPath.getParent(), true);
 
             boolean firstFailure = true;
             FilePath lockedFile = null;
@@ -867,7 +867,7 @@ public final class FileManager extends NonmodalWindow
 
             incrementAndUpdateProgress();
 
-            HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
+            HDT_Folder folder = HyperPath.folderRecordFor(destFilePath.getDirOnly(), true);
 
             Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(srcFilePath);
 
@@ -1735,8 +1735,8 @@ public final class FileManager extends NonmodalWindow
 
     if ((record != null) && EnumSet.of(hdtWork, hdtMiscFile, hdtWorkFile).contains(record.getType()) == false)
     {
-      if      (FilePath.isEmpty(fileTablePath) == false) record = HyperPath.getRecordFromFilePath(fileTablePath);
-      else if (FilePath.isEmpty(filePath     ) == false) record = HyperPath.getRecordFromFilePath(filePath);
+      if      (FilePath.isEmpty(fileTablePath) == false) record = HyperPath.existingFileRecordAt(fileTablePath);
+      else if (FilePath.isEmpty(filePath     ) == false) record = HyperPath.existingFileRecordAt(filePath);
     }
 
     if (record != null)
@@ -1763,7 +1763,7 @@ public final class FileManager extends NonmodalWindow
 
           if (FilePath.isEmpty(fileTablePath) == false)
           {
-            HDT_RecordWithPath recordWP = HyperPath.getRecordFromFilePath(fileTablePath);
+            HDT_RecordWithPath recordWP = HyperPath.existingFileRecordAt(fileTablePath);
             if ((recordWP != null) && (recordWP.getType() == hdtWorkFile))
               workFile = (HDT_WorkFile) recordWP;
           }
@@ -1921,7 +1921,7 @@ public final class FileManager extends NonmodalWindow
 
     boolean justEnteringFolder = false;
 
-    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath.getDirOnly(), true);
+    HDT_Folder folder = HyperPath.folderRecordFor(filePath.getDirOnly(), true);
 
     if (filePath.isDirectory())
     {

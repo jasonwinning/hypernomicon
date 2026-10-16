@@ -990,7 +990,7 @@ public final class PreviewWindow extends NonmodalWindow
         btnContents.setDisable(true);
         btnContents.setText("No other records...");
 
-        HDT_RecordWithPath showingFile = HyperPath.getRecordFromFilePath(filePath);
+        HDT_RecordWithPath showingFile = HyperPath.existingFileRecordAt(filePath);
 
         if (showingFile == null) // External file (specified in URL field) is being previewed
         {
@@ -1067,7 +1067,7 @@ public final class PreviewWindow extends NonmodalWindow
       workFile = (HDT_WorkFile) record;
     else
     {
-      record = HyperPath.getRecordFromFilePath(filePath);
+      record = HyperPath.existingFileRecordAt(filePath);
 
       if ((record != null) && (record.getType() == hdtWorkFile))
         workFile = (HDT_WorkFile) record;

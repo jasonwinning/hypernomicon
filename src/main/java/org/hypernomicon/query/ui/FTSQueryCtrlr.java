@@ -1053,7 +1053,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     List<FTSResultRow> rows = new ArrayList<>(results.size());
 
     for (SearchResult sr : results)
-      rows.add(new FTSResultRow(sr, HyperPath.resolveRecord(db.getRootPath(sr.path()), 0)));
+      rows.add(new FTSResultRow(sr, HyperPath.resolveRecordForPage(db.getRootPath(sr.path()), 0)));
 
     return rows;
   }
@@ -1073,7 +1073,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       List<PageMatch> matches = sr.pageMatches();
       IntStream pages = (matches != null) ? matches.stream().mapToInt(PageMatch::pageNumber) : IntStream.empty();
 
-      rows.add(new FTSResultRow(sr, HDT_WorkFile.resolveRecordForPages(filePath, pages, HyperPath.resolveRecord(filePath, 0))));
+      rows.add(new FTSResultRow(sr, HDT_WorkFile.resolveRecordForPages(filePath, pages, HyperPath.resolveRecordForPage(filePath, 0))));
     }
 
     return rows;

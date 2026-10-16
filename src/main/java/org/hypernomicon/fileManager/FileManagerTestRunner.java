@@ -176,7 +176,7 @@ public final class FileManagerTestRunner
                  srcDir    = srcParent.resolve("flatdir");     // _test_fm/p1s3/src/flatdir/
 
         // Ensure folder record exists before paste
-        HyperPath.getFolderFromFilePath(srcDir, true);
+        HyperPath.folderRecordFor(srcDir, true);
 
         pasteMove(entitiesOf(srcDir), destDir);
 
@@ -186,7 +186,7 @@ public final class FileManagerTestRunner
         assertExists(destDir.resolve("flatdir", "b.txt"), "dest file b");
 
         // Verify folder record re-parented
-        HDT_Folder destFolder = HyperPath.getFolderFromFilePath(destDir.resolve("flatdir"), false);
+        HDT_Folder destFolder = HyperPath.folderRecordFor(destDir.resolve("flatdir"), false);
         assertNotNull(destFolder, "dest folder record should exist after re-parent");
       }
       catch (Exception e) { throw new AssertionError(e); }
@@ -210,7 +210,7 @@ public final class FileManagerTestRunner
         assertExists(destDir.resolve("extdir", "d.txt"), "dest file d");
 
         // Verify folder record was created at destination
-        HDT_Folder destFolder = HyperPath.getFolderFromFilePath(destDir.resolve("extdir"), false);
+        HDT_Folder destFolder = HyperPath.folderRecordFor(destDir.resolve("extdir"), false);
         assertNotNull(destFolder, "dest folder record should be created for external dir");
       }
       catch (Exception e) { throw new AssertionError(e); }
@@ -228,7 +228,7 @@ public final class FileManagerTestRunner
                  lvl3 = lvl2.resolve("lvl3");                // _test_fm/p1s5/src/lvl1/lvl2/lvl3/
 
         // Ensure folder records exist
-        HyperPath.getFolderFromFilePath(lvl3, true);
+        HyperPath.folderRecordFor(lvl3, true);
 
         pasteMove(entitiesOf(lvl1), destDir);
 
@@ -239,9 +239,9 @@ public final class FileManagerTestRunner
         assertExists(destDir.resolve("lvl1", "lvl2", "lvl3", "f3.txt"), "dest f3");
 
         // Verify cascading filePath() resolves for child folders
-        HDT_Folder destLvl2 = HyperPath.getFolderFromFilePath(destDir.resolve("lvl1", "lvl2"), false);
+        HDT_Folder destLvl2 = HyperPath.folderRecordFor(destDir.resolve("lvl1", "lvl2"), false);
         assertNotNull(destLvl2, "lvl2 folder record should resolve at new location");
-        HDT_Folder destLvl3 = HyperPath.getFolderFromFilePath(destDir.resolve("lvl1", "lvl2", "lvl3"), false);
+        HDT_Folder destLvl3 = HyperPath.folderRecordFor(destDir.resolve("lvl1", "lvl2", "lvl3"), false);
         assertNotNull(destLvl3, "lvl3 folder record should resolve at new location");
       }
       catch (Exception e) { throw new AssertionError(e); }
@@ -280,7 +280,7 @@ public final class FileManagerTestRunner
                  d4 = d3.resolve("d4"),
                  d5 = d4.resolve("d5");
 
-        HyperPath.getFolderFromFilePath(d5, true);
+        HyperPath.folderRecordFor(d5, true);
 
         pasteMove(entitiesOf(d1), destDir);
 
@@ -290,7 +290,7 @@ public final class FileManagerTestRunner
         assertExists(destDir.resolve("d1", "d2", "d3", "d4", "d5", "f5.txt"), "dest f5");
 
         // Deeply nested filePath resolves correctly
-        HDT_Folder destD5 = HyperPath.getFolderFromFilePath(destDir.resolve("d1", "d2", "d3", "d4", "d5"), false);
+        HDT_Folder destD5 = HyperPath.folderRecordFor(destDir.resolve("d1", "d2", "d3", "d4", "d5"), false);
         assertNotNull(destD5, "d5 folder record should resolve at new location");
       }
       catch (Exception e) { throw new AssertionError(e); }
@@ -377,8 +377,8 @@ public final class FileManagerTestRunner
                  dirA      = srcParent.resolve("dirA"),
                  dirB      = srcParent.resolve("dirB");
 
-        HyperPath.getFolderFromFilePath(dirA, true);
-        HyperPath.getFolderFromFilePath(dirB, true);
+        HyperPath.folderRecordFor(dirA, true);
+        HyperPath.folderRecordFor(dirB, true);
 
         pasteMove(entitiesOf(dirA, dirB), destDir);
 
@@ -420,7 +420,7 @@ public final class FileManagerTestRunner
                  dir       = srcParent.resolve("mixdir"),
                  file      = srcParent.resolve("loose.txt");
 
-        HyperPath.getFolderFromFilePath(dir, true);
+        HyperPath.folderRecordFor(dir, true);
 
         pasteMove(entitiesOf(dir, file), destDir);
 
@@ -466,9 +466,9 @@ public final class FileManagerTestRunner
                  dirA      = srcParent.resolve("A"),
                  dirB      = dirA.resolve("B");
 
-        HyperPath.getFolderFromFilePath(dirB, true);
-        HDT_Folder folderB = HyperPath.getFolderFromFilePath(dirB, false),
-                   folderA = HyperPath.getFolderFromFilePath(dirA, false);
+        HyperPath.folderRecordFor(dirB, true);
+        HDT_Folder folderB = HyperPath.folderRecordFor(dirB, false),
+                   folderA = HyperPath.folderRecordFor(dirA, false);
         assertNotNull(folderA, "folderA should exist");
         assertNotNull(folderB, "folderB should exist");
 
@@ -479,11 +479,11 @@ public final class FileManagerTestRunner
         assertExists(destDir.resolve("A", "B", "file.txt"), "dest file");
 
         // A was re-parented; B remains a child of A
-        HDT_Folder destA = HyperPath.getFolderFromFilePath(destDir.resolve("A"), false);
+        HDT_Folder destA = HyperPath.folderRecordFor(destDir.resolve("A"), false);
         assertNotNull(destA, "dest A folder record");
         assertEquals(folderA.getID(), destA.getID(), "A folder record ID should be preserved");
 
-        HDT_Folder destB = HyperPath.getFolderFromFilePath(destDir.resolve("A", "B"), false);
+        HDT_Folder destB = HyperPath.folderRecordFor(destDir.resolve("A", "B"), false);
         assertNotNull(destB, "dest B folder record");
         assertEquals(folderB.getID(), destB.getID(), "B folder record ID should be preserved");
         assertEquals(destA, destB.parentFolder(), "B should still be child of A");
@@ -503,8 +503,8 @@ public final class FileManagerTestRunner
                  dirB      = dirA.resolve("B"),
                  dirC      = srcParent.resolve("C");
 
-        HyperPath.getFolderFromFilePath(dirB, true);
-        HyperPath.getFolderFromFilePath(dirC, true);
+        HyperPath.folderRecordFor(dirB, true);
+        HyperPath.folderRecordFor(dirC, true);
 
         pasteMove(entitiesOf(dirA, dirB, dirC), destDir);
 
@@ -526,7 +526,7 @@ public final class FileManagerTestRunner
                  dirA       = srcParent.resolve("A"),
                  insideFile = dirA.resolve("inside.txt");
 
-        HyperPath.getFolderFromFilePath(dirA, true);
+        HyperPath.folderRecordFor(dirA, true);
 
         // Select both the dir and the file inside it
         pasteMove(entitiesOf(dirA, insideFile), destDir);
@@ -549,7 +549,7 @@ public final class FileManagerTestRunner
                  dirA        = srcParent.resolve("A"),
                  siblingFile = srcParent.resolve("sibling.txt");
 
-        HyperPath.getFolderFromFilePath(dirA, true);
+        HyperPath.folderRecordFor(dirA, true);
 
         pasteMove(entitiesOf(dirA, siblingFile), destDir);
 
@@ -575,7 +575,7 @@ public final class FileManagerTestRunner
                  dir       = srcParent.resolve("wfdir"),
                  file      = dir.resolve("work.pdf");
 
-        HyperPath.getFolderFromFilePath(dir, true);
+        HyperPath.folderRecordFor(dir, true);
 
         HDT_RecordWithPath workFile = HyperPath.createRecordAssignedToPath(hdtWorkFile, file);
         assertNotNull(workFile, "WorkFile record should be created");
@@ -605,7 +605,7 @@ public final class FileManagerTestRunner
                  dir       = srcParent.resolve("mfdir"),
                  file      = dir.resolve("misc.dat");
 
-        HyperPath.getFolderFromFilePath(dir, true);
+        HyperPath.folderRecordFor(dir, true);
 
         HDT_RecordWithPath miscFile = HyperPath.createRecordAssignedToPath(hdtMiscFile, file);
         assertNotNull(miscFile, "MiscFile record should be created");
@@ -634,7 +634,7 @@ public final class FileManagerTestRunner
                  dir       = srcParent.resolve("picdir"),
                  pic       = dir.resolve("photo.jpg");
 
-        HDT_Folder dirFolder = HyperPath.getFolderFromFilePath(dir, true);
+        HDT_Folder dirFolder = HyperPath.folderRecordFor(dir, true);
         assertNotNull(dirFolder, "dir folder record");
 
         HDT_Person person = db.createNewBlankRecord(hdtPerson);
@@ -663,7 +663,7 @@ public final class FileManagerTestRunner
                  destDir   = createTestDir("p4s22", "dest"),
                  dir       = srcParent.resolve("notedir");
 
-        HDT_Folder dirFolder = HyperPath.getFolderFromFilePath(dir, true);
+        HDT_Folder dirFolder = HyperPath.folderRecordFor(dir, true);
         assertNotNull(dirFolder, "dir folder record");
 
         HDT_Note note = db.createNewBlankRecord(hdtNote);
@@ -679,7 +679,7 @@ public final class FileManagerTestRunner
         assertNotNull(resolvedNote, "Note record should still exist");
 
         // The folder record ID is preserved; filePath() resolves dynamically
-        HDT_Folder destFolder = HyperPath.getFolderFromFilePath(destDir.resolve("notedir"), false);
+        HDT_Folder destFolder = HyperPath.folderRecordFor(destDir.resolve("notedir"), false);
         assertEquals(dirFolder.getID(), destFolder.getID(), "Folder record ID should be preserved");
         assertEquals(destFolder, resolvedNote.folder.get(), "Note should still reference the same folder record");
       }
@@ -698,7 +698,7 @@ public final class FileManagerTestRunner
                  mf        = dir.resolve("misc.dat"),
                  pic       = dir.resolve("photo.jpg");
 
-        HDT_Folder dirFolder = HyperPath.getFolderFromFilePath(dir, true);
+        HDT_Folder dirFolder = HyperPath.folderRecordFor(dir, true);
 
         HDT_RecordWithPath workFile = HyperPath.createRecordAssignedToPath(hdtWorkFile, wf),
                            miscFile = HyperPath.createRecordAssignedToPath(hdtMiscFile, mf);
@@ -723,7 +723,7 @@ public final class FileManagerTestRunner
         assertEquals(destDir.resolve("alldir", "photo.jpg"), db.persons.getByID(personID).getPath().filePath());
         assertEquals(dirFolder, db.notes.getByID(noteID).folder.get());
         // Folder record ID should be unchanged
-        assertEquals(folderID, HyperPath.getFolderFromFilePath(destDir.resolve("alldir"), false).getID());
+        assertEquals(folderID, HyperPath.folderRecordFor(destDir.resolve("alldir"), false).getID());
       }
       catch (Exception e) { throw new AssertionError(e); }
     });
@@ -795,7 +795,7 @@ public final class FileManagerTestRunner
         assertTrue(FileManager.instance().moveCopy(entitiesOf(file), false, false), "moveCopy should succeed");
 
         // Paste into the same directory the file is in
-        HDT_Folder destFolder = HyperPath.getFolderFromFilePath(srcDir, true);
+        HDT_Folder destFolder = HyperPath.folderRecordFor(srcDir, true);
         FileRow destRow = new FileRow(destFolder.getPath(), true);
         FileManager.instance().paste(destRow, false, false);
         pauseAndWaitForRunLaters(); // HyperTask.failed() defers errorPopup via Platform.runLater
@@ -817,14 +817,14 @@ public final class FileManagerTestRunner
                  dirA      = srcParent.resolve("A"),
                  sub       = dirA.resolve("sub");
 
-        HyperPath.getFolderFromFilePath(sub, true);
+        HyperPath.folderRecordFor(sub, true);
 
         PopupRobot.clear();
 
         assertTrue(FileManager.instance().moveCopy(entitiesOf(dirA), false, false), "moveCopy should succeed");
 
         // Paste into A/sub/ (subfolder of source A/)
-        HDT_Folder destFolder = HyperPath.getFolderFromFilePath(sub, true);
+        HDT_Folder destFolder = HyperPath.folderRecordFor(sub, true);
         FileRow destRow = new FileRow(destFolder.getPath(), true);
         FileManager.instance().paste(destRow, false, false);
         pauseAndWaitForRunLaters(); // HyperTask.failed() defers errorPopup via Platform.runLater
@@ -888,13 +888,13 @@ public final class FileManagerTestRunner
 
         // dest/dup/ already exists from artifact setup; create folder record for source
 
-        HyperPath.getFolderFromFilePath(srcSub, true);
+        HyperPath.folderRecordFor(srcSub, true);
 
         PopupRobot.clear();
 
         assertTrue(FileManager.instance().moveCopy(entitiesOf(srcSub), false, false), "moveCopy should succeed");
 
-        HDT_Folder destFolder = HyperPath.getFolderFromFilePath(destDir, true);
+        HDT_Folder destFolder = HyperPath.folderRecordFor(destDir, true);
         FileRow destRow = new FileRow(destFolder.getPath(), true);
         FileManager.instance().paste(destRow, false, false);
         pauseAndWaitForRunLaters(); // HyperTask.failed() defers errorPopup via Platform.runLater
@@ -1268,7 +1268,7 @@ public final class FileManagerTestRunner
         FilePath srcParent = createTestDir("p8s44", "src"),
                  dir       = srcParent.resolve("noop");
 
-        HDT_Folder folder = HyperPath.getFolderFromFilePath(dir, true);
+        HDT_Folder folder = HyperPath.folderRecordFor(dir, true);
         assertNotNull(folder, "folder record");
         HDT_Folder parent = folder.parentFolder();
         assertNotNull(parent, "parent folder");
@@ -1318,11 +1318,11 @@ public final class FileManagerTestRunner
         FilePath srcParent = createTestDir("p9s46", "src"),
                  dir       = srcParent.resolve("oldname");
 
-        HDT_Folder folder = HyperPath.getFolderFromFilePath(dir, true);
+        HDT_Folder folder = HyperPath.folderRecordFor(dir, true);
         assertNotNull(folder, "folder record");
 
         // Create a descendant folder record for the subdirectory
-        HDT_Folder subFolder = HyperPath.getFolderFromFilePath(dir.resolve("sub"), true);
+        HDT_Folder subFolder = HyperPath.folderRecordFor(dir.resolve("sub"), true);
         assertNotNull(subFolder, "sub folder record");
 
         boolean result = folder.renameTo("newname");
@@ -1521,8 +1521,8 @@ public final class FileManagerTestRunner
                  tree      = srcParent.resolve("tree"),
                  lockedFile = tree.resolve("sub1", "sub2", "s2.txt");
 
-        HyperPath.getFolderFromFilePath(tree.resolve("sub1", "sub2"), true);
-        HyperPath.getFolderFromFilePath(tree.resolve("sibling"), true);
+        HyperPath.folderRecordFor(tree.resolve("sub1", "sub2"), true);
+        HyperPath.folderRecordFor(tree.resolve("sibling"), true);
 
         lockProc = startLockProcess(lockedFile);
 
@@ -1567,11 +1567,11 @@ public final class FileManagerTestRunner
         assertGone(srcNested, "source nested");
         assertGone(srcSibling, "source sibling.txt");
 
-        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("nested"), false),
+        assertNotNull(HyperPath.folderRecordFor(destDir.resolve("nested"), false),
           "nested folder record should exist");
-        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("nested", "child1"), false),
+        assertNotNull(HyperPath.folderRecordFor(destDir.resolve("nested", "child1"), false),
           "child1 folder record should exist");
-        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("nested", "child1", "child2"), false),
+        assertNotNull(HyperPath.folderRecordFor(destDir.resolve("nested", "child1", "child2"), false),
           "child2 folder record should exist");
       }
       catch (Exception e) { throw new AssertionError(e); }
@@ -1589,7 +1589,7 @@ public final class FileManagerTestRunner
                  workPdf   = srcParent.resolve("work.pdf"),
                  loose     = srcParent.resolve("loose.txt");
 
-        HDT_Folder folderRec = HyperPath.getFolderFromFilePath(folder, true);
+        HDT_Folder folderRec = HyperPath.folderRecordFor(folder, true);
         int folderID = folderRec.getID();
 
         HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
@@ -1597,7 +1597,7 @@ public final class FileManagerTestRunner
 
         pasteMove(entitiesOf(folder, workPdf, loose), destDir);
 
-        assertEquals(folderID, HyperPath.getFolderFromFilePath(destDir.resolve("folder"), false).getID(),
+        assertEquals(folderID, HyperPath.folderRecordFor(destDir.resolve("folder"), false).getID(),
           "folder record ID should be preserved after re-parent");
         assertEquals(destDir.resolve("work.pdf"), db.workFiles.getByID(wfID).filePath(),
           "WorkFile should resolve to dest");
@@ -1626,9 +1626,9 @@ public final class FileManagerTestRunner
                  cleanDir  = srcParent.resolve("clean"),
                  lockFile  = lockedDir.resolve("nested", "target.txt");
 
-        HyperPath.getFolderFromFilePath(lockedDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
-        HyperPath.getFolderFromFilePath(cleanDir, true);
+        HyperPath.folderRecordFor(lockedDir, true);
+        HyperPath.folderRecordFor(lockedDir.resolve("nested"), true);
+        HyperPath.folderRecordFor(cleanDir, true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -1663,9 +1663,9 @@ public final class FileManagerTestRunner
                  lockedDir = srcParent.resolve("locked_dir"),
                  lockFile  = lockedDir.resolve("nested", "target.txt");
 
-        HyperPath.getFolderFromFilePath(cleanDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+        HyperPath.folderRecordFor(cleanDir, true);
+        HyperPath.folderRecordFor(lockedDir, true);
+        HyperPath.folderRecordFor(lockedDir.resolve("nested"), true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -1701,9 +1701,9 @@ public final class FileManagerTestRunner
                  extraFile = srcParent.resolve("extra.txt"),
                  lockFile  = lockedDir.resolve("nested", "target.txt");
 
-        HyperPath.getFolderFromFilePath(cleanDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+        HyperPath.folderRecordFor(cleanDir, true);
+        HyperPath.folderRecordFor(lockedDir, true);
+        HyperPath.folderRecordFor(lockedDir.resolve("nested"), true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -1736,9 +1736,9 @@ public final class FileManagerTestRunner
                  extraFile = srcParent.resolve("extra.txt"),
                  lockFile  = lockedDir.resolve("nested", "target.txt");
 
-        HyperPath.getFolderFromFilePath(cleanDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+        HyperPath.folderRecordFor(cleanDir, true);
+        HyperPath.folderRecordFor(lockedDir, true);
+        HyperPath.folderRecordFor(lockedDir.resolve("nested"), true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -1776,8 +1776,8 @@ public final class FileManagerTestRunner
                  secondDir = srcParent.resolve("second"),
                  lockFile  = firstDir .resolve("a.txt");
 
-        HyperPath.getFolderFromFilePath(firstDir, true);
-        HyperPath.getFolderFromFilePath(secondDir, true);
+        HyperPath.folderRecordFor(firstDir, true);
+        HyperPath.folderRecordFor(secondDir, true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -1807,7 +1807,7 @@ public final class FileManagerTestRunner
                  retryDir  = srcParent.resolve("retrydir"),
                  lockFile  = retryDir.resolve("locked.txt");
 
-        HyperPath.getFolderFromFilePath(retryDir, true);
+        HyperPath.folderRecordFor(retryDir, true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -1839,7 +1839,7 @@ public final class FileManagerTestRunner
                  extraFile = srcParent.resolve("extra.txt"),
                  lockFile  = retryDir .resolve("locked.txt");
 
-        HyperPath.getFolderFromFilePath(retryDir, true);
+        HyperPath.folderRecordFor(retryDir, true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -2004,8 +2004,8 @@ public final class FileManagerTestRunner
                  looseFile = srcParent.resolve("loose.txt"),
                  lockFile  = lockedDir.resolve("nested", "target.txt");
 
-        HyperPath.getFolderFromFilePath(lockedDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+        HyperPath.folderRecordFor(lockedDir, true);
+        HyperPath.folderRecordFor(lockedDir.resolve("nested"), true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -2034,7 +2034,7 @@ public final class FileManagerTestRunner
                  folder     = srcParent.resolve("folder"),
                  lockedFile = srcParent.resolve("locked.txt");
 
-        HyperPath.getFolderFromFilePath(folder, true);
+        HyperPath.folderRecordFor(folder, true);
 
         lockProc = startLockProcess(lockedFile);
 
@@ -2066,8 +2066,8 @@ public final class FileManagerTestRunner
                  extraFile = srcParent.resolve("extra.txt"),
                  lockFile  = lockedDir.resolve("nested", "target.txt");
 
-        HyperPath.getFolderFromFilePath(lockedDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+        HyperPath.folderRecordFor(lockedDir, true);
+        HyperPath.folderRecordFor(lockedDir.resolve("nested"), true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -2098,8 +2098,8 @@ public final class FileManagerTestRunner
                  lockedFile = srcParent.resolve("locked_file.txt"),
                  lockFile1  = lockedDir.resolve("nested", "target.txt");
 
-        HyperPath.getFolderFromFilePath(lockedDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+        HyperPath.folderRecordFor(lockedDir, true);
+        HyperPath.folderRecordFor(lockedDir.resolve("nested"), true);
 
         lockProc1 = startLockProcess(lockFile1);
         lockProc2 = startLockProcess(lockedFile);
@@ -2135,7 +2135,7 @@ public final class FileManagerTestRunner
                  folder    = srcParent.resolve("folder"),
                  workPdf   = srcParent.resolve("work.pdf");
 
-        HyperPath.getFolderFromFilePath(folder, true);
+        HyperPath.folderRecordFor(folder, true);
 
         HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
         int wfID = wfRec.getID();
@@ -2204,7 +2204,7 @@ public final class FileManagerTestRunner
                  roDir     = srcParent.resolve("rodir"),
                  roFile    = roDir.resolve("readonly.txt");
 
-        HyperPath.getFolderFromFilePath(roDir, true);
+        HyperPath.folderRecordFor(roDir, true);
 
         roFile.toFile().setReadOnly();
 
@@ -2262,9 +2262,9 @@ public final class FileManagerTestRunner
         assertExists(destDir.resolve("topdir", "a.txt"), "dest a.txt");
         assertExists(destDir.resolve("topdir", "sub", "b.txt"), "dest sub/b.txt");
 
-        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("topdir"), false),
+        assertNotNull(HyperPath.folderRecordFor(destDir.resolve("topdir"), false),
           "topdir folder record should exist at dest");
-        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("topdir", "sub"), false),
+        assertNotNull(HyperPath.folderRecordFor(destDir.resolve("topdir", "sub"), false),
           "sub folder record should exist at dest");
       }
       catch (Exception e) { throw new AssertionError(e); }
@@ -2317,8 +2317,8 @@ public final class FileManagerTestRunner
                  workPdf   = srcParent.resolve("work.pdf"),
                  lockFile  = lockedDir.resolve("nested", "target.txt");
 
-        HyperPath.getFolderFromFilePath(lockedDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+        HyperPath.folderRecordFor(lockedDir, true);
+        HyperPath.folderRecordFor(lockedDir.resolve("nested"), true);
 
         HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
         int wfID = wfRec.getID();
@@ -2435,7 +2435,7 @@ public final class FileManagerTestRunner
                  folder    = srcParent.resolve("folder"),
                  workPdf   = srcParent.resolve("work.pdf");
 
-        HyperPath.getFolderFromFilePath(folder, true);
+        HyperPath.folderRecordFor(folder, true);
 
         HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
         int wfID = wfRec.getID();
@@ -2624,7 +2624,7 @@ public final class FileManagerTestRunner
                  rdir      = srcParent.resolve("rdir"),
                  lockFile  = rdir.resolve("locked.txt");
 
-        HyperPath.getFolderFromFilePath(rdir, true);
+        HyperPath.folderRecordFor(rdir, true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -2639,7 +2639,7 @@ public final class FileManagerTestRunner
         assertExists(destDir.resolve("rdir", "inner.txt"), "inner.txt at dest");
         assertExists(destDir.resolve("rdir", "locked.txt"), "locked.txt at dest");
         assertGone(rdir, "src rdir should be gone");
-        assertNotNull(HyperPath.getFolderFromFilePath(destDir.resolve("rdir"), false),
+        assertNotNull(HyperPath.folderRecordFor(destDir.resolve("rdir"), false),
           "folder record should exist at dest");
         assertEquals(1, PopupRobot.getInvocationCount(), "should get 1 popup");
 
@@ -2728,7 +2728,7 @@ public final class FileManagerTestRunner
                  lockFile  = rdir.resolve("locked.txt"),
                  extraFile = srcParent.resolve("extra.txt");
 
-        HyperPath.getFolderFromFilePath(rdir, true);
+        HyperPath.folderRecordFor(rdir, true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -2764,7 +2764,7 @@ public final class FileManagerTestRunner
                  folder    = srcParent.resolve("folder"),
                  workPdf   = srcParent.resolve("work.pdf");
 
-        HyperPath.getFolderFromFilePath(folder, true);
+        HyperPath.folderRecordFor(folder, true);
 
         HDT_RecordWithPath wfRec = HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf);
         int wfID = wfRec.getID();
@@ -2869,7 +2869,7 @@ public final class FileManagerTestRunner
                  rdir      = srcParent.resolve("rdir"),
                  lockFile  = rdir.resolve("locked.txt");
 
-        HyperPath.getFolderFromFilePath(rdir, true);
+        HyperPath.folderRecordFor(rdir, true);
 
         lockProc = startLockProcess(lockFile);
 
@@ -2905,8 +2905,8 @@ public final class FileManagerTestRunner
                  lockFile1 = dir1.resolve("locked1.txt"),
                  lockFile2 = dir2.resolve("locked2.txt");
 
-        HyperPath.getFolderFromFilePath(dir1, true);
-        HyperPath.getFolderFromFilePath(dir2, true);
+        HyperPath.folderRecordFor(dir1, true);
+        HyperPath.folderRecordFor(dir2, true);
 
         lockProc1 = startLockProcess(lockFile1);
         lockProc2 = startLockProcess(lockFile2);
@@ -2947,8 +2947,8 @@ public final class FileManagerTestRunner
                  lockFile1  = lockedDir.resolve("nested", "target.txt"),
                  lockedFile = srcParent.resolve("locked_file.txt");
 
-        HyperPath.getFolderFromFilePath(lockedDir, true);
-        HyperPath.getFolderFromFilePath(lockedDir.resolve("nested"), true);
+        HyperPath.folderRecordFor(lockedDir, true);
+        HyperPath.folderRecordFor(lockedDir.resolve("nested"), true);
 
         lockProc1 = startLockProcess(lockFile1);
         lockProc2 = startLockProcess(lockedFile);
@@ -3447,9 +3447,9 @@ public final class FileManagerTestRunner
                  deep      = inner.resolve("deep.jpg");
 
         // Create folder records for the tree hierarchy
-        HDT_Folder innerFolder    = HyperPath.getFolderFromFilePath(inner, true),
-                   treeFolder     = HyperPath.getFolderFromFilePath(tree, false),
-                   srcParFolder   = HyperPath.getFolderFromFilePath(srcParent, false);
+        HDT_Folder innerFolder    = HyperPath.folderRecordFor(inner, true),
+                   treeFolder     = HyperPath.folderRecordFor(tree, false),
+                   srcParFolder   = HyperPath.folderRecordFor(srcParent, false);
         assertNotNull(treeFolder, "tree folder record");
         assertNotNull(innerFolder, "inner folder record");
         assertNotNull(srcParFolder, "srcParent folder record");
@@ -3501,16 +3501,16 @@ public final class FileManagerTestRunner
         assertExists(destDeep, "dest deep.jpg");
 
         // Folder records should be preserved with proper parent/child structure
-        HDT_Folder destTreeFolder = HyperPath.getFolderFromFilePath(destTree, false);
+        HDT_Folder destTreeFolder = HyperPath.folderRecordFor(destTree, false);
         assertNotNull(destTreeFolder, "dest tree folder record");
         assertEquals(treeFolderID, destTreeFolder.getID(), "tree folder record ID preserved");
 
-        HDT_Folder destInnerFolder = HyperPath.getFolderFromFilePath(destInner, false);
+        HDT_Folder destInnerFolder = HyperPath.folderRecordFor(destInner, false);
         assertNotNull(destInnerFolder, "dest inner folder record");
         assertEquals(innerFolderID, destInnerFolder.getID(), "inner folder record ID preserved");
         assertEquals(destTreeFolder, destInnerFolder.parentFolder(), "inner should be child of tree");
 
-        HDT_Folder destDirFolder = HyperPath.getFolderFromFilePath(destDir, false);
+        HDT_Folder destDirFolder = HyperPath.folderRecordFor(destDir, false);
         assertNotNull(destDirFolder, "dest dir folder record");
         assertEquals(destDirFolder, destTreeFolder.parentFolder(), "tree should be child of destDir");
 
@@ -3552,7 +3552,7 @@ public final class FileManagerTestRunner
                  tracked  = dir.resolve("tracked.txt"),
                  loose    = dir.resolve("loose.txt");
 
-        HyperPath.getFolderFromFilePath(dir, true);
+        HyperPath.folderRecordFor(dir, true);
 
         // Create a record for tracked.txt
         HDT_RecordWithPath workFile = HyperPath.createRecordAssignedToPath(hdtWorkFile, tracked);
@@ -3562,13 +3562,13 @@ public final class FileManagerTestRunner
         assertTrue(loose.exists(), "loose.txt should exist on disk");
         assertTrue(HyperPath.getHyperPathSetForFilePath(loose).isEmpty(),
           "untracked file should have empty HyperPath set");
-        assertNull(HyperPath.getRecordFromFilePath(loose),
+        assertNull(HyperPath.existingFileRecordAt(loose),
           "untracked file should return null record");
 
         // tracked.txt should have a record
         assertFalse(HyperPath.getHyperPathSetForFilePath(tracked).isEmpty(),
           "tracked file should have non-empty HyperPath set");
-        assertEquals(workFile, HyperPath.getRecordFromFilePath(tracked),
+        assertEquals(workFile, HyperPath.existingFileRecordAt(tracked),
           "tracked file should return its WorkFile record");
       }
       catch (Exception e) { throw new AssertionError(e); }
@@ -3584,7 +3584,7 @@ public final class FileManagerTestRunner
                  dir     = srcDir.resolve("mixed"),
                  tracked = dir.resolve("tracked.txt");
 
-        HyperPath.getFolderFromFilePath(dir, true);
+        HyperPath.folderRecordFor(dir, true);
 
         HDT_RecordWithPath workFile = HyperPath.createRecordAssignedToPath(hdtWorkFile, tracked);
         int wfID = workFile.getID();
@@ -3606,7 +3606,7 @@ public final class FileManagerTestRunner
         // Moved loose file should still have no record
         assertTrue(HyperPath.getHyperPathSetForFilePath(destLoose).isEmpty(),
           "moved untracked file should still have empty HyperPath set");
-        assertNull(HyperPath.getRecordFromFilePath(destLoose),
+        assertNull(HyperPath.existingFileRecordAt(destLoose),
           "moved untracked file should still return null record");
       }
       catch (Exception e) { throw new AssertionError(e); }
@@ -3631,7 +3631,7 @@ public final class FileManagerTestRunner
     seq.thenRunAfterDelay(() ->
     {
       FilePath parentDir = testRoot.resolve("p27s114", "parent");
-      HDT_Folder parent = HyperPath.getFolderFromFilePath(parentDir, false);
+      HDT_Folder parent = HyperPath.folderRecordFor(parentDir, false);
 
       assertNotNull(parent, "parent folder record should exist");
 
@@ -3650,7 +3650,7 @@ public final class FileManagerTestRunner
 
       assertTrue(newDir.isDirectory(), "new folder should exist on disk");
 
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(newDir, false);
+      HDT_Folder folder = HyperPath.folderRecordFor(newDir, false);
       assertNotNull(folder, "new folder should have a record");
 
       FileManager fileManager = FileManager.instance();
@@ -3674,7 +3674,7 @@ public final class FileManagerTestRunner
     seq.thenRunAfterDelay(() ->
     {
       FilePath parentDir = testRoot.resolve("p27s114", "parent");
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(parentDir.resolve("newfolder"), false);
+      HDT_Folder folder = HyperPath.folderRecordFor(parentDir.resolve("newfolder"), false);
       FileManager fileManager = FileManager.instance();
 
       assertSame(folder, fileManager.folderTree.selectedRecord(),
@@ -3698,7 +3698,7 @@ public final class FileManagerTestRunner
 
       assertNotNull(row, "file row should be selected");
       assertEquals(parentDir.resolve("file.txt"), row.getFilePath(), "selected row should be the file");
-      assertSame(HyperPath.getFolderFromFilePath(parentDir, false), fileManager.folderTree.selectedRecord(),
+      assertSame(HyperPath.folderRecordFor(parentDir, false), fileManager.folderTree.selectedRecord(),
         "parent folder should be selected in the folder tree");
 
       selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
@@ -3716,7 +3716,7 @@ public final class FileManagerTestRunner
     {
       FilePath parentDir = createTestDir("p28s119", "parent");
 
-      HyperPath.getFolderFromFilePath(parentDir.resolve("doomed"), true);
+      HyperPath.folderRecordFor(parentDir.resolve("doomed"), true);
 
       assertExists(parentDir.resolve("doomed", "file.txt"), "doomed file");
 
@@ -3729,7 +3729,7 @@ public final class FileManagerTestRunner
     {
       FilePath parentDir = testRoot.resolve("p28s119", "parent"),
                doomedDir = parentDir.resolve("doomed");
-      HDT_Folder parent = HyperPath.getFolderFromFilePath(parentDir, false),
+      HDT_Folder parent = HyperPath.folderRecordFor(parentDir, false),
                  doomed = childFolderRecord(parent, "doomed");
 
       assertNotNull(parent, "parent folder record should exist");
@@ -3759,7 +3759,7 @@ public final class FileManagerTestRunner
       FilePath parentDir = testRoot.resolve("p28s119", "parent"),
                inuseDir  = parentDir.resolve("inuse"),
                workPdf   = inuseDir.resolve("work.pdf");
-      HDT_Folder parent = HyperPath.getFolderFromFilePath(parentDir, false);
+      HDT_Folder parent = HyperPath.folderRecordFor(parentDir, false);
 
       assertNull(childFolderRecord(parent, "doomed"), "deleted folder's record should be pruned");
       assertFalse(folderTreeShows(parent, "doomed"), "deleted folder's node should be pruned");
@@ -3767,7 +3767,7 @@ public final class FileManagerTestRunner
         "tree model should have purged the pruned folder's rows");
       assertSame(parent, FileManager.instance().folderTree.selectedRecord(), "parent folder should still be selected");
 
-      HyperPath.getFolderFromFilePath(inuseDir, true);
+      HyperPath.folderRecordFor(inuseDir, true);
       assertNotNull(HyperPath.createRecordAssignedToPath(hdtWorkFile, workPdf), "WorkFile record should be created");
 
       FileDeletion.ofDirWithContents(inuseDir).nonInteractiveLogErrors().execute();
@@ -3781,7 +3781,7 @@ public final class FileManagerTestRunner
     seq.thenRunAfterDelay(() ->
     {
       FilePath parentDir = testRoot.resolve("p28s119", "parent");
-      HDT_Folder parent = HyperPath.getFolderFromFilePath(parentDir, false),
+      HDT_Folder parent = HyperPath.folderRecordFor(parentDir, false),
                  inuse  = childFolderRecord(parent, "inuse");
       FileManager fileManager = FileManager.instance();
 
@@ -3819,8 +3819,8 @@ public final class FileManagerTestRunner
     {
       FilePath dir   = createTestDir("p29s124", "vanishing"),
                aside = extRoot.resolve("p29s124", "vanishing");
-      HDT_Folder parent = HyperPath.getFolderFromFilePath(dir.getParent(), false),
-                 folder = HyperPath.getFolderFromFilePath(dir, false);
+      HDT_Folder parent = HyperPath.folderRecordFor(dir.getParent(), false),
+                 folder = HyperPath.folderRecordFor(dir, false);
 
       assertNotNull(folder, "folder record should exist");
       assertNotSame(parent, folder, "folder should resolve to its own record while the directory exists");
@@ -3836,7 +3836,7 @@ public final class FileManagerTestRunner
         Files.move(dir.toPath(), aside.toPath());
 
         assertFalse(dir.exists(), "directory should be gone");
-        assertSame(folder, HyperPath.getFolderFromFilePath(dir, false),
+        assertSame(folder, HyperPath.folderRecordFor(dir, false),
           "vanished directory's path should resolve to its own record, not the parent's");
 
         Files.move(aside.toPath(), dir.toPath());
@@ -4003,7 +4003,7 @@ public final class FileManagerTestRunner
     seq.thenRunAfterDelay(() ->
     {
       FilePath dir = createTestDir("p32s131", "dir");
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(dir, false);
+      HDT_Folder folder = HyperPath.folderRecordFor(dir, false);
 
       assertNotNull(folder, "folder record should exist");
       assertExists(dir.resolve("file.txt"), "file in the folder");
@@ -4194,7 +4194,7 @@ public final class FileManagerTestRunner
                sub   = outer.resolve("sub"),
                inner = outer.resolve("inner.dat");
 
-      assertNotNull(HyperPath.getFolderFromFilePath(sub, true), "subfolder record should exist");
+      assertNotNull(HyperPath.folderRecordFor(sub, true), "subfolder record should exist");
       assertExists(sub.resolve("deep.txt"), "file in the subfolder");
       assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, inner), "MiscFile record should be created");
 
@@ -4208,8 +4208,8 @@ public final class FileManagerTestRunner
                sub    = outer.resolve("sub"),
                inner  = outer.resolve("inner.dat"),
                outer2 = testRoot.resolve("p33s139", "outer2");
-      HDT_Folder folder    = HyperPath.getFolderFromFilePath(outer, false),
-                 subFolder = HyperPath.getFolderFromFilePath(sub, false);
+      HDT_Folder folder    = HyperPath.folderRecordFor(outer, false),
+                 subFolder = HyperPath.folderRecordFor(sub, false);
       HDT_RecordWithPath miscFile = HyperPath.getHyperPathSetForFilePath(inner).iterator().next().getRecord();
       FileManager fileManager = FileManager.instance();
 
@@ -4233,14 +4233,14 @@ public final class FileManagerTestRunner
       assertEquals(outer2.resolve("inner.dat"), miscFile.filePath(), "misc. file record should follow its folder");
       assertTrue(HyperPath.getHyperPathSetForFilePath(outer2.resolve("inner.dat")).contains(miscFile.getPath()), "registry should track the file under the new name");
       assertTrue(HyperPath.getHyperPathSetForFilePath(inner).isEmpty(), "registry should have dropped the file's old path");
-      assertSame(subFolder, HyperPath.getFolderFromFilePath(outer2.resolve("sub"), false), "subfolder should resolve to the same record under the new name");
+      assertSame(subFolder, HyperPath.folderRecordFor(outer2.resolve("sub"), false), "subfolder should resolve to the same record under the new name");
     });
 
     // Step 141: A folder assigned to a note, then show its parent
     seq.thenRunAfterDelay(() ->
     {
       FilePath notedir = createTestDir("p33s141", "notedir");
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(notedir, false);
+      HDT_Folder folder = HyperPath.folderRecordFor(notedir, false);
 
       assertNotNull(folder, "folder record should exist");
 
@@ -4256,7 +4256,7 @@ public final class FileManagerTestRunner
     {
       FilePath notedir  = testRoot.resolve("p33s141", "notedir"),
                notedir2 = testRoot.resolve("p33s141", "notedir2");
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(notedir, false);
+      HDT_Folder folder = HyperPath.folderRecordFor(notedir, false);
       FileManager fileManager = FileManager.instance();
 
       assertNotNull(folder, "folder record should exist");
@@ -4329,7 +4329,7 @@ public final class FileManagerTestRunner
     {
       FilePath parent  = testRoot.resolve("p34s144", "parent"),
                outside = parent.resolve("outside");
-      HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(parent, false);
+      HDT_Folder parentFolder = HyperPath.folderRecordFor(parent, false);
 
       assertNotNull(parentFolder, "parent folder record should exist");
       assertTrue(outside.isDirectory(), "directory should still exist");
@@ -4382,7 +4382,7 @@ public final class FileManagerTestRunner
     seq.thenRunAfterDelay(() ->
     {
       FilePath empty = createTestDir("p34s148", "empty");
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(empty, false);
+      HDT_Folder folder = HyperPath.folderRecordFor(empty, false);
 
       assertNotNull(folder, "folder record should exist");
 
@@ -4397,7 +4397,7 @@ public final class FileManagerTestRunner
 
     seq.thenRunAfterDelay(() ->
     {
-      HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(testRoot.resolve("p34s148"), false);
+      HDT_Folder parentFolder = HyperPath.folderRecordFor(testRoot.resolve("p34s148"), false);
 
       assertNotNull(parentFolder, "parent folder record should exist");
       assertNull(db.folders.getByID(watcherIDHolder[0]), "deleted directory's folder record should be pruned");
@@ -4410,7 +4410,7 @@ public final class FileManagerTestRunner
     seq.thenRunAfterDelay(() ->
     {
       FilePath notedir = createTestDir("p34s150", "notedir");
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(notedir, false);
+      HDT_Folder folder = HyperPath.folderRecordFor(notedir, false);
 
       assertNotNull(folder, "folder record should exist");
 
@@ -4447,7 +4447,7 @@ public final class FileManagerTestRunner
     {
       FilePath notedir  = createTestDir("p34s152", "notedir"),
                notedir2 = testRoot.resolve("p34s152", "notedir2");
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(notedir, false);
+      HDT_Folder folder = HyperPath.folderRecordFor(notedir, false);
 
       assertNotNull(folder, "folder record should exist");
 
@@ -4480,7 +4480,7 @@ public final class FileManagerTestRunner
     {
       FilePath parent = createTestDir("p34s154", "parent"),
                pic    = parent.resolve("pic.jpg");
-      HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(parent, false);
+      HDT_Folder parentFolder = HyperPath.folderRecordFor(parent, false);
 
       assertNotNull(parentFolder, "parent folder record should exist");
       assertExists(pic, "picture");
@@ -4578,14 +4578,14 @@ public final class FileManagerTestRunner
     seq.thenRunAfterDelay(() ->
     {
       FilePath dir = createTestDir("p35s158", "dir");
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(dir, false);
+      HDT_Folder folder = HyperPath.folderRecordFor(dir, false);
 
       assertNotNull(folder, "folder record should exist");
 
       for (String name : List.of("decline.dat", "work.pdf", "pic.jpg", "plain.txt", "mixed.dat"))
         assertExists(dir.resolve(name), name);
 
-      assertNotNull(HyperPath.getFolderFromFilePath(dir.resolve("sub"), true), "subfolder record should exist");
+      assertNotNull(HyperPath.folderRecordFor(dir.resolve("sub"), true), "subfolder record should exist");
       assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, dir.resolve("decline.dat")), "MiscFile record for the declined file should be created");
       assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, dir.resolve("mixed.dat")), "MiscFile record for the mixed selection should be created");
 
@@ -4720,7 +4720,7 @@ public final class FileManagerTestRunner
                sub   = dir.resolve("sub"),
                plain = dir.resolve("plain.txt"),
                mixed = dir.resolve("mixed.dat");
-      HDT_Folder subFolder = HyperPath.getFolderFromFilePath(sub, false);
+      HDT_Folder subFolder = HyperPath.folderRecordFor(sub, false);
       FileManager fileManager = FileManager.instance();
 
       assertNotNull(subFolder, "subfolder record should exist");
@@ -4743,7 +4743,7 @@ public final class FileManagerTestRunner
       assertGone(mixed, "deleted misc. file");
       assertNull(db.folders.getByID(subID), "subfolder record should be deleted");
       assertNull(db.miscFiles.getByID(miscID), "misc. file record should be deleted");
-      assertSame(HyperPath.getFolderFromFilePath(dir, false), fileManager.folderTree.selectedRecord(), "folder should still be selected");
+      assertSame(HyperPath.folderRecordFor(dir, false), fileManager.folderTree.selectedRecord(), "folder should still be selected");
 
       PopupRobot.setDefaultResponse(mrOk);
     });
@@ -4798,7 +4798,7 @@ public final class FileManagerTestRunner
                file  = inuse.resolve("file.dat");
       FileManager fileManager = FileManager.instance();
 
-      assertNotNull(HyperPath.getFolderFromFilePath(inuse, true), "in-use folder record should exist");
+      assertNotNull(HyperPath.folderRecordFor(inuse, true), "in-use folder record should exist");
       assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, file), "MiscFile record should be created");
 
       fileManager.goToFilePath(inuse, true);
@@ -4860,7 +4860,7 @@ public final class FileManagerTestRunner
         assertExists(src.resolve(name), name);
 
       assertTrue(dest.isDirectory(), "destination folder");
-      assertNotNull(HyperPath.getFolderFromFilePath(movedir, true), "folder record for the folder to move should exist");
+      assertNotNull(HyperPath.folderRecordFor(movedir, true), "folder record for the folder to move should exist");
       assertNotNull(HyperPath.createRecordAssignedToPath(hdtMiscFile, movedir.resolve("inside.dat")), "MiscFile record should be created");
 
       FileManager.instance();  // show() is a no-op until the instance exists
@@ -4882,7 +4882,7 @@ public final class FileManagerTestRunner
       assertNotNull(row, "file row should be selected");
 
       fileManager.cutCopy(row, false);
-      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), false, false);
+      fileManager.paste(new FileRow(HyperPath.folderRecordFor(dest, false).getPath(), true), false, false);
 
       assertExists(dest.resolve("cut.txt"), "file at the destination");
       assertGone(file, "file at the source");
@@ -4903,7 +4903,7 @@ public final class FileManagerTestRunner
       assertNotNull(row, "file row should be selected");
 
       fileManager.cutCopy(row, true);
-      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), true, false);
+      fileManager.paste(new FileRow(HyperPath.folderRecordFor(dest, false).getPath(), true), true, false);
 
       assertExists(dest.resolve("copy.txt"), "copy at the destination");
       assertExists(file, "original at the source");
@@ -4916,7 +4916,7 @@ public final class FileManagerTestRunner
                dest    = testRoot.resolve("p36s166", "dest"),
                movedir = src.resolve("movedir"),
                inside  = movedir.resolve("inside.dat");
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(movedir, false);
+      HDT_Folder folder = HyperPath.folderRecordFor(movedir, false);
       HDT_RecordWithPath miscFile = HyperPath.getHyperPathSetForFilePath(inside).iterator().next().getRecord();
       FileManager fileManager = FileManager.instance();
 
@@ -4931,7 +4931,7 @@ public final class FileManagerTestRunner
       assertEquals(movedir, row.getFilePath(), "selected row should be the folder");
 
       fileManager.cutCopy(row, false);
-      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), false, false);
+      fileManager.paste(new FileRow(HyperPath.folderRecordFor(dest, false).getPath(), true), false, false);
 
       assertTrue(dest.resolve("movedir").isDirectory(), "folder at the destination");
       assertGone(movedir, "folder at the source");
@@ -4949,7 +4949,7 @@ public final class FileManagerTestRunner
 
       assertTrue(fileManager.moveCopy(entitiesOf(file), false, true), "moveCopy for a drag should succeed");
 
-      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), false, true);
+      fileManager.paste(new FileRow(HyperPath.folderRecordFor(dest, false).getPath(), true), false, true);
 
       assertExists(dest.resolve("drag.txt"), "dragged file at the destination");
       assertGone(file, "dragged file at the source");
@@ -4966,7 +4966,7 @@ public final class FileManagerTestRunner
 
       assertTrue(fileManager.moveCopy(entitiesOf(ext), true, true), "moveCopy for an outside drag should succeed");
 
-      fileManager.paste(new FileRow(HyperPath.getFolderFromFilePath(dest, false).getPath(), true), true, true);
+      fileManager.paste(new FileRow(HyperPath.folderRecordFor(dest, false).getPath(), true), true, true);
 
       assertExists(dest.resolve("ext.txt"), "copied file at the destination");
       assertExists(ext, "outside file left in place");
@@ -4997,9 +4997,9 @@ public final class FileManagerTestRunner
       FilePath a = testRoot.resolve("p37s172", "a"),
                b = testRoot.resolve("p37s172", "b"),
                c = testRoot.resolve("p37s172", "c");
-      HDT_Folder folderA = HyperPath.getFolderFromFilePath(a, false),
-                 folderB = HyperPath.getFolderFromFilePath(b, false),
-                 folderC = HyperPath.getFolderFromFilePath(c, false);
+      HDT_Folder folderA = HyperPath.folderRecordFor(a, false),
+                 folderB = HyperPath.folderRecordFor(b, false),
+                 folderC = HyperPath.folderRecordFor(c, false);
       FileManager fileManager = FileManager.instance();
 
       assertSame(folderA, fileManager.folderTree.selectedRecord(), "first folder should be selected");
@@ -5026,9 +5026,9 @@ public final class FileManagerTestRunner
       FilePath a = testRoot.resolve("p37s172", "a"),
                b = testRoot.resolve("p37s172", "b"),
                c = testRoot.resolve("p37s172", "c");
-      HDT_Folder folderA = HyperPath.getFolderFromFilePath(a, false),
-                 folderB = HyperPath.getFolderFromFilePath(b, false),
-                 folderC = HyperPath.getFolderFromFilePath(c, false);
+      HDT_Folder folderA = HyperPath.folderRecordFor(a, false),
+                 folderB = HyperPath.folderRecordFor(b, false),
+                 folderC = HyperPath.folderRecordFor(c, false);
       FileManager fileManager = FileManager.instance();
 
       assertNotNull(folderC, "third folder record should exist");
@@ -5775,7 +5775,7 @@ public final class FileManagerTestRunner
   private static FilePath createTestDir(String phase, String name)
   {
     FilePath dir = testRoot.resolve(phase, name);
-    HyperPath.getFolderFromFilePath(dir, true);
+    HyperPath.folderRecordFor(dir, true);
     return dir;
   }
 
@@ -5854,7 +5854,7 @@ public final class FileManagerTestRunner
   {
     assertTrue(FileManager.instance().moveCopy(items, false, false), "moveCopy failed");
 
-    HDT_Folder destFolder = HyperPath.getFolderFromFilePath(destDir, true);
+    HDT_Folder destFolder = HyperPath.folderRecordFor(destDir, true);
     assertNotNull(destFolder, "Destination folder record should exist: " + destDir);
 
     FileRow destRow = new FileRow(destFolder.getPath(), true);
@@ -5868,7 +5868,7 @@ public final class FileManagerTestRunner
   {
     assertTrue(FileManager.instance().moveCopy(items, true, false), "moveCopy(copy) failed");
 
-    HDT_Folder destFolder = HyperPath.getFolderFromFilePath(destDir, true);
+    HDT_Folder destFolder = HyperPath.folderRecordFor(destDir, true);
     assertNotNull(destFolder, "Destination folder record should exist: " + destDir);
 
     FileRow destRow = new FileRow(destFolder.getPath(), true);

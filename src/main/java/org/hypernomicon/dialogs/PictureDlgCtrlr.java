@@ -845,7 +845,7 @@ public class PictureDlgCtrlr extends ModalDialog
 
     if (FilePath.isEmpty(filePath)) return;
 
-    HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(filePath);
+    HDT_RecordWithPath existingRecord = HyperPath.existingFileRecordAt(filePath);
 
     if ((existingRecord != null) && (existingRecord != personHyperTab.activeRecord()))
     {
@@ -1016,7 +1016,7 @@ public class PictureDlgCtrlr extends ModalDialog
     }
     else
     {
-      HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(newFileDest);
+      HDT_RecordWithPath existingRecord = HyperPath.existingFileRecordAt(newFileDest);
 
       boolean replacingPictureForSamePerson = false;
 
@@ -1081,7 +1081,7 @@ public class PictureDlgCtrlr extends ModalDialog
         }
         else
         {
-          HDT_Folder destFolder = HyperPath.getFolderFromFilePath(newFileDest.getDirOnly(), true);
+          HDT_Folder destFolder = HyperPath.folderRecordFor(newFileDest.getDirOnly(), true);
 
           if (destFolder == null)
             return falseWithErrorPopup("Unable to find or create folder record for destination.");

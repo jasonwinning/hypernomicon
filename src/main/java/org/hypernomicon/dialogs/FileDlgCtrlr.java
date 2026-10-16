@@ -259,7 +259,7 @@ public class FileDlgCtrlr extends ModalDialog
 
     // See if the chosen file is currently assigned to a file record
 
-    HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(newSrc);
+    HDT_RecordWithPath existingRecord = HyperPath.existingFileRecordAt(newSrc);
 
     if (existingRecord != null)
     {
@@ -404,7 +404,7 @@ public class FileDlgCtrlr extends ModalDialog
     FilePath fileName = chkDontChangeFilename.isSelected() ? srcFilePath.getNameOnly() : FilePath.of(tfFileName.getText()),
              destFilePath = rbNeither.isSelected() ? srcFilePath.getDirOnly().resolve(fileName) : FilePath.of(tfNewPath.getText()).resolve(fileName);
 
-    HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(destFilePath);
+    HDT_RecordWithPath existingRecord = HyperPath.existingFileRecordAt(destFilePath);
 
     if ((existingRecord != null) && (existingRecord != curFileRecord))
       return falseWithErrorPopup(HyperPath.alreadyInUseMessage(destFilePath, existingRecord));
@@ -458,7 +458,7 @@ public class FileDlgCtrlr extends ModalDialog
       if (recordType == hdtWorkFile)
         curFileRecord.setName(tfRecordName.getText());
 
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
+      HDT_Folder folder = HyperPath.folderRecordFor(destFilePath.getDirOnly(), true);
       if (folder == null)
         return falseWithInternalErrorPopup(22937);
 

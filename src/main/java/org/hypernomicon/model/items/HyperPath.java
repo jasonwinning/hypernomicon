@@ -145,7 +145,7 @@ public class HyperPath
       return;
     }
 
-    folder = getFolderFromFilePath(filePath, false);
+    folder = folderRecordFor(filePath, false);
     assignNameInternal(filePath.getNameOnly());
   }
 
@@ -279,7 +279,7 @@ public class HyperPath
    * @param pageNumber The 1-based page number of interest, or {@code <= 0} if not applicable
    * @return The most specific record, or {@code null} if the file has no record association
    */
-  public static HDT_RecordWithFilePath resolveRecord(FilePath filePath, int pageNumber)
+  public static HDT_RecordWithFilePath resolveRecordForPage(FilePath filePath, int pageNumber)
   {
     Set<HyperPath> hyperPaths = getHyperPathSetForFilePath(filePath);
 
@@ -291,7 +291,7 @@ public class HyperPath
 
     // No associated work covers the page; fall back to the record that owns the file
 
-    return getRecordFromFilePath(filePath);
+    return existingFileRecordAt(filePath);
   }
 
 //---------------------------------------------------------------------------
@@ -312,7 +312,7 @@ public class HyperPath
 //---------------------------------------------------------------------------
 
   /**
-   * Look up (and optionally create) the {@link HDT_Folder} record for a filesystem directory path.
+   * Look up (and optionally create) the {@link HDT_Folder} record for a filesystem path.
    * <p>
    * The path must be inside the database root folder; if it is not, {@code null} is returned.
    * If a folder record already exists for the path (found via the {@link org.hypernomicon.util.file.FilePathRegistry FilePathRegistry}), it is
@@ -332,7 +332,7 @@ public class HyperPath
    * {@code createNewRecordFromState}) must be atomic to prevent duplicate records or stale
    * state when both threads attempt to create a folder record for the same path.
    *
-   * @param dirFilePath    The filesystem path of the directory. A path that has a folder record is
+   * @param filePath       The filesystem path of the directory. A path that has a folder record is
    *                       taken as a directory's whether or not the directory still exists on disk.
    *                       Otherwise, if it points to a file rather than a directory, it is normalized
    *                       to the containing directory first; a vanished directory whose record has
@@ -345,25 +345,25 @@ public class HyperPath
    *         outside the database root, does not exist on disk, or {@code doCreateRecord} is
    *         {@code false} and no record exists.
    */
-  public static synchronized HDT_Folder getFolderFromFilePath(FilePath dirFilePath, boolean doCreateRecord)
+  public static synchronized HDT_Folder folderRecordFor(FilePath filePath, boolean doCreateRecord)
   {
     // Look the path up as given before normalizing it: getDirOnly() can't tell a vanished directory
     // from a file and would resolve it to the parent folder, but a folder record settles the question
 
-    HDT_Folder folder = existingFolderRecordAtExactly(dirFilePath);
+    HDT_Folder folder = existingFolderRecordAtExactly(filePath);
     if (folder != null) return folder;
 
-    dirFilePath = dirFilePath.getDirOnly();
+    filePath = filePath.getDirOnly();
 
-    if (db.getRootPath().contains(dirFilePath) == false)  // the path is not in the database folder tree
+    if (db.getRootPath().contains(filePath) == false)  // the path is not in the database folder tree
       return null;
 
-    folder = existingFolderRecordAtExactly(dirFilePath);
+    folder = existingFolderRecordAtExactly(filePath);
     if (folder != null) return folder;
 
-    if ((doCreateRecord == false) || (dirFilePath.exists() == false)) return null;
+    if ((doCreateRecord == false) || (filePath.exists() == false)) return null;
 
-    HDT_Folder parentRecord = getFolderFromFilePath(dirFilePath.getParent(), true);
+    HDT_Folder parentRecord = folderRecordFor(filePath.getParent(), true);
 
     if (parentRecord == null) return null;
 
@@ -371,7 +371,7 @@ public class HyperPath
 
     try
     {
-      BasicFileAttributes attribs = Files.readAttributes(dirFilePath.toPath(), BasicFileAttributes.class);
+      BasicFileAttributes attribs = Files.readAttributes(filePath.toPath(), BasicFileAttributes.class);
 
       recordState.creationDate = attribs.creationTime    ().toInstant();
       recordState.modifiedDate = attribs.lastModifiedTime().toInstant();
@@ -395,7 +395,7 @@ public class HyperPath
       return null;
     }
 
-    newFolder.getPath().assignInternal(parentRecord, dirFilePath.getNameOnly());
+    newFolder.getPath().assignInternal(parentRecord, filePath.getNameOnly());
 
     return newFolder;
   }
@@ -405,7 +405,7 @@ public class HyperPath
 
   /**
    * Returns the folder record registered for exactly the given path, whether or not the directory
-   * still exists on disk. Unlike {@link #getFolderFromFilePath(FilePath, boolean)}, this never
+   * still exists on disk. Unlike {@link #folderRecordFor(FilePath, boolean)}, this never
    * normalizes a file's path to its containing directory and never creates a record.
    *
    * @param filePath The filesystem path of the directory
@@ -434,7 +434,7 @@ public class HyperPath
       return null;
     }
 
-    HDT_Folder folder = getFolderFromFilePath(filePath.getDirOnly(), true);
+    HDT_Folder folder = folderRecordFor(filePath.getDirOnly(), true);
     if (folder == null) return null;
 
     HDT_RecordWithPath file = db.createNewBlankRecord(type);
@@ -446,7 +446,17 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_RecordWithFilePath getRecordFromFilePath(FilePath filePath)
+  /**
+   * Returns the file record registered for the given path: a work file, misc. file or person (whose
+   * path is the picture), or {@code null} if there is none. The path is looked up as given, and only
+   * records whose path is a file are considered, so a directory's path yields null even when it has
+   * a folder record. The record at a work file's path is the work file, never a work; for the work
+   * covering a page of the file, see {@link #resolveRecordForPage(FilePath, int)}.
+   *
+   * @param filePath The path to look up
+   * @return The file record registered for that path, or {@code null}
+   */
+  public static HDT_RecordWithFilePath existingFileRecordAt(FilePath filePath)
   {
     return findFirstHaving(getHyperPathSetForFilePath(filePath), hyperPath ->
       (hyperPath.getRecord() instanceof HDT_RecordWithFilePath fileRecord) ? fileRecord : null);

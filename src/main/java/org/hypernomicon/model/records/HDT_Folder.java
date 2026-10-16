@@ -363,7 +363,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithFolderPa
     try
     {
       childFilePath.createDirectory();
-      childFolder = HyperPath.getFolderFromFilePath(childFilePath, true);
+      childFolder = HyperPath.folderRecordFor(childFilePath, true);
     }
     catch (FileAlreadyExistsException e)
     {
