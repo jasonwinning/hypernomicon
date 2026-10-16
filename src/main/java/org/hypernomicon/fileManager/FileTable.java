@@ -251,7 +251,7 @@ class FileTable extends DragNDropContainer<FileRow>
 
     nullSwitch(findFirst(rows, row -> row.getFilePath().getNameOnly().equals(nameOnly)), row ->
     {
-      fileTV.getSelectionModel().select(row);
+      fileTV.getSelectionModel().clearAndSelect(rows.indexOf(row));
       HyperTable.scrollToSelection(fileTV, true);
     });
   }
