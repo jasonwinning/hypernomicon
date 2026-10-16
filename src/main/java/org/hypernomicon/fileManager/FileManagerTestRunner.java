@@ -4596,7 +4596,8 @@ public final class FileManagerTestRunner
       work.setName("Test work p35s158");
       work.addWorkFile(workFile.getID());
 
-      // The picture goes to the person the Persons tab is showing, assigned the way the tab does it
+      // The picture goes to the person the Persons tab is showing, assigned the way the tab does it, so that the tab's
+      // own copy of the path holds it too
 
       HDT_Person person = assertInstanceOf(HDT_Person.class, ui.activeRecord(), "Persons tab should be showing a person");
 
@@ -4674,7 +4675,8 @@ public final class FileManagerTestRunner
       PopupRobot.setDefaultResponse(mrOk);
     });
 
-    // Step 161: Deleting a person's picture keeps the person record
+    // Step 161: Deleting a person's picture keeps the person record but takes the picture off it, including the Persons
+    // tab's own copy of the path while that person is showing, which saving the tab would otherwise assign again
     seq.thenRunAfterDelay(() ->
     {
       FilePath dir = testRoot.resolve("p35s158", "dir"),
@@ -4689,6 +4691,8 @@ public final class FileManagerTestRunner
 
       HDT_Person person = assertInstanceOf(HDT_Person.class, row.getRecord(), "row should carry the person record");
 
+      assertSame(person, ui.activeRecord(), "Persons tab should be showing the person, so that it holds the picture path too");
+
       PopupRobot.clear();
       PopupRobot.setDefaultResponse(mrYes);  // "is assigned as a picture file for a person record. Permanently delete it anyway?"
 
@@ -4697,8 +4701,15 @@ public final class FileManagerTestRunner
       assertEquals(1, PopupRobot.getInvocationCount(), "should ask once");
       assertGone(pic, "deleted picture");
       assertSame(person, db.persons.getByID(person.getID()), "person record should survive its picture's deletion");
+      assertTrue(FilePath.isEmpty(person.filePath()), "person should no longer have a picture");
+
+      assertFalse(ui.cantSaveRecord(), "the Persons tab should save");
+      assertTrue(FilePath.isEmpty(person.filePath()), "saving the Persons tab must not assign the deleted picture again");
+      assertTrue(HyperPath.getHyperPathSetForFilePath(pic).isEmpty(), "registry should no longer map the deleted picture to the person");
 
       PopupRobot.setDefaultResponse(mrOk);
+
+      db.deleteRecord(person);  // its path no longer names a fixture, so the cleanup would not find it
     });
 
     // Step 162: A selection of a folder, an untracked file and a misc. file's file goes in one operation

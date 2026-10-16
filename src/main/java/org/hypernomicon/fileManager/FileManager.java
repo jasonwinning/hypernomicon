@@ -1047,8 +1047,9 @@ public final class FileManager extends NonmodalWindow
   /**
    * Deletes the selected rows, or the given row when nothing is selected, after confirming, along
    * with the misc. file and work file records assigned to the deleted files and the record trees
-   * of the deleted folders; a note assigned to a deleted folder keeps its text but loses its
-   * folder. Package-private so the test runner can drive it.
+   * of the deleted folders. A person whose picture is deleted keeps the record and loses the
+   * picture; a note assigned to a deleted folder keeps its text but loses its folder.
+   * Package-private so the test runner can drive it.
    */
   void delete(FileRow fileRow)
   {
@@ -1188,7 +1189,9 @@ public final class FileManager extends NonmodalWindow
 
             for (HyperPath setPath : entry.getValue())
             {
-              if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
+              if (setPath.getRecordType() == hdtPerson)
+                unassignPicture((HDT_Person) setPath.getRecord());
+              else if (setPath.getRecordType() != hdtNone)
                 db.deleteRecord(setPath.getRecord());
             }
           }
@@ -1207,6 +1210,22 @@ public final class FileManager extends NonmodalWindow
       refresh();
       ui.update();
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * A person whose picture file has been deleted keeps the record and loses the picture: the
+   * record's path is cleared, and so is the Persons tab's own copy of it when that person is
+   * showing there, since saving the tab would otherwise assign the deleted file again.
+   */
+  private static void unassignPicture(HDT_Person person)
+  {
+    if (ui.personHyperTab().activeRecord() == person)
+      ui.personHyperTab().assignPicture(null, false);
+
+    person.getPath().clear(false);  // the file is already gone
   }
 
 //---------------------------------------------------------------------------
