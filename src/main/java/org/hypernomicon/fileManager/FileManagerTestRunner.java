@@ -51,8 +51,9 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
  * is deleted from outside it (Phase 31), the deletion of a note's folder through the File
  * Manager (Phase 32), renaming through the File Manager (Phase 33), the watcher's reactions
  * to changes made outside the program (Phase 34), the deletion flow's variants (Phase 35),
- * the clipboard and drag variants of paste (Phase 36), and the folder history with the
- * Refresh button (Phase 37), launched from the Test Console's File Manager tab.
+ * the clipboard and drag variants of paste (Phase 36), the folder history with the Refresh
+ * button (Phase 37), and the single warning for several in-use files deleted outside at once
+ * (Phase 38), launched from the Test Console's File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
@@ -5061,6 +5062,62 @@ public final class FileManagerTestRunner
       FileManager.close(false);
     });
 
+    // =====================================================================
+    //  Phase 38: Outside Deletion of Several In-Use Files at Once (2 steps)
+    // =====================================================================
+
+    int[] severalIDs = new int[2];  // the two misc. file records' IDs, from step 175 to step 176
+
+    // Step 175: Two files in use by misc. file records, deleted outside the program within one debounce window
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parent = createTestDir("p38s175", "parent"),
+               first  = parent.resolve("first.dat"),
+               second = parent.resolve("second.dat");
+
+      assertExists(first,  "first in-use file");
+      assertExists(second, "second in-use file");
+
+      HDT_RecordWithPath firstFile  = HyperPath.createRecordAssignedToPath(hdtMiscFile, first),
+                         secondFile = HyperPath.createRecordAssignedToPath(hdtMiscFile, second);
+
+      assertNotNull(firstFile,  "MiscFile record for the first file should be created");
+      assertNotNull(secondFile, "MiscFile record for the second file should be created");
+
+      severalIDs[0] = firstFile .getID();
+      severalIDs[1] = secondFile.getID();
+
+      assertTrue(folderTreeWatcher.isRunning(), "FolderTreeWatcher should be running");
+
+      PopupRobot.clear();
+
+      try
+      {
+        Files.delete(first .toPath());
+        Files.delete(second.toPath());
+      }
+      catch (IOException e) { throw new AssertionError(e); }
+    });
+
+    // Step 176: One warning names both files. For several files it is the long-message dialog, which the robot records
+    // like any other popup; the records are kept
+    seq.setDelayMS(6500);
+
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath parent = testRoot.resolve("p38s175", "parent");
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "the two deletions should produce one warning");
+      assertNotNull(PopupRobot.getLastMessage(), "watcher should have warned");
+      assertTrue(PopupRobot.getLastMessage().contains("have been deleted or moved from outside the program"), "warning should be about several outside deletions");
+      assertTrue(PopupRobot.getLastMessage().contains(parent.resolve("first.dat" ).toDbRelativeStr()), "warning should list the first file");
+      assertTrue(PopupRobot.getLastMessage().contains(parent.resolve("second.dat").toDbRelativeStr()), "warning should list the second file");
+      assertNotNull(db.miscFiles.getByID(severalIDs[0]), "first file's record should survive");
+      assertNotNull(db.miscFiles.getByID(severalIDs[1]), "second file's record should survive");
+    });
+
+    seq.setDelayMS(400);
+
     // Start the sequence
     seq.start();
   }
@@ -5697,6 +5754,11 @@ public final class FileManagerTestRunner
     setupDir(testRoot, "p37s172", "a");
     setupDir(testRoot, "p37s172", "b");
     setupDir(testRoot, "p37s172", "c");
+
+    // Phase 38: Outside deletion of several in-use files at once (Steps 175-176)
+
+    setupFile(testRoot, "p38s175", "parent", "first.dat");
+    setupFile(testRoot, "p38s175", "parent", "second.dat");
   }
 
 //---------------------------------------------------------------------------

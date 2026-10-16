@@ -829,12 +829,19 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 
   /**
-   * Displays a dialog with a scrollable text area for long messages.
+   * Displays a dialog with a scrollable text area for long messages. While {@link PopupRobot} is
+   * active, no dialog is shown: the robot records the title and text as an information popup.
    * @param title The window title
    * @param text The text to display in the scrollable text area
    */
   public static void longMessagePopup(String title, String text)
   {
+    if (PopupRobot.isActive())
+    {
+      PopupRobot.record(title + System.lineSeparator() + text, AlertType.INFORMATION);
+      return;
+    }
+
     new LongMessageDlgCtrlr(title, text).showModal();
   }
 
@@ -843,12 +850,20 @@ public final class UIUtil
   /**
    * Displays a dialog with a scrollable text area and a Refresh button. The
    * initial text comes from {@code textSupplier}, and each Refresh click
-   * replaces the displayed text with a fresh call to it.
+   * replaces the displayed text with a fresh call to it. While {@link PopupRobot}
+   * is active, no dialog is shown: the robot records the title and the text as an
+   * information popup.
    * @param title The window title
    * @param textSupplier Supplies the text, re-invoked on every Refresh click
    */
   public static void longMessagePopup(String title, Supplier<String> textSupplier)
   {
+    if (PopupRobot.isActive())
+    {
+      PopupRobot.record(title + System.lineSeparator() + textSupplier.get(), AlertType.INFORMATION);
+      return;
+    }
+
     new LongMessageDlgCtrlr(title, textSupplier).showModal();
   }
 
@@ -857,7 +872,8 @@ public final class UIUtil
   /**
    * Displays a dialog with an icon, header message, and scrollable text area,
    * similar in appearance to a standard {@link Alert} but with a text area
-   * for displaying longer content.
+   * for displaying longer content. While {@link PopupRobot} is active, no dialog
+   * is shown: the robot records the header and the text with the alert type.
    * @param title The window title
    * @param alertType The type of alert icon to display (WARNING, ERROR, INFORMATION, etc.)
    * @param headerText The header message to display next to the icon
@@ -865,6 +881,12 @@ public final class UIUtil
    */
   public static void longMessagePopup(String title, AlertType alertType, String headerText, String text)
   {
+    if (PopupRobot.isActive())
+    {
+      PopupRobot.record(headerText + System.lineSeparator() + text, alertType);
+      return;
+    }
+
     new LongMessageDlgCtrlr(title, alertType, headerText, text).showModal();
   }
 
