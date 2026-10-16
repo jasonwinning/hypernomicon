@@ -574,9 +574,12 @@ public class TestConsoleDlgCtrlr extends ModalDialog
   {
     if (requireTransientDBLoaded() == false) return;
 
-    btnRunFMTest.setDisable(true);
+    // The console is modal, and the main window refuses to navigate while a modal dialog is open, so the
+    // suite runs with the console hidden; a fresh console opens once the sequence has finished
 
-    FileManagerTestRunner.runTests(db.getRootPath("_test_fm"), () -> btnSetupFMTest.setDisable(false));
+    stage.hide();
+
+    Platform.runLater(() -> FileManagerTestRunner.runTests(db.getRootPath("_test_fm"), () -> new TestConsoleDlgCtrlr().showModal()));
   }
 
 //---------------------------------------------------------------------------
