@@ -55,8 +55,9 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
  * to changes made outside the program (Phase 34), the deletion flow's variants (Phase 35),
  * the clipboard and drag variants of paste (Phase 36), the folder history with the Refresh
  * button (Phase 37), the single warning for several in-use files deleted outside at once
- * (Phase 38), and the record table catching up with records changed outside the File Manager
- * (Phase 39), launched from the Test Console's File Manager tab.
+ * (Phase 38), the record table catching up with records changed outside the File Manager
+ * (Phase 39), and the record table dropping a listed record deleted outside it (Phase 40),
+ * launched from the Test Console's File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
@@ -5219,6 +5220,87 @@ public final class FileManagerTestRunner
       FileManager.close(false);
     });
 
+    // =====================================================================
+    //  Phase 40: The Record Table After a Listed Record Is Deleted Elsewhere (3 steps)
+    // =====================================================================
+
+    HDT_Note[] listedNotes = new HDT_Note[2];  // the two notes, from step 181 to step 183
+    int[] deletedNoteID = new int[1];          // the deleted note's ID, to prove the record is gone
+
+    // Step 181: A folder assigned to two notes; open the File Manager on its parent
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = createTestDir("p40s181", "dir");
+      HDT_Folder folder = HyperPath.folderRecordFor(dir, false);
+
+      assertNotNull(folder, "folder record should exist");
+
+      HDT_Note first  = db.createNewBlankRecord(hdtNote),
+               second = db.createNewBlankRecord(hdtNote);
+
+      first .setName("Test note p40s181 first");
+      second.setName("Test note p40s181 second");
+
+      first .folder.set(folder);
+      second.folder.set(folder);
+
+      listedNotes[0] = first;
+      listedNotes[1] = second;
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show(dir.getParent());
+    });
+
+    // Step 182: Select the folder's row, keep the first note selected, and delete the second from outside the File
+    // Manager, as a merge or another tab's deletion does. Deleting a record does not count as modifying it or the
+    // records that pointed at it, so the table keeps the deleted note's row until the window regains focus. Before
+    // the change, nothing owed a rebuild and the row stayed until Refresh
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = testRoot.resolve("p40s181", "dir");
+      HDT_Note first  = listedNotes[0],
+               second = listedNotes[1];
+      FileManager fileManager = FileManager.instance();
+      HyperTable recordTable = fileManager.getRecordTable();
+
+      fileManager.goToFilePath(dir, true);
+
+      assertNotNull(recordTable.getRowByRecord(first ), "record table should list the first note");
+      assertNotNull(recordTable.getRowByRecord(second), "record table should list the second note");
+      assertEquals(2, recordTable.dataRowCount(), "record table should list the two notes");
+
+      assertNotNull(recordTable.selectRowByRecord(first), "first note's row should be selectable");
+
+      deletedNoteID[0] = second.getID();
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrNo);  // no prompt is expected; one about a file must not delete it
+
+      db.deleteRecord(second);
+
+      PopupRobot.setDefaultResponse(mrOk);
+
+      assertEquals(2, recordTable.dataRowCount(), "record table should keep the deleted note's row until a refresh runs");
+      assertSame(first, recordTable.selectedRecord(), "first note should still be selected");
+
+      fileManager.requestOwedRefresh();  // what the window gaining focus does
+    });
+
+    // Step 183: The deleted note's row is gone; the surviving note is still listed and still selected
+    seq.thenRunAfterDelay(() ->
+    {
+      HDT_Note first = listedNotes[0];
+      HyperTable recordTable = FileManager.instance().getRecordTable();
+
+      assertNull(db.notes.getByID(deletedNoteID[0]), "second note's record should be deleted");
+      assertEquals(1, recordTable.dataRowCount(), "record table should list only the surviving note after the focus gain");
+      assertNotNull(recordTable.getRowByRecord(first), "record table should still list the first note");
+      assertSame(first, recordTable.selectedRecord(), "the first note should stay selected through the rebuild");
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
     seq.setDelayMS(400);
 
     // Start the sequence
@@ -5866,6 +5948,10 @@ public final class FileManagerTestRunner
     // Phase 39: The record table after records change outside the File Manager (Steps 177-180)
 
     setupDir(testRoot, "p39s177", "dir");
+
+    // Phase 40: The record table after a listed record is deleted elsewhere (Steps 181-183)
+
+    setupDir(testRoot, "p40s181", "dir");
   }
 
 //---------------------------------------------------------------------------

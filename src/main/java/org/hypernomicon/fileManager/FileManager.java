@@ -227,10 +227,11 @@ public final class FileManager extends NonmodalWindow
 
     onShown = FileManager::refresh;
 
-    // The record table lists records that are mostly edited from the main window, so a change to any
-    // record leaves the table owing a rebuild, which the next focus gain carries out
+    // The record table lists records that are mostly edited, and sometimes deleted, from the main
+    // window, so either leaves the table owing a rebuild, which the next focus gain carries out
 
-    db.addModifyHandler(record -> setNeedRefresh(RefreshLevel.RECORD_TABLE));
+    db.addModifyHandler(FileManager::recordChanged);
+    db.addDeleteHandler(FileManager::recordChanged);
 
     stage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -1469,6 +1470,27 @@ public final class FileManager extends NonmodalWindow
   public static void refresh()
   {
     if (instance != null) instance.requestRefresh(RefreshLevel.REFRESH);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The modify and delete handler: a record the record table may list has changed, so the table owes
+   * a rebuild. Folder records are skipped, since the table never lists them and a prune deletes them
+   * from inside a refresh, which would otherwise owe another one. Deleting a record does not count as
+   * modifying it or the records that pointed at it (its pointers are cleared without modification
+   * tracking), so the delete handlers are the table's only notice of a deletion; without one, a
+   * deleted record's row stays until the next rebuild, resolving to nothing or, once its ID is
+   * reused, to another record. The main window's own deletion (MainCtrlr.deleteCurrentRecord) refreshes
+   * this window at once, which absorbs what this owes; the handler is for the deletions that do not
+   * pass through it, such as an institution deleted from its tab's context menu. A delete handler may
+   * be given an expired record, so only its type is read.
+   */
+  private static void recordChanged(HDT_Record record)
+  {
+    if (record.getType() != hdtFolder)
+      setNeedRefresh(RefreshLevel.RECORD_TABLE);
   }
 
 //---------------------------------------------------------------------------
