@@ -1482,9 +1482,9 @@ public final class FileManager extends NonmodalWindow
    * modifying it or the records that pointed at it (its pointers are cleared without modification
    * tracking), so the delete handlers are the table's only notice of a deletion; without one, a
    * deleted record's row stays until the next rebuild, resolving to nothing or, once its ID is
-   * reused, to another record. The main window's own deletion (MainCtrlr.deleteCurrentRecord) refreshes
-   * this window at once, which absorbs what this owes; the handler is for the deletions that do not
-   * pass through it, such as an institution deleted from its tab's context menu. A delete handler may
+   * reused, to another record. A deletion the user asks for (MainCtrlr.deleteRecord) refreshes this
+   * window at once, which absorbs what this owes; the handler is for the deletions that do not pass
+   * through it, such as a subfield or a file type deleted once no record uses it. A delete handler may
    * be given an expired record, so only its type is read.
    */
   private static void recordChanged(HDT_Record record)

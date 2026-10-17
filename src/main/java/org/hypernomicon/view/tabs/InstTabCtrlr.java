@@ -105,9 +105,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htSubInst.addContextMenuItem("Delete this institution record", HDT_Institution.class, inst ->
     {
       if (ui.cantSaveRecord()) return;
-      if (confirmDialog("Are you sure you want to delete this record?", false) == false) return;
-      db.deleteRecord(inst);
-      ui.update();
+      ui.deleteRecord(inst, true);
     });
 
     htSubInst.addChangeOrderMenuItem(true, () -> curInst.subInstitutions.reorder(htSubInst.saveToList(0, hdtInstitution), true));

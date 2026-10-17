@@ -446,7 +446,7 @@ public final class MainCtrlr
     mnuFindPreviousInName.setOnAction(event -> tree().find(false, true ));
 
     btnSaveAll           .setOnAction(event -> saveAllToXML(true, true, false, false));
-    btnDelete            .setOnAction(event -> deleteCurrentRecord(true));
+    btnDelete            .setOnAction(event -> nullSwitch(activeRecord(), record -> deleteRecord(record, true)));
     btnRevert            .setOnAction(event -> update());
 
     btnPrevResult        .setOnAction(event -> previousSearchResult());
@@ -1999,19 +1999,24 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void deleteCurrentRecord(boolean confirm)
+  /**
+   * Deletes a record the user chose: checks that its type can be deleted this way, confirms when
+   * asked to, deletes it, then shows the current view again and refreshes the File Manager. The
+   * Delete button comes through here with the active record, and so does a control that deletes a
+   * record of its own choosing, such as a row's context menu or an import's cancel, rather than
+   * calling {@code db.deleteRecord} itself, so that every deletion the user asks for is confirmed
+   * and followed up the same way.
+   */
+  public void deleteRecord(HDT_Record record, boolean confirm)
   {
-    HDT_Record record = activeRecord();
-
-    if (record == null) return;
-
+    boolean isActiveRecord = record == activeRecord();
     RecordType type = record.getType();
 
     switch (type)
     {
       case hdtGlossary :
 
-        if (activeTabEnum() != treeTabEnum)
+        if (isActiveRecord && (activeTabEnum() != treeTabEnum))
         {
           infoPopup("Glossary records can only be deleted from the tree tab.");
           return;
@@ -2044,7 +2049,7 @@ public final class MainCtrlr
         "Are you sure you want to delete this record?";
 
       String name = record.defaultChoiceText();
-      if (name.isBlank())
+      if (name.isBlank() && isActiveRecord)
         name = activeTab().recordName();
 
       if (confirmDialog("Type: " + getTypeName(type) + '\n' +
@@ -3771,7 +3776,7 @@ public final class MainCtrlr
       if (fileRow != null)
         miscFile.getPath().clear(false);
 
-      deleteCurrentRecord(false);
+      deleteRecord(miscFile, false);
     }
   }
 
@@ -3887,7 +3892,7 @@ public final class MainCtrlr
       }
     }
 
-    boolean deleteRecord = work == null;
+    boolean workIsNew = work == null;
 
     if (work == null)
     {
@@ -3923,8 +3928,8 @@ public final class MainCtrlr
     if (workHyperTab().showWorkDialog(null, false, filePathToUse, bdToUse, newEntryChoice, newEntryType))
       return true;
 
-    if (deleteRecord)
-      deleteCurrentRecord(false);
+    if (workIsNew)
+      deleteRecord(work, false);
 
     return false;
   }

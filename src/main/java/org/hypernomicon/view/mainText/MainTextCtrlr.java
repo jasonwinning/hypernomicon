@@ -661,12 +661,12 @@ public class MainTextCtrlr
     if (keyType == hdtWork)
     {
       if (ui.workHyperTab().showWorkDialog(null, false) == false)
-        ui.deleteCurrentRecord(false);
+        ui.deleteRecord(keyRecord, false);
     }
     else
     {
       if (ui.fileHyperTab().showFileDialog(null, false) == false)
-        ui.deleteCurrentRecord(false);
+        ui.deleteRecord(keyRecord, false);
     }
   }
 
