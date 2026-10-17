@@ -278,6 +278,9 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     if (online && (type != hdtFolder))
       db.updateMentioner(this);
+
+    if (db.isOnline() && db.hasRecordModifyHandlers())
+      db.getRecordModifyHandlers().forEach(handler -> handler.accept(this));
   }
 
 //---------------------------------------------------------------------------

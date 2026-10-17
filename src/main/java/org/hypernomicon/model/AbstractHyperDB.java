@@ -193,7 +193,8 @@ public abstract class AbstractHyperDB
   private final EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
   private final EnumMap<Tag, EnumSet<RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
 
-  private final List<Consumer<HDT_Record>> recordDeleteHandlers          = new ArrayList<>();
+  private final List<Consumer<HDT_Record>> recordDeleteHandlers          = new ArrayList<>(),
+                                           recordModifyHandlers          = new ArrayList<>();
   private final List<Runnable>             dbCloseHandlers               = new ArrayList<>(),
                                            dbLoadedHandlers              = new ArrayList<>(),
                                            dbPreChangeHandlers           = new ArrayList<>(),
@@ -304,6 +305,8 @@ public abstract class AbstractHyperDB
   public void addChangeRecordIDHandler(ChangeRecordIDHandler handler)                       { changeRecordIDHandlers.add(handler); }
   public boolean hasRecordDeleteHandlers()                                                  { return recordDeleteHandlers.isEmpty() == false; }
   public Stream<Consumer<HDT_Record>> getRecordDeleteHandlers()                             { return recordDeleteHandlers.stream(); }
+  public boolean hasRecordModifyHandlers()                                                  { return recordModifyHandlers.isEmpty() == false; }
+  public Stream<Consumer<HDT_Record>> getRecordModifyHandlers()                             { return recordModifyHandlers.stream(); }
 
   /**
    * Register a handler that runs when a record is deleted. Handlers are invoked on
@@ -312,6 +315,17 @@ public abstract class AbstractHyperDB
    * the record's ID or data; use it only for identity comparisons and UI cleanup.
    */
   public void addDeleteHandler(Consumer<HDT_Record> handler)                                { recordDeleteHandlers.add(handler); }
+
+  /**
+   * Register a handler that runs each time a record is modified ({@link HDT_Record#modifyNow})
+   * while the database is online. Unlike delete handlers, these run synchronously on the thread
+   * making the change, often while {@code globalLock} is held (the relation lists and pointers call
+   * {@code modifyNow} before releasing it), and many times over: several times for one edit, and in
+   * bulk during imports and syncs. A handler must therefore be cheap and thread-safe, and must not
+   * call back into the database; the usual one just notes that something changed, for the UI to
+   * act on later.
+   */
+  public void addModifyHandler(Consumer<HDT_Record> handler)                                { recordModifyHandlers.add(handler); }
 
   public boolean isOnline () { return state == DBState.ONLINE; }
   public boolean isOffline() { return state != DBState.ONLINE; }

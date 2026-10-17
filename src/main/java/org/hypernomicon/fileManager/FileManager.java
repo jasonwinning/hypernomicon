@@ -104,10 +104,11 @@ public final class FileManager extends NonmodalWindow
 
   private List<AbstractEntityWithPath> dragPaths = null;
   private List<? extends AbstractEntityWithPath> markedRows = null;
-  private FilePath srcPathToHilite = null;
+  private FilePath srcPathToHilite = null,
+                   recordTablePath = null;  // The path whose records the record table was last filled with
   private HDT_Folder curFolder;
 
-  private enum RefreshLevel { NONE, REFRESH, PRUNE_AND_REFRESH }
+  private enum RefreshLevel { NONE, RECORD_TABLE, REFRESH, PRUNE_AND_REFRESH }
 
   /** Guards {@link #pendingRefresh}, {@link #deferredRefresh} and {@link #lastRefreshTime}, which the
    *  refresh-coalescing logic reads and writes from the watcher and FX threads. */
@@ -118,21 +119,33 @@ public final class FileManager extends NonmodalWindow
    *  requests one. */
   private RefreshLevel pendingRefresh = RefreshLevel.NONE, deferredRefresh = RefreshLevel.NONE;
 
-  private boolean clipboardCopying, alreadyRefreshing = false, suppressNeedRefresh = false, programmaticSelectionChange = false;
+  private boolean clipboardCopying, alreadyRefreshing = false, suppressNeedRefresh = false, programmaticSelectionChange = false, showingAllRecords = false;
   private long lastRefreshTime = 0;
 
 //---------------------------------------------------------------------------
 
-  FileRow getFolderRow()                { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).getFirst()); }
-  FileRow selectedFileRow()             { return fileTV.getSelectionModel().getSelectedItem(); }
-  public static void clearHistory()     { instance.history.clear(); }
+  FileRow getFolderRow()                       { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).getFirst()); }
+  FileRow selectedFileRow()                    { return fileTV.getSelectionModel().getSelectedItem(); }
+  HyperTable getRecordTable()                  { return recordTable; }  // Make accessible to test runner
 
-  public static void setNeedRefresh()         { setNeedRefresh(RefreshLevel.REFRESH          ); }
-  public static void setNeedPruneAndRefresh() { setNeedRefresh(RefreshLevel.PRUNE_AND_REFRESH); }
-
+  public static void clearHistory()            { instance.history.clear(); }
+  public static void setNeedRefresh()          { setNeedRefresh(RefreshLevel.REFRESH          ); }
+  public static void setNeedPruneAndRefresh()  { setNeedRefresh(RefreshLevel.PRUNE_AND_REFRESH); }
   public static void close(boolean exitingApp) { close(instance, exitingApp); }
 
   private List<? extends AbstractEntityWithPath> getSrcPaths(boolean dragging) { return dragging ? dragPaths : markedRows; }
+
+  /**
+   * Whether the Preview Window should show a record's own file rather than the selected file row's.
+   * This asks the disk, which no other preview source does (they go by the record type and
+   * {@code pathNotEmpty()} or {@code canPreview()}, and leave a missing file to the preview to report),
+   * because only the File Manager has a fallback: the row's file, which exists because it came from
+   * the directory listing. A record whose file is gone, such as a misc. file deleted outside the
+   * program with its record kept, therefore yields the row's file instead of a missing-file state.
+   * Not for use elsewhere; the existence check would hide "Show in Preview Window" for a work whose
+   * file is missing, and would cost a disk access per row in tables.
+   */
+  private static boolean hasFileToPreview(HDT_Record record) { return (record instanceof HDT_RecordWithFilePath rwfp) && nullSwitch(rwfp.filePath(), false, FilePath::isFile); }
 
 //---------------------------------------------------------------------------
 
@@ -214,16 +227,17 @@ public final class FileManager extends NonmodalWindow
 
     onShown = FileManager::refresh;
 
+    // The record table lists records that are mostly edited from the main window, so a change to any
+    // record leaves the table owing a rebuild, which the next focus gain carries out
+
+    db.addModifyHandler(record -> setNeedRefresh(RefreshLevel.RECORD_TABLE));
+
     stage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false))
         return;
 
-      RefreshLevel level;
-
-      synchronized (refreshLock) { level = deferredRefresh; }
-
-      if (level != RefreshLevel.NONE) requestRefresh(level);
+      requestOwedRefresh();
     });
 
     stage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
@@ -313,23 +327,11 @@ public final class FileManager extends NonmodalWindow
 
       if (newValue == oldValue) return;
 
-      // Exactly one preview per selection: record-row selection fires the record-table
-      // listener, whose own preview call is suppressed while the guard is up; the
-      // explicit calls below are the single authoritative preview for this selection.
-
-      PreviewWindow.disablePreviewUpdating = true;
-
-      updateRecordTable(newValue, false);
-      boolean recordRowSelected = selectNonBlankRecordRow();
-
-      PreviewWindow.disablePreviewUpdating = false;
+      boolean recordRowSelected = updateRecordTableAndSelect(newValue);
 
       history.updateCurrent(new FolderHistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
 
-      if (recordRowSelected)
-        setPreviewFromRecordTable();
-      else
-        PreviewWindow.setPreview(pvsManager, newValue.getFilePath());
+      setPreviewForSelection(newValue, recordRowSelected);
     });
 
     recordTable.setOnShowMore(() -> updateRecordTable(selectedFileRow(), true));
@@ -1492,6 +1494,23 @@ public final class FileManager extends NonmodalWindow
 //---------------------------------------------------------------------------
 
   /**
+   * What the window gaining focus does: requests the refresh {@link #setNeedRefresh} has recorded
+   * as owed, if there is one. Package-private so the test runner can drive it without moving the
+   * focus.
+   */
+  void requestOwedRefresh()
+  {
+    RefreshLevel level;
+
+    synchronized (refreshLock) { level = deferredRefresh; }
+
+    if (level != RefreshLevel.NONE) requestRefresh(level);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Requests a refresh at the given level. Thread-safe; can be called from any thread. The refresh
    * runs on the FX thread right away if none ran within {@link #REFRESH_THROTTLE_MS}, and otherwise
    * once that window has passed; a request arriving while one is already scheduled only raises the
@@ -1546,6 +1565,8 @@ public final class FileManager extends NonmodalWindow
    * need a refresh right away pass the level they need. A prune runs even while the window is
    * hidden; the rebuild of the tree and tables is skipped while the window is hidden, since
    * showing it requests a refresh of its own, and while a rebuild is already in progress.
+   * At {@code RECORD_TABLE}, the level a change to any record owes, only the record table is
+   * rebuilt, since the folder tree and the file table show only what is on disk.
    */
   private void runPendingRefresh(RefreshLevel atLeast)
   {
@@ -1580,6 +1601,15 @@ public final class FileManager extends NonmodalWindow
 
     try
     {
+
+  // If only records changed, rebuild just the record table
+  // ------------------------------------------------------
+
+      if (level == RefreshLevel.RECORD_TABLE)
+      {
+        refreshRecordTable();
+        return;
+      }
 
   // Re-sort the folder tree and recreate its cells
   // ----------------------------------------------
@@ -1680,17 +1710,21 @@ public final class FileManager extends NonmodalWindow
 
   /**
    * Selects an appropriate record row based on the file row selected, preferring a record with
-   * some content in its description. Selection only: this may fire the record-table selection
-   * listener, whose preview call the caller is expected to have suppressed
-   * ({@code PreviewWindow.disablePreviewUpdating}); the caller issues exactly one preview
-   * afterward based on the return value. (Previously this method previewed internally as well,
-   * and one file-table selection could issue two preview requests through the two paths.)
+   * some content in its description. A record row that is already selected stays selected: it is
+   * the one {@link #updateRecordTable} kept selected through a rebuild. Selection only: this may
+   * fire the record-table selection listener, whose preview call the caller is expected to have
+   * suppressed ({@code PreviewWindow.disablePreviewUpdating}); the caller issues exactly one
+   * preview afterward based on the return value. (Previously this method previewed internally as
+   * well, and one file-table selection could issue two preview requests through the two paths.)
    *
    * @return True if the selected row's record has a corresponding file (for displaying in the
    *         Preview window); false otherwise
    */
   private boolean selectNonBlankRecordRow()
   {
+    HDT_Record selectedRecord = recordTable.selectedRecord();
+    if (selectedRecord != null) return hasFileToPreview(selectedRecord);
+
     HyperTableRow rowToPick = null;
 
     for (HyperTableRow row : recordTable.dataRows())
@@ -1701,10 +1735,7 @@ public final class FileManager extends NonmodalWindow
       if (record.hasDesc() && strNotNullOrBlank(((HDT_RecordWithDescription) record).getDesc().getPlain()))
       {
         recordTable.selectRow(row);
-
-        FilePath filePath = (record instanceof HDT_RecordWithPath recordWithPath) ? recordWithPath.filePath() : null;
-
-        return (filePath != null) && filePath.isFile();
+        return hasFileToPreview(record);
       }
 
       if ((rowToPick == null) && (record instanceof HDT_RecordWithPath recordWithPath) && recordWithPath.pathNotEmpty())
@@ -1715,9 +1746,7 @@ public final class FileManager extends NonmodalWindow
       return false;
 
     recordTable.selectRow(rowToPick);
-
-    FilePath filePath = ((HDT_RecordWithPath)rowToPick.getRecord()).filePath();
-    return (filePath != null) && filePath.isFile();
+    return hasFileToPreview(rowToPick.getRecord());
   }
 
 //---------------------------------------------------------------------------
@@ -1808,6 +1837,9 @@ public final class FileManager extends NonmodalWindow
    *       record as the first row, then shows its relatives. The caller is responsible for
    *       preview handling in this case as well.</li>
    * </ol>
+   * Filling the table again for the path it already shows, as a refresh does, keeps the user's
+   * place in it: the record that was selected stays selected, and once "show more" has been used,
+   * every relative stays listed.
    *
    * @param fileRow     the selected row in the file table, or null if no file is selected
    * @param showingMore if true, retrieves all relatives with no limit (triggered by "show more")
@@ -1816,9 +1848,16 @@ public final class FileManager extends NonmodalWindow
   {
     HDT_RecordWithPath recordForRelatives;
     LinkedHashSet<HDT_Record> relatives = new LinkedHashSet<>();
+    FilePath filePath = fileRow == null ? nullSwitch(curFolder, null, HDT_Folder::filePath) : fileRow.getFilePath();
     boolean hasMore,
             gettingNotesForFile = (fileRow != null) && (fileRow.isDirectory() == false),
-            hasFileRecord = false;
+            hasFileRecord = false,
+            samePath = (filePath != null) && filePath.equals(recordTablePath);
+
+    HDT_Record recordToKeep = samePath ? recordTable.selectedRecord() : null;
+
+    recordTablePath = filePath;
+    showingAllRecords = showingMore || (samePath && showingAllRecords);
 
     recordTable.clear();
 
@@ -1845,7 +1884,7 @@ public final class FileManager extends NonmodalWindow
     if (hasFileRecord == false)
       clearRecordDesc();
 
-    hasMore = db.getRelatives(recordForRelatives, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, gettingNotesForFile);
+    hasMore = db.getRelatives(recordForRelatives, relatives, showingAllRecords ? -1 : ReadOnlyCell.INCREMENTAL_ROWS, gettingNotesForFile);
 
     if (hasFileRecord)
     {
@@ -1879,17 +1918,84 @@ public final class FileManager extends NonmodalWindow
       row.setCellValue(1, relative, displayText);
     }
 
+    if (recordToKeep != null)
+      recordTable.selectRowByRecord(recordToKeep);
+
     if (hasFileRecord == false)
     {
       // selectNonBlankRecordRow only selects; issue the preview (or the clear) here.
-      // When this runs under the file-table listener's guard, both calls are
-      // suppressed and the listener issues the single preview itself.
+      // When this runs under the guard in updateRecordTableAndSelect, both calls are
+      // suppressed and its caller issues the single preview itself.
 
       if (selectNonBlankRecordRow())
         setPreviewFromRecordTable();
       else
         PreviewWindow.clearPreview(pvsManager);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Fills the record table for the file row and selects a record row in it, with previewing
+   * suppressed throughout. Exactly one preview per selection: selecting a record row fires the
+   * record-table listener, whose own preview call is suppressed while the guard is up, and the
+   * caller then issues the single authoritative preview with {@link #setPreviewForSelection}.
+   *
+   * @param fileRow the selected row in the file table, or null if no file is selected
+   * @return True if the selected record has a file of its own to preview
+   */
+  private boolean updateRecordTableAndSelect(FileRow fileRow)
+  {
+    PreviewWindow.disablePreviewUpdating = true;
+
+    updateRecordTable(fileRow, false);
+    boolean recordRowSelected = selectNonBlankRecordRow();
+
+    PreviewWindow.disablePreviewUpdating = false;
+
+    return recordRowSelected;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Issues the one preview for a selection made by {@link #updateRecordTableAndSelect}: the
+   * selected record's file if it has one, and otherwise the file row's own file. A folder row,
+   * or no file row at all, clears the preview.
+   */
+  private void setPreviewForSelection(FileRow fileRow, boolean recordRowSelected)
+  {
+    if (recordRowSelected)
+      setPreviewFromRecordTable();
+    else if (fileRow == null)
+      PreviewWindow.clearPreview(pvsManager);
+    else
+      PreviewWindow.setPreview(pvsManager, fileRow.getFilePath());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Rebuilds the record table for the selected file row after records changed, keeping the
+   * user's place in it (see {@link #updateRecordTable}). The folder tree and the file table are
+   * left alone, and so is the preview unless what it should show has changed.
+   */
+  private void refreshRecordTable()
+  {
+    FileRow fileRow = selectedFileRow();
+    HDT_Record recordBefore = recordTable.selectedRecord();
+    boolean previewedRecordBefore = hasFileToPreview(recordBefore),
+            recordRowSelected     = updateRecordTableAndSelect(fileRow);
+
+    // The preview shows the selected record's file if it has one, and otherwise the file row's.
+    // Issuing the same preview again would take it back to its start page.
+
+    if ((recordRowSelected != previewedRecordBefore) || (recordRowSelected && (recordTable.selectedRecord() != recordBefore)))
+      setPreviewForSelection(fileRow, recordRowSelected);
   }
 
 //---------------------------------------------------------------------------

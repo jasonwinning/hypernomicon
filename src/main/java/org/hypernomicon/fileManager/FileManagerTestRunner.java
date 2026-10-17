@@ -38,6 +38,8 @@ import org.hypernomicon.testTools.FileLockHelper;
 import org.hypernomicon.util.PopupRobot;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.file.deletion.FileDeletion;
+import org.hypernomicon.view.wrappers.HyperTable;
+import org.hypernomicon.view.wrappers.HyperTableRow;
 
 //---------------------------------------------------------------------------
 
@@ -52,8 +54,9 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
  * Manager (Phase 32), renaming through the File Manager (Phase 33), the watcher's reactions
  * to changes made outside the program (Phase 34), the deletion flow's variants (Phase 35),
  * the clipboard and drag variants of paste (Phase 36), the folder history with the Refresh
- * button (Phase 37), and the single warning for several in-use files deleted outside at once
- * (Phase 38), launched from the Test Console's File Manager tab.
+ * button (Phase 37), the single warning for several in-use files deleted outside at once
+ * (Phase 38), and the record table catching up with records changed outside the File Manager
+ * (Phase 39), launched from the Test Console's File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
@@ -61,7 +64,8 @@ import org.hypernomicon.util.file.deletion.FileDeletion;
  * {@link FileManager#delete}, {@link FileManager#rename(FileRow, String)},
  * {@link FileManager#goToFilePath}, {@link FileManager#selectRows},
  * {@link FileManager#userRequestsToGoBackward}, {@link FileManager#userRequestsToGoForward},
- * {@link FileManager#openFileRow}, and the {@link FileRow} constructor.</p>
+ * {@link FileManager#openFileRow}, {@link FileManager#requestOwedRefresh},
+ * {@link FileManager#getRecordTable}, and the {@link FileRow} constructor.</p>
  *
  * <p>All test files are created under the transient database's
  * {@code _test_fm/} directory (internal) and a sibling {@code _test_fm_ext/}
@@ -5118,6 +5122,105 @@ public final class FileManagerTestRunner
 
     seq.setDelayMS(400);
 
+    // =====================================================================
+    //  Phase 39: The Record Table After Records Change Outside the File Manager (4 steps)
+    // =====================================================================
+
+    HDT_Note[] assignedNotes = new HDT_Note[2];  // the two notes, from step 178 to step 180
+    FileRow[] folderRowHolder = new FileRow[1];  // the folder's row, from step 178 to step 179
+
+    // Step 177: A folder without notes; open the File Manager on its parent
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = createTestDir("p39s177", "dir");
+
+      assertNotNull(HyperPath.folderRecordFor(dir, false), "folder record should exist");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show(dir.getParent());
+    });
+
+    // Steps 178 to 180 each request a refresh that the throttle may defer by up to 500 ms; let it land
+    // before the next step, so that no refresh but the one each step asks for runs in between
+    seq.setDelayMS(1000);
+
+    // Step 178: Select the folder's row, then assign the folder to two notes from outside the File Manager, as the
+    // Note tab and "Assign to note record" do. Nothing tells the record table until the window regains focus.
+    // Before the change, the focus gain found no refresh owed, and the table stayed empty until Refresh
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = testRoot.resolve("p39s177", "dir");
+      HDT_Folder folder = HyperPath.folderRecordFor(dir, false);
+      FileManager fileManager = FileManager.instance();
+      HyperTable recordTable = fileManager.getRecordTable();
+
+      fileManager.goToFilePath(dir, true);
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "folder row should be selected");
+      assertEquals(dir, row.getFilePath(), "selected row should be the folder");
+      assertEquals(0, recordTable.dataRowCount(), "record table should list nothing for a folder without notes");
+
+      folderRowHolder[0] = row;
+
+      HDT_Note first  = db.createNewBlankRecord(hdtNote),
+               second = db.createNewBlankRecord(hdtNote);
+
+      first .setName("Test note p39s177 first");
+      second.setName("Test note p39s177 second");
+
+      first .folder.set(folder);
+      second.folder.set(folder);
+
+      assignedNotes[0] = first;
+      assignedNotes[1] = second;
+
+      assertNull(recordTable.getRowByRecord(first), "record table should not list the note until a refresh runs");
+
+      fileManager.requestOwedRefresh();  // what the window gaining focus does
+    });
+
+    // Step 179: Both notes are listed, and only the record table was rebuilt: the folder's row is the same object,
+    // which a full refresh would have replaced. Then the user picks the second note, and the first is renamed from outside
+    seq.thenRunAfterDelay(() ->
+    {
+      HDT_Note first  = assignedNotes[0],
+               second = assignedNotes[1];
+      FileManager fileManager = FileManager.instance();
+      HyperTable recordTable = fileManager.getRecordTable();
+
+      assertNotNull(recordTable.getRowByRecord(first ), "record table should list the first note after the focus gain");
+      assertNotNull(recordTable.getRowByRecord(second), "record table should list the second note after the focus gain");
+      assertSame(folderRowHolder[0], fileManager.selectedFileRow(), "file table should be left alone, with the folder's row still selected");
+      assertSame(first, recordTable.selectedRecord(), "the table's own pick should be the first note, the first row with a path");
+
+      assertNotNull(recordTable.selectRowByRecord(second), "second note's row should be selectable");
+
+      first.setName("Test note p39s177 first, renamed");
+
+      fileManager.requestOwedRefresh();
+    });
+
+    // Step 180: The new name shows, so the table was rebuilt, and the second note is still selected rather than the
+    // table's own pick. Before the change, every rebuild selected the first row with a description or a path again
+    seq.thenRunAfterDelay(() ->
+    {
+      HDT_Note first  = assignedNotes[0],
+               second = assignedNotes[1];
+      HyperTable recordTable = FileManager.instance().getRecordTable();
+      HyperTableRow firstRow = recordTable.getRowByRecord(first);
+
+      assertNotNull(firstRow, "record table should still list the first note");
+      assertEquals("Test note p39s177 first, renamed", firstRow.getText(1), "record table should show the first note's new name");
+      assertSame(second, recordTable.selectedRecord(), "the second note should stay selected through the rebuild");
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
+    seq.setDelayMS(400);
+
     // Start the sequence
     seq.start();
   }
@@ -5759,6 +5862,10 @@ public final class FileManagerTestRunner
 
     setupFile(testRoot, "p38s175", "parent", "first.dat");
     setupFile(testRoot, "p38s175", "parent", "second.dat");
+
+    // Phase 39: The record table after records change outside the File Manager (Steps 177-180)
+
+    setupDir(testRoot, "p39s177", "dir");
   }
 
 //---------------------------------------------------------------------------
