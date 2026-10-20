@@ -1534,9 +1534,9 @@ public final class FileManager extends NonmodalWindow
 
   /**
    * Requests a refresh at the given level. Thread-safe; can be called from any thread. The refresh
-   * runs on the FX thread right away if none ran within {@link #REFRESH_THROTTLE_MS}, and otherwise
-   * once that window has passed; a request arriving while one is already scheduled only raises the
-   * scheduled level.
+   * runs on the FX thread right away if no refresh above {@code RECORD_TABLE} ran within
+   * {@link #REFRESH_THROTTLE_MS}, and otherwise once that window has passed; a request arriving
+   * while one is already scheduled only raises the scheduled level.
    */
   private void requestRefresh(RefreshLevel level)
   {
@@ -1581,7 +1581,9 @@ public final class FileManager extends NonmodalWindow
   /**
    * Runs on the FX thread. Performs the pending refresh, raised to at least the given level and to
    * the level {@link #setNeedRefresh} has recorded as owed, and stamps the throttle clock so that
-   * requests arriving right afterward are throttled as usual.
+   * requests arriving right afterward are throttled as usual. A records-only refresh leaves the
+   * clock alone: the throttle exists to merge bursts of full rebuilds, and a full refresh requested
+   * just after a records-only one should not have to wait.
    * The throttle's callbacks pass {@code NONE}: they run whatever has been requested, and do
    * nothing when a refresh run in the meantime has already satisfied the request. Callers that
    * need a refresh right away pass the level they need. A prune runs even while the window is
@@ -1606,7 +1608,8 @@ public final class FileManager extends NonmodalWindow
       if (level == RefreshLevel.NONE)
         return;
 
-      lastRefreshTime = System.currentTimeMillis();
+      if (level != RefreshLevel.RECORD_TABLE)
+        lastRefreshTime = System.currentTimeMillis();
     }
 
   // Prune deleted folders from the tree
