@@ -19,8 +19,8 @@ package org.hypernomicon.fts;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.SequencedSet;
 
 import org.hypernomicon.util.file.FilePath;
 
@@ -33,13 +33,13 @@ import org.hypernomicon.util.file.FilePath;
  * Sections written by OneNote 2007 have the revision-store structure of later sections
  * but predate the format Microsoft documented, and the parser's tree walk rejects them at
  * the first object declaration whose reserved bits are set (Tika issue TIKA-3194, open
- * since 2020). Tika has a string scrape of its own for differently packaged legacy files,
- * but it keeps a run only when it holds at least two words, and a 2007 section stores
- * each paragraph as its own run, so a page of one-word entries (a list of labels, say)
- * would lose every one of them. Such a section stores plain-ASCII paragraphs as 8-bit strings
- * and the rest as UTF-16LE, so both are collected here. The words of the notes are
- * recovered; their order and structure are not, which is acceptable for search. A few
- * short runs that binary data happens to spell come along with them.
+ * since 2020). Tika has a string scrape of its own, which it falls back to when it cannot
+ * read a section's structure, but it keeps a run only when it holds at least two words,
+ * and a 2007 section stores each paragraph as its own run, so a page of one-word entries
+ * (a list of labels, say) would lose every one of them. Such a section stores plain-ASCII
+ * paragraphs as 8-bit strings and the rest as UTF-16LE, so both are collected here. The
+ * words of the notes are recovered; their order and structure are not, which is acceptable
+ * for search. A few short runs that binary data happens to spell come along with them.
  */
 final class OneNoteStringScrape
 {
@@ -47,15 +47,16 @@ final class OneNoteStringScrape
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Accumulates the characters of one kind of run and keeps each finished run that is
-   *  long enough and holds a letter. */
+  /** Accumulates the characters of one kind of run and keeps the text each finished run
+   *  shows (see {@link OneNoteStringScrape#shownText}) if the run is long enough and that
+   *  text holds a letter. */
   private static final class RunBuilder
   {
     private final StringBuilder run = new StringBuilder();
     private final int minLength;
-    private final List<String> runs;
+    private final SequencedSet<String> runs;
 
-    private RunBuilder(int minLength, List<String> runs)
+    private RunBuilder(int minLength, SequencedSet<String> runs)
     {
       this.minLength = minLength;
       this.runs = runs;
@@ -65,8 +66,13 @@ final class OneNoteStringScrape
 
     private void end()
     {
-      if ((run.length() >= minLength) && run.chars().anyMatch(Character::isLetter))
-        runs.add(run.toString().strip());
+      if (run.length() >= minLength)
+      {
+        String text = shownText(run.toString().strip());
+
+        if (text.chars().anyMatch(Character::isLetter))
+          runs.add(text);
+      }
 
       run.setLength(0);
     }
@@ -77,6 +83,11 @@ final class OneNoteStringScrape
 
   private static final int MIN_ASCII_RUN_LENGTH = 4,   // long enough for a short word; shorter runs are mostly chance
                            MIN_UTF16_RUN_LENGTH = 3;   // a code unit is two bytes, so a chance run is far rarer
+
+  /** Begins the field OneNote stores for a hyperlink: the link's target follows in quotes,
+   *  then the text the link shows. A field always begins a run, since the marker character
+   *  that precedes it is outside the Latin range. */
+  private static final String HYPERLINK_FIELD_START = "HYPERLINK \"";
 
 //---------------------------------------------------------------------------
 
@@ -101,10 +112,14 @@ final class OneNoteStringScrape
    * holds a letter. Text stored in one encoding is not also read as the other: ASCII text
    * read as UTF-16 gives code units outside the Latin range, and UTF-16 text read as
    * bytes gives single characters between zeros.
+   * <p>
+   * A run that repeats an earlier one is left out, since a 2007 section repeats some
+   * strings, such as the name of a paragraph's font, with every paragraph; and a hyperlink
+   * field gives only the text the link shows, not its target.
    */
   public static String scrape(FilePath filePath) throws IOException
   {
-    List<String> runs = new ArrayList<>();
+    SequencedSet<String> runs = new LinkedHashSet<>();
 
     RunBuilder ascii     = new RunBuilder(MIN_ASCII_RUN_LENGTH, runs),
                utf16Even = new RunBuilder(MIN_UTF16_RUN_LENGTH, runs),
@@ -147,6 +162,20 @@ final class OneNoteStringScrape
     utf16Odd.end();
 
     return String.join("\n", runs);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The text a run shows: for a hyperlink field, what follows the quoted target, or nothing
+   *  if the run ends inside the target; for any other run, the run itself. */
+  private static String shownText(String run)
+  {
+    if (run.startsWith(HYPERLINK_FIELD_START) == false) return run;
+
+    int targetEnd = run.indexOf('"', HYPERLINK_FIELD_START.length());
+
+    return targetEnd < 0 ? "" : run.substring(targetEnd + 1).strip();
   }
 
 //---------------------------------------------------------------------------

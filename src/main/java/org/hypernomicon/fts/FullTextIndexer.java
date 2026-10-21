@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.text.BreakIterator;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,6 +40,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.sun.management.OperatingSystemMXBean;
+
+import org.apache.commons.io.FilenameUtils;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.LowerCaseFilter;
@@ -55,6 +58,9 @@ import org.apache.lucene.store.*;
 import org.apache.lucene.util.BytesRef;
 
 import org.apache.tika.Tika;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 
 import javafx.application.Platform;
 
@@ -161,7 +167,11 @@ public class FullTextIndexer
                            // creeps up across files (native allocator / V8 retention that pdf.destroy() does not
                            // return to the OS).
 
-                           EXTRACTOR_RECYCLE_INTERVAL   = 250;
+                           EXTRACTOR_RECYCLE_INTERVAL   = 250,
+
+                           // The shortest passage the context pane shows from a OneNote section (see oneNotePassageBreaks)
+
+                           ONENOTE_PASSAGE_MIN_LENGTH   = 150;
 
   private static final long COMMIT_INTERVAL_MS          = 30_000,
                             CONSISTENCY_INTERVAL_MS     = 300_000,
@@ -195,7 +205,12 @@ public class FullTextIndexer
 
                               // Follows the name of a zero-byte file in the statistics list of files without extractable text
 
-                              EMPTY_FILE_SUFFIX = " (empty file)";
+                              EMPTY_FILE_SUFFIX = " (empty file)",
+
+                              // Ends each warning Tika's OneNote parser records when it gives up on a section's
+                              // structure and falls back to a string dump of its own
+
+                              ONENOTE_STRING_DUMP_WARNING_ENDING = "falling back to legacy text dump";
 
   private static final Object TIKA_LOCK = new Object();
 
@@ -313,6 +328,8 @@ public class FullTextIndexer
   void setIndexableExtensionsForTesting(Set<String> extensions) { assertThatThisIsUnitTestThread(); indexableExtensionsForTesting = extensions; }
 
   private Set<String> indexableExtensions() { return nullSwitch(indexableExtensionsForTesting, INDEXABLE_EXTENSIONS); }
+
+  private static boolean isOneNoteSection(String relPath) { return "one".equalsIgnoreCase(FilenameUtils.getExtension(relPath)); }
 
   /** Whether the Lucene index is open and searchable; true in every state except {@code CLOSED}. */
   public boolean isQueryable()                     { return state != IndexerState.CLOSED; }
@@ -2225,37 +2242,66 @@ public class FullTextIndexer
 
   private ExtractionResult extractViaTika(FilePath filePath)
   {
-    try
+    // The same parse as Tika.parseToString(Path), with a Metadata object of our own so that
+    // the warnings the parser records can be read afterward
+
+    Metadata metadata = new Metadata();
+    String text;
+
+    try (TikaInputStream stream = TikaInputStream.get(filePath.toPath(), metadata))
     {
-      String text = tika.parseToString(filePath.toPath());
-      return new ExtractionResult(text, null, 0);
+      text = tika.parseToString(stream, metadata);
     }
     catch (Exception e)
     {
       if (getMediaType(filePath).toString().contains("onenote"))
-        return scrapeOneNoteSection(filePath, e);
+        return scrapeOneNoteSection(filePath, "OneNote parser rejected " + filePath + " (" + getThrowableMessage(e) + ")");
 
       System.out.println("Full-text indexer: failed to extract " + filePath + ": " + getThrowableMessage(e));
       return null;
     }
+
+    if (fellBackToTikasOneNoteStringDump(metadata))
+      return scrapeOneNoteSection(filePath, "OneNote parser gave up on the structure of " + filePath);
+
+    return new ExtractionResult(text, null, 0);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * Tika's OneNote parser rejects sections written by OneNote 2007, whose revision store
-   * predates the documented format (Tika issue TIKA-3194), and throws. The readable runs
-   * of such a section give the words of the notes, though not their order, so they are
-   * collected here in the parser's place; see {@link OneNoteStringScrape}.
+   * Whether Tika's OneNote parser gave up on a section's structure and fell back to a string
+   * dump of its own. Since Tika 4.1.0 it does that instead of throwing, and the warning it
+   * records is the only sign. Its dump keeps a run only when the run holds at least two
+   * words, so a one-word entry would be lost.
    */
-  private static ExtractionResult scrapeOneNoteSection(FilePath filePath, Exception parseFailure)
+  private static boolean fellBackToTikasOneNoteStringDump(Metadata metadata)
+  {
+    return Arrays.stream(metadata.getValues(TikaCoreProperties.TIKA_META_EXCEPTION_WARNING))
+                 .anyMatch(warning -> warning.endsWith(ONENOTE_STRING_DUMP_WARNING_ENDING));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Tika's OneNote parser cannot read the structure of sections written by OneNote 2007,
+   * whose revision store predates the documented format (Tika issue TIKA-3194); it then
+   * falls back to a string dump of its own that drops one-word entries, or throws. The
+   * readable runs of such a section give the words of the notes, though not their order,
+   * so they are collected here in the parser's place; see {@link OneNoteStringScrape}.
+   *
+   * @param whyScraped begins the log line saying that the section was indexed from its
+   *                   strings, and names the file
+   */
+  private static ExtractionResult scrapeOneNoteSection(FilePath filePath, String whyScraped)
   {
     try
     {
       String text = OneNoteStringScrape.scrape(filePath);
 
-      System.out.println("Full-text indexer: OneNote parser rejected " + filePath + " (" + getThrowableMessage(parseFailure) + "); indexed the strings found in the file instead");
+      System.out.println("Full-text indexer: " + whyScraped + "; indexed the strings found in the file instead");
       return new ExtractionResult(text, null, 0);
     }
     catch (Exception e)
@@ -3279,11 +3325,7 @@ public class FullTextIndexer
         if (topDocs.scoreDocs.length == 0) return List.of();
 
         PageAwareFormatter formatter = new PageAwareFormatter();
-
-        UnifiedHighlighter highlighter = UnifiedHighlighter.builder(tempSearcher, tempAnalyzer)
-          .withFormatter(formatter)
-          .withMaxLength(Integer.MAX_VALUE - 1)
-          .build();
+        UnifiedHighlighter highlighter = highlighterBuilder(tempSearcher, tempAnalyzer, formatter).build();
 
         String pageOffsetsStr = reader.storedFields().document(topDocs.scoreDocs[0].doc).get("pageOffsets");
 
@@ -3406,7 +3448,9 @@ public class FullTextIndexer
   /**
    * Highlights a batch of previously returned light search results. Re-looks up
    * each document by path to get a current doc ID, loads pageOffsets, and runs
-   * the {@link UnifiedHighlighter} with the POSTINGS strategy.
+   * the {@link UnifiedHighlighter} with the POSTINGS strategy. Passages are
+   * sentences, except in a OneNote section, whose passages are runs of whole
+   * lines (see {@link #oneNotePassageBreaks}).
    *
    * @param queryStr     the same Lucene query string used in the original search
    * @param lightResults results from {@link #searchLight} with null {@code pageMatches}
@@ -3470,10 +3514,8 @@ public class FullTextIndexer
       {
         PageAwareFormatter formatter = new PageAwareFormatter();
 
-        UnifiedHighlighter highlighter = UnifiedHighlighter.builder(searcher, analyzer)
-          .withFormatter(formatter)
-          .withMaxLength(Integer.MAX_VALUE - 1)
-          .build();
+        UnifiedHighlighter highlighter        = highlighterBuilder(searcher, analyzer, formatter).build(),
+                           oneNoteHighlighter = highlighterBuilder(searcher, analyzer, formatter).withBreakIterator(FullTextIndexer::oneNotePassageBreaks).build();
 
         StoredFields storedFields = searcher.storedFields();
 
@@ -3488,7 +3530,9 @@ public class FullTextIndexer
           Document doc = storedFields.document(docID, Set.of("pageOffsets"));
 
           ScoreDoc scoreDoc = new ScoreDoc(docID, light.score());
-          highlighted.add(buildResult(light.path(), doc.get("pageOffsets"), scoreDoc, query, formatter, highlighter, maxPassages));
+          UnifiedHighlighter fileHighlighter = isOneNoteSection(light.path()) ? oneNoteHighlighter : highlighter;
+
+          highlighted.add(buildResult(light.path(), doc.get("pageOffsets"), scoreDoc, query, formatter, fileHighlighter, maxPassages));
         }
 
         return highlighted;
@@ -3599,6 +3643,32 @@ public class FullTextIndexer
     highlighter.highlight("content", query, singleDoc, maxPassages);
 
     return new SearchResult(path, scoreDoc.score, formatter.getLastResult(), scoreDoc);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The settings every highlighter here shares: the formatter that collects each passage with
+   *  its page and hits, and no limit on how far into a document the hits are looked for. */
+  private static UnifiedHighlighter.Builder highlighterBuilder(IndexSearcher searcher, Analyzer analyzer, PageAwareFormatter formatter)
+  {
+    return UnifiedHighlighter.builder(searcher, analyzer)
+      .withFormatter(formatter)
+      .withMaxLength(Integer.MAX_VALUE - 1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Where the passages of a OneNote section break: only at line ends, with lines joined until a
+   * passage is at least {@link #ONENOTE_PASSAGE_MIN_LENGTH} characters long and its hit near the
+   * middle. A section's text holds one paragraph, or one string found in the file, per line, and
+   * hardly any sentence ends, so the sentence passages other files get could span most of it.
+   */
+  private static BreakIterator oneNotePassageBreaks()
+  {
+    return LengthGoalBreakIterator.createMinLength(new CustomSeparatorBreakIterator('\n'), ONENOTE_PASSAGE_MIN_LENGTH, 0.5f);
   }
 
 //---------------------------------------------------------------------------

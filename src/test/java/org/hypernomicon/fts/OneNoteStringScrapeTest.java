@@ -36,8 +36,8 @@ import org.hypernomicon.util.file.FilePath;
 /**
  * Tests for {@link OneNoteStringScrape}, which collects the readable runs of a section
  * Tika's parser rejects. The files here are plain byte sequences, since the scrape reads
- * no structure: the tests pin which runs it keeps and that text stored in one encoding is
- * read once.
+ * no structure: the tests pin which runs it keeps, that text stored in one encoding is
+ * read once, that a repeated run is kept once, and what is kept of a hyperlink field.
  */
 class OneNoteStringScrapeTest
 {
@@ -117,6 +117,28 @@ class OneNoteStringScrapeTest
   @Test void aFileWithNoTextYieldsBlank() throws Exception
   {
     assertEquals(List.of(), runsOf(GAP, GAP, GAP));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void aRunRepeatingAnEarlierOneIsLeftOut() throws Exception
+  {
+    assertEquals(List.of("alpha", "bravo charlie"),
+                 runsOf(ascii("alpha"), GAP, utf16("bravo charlie"), GAP, ascii("alpha"), GAP, utf16("bravo charlie"), GAP, utf16("alpha"), GAP));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void aHyperlinkFieldGivesOnlyTheTextTheLinkShows() throws Exception
+  {
+    assertEquals(List.of("kilo lima"), runsOf(GAP, utf16("HYPERLINK \"https://example.com/mike\"kilo lima"), GAP));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void aHyperlinkFieldThatEndsInsideItsTargetIsDropped() throws Exception
+  {
+    assertEquals(List.of(), runsOf(GAP, utf16("HYPERLINK \"https://example.com/mike"), GAP));
   }
 
 //---------------------------------------------------------------------------

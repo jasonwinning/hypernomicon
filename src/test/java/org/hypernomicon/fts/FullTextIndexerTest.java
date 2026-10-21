@@ -67,6 +67,9 @@ class FullTextIndexerTest
 
   private static final int SCHEMA_V1 = 1, SCHEMA_V2 = 2;
 
+  private static final int ONENOTE_HEADER_LENGTH       = 1024,
+                           ONENOTE_HEADER_GUIDS_LENGTH = 64;   // The four GUIDs that open the header
+
   private static final String METADATA_FILENAME = "metadata.json",
                               MANIFEST_FILENAME = "index-manifest.json";
 
@@ -125,26 +128,28 @@ class FullTextIndexerTest
 
 //---------------------------------------------------------------------------
 
-  /** The 1024-byte header of a OneNote section as far as Tika's type detection and format
-   *  routing read it (the section type GUID, any file GUID, a nil legacy version so that the
-   *  parser takes its 2010-format tree walk, the .one format GUID, zeros for the rest),
-   *  followed by the two texts, one as ASCII and one as UTF-16LE. The parser rejects the
-   *  zeroed header pointers, as it rejects the reserved bits of a real 2007 section. */
-  private static byte[] oneNoteSectionTheParserRejects(String asciiText, String utf16Text)
+  /** The header of a OneNote section as far as Tika's type detection and format routing read
+   *  it (the section type GUID, any file GUID, a nil legacy version so that the parser takes
+   *  its 2010-format tree walk, the .one format GUID, zeros for the rest), at the given length,
+   *  followed by the two texts, one as ASCII and one as UTF-16LE. With the whole header, the
+   *  parser cannot read a structure from the zeroed header pointers, as it cannot from the
+   *  reserved bits of a real 2007 section, and falls back to a string dump of its own; with
+   *  the header cut short after its GUIDs, the parser throws. */
+  private static byte[] oneNoteSectionTheParserRejects(int headerLength, String asciiText, String utf16Text)
   {
     byte[] asciiBytes = asciiText.getBytes(StandardCharsets.US_ASCII),
            utf16Bytes = utf16Text.getBytes(StandardCharsets.UTF_16LE);
 
     HexFormat hex = HexFormat.of();
 
-    ByteBuffer buf = ByteBuffer.allocate(1024 + asciiBytes.length + 4 + utf16Bytes.length + 4);
+    ByteBuffer buf = ByteBuffer.allocate(headerLength + asciiBytes.length + 4 + utf16Bytes.length + 4);
 
     buf.put(hex.parseHex("E4525C7B8CD8A74DAEB15378D02996D3"))   // guidFileType: a OneNote section
        .put(hex.parseHex("00112233445566778899AABBCCDDEEFF"))   // guidFile
        .put(new byte[16])                                       // guidLegacyFileVersion: nil
        .put(hex.parseHex("3FDD9A101B91F549A5D01791EDC8AED8"));  // guidFileFormat: .one
 
-    buf.position(1024);
+    buf.position(headerLength);
 
     buf.put(asciiBytes).put(new byte[4])
        .put(utf16Bytes).put(new byte[4]);
@@ -444,18 +449,32 @@ class FullTextIndexerTest
 
   @Test void oneNoteSectionTheParserRejectsIsIndexedFromItsStrings() throws Exception
   {
-    Path file = writeDbFile("notes.one", oneNoteSectionTheParserRejects("charlie charlie charlie", "foxtrot foxtrot foxtrot"));
+    Path file = writeDbFile("notes.one", oneNoteSectionTheParserRejects(ONENOTE_HEADER_LENGTH, "charlie", "foxtrot foxtrot foxtrot"));
     activateRegistry(file);
 
     buildAndAwait(openSession(SCHEMA_V1));
-    awaitTrue(() -> found(indexer, "charlie", "notes.one"), "the ASCII strings of a section the parser rejects should be indexed");
+    awaitTrue(() -> found(indexer, "foxtrot", "notes.one"), "the UTF-16 strings of a section the parser rejects should be indexed");
 
-    assertTrue(found(indexer, "foxtrot", "notes.one"), "its UTF-16 strings should be indexed too");
+    assertTrue(found(indexer, "charlie", "notes.one"), "a one-word ASCII entry should be indexed too, which the parser's own string dump drops");
     assertTrue(indexer.isFileIndexed(FilePath.of(file)), "the section counts as indexed, not as failed");
 
     closeSession();
 
     assertEquals("tika", entryFor(readMetadata(), "notes.one").getStr("extractor"));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void oneNoteSectionWhoseHeaderIsCutShortIsIndexedFromItsStrings() throws Exception
+  {
+    Path file = writeDbFile("notes.one", oneNoteSectionTheParserRejects(ONENOTE_HEADER_GUIDS_LENGTH, "charlie", "foxtrot foxtrot foxtrot"));
+    activateRegistry(file);
+
+    buildAndAwait(openSession(SCHEMA_V1));
+    awaitTrue(() -> found(indexer, "foxtrot", "notes.one"), "the UTF-16 strings of a section whose header the parser cannot read should be indexed");
+
+    assertTrue(found(indexer, "charlie", "notes.one"), "its one-word ASCII entry should be indexed too");
+    assertTrue(indexer.isFileIndexed(FilePath.of(file)), "the section counts as indexed, not as failed");
   }
 
 //---------------------------------------------------------------------------
@@ -831,6 +850,43 @@ class FullTextIndexerTest
       assertEquals(entry.getValue(), hitCount(indexer.highlightResults(queryStr, light, 10_000)), queryStr);
       assertEquals(entry.getValue(), indexer.countMatchesPerFile(queryStr, List.of("a.txt"), null).get("a.txt"), queryStr);
     }
+
+    closeSession();
+  }
+
+//---------------------------------------------------------------------------
+
+  /** A OneNote section's text holds one paragraph or string per line and hardly any sentence
+   *  ends, so its passages are runs of whole lines around each hit; a text file with the same
+   *  lines keeps its sentence passage, which here is the whole file. */
+  @Test void oneNotePassagesAreRunsOfWholeLinesAroundTheHit() throws Exception
+  {
+    StringBuilder lines = new StringBuilder();
+
+    for (int lineNdx = 0; lineNdx < 40; lineNdx++)
+      lines.append(lineNdx == 19 ? "zulu" : String.format("echo %02d", lineNdx + 1)).append('\n');
+
+    Path section = writeDbFile("notes.one", oneNoteSectionTheParserRejects(ONENOTE_HEADER_LENGTH, lines.toString(), "")),
+         text    = writeDbFile("notes.txt", lines.toString());
+
+    activateRegistry(section, text);
+
+    buildAndAwait(openSession(SCHEMA_V1));
+    awaitTrue(() -> found(indexer, "zulu", "notes.one") && found(indexer, "zulu", "notes.txt"), "the build should index both files");
+
+    String content = indexer.getStoredContent("notes.one");
+
+    SearchResult.PageMatch sectionPassage = indexer.highlightResults("zulu", List.of(new SearchResult("notes.one", 0f, null, null)), 10_000).getFirst().pageMatches().getFirst(),
+                           textPassage    = indexer.highlightResults("zulu", List.of(new SearchResult("notes.txt", 0f, null, null)), 10_000).getFirst().pageMatches().getFirst();
+
+    int start = sectionPassage.startOffset(), end = sectionPassage.endOffset();
+
+    assertTrue((start == 0) || (content.charAt(start - 1) == '\n'), "a OneNote passage begins at the start of a line");
+    assertTrue((end == content.length()) || (content.charAt(end - 1) == '\n'), "a OneNote passage ends at the end of a line");
+    assertTrue(sectionPassage.snippet().lines().count() > 1, "a OneNote passage holds the lines around the hit too");
+    assertFalse(sectionPassage.snippet().contains("echo 01") || sectionPassage.snippet().contains("echo 40"), "a OneNote passage holds only the lines near the hit");
+
+    assertTrue(textPassage.snippet().contains("echo 01") && textPassage.snippet().contains("echo 40"), "a text file's passage is its sentence, here the whole file");
 
     closeSession();
   }
