@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,10 +48,12 @@ import static org.hypernomicon.util.Util.*;
  * The metadata snapshot records the manifest its entries were built under. On
  * startup that record is compared field by field with the current configuration,
  * and the result is a {@link StaleScope}: a change to a setting every entry
- * depends on (schema version, analyzer, Lucene version) makes every entry stale,
- * while a new version of one text extractor makes only the entries that extractor
- * produced stale. Stale files are re-extracted in place while the existing index
- * remains searchable.
+ * depends on (schema version, analyzer, Lucene's major version) makes every entry
+ * stale, while a new version of one text extractor makes only the entries that
+ * extractor produced stale. Stale files are re-extracted in place while the
+ * existing index remains searchable. A Lucene release within the same major
+ * version makes nothing stale: it reads and writes the same index format, and it
+ * is assumed to split text into the same terms.
  * <p>
  * The list of indexable extensions is recorded but never compared: which other
  * file types are indexable has no bearing on the text already extracted from a
@@ -167,7 +170,7 @@ final class IndexManifest
     if ((builtUnder == null)
         || (indexSchemaVersion != builtUnder.indexSchemaVersion)
         || (analyzerClass.equals(builtUnder.analyzerClass) == false)
-        || (luceneVersion.equals(builtUnder.luceneVersion) == false))
+        || (sameLuceneMajorVersion(builtUnder) == false))
       return new StaleScope(true, Set.of());
 
     Set<ExtractorKind> kinds = EnumSet.noneOf(ExtractorKind.class);
@@ -177,6 +180,39 @@ final class IndexManifest
         kinds.add(kind);
 
     return new StaleScope(false, kinds);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether the other manifest names a Lucene release with the same major version as this
+   * one. A version that cannot be read counts as a different major version.
+   */
+  private boolean sameLuceneMajorVersion(IndexManifest other)
+  {
+    int major = luceneMajorVersion(luceneVersion);
+
+    return (major >= 0) && (major == luceneMajorVersion(other.luceneVersion));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The major version in a Lucene version string such as {@code 10.5.2}, or -1 if the
+   *  string is not a version (as when a manifest did not record one). */
+  private static int luceneMajorVersion(String version)
+  {
+    if (strNullOrBlank(version)) return -1;
+
+    try
+    {
+      return Version.parse(version).major;
+    }
+    catch (ParseException e)
+    {
+      return -1;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -290,8 +326,8 @@ final class IndexManifest
 
   /**
    * Returns a human-readable description of which of the compared fields differ
-   * between this manifest and another. Used for diagnostic logging when a
-   * configuration change is detected.
+   * between this manifest and another (for Lucene, its major version). Used for
+   * diagnostic logging when a configuration change is detected.
    */
   String describeDifferences(IndexManifest other)
   {
@@ -305,7 +341,7 @@ final class IndexManifest
     if (analyzerClass.equals(other.analyzerClass) == false)
       diffs.add("analyzerClass: " + other.analyzerClass + " -> " + analyzerClass);
 
-    if (luceneVersion.equals(other.luceneVersion) == false)
+    if (sameLuceneMajorVersion(other) == false)
       diffs.add("luceneVersion: " + other.luceneVersion + " -> " + luceneVersion);
 
     for (ExtractorKind kind : ExtractorKind.values())

@@ -133,7 +133,8 @@ public class FullTextIndexer
    *  extracted text or page offsets, etc. A bump does not wipe the index; every
    *  existing entry is loaded as stale and re-extracted in place while the index
    *  stays searchable. An upgrade of Tika or of pdf.js needs no bump: it is detected,
-   *  and only the entries that extractor produced go stale (see {@link IndexManifest}). */
+   *  and only the entries that extractor produced go stale; a Lucene upgrade within the
+   *  same major version makes nothing stale (see {@link IndexManifest}). */
   private static final int INDEX_SCHEMA_VERSION = 2;
 
   private static final Set<String> INDEXABLE_EXTENSIONS = Set.of

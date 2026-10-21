@@ -17,12 +17,14 @@
 
 package org.hypernomicon.fts;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.apache.lucene.util.Version;
 import org.hypernomicon.fts.IndexManifest.StaleScope;
 import org.hypernomicon.util.json.JsonObj;
 
@@ -63,6 +65,17 @@ class IndexManifestTest
   private static IndexManifest current()
   {
     return IndexManifest.computeCurrent(Set.of("pdf", "txt"), SCHEMA_VERSION);
+  }
+
+//---------------------------------------------------------------------------
+
+  /** The current manifest as it would read with another Lucene version recorded in it. */
+  private static IndexManifest underLuceneVersion(String luceneVersion)
+  {
+    JsonObj obj = current().toJson();
+    obj.put("luceneVersion", luceneVersion);
+
+    return IndexManifest.fromJson(obj);
   }
 
 //---------------------------------------------------------------------------
@@ -113,6 +126,38 @@ class IndexManifestTest
       assertTrue(scope.includes(kind));
 
     assertTrue(scope.includes(null), "a change that affects every entry includes one that no extractor handled");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void aLuceneReleaseWithinTheSameMajorVersionMakesNothingStale()
+  {
+    IndexManifest builtUnder = underLuceneVersion(Version.LATEST.major + ".99.99");
+
+    assertTrue(current().staleScopeSince(builtUnder).isNothing());
+    assertEquals("", current().describeDifferences(builtUnder), "a release within the same major version is not reported as a configuration change");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void aNewLuceneMajorVersionMakesEveryEntryStale()
+  {
+    String previousMajor = (Version.LATEST.major - 1) + ".12.0";
+    StaleScope scope = current().staleScopeSince(underLuceneVersion(previousMajor));
+
+    for (ExtractorKind kind : ExtractorKind.values())
+      assertTrue(scope.includes(kind));
+
+    assertTrue(scope.includes(null), "a change that affects every entry includes one that no extractor handled");
+    assertTrue(current().describeDifferences(underLuceneVersion(previousMajor)).contains("luceneVersion: " + previousMajor + " -> " + Version.LATEST));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void aLuceneVersionThatCannotBeReadMakesEveryEntryStale()
+  {
+    for (String unreadable : List.of("", "unknown"))
+      assertTrue(current().staleScopeSince(underLuceneVersion(unreadable)).includes(null), "recorded Lucene version: \"" + unreadable + '"');
   }
 
 //---------------------------------------------------------------------------
