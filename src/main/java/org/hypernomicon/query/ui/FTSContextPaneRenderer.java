@@ -24,7 +24,9 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.*;
 
+import org.hypernomicon.fts.FileSearchability;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
+import org.hypernomicon.model.records.HDT_RecordWithFilePath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile.WorkBoundary;
 
@@ -32,8 +34,10 @@ import org.hypernomicon.model.records.HDT_WorkFile.WorkBoundary;
 
 /**
  * Renders the FTS context pane's HTML: the passage list shown below the
- * results table for the currently-selected file. Stateful across a single
- * file's render cycle; reset by the next {@link #renderInitial} call.
+ * results table for the currently-selected file, or, for a file a blank
+ * query listed, what a search would make of it (see {@link #renderListedFile}).
+ * Stateful across a single file's render cycle; reset by the next
+ * {@link #renderInitial} call.
  * <p>
  * The rendered document contains inline CSS, a {@code selectPassage} JS
  * function, and (if more passages remain) an IntersectionObserver that
@@ -48,6 +52,44 @@ class FTSContextPaneRenderer
 //---------------------------------------------------------------------------
 
   private static final int PASSAGE_BATCH_SIZE = 30;
+
+  /** The start of every document rendered here: its styles and the passage-click script. */
+  private static final String DOCUMENT_HEAD = """
+      <html><head><style>
+        body { font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13px; margin: 12px; color: #222; }
+        .file-path { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 12px; word-break: break-all; }
+        .match-count { font-size: 12px; color: #666; margin-bottom: 12px; }
+        .status { font-size: 12px; color: #666; margin-bottom: 12px; line-height: 1.5; }
+        .status b { color: #333; }
+        .passage { padding: 8px 10px; margin: 6px 0; border-left: 3px solid #ccc; background: #f8f8f8;
+                    cursor: pointer; transition: border-left-color 0.15s; }
+        .passage:hover { border-left-color: #4682B4; }
+        .passage.selected { border-left-color: #4682B4; background: #eef4fa; }
+        .page-label { font-size: 11px; color: #888; margin-bottom: 2px; }
+        mark { background: #ffe066; padding: 0 1px; border-radius: 2px; }
+        .snippet { line-height: 1.5; }
+        .end-marker { text-align: center; color: #999; font-style: italic; padding: 12px; }
+        .work-boundary { padding: 4px 10px; margin: 14px 0 2px; border-top: 1px solid #b0c4de;
+                          cursor: pointer; font-size: 12px; color: #555; }
+        .work-boundary:hover { color: #333; }
+        .work-boundary img { vertical-align: middle; margin-right: 4px; }
+        .work-boundary .author { color: #444; }
+        .work-boundary .title { }
+        .work-boundary .pages { color: #888; font-size: 11px; }
+        .record { padding: 4px 10px; margin: 14px 0 2px; border-top: 1px solid #b0c4de; font-size: 12px; color: #555; }
+        .record img { vertical-align: middle; margin-right: 4px; }
+        .contained { margin-left: 18px; }
+        #sentinel { height: 1px; }
+      </style>
+      <script>
+        function selectPassage(ndx, page) {
+          document.querySelectorAll('.passage.selected').forEach(function(el) { el.classList.remove('selected'); });
+          document.getElementById('p-' + ndx).classList.add('selected');
+          alert('page:' + page + ':' + ndx);
+        }
+      </script>
+      </head><body>
+      """;
 
   private int passagesLoaded, boundaryNdx;
   private List<WorkBoundary> currentBoundaries = List.of(),
@@ -95,40 +137,7 @@ class FTSContextPaneRenderer
         activeBoundarySet.set(bNdx);
     }
 
-    StringBuilder sb = new StringBuilder();
-
-    sb.append("""
-      <html><head><style>
-        body { font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13px; margin: 12px; color: #222; }
-        .file-path { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 12px; word-break: break-all; }
-        .match-count { font-size: 12px; color: #666; margin-bottom: 12px; }
-        .passage { padding: 8px 10px; margin: 6px 0; border-left: 3px solid #ccc; background: #f8f8f8;
-                    cursor: pointer; transition: border-left-color 0.15s; }
-        .passage:hover { border-left-color: #4682B4; }
-        .passage.selected { border-left-color: #4682B4; background: #eef4fa; }
-        .page-label { font-size: 11px; color: #888; margin-bottom: 2px; }
-        mark { background: #ffe066; padding: 0 1px; border-radius: 2px; }
-        .snippet { line-height: 1.5; }
-        .end-marker { text-align: center; color: #999; font-style: italic; padding: 12px; }
-        .work-boundary { padding: 4px 10px; margin: 14px 0 2px; border-top: 1px solid #b0c4de;
-                          cursor: pointer; font-size: 12px; color: #555; }
-        .work-boundary:hover { color: #333; }
-        .work-boundary img { vertical-align: middle; margin-right: 4px; }
-        .work-boundary .author { color: #444; }
-        .work-boundary .title { }
-        .work-boundary .pages { color: #888; font-size: 11px; }
-        .contained { margin-left: 18px; }
-        #sentinel { height: 1px; }
-      </style>
-      <script>
-        function selectPassage(ndx, page) {
-          document.querySelectorAll('.passage.selected').forEach(function(el) { el.classList.remove('selected'); });
-          document.getElementById('p-' + ndx).classList.add('selected');
-          alert('page:' + page + ':' + ndx);
-        }
-      </script>
-      </head><body>
-      """);
+    StringBuilder sb = new StringBuilder(DOCUMENT_HEAD);
 
     sb.append("<div class=\"file-path\">").append(htmlEscaper.escape(path)).append("</div>\n");
 
@@ -221,6 +230,50 @@ class FTSContextPaneRenderer
 //---------------------------------------------------------------------------
 
   /**
+   * Renders the context pane for a file a blank query listed: no passages, since a listing has
+   * no hits, but what the Index Status column says of the file and why, the page ranges a
+   * record scope restricts it to, and the works or other record the file belongs to. Does not
+   * touch renderer state.
+   *
+   * @param path             relative path of the file (for the header)
+   * @param searchability    whether a search can find the file
+   * @param scopedPageRanges the file's page ranges that are in scope, formatted; empty when the
+   *                         whole file is
+   * @param boundaries       work-boundary list for the file (may be empty)
+   * @param record           the record the file resolved to, shown when it has no work
+   *                         boundaries; null if it has no record
+   */
+  static String renderListedFile(String path, FileSearchability searchability, List<String> scopedPageRanges,
+                                 List<WorkBoundary> boundaries, HDT_RecordWithFilePath record)
+  {
+    StringBuilder sb = new StringBuilder(DOCUMENT_HEAD);
+
+    sb.append("<div class=\"file-path\">").append(htmlEscaper.escape(path)).append("</div>\n");
+
+    sb.append("<div class=\"status\"><b>").append(htmlEscaper.escape(searchability.displayName())).append(".</b> ")
+      .append(htmlEscaper.escape(searchability.description())).append("</div>\n");
+
+    if (scopedPageRanges.isEmpty() == false)
+      sb.append("<div class=\"status\">In scope: ").append(htmlEscaper.escape(String.join(", ", scopedPageRanges))).append("</div>\n");
+
+    if (boundaries.isEmpty() == false)
+      boundaries.forEach(boundary -> appendWorkBoundaryHtml(sb, boundary));
+    else if (record instanceof HDT_Work work)
+      appendWorkHtml(sb, work, 0, 0);
+    else if (record != null)
+      sb.append("<div class=\"record\"><img border=\"0\" width=\"16\" height=\"16\" src=\"").append(imgDataURIbyRecord(record)).append("\"> ")
+        .append(htmlEscaper.escape(record.name())).append("</div>\n");
+    else
+      sb.append("<div class=\"end-marker\">Not associated with any record</div>\n");
+
+    sb.append("</body></html>");
+    return sb.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Appends passages {@code [start, end)} from {@code matches} into {@code sb},
    * interleaving work-boundary markers and tracking containment. Advances
    * {@link #boundaryNdx} and mutates {@link #containmentStack}; both are
@@ -273,8 +326,15 @@ class FTSContextPaneRenderer
 
   private static void appendWorkBoundaryHtml(StringBuilder sb, WorkBoundary boundary)
   {
-    HDT_Work work = boundary.work();
+    appendWorkHtml(sb, boundary.work(), boundary.startPage(), boundary.endPage());
+  }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** A clickable line for a work, with its page range in the file when {@code startPage} is positive. */
+  private static void appendWorkHtml(StringBuilder sb, HDT_Work work, int startPage, int endPage)
+  {
     sb.append("<div class=\"work-boundary\" onclick=\"alert('work:").append(work.getID()).append("')\">\n")
       .append("  <img border=\"0\" width=\"16\" height=\"16\" src=\"").append(imgDataURIbyRecord(work)).append("\"> ");
 
@@ -290,8 +350,8 @@ class FTSContextPaneRenderer
 
     sb.append("<span class=\"title\">").append(htmlEscaper.escape(work.name())).append("</span>");
 
-    if (boundary.startPage() > 0)
-      sb.append(" <span class=\"pages\">").append(formatPageRange(boundary.startPage(), boundary.endPage())).append("</span>");
+    if (startPage > 0)
+      sb.append(" <span class=\"pages\">").append(formatPageRange(startPage, endPage)).append("</span>");
 
     sb.append("\n</div>\n");
   }

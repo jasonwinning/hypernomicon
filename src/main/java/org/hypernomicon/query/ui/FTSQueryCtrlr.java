@@ -43,9 +43,9 @@ import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.SearchKeySelectDlgCtrlr;
 import org.hypernomicon.fileManager.FileManager;
+import org.hypernomicon.fts.FileSearchability;
 import org.hypernomicon.fts.FullTextIndexer;
-import org.hypernomicon.fts.FullTextIndexer.SearchBatch;
-import org.hypernomicon.fts.FullTextIndexer.SearchResult;
+import org.hypernomicon.fts.FullTextIndexer.*;
 import org.hypernomicon.fts.FullTextIndexer.SearchResult.PageMatch;
 import org.hypernomicon.fts.HitSetService;
 import org.hypernomicon.model.Exceptions.CancelledTaskException;
@@ -59,6 +59,7 @@ import org.hypernomicon.previewWindow.ConversionSession;
 import org.hypernomicon.previewWindow.ConversionSession.NoOfficeInstallationException;
 import org.hypernomicon.previewWindow.PreviewWindow;
 import org.hypernomicon.previewWindow.ScrollTarget;
+import org.hypernomicon.query.ui.SearchResultFileList.ScopedFile;
 import org.hypernomicon.util.SettleGate;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.util.file.FilePath;
@@ -96,9 +97,19 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  record FTSResultRow(SearchResult result, HDT_RecordWithFilePath resolvedRecord)
+  /**
+   * A row of the results table: a file a search found, or one a blank query listed. A listed
+   * row carries its {@code searchability}, which says whether a search could have found it; a
+   * search row has none, and has matches instead.
+   */
+  record FTSResultRow(SearchResult result, HDT_RecordWithFilePath resolvedRecord, FileSearchability searchability)
   {
+    FTSResultRow(SearchResult result, HDT_RecordWithFilePath resolvedRecord) { this(result, resolvedRecord, null); }
+
     String path() { return result.path(); }
+
+    /** Whether the row comes from a listing rather than a search, so it has no matches to show. */
+    boolean isListed() { return searchability != null; }
   }
 
 //---------------------------------------------------------------------------
@@ -110,7 +121,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   @FXML private Label lblStatus, lblRecordScope;
   @FXML private RadioButton rbFolderScope, rbRecordScope;
   @FXML private SplitPane spLower;
-  @FXML private TableColumn<FTSResultRow, String> colFileName, colFilePath, colRecord, colMatches, colExcerpt;
+  @FXML private TableColumn<FTSResultRow, String> colFileName, colFilePath, colRecord, colMatches, colExcerpt, colStatus;
   @FXML private TableColumn<FTSResultRow, BibliographicDate> colDate;
   @FXML private TableView<FTSResultRow> tvResults;
   @FXML private TextField tfQuery, tfFolder, tfFileMask;
@@ -166,6 +177,10 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   private int currentPreviewPage = 1, totalMatchCount = -1;
   private boolean hasMore;
 
+  /** {@code listingShown}: whether the table holds the files a blank query listed rather than
+   *  the results of a search (see {@link #executeListing}). */
+  private boolean listingShown;
+
   /**
    * Settle gate for result-row selection: rapid selection (key-repeat through
    * the results table) must not set a preview intent, launch a hit pipeline, or
@@ -215,6 +230,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     HyperTable.registerTable(tvResults, TablePrefKey.FTS_RESULTS, null);
 
+    showListingColumns(false);  // The saved column settings may be a listing's; a new tab starts as a search
+
     Platform.runLater(() -> OneTouchExpandableWrapper.wrap(spLower, () -> "search results", () -> "file content preview", 0.6, CollapsedState.Expanded));
 
     tfFolder.setEditable(false);
@@ -226,7 +243,16 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     tfQuery   .setOnAction(event -> executeSearch());
     tfFileMask.setOnAction(event -> executeSearch());
 
-    setToolTip(tfFileMask, "Search only files whose names match these comma-separated patterns (e.g. *.pdf, *.docx); leave blank to search all files");
+    setToolTip(tfFileMask, "Search only files whose names match these comma-separated patterns (e.g. *.pdf, *.docx); leave blank to search all files. " +
+                           "With a blank query, the matching files are listed instead of searched.");
+
+    // The Search button says what it would do with the query and scope as they stand
+
+    tfQuery   .textProperty().addListener((ob, ov, nv) -> updateSearchButtonCaption());
+    tfFolder  .textProperty().addListener((ob, ov, nv) -> updateSearchButtonCaption());
+    tfFileMask.textProperty().addListener((ob, ov, nv) -> updateSearchButtonCaption());
+
+    setToolTip(btnSearch, () -> listingRequested() ? "List the files in the scope, since the query is blank" : "Search the files in the scope for the query");
 
     btnShowMore .setOnAction(event -> showMore());
     btnShowAll  .setOnAction(event -> showAll());
@@ -235,7 +261,11 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     // Radio button scope switching
 
     rbFolderScope   .selectedProperty().addListener((ob, oldVal, newVal) -> disableAllIff(newVal == false, hbFolderGroup , btnChooseFolder));
-    rbRecordScope   .selectedProperty().addListener((ob, oldVal, newVal) -> disableAllIff(newVal == false, lblRecordScope, chkIncludeEdited, btnViewScope));
+    rbRecordScope   .selectedProperty().addListener((ob, oldVal, newVal) ->
+    {
+      disableAllIff(newVal == false, lblRecordScope, chkIncludeEdited, btnViewScope);
+      updateSearchButtonCaption();
+    });
 
     chkIncludeEdited.selectedProperty().addListener((ob, oldVal, newVal) -> rebuildRecordScope());
 
@@ -342,14 +372,14 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
                 <tr><td><code>epistemology NOT reliabilism</code></td><td>Excludes documents containing <em>reliabilism</em></td></tr>
                 <tr><td><code>+virtue -foundationalism</code></td><td>Must contain <em>virtue</em>, must not contain <em>foundationalism</em></td></tr>
               </table>
-            </td>
-            <td class="col">
-              <h3>Grouping</h3>
+
+              <h3 class="cont">Grouping</h3>
               <table>
                 <tr><td><code>(virtue OR credit) AND epistemology</code></td><td>Parentheses control evaluation order</td></tr>
               </table>
-
-              <h3 class="cont">Regular Expressions</h3>
+            </td>
+            <td class="col">
+              <h3>Regular Expressions</h3>
               <table>
                 <tr><td><code>/cogniti.*/</code></td><td>Regex pattern matching against individual terms</td></tr>
               </table>
@@ -371,6 +401,9 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
                 <tr><td><code>^Wittgenstein$</code></td><td>Both ends anchored: exact whole-word match</td></tr>
                 <tr><td><code>social epistemology</code></td><td>Multi-word keys are matched as an exact phrase, in the order written</td></tr>
               </table>
+
+              <h3 class="cont">Listing Files</h3>
+              <p>Leave the query blank to list the files in the scope instead of searching them.</p>
             </td>
           </tr>
         </table>
@@ -463,6 +496,23 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       {
         super.updateItem(date, empty);
         setText((empty || (date == null) || (BibliographicDate.isEmpty(date))) ? null : date.displayToUser());
+      }
+    });
+
+    // Shown in the place of Matches and Excerpt while the table holds a listing (see executeListing)
+
+    colStatus.setCellValueFactory(cellData -> new SimpleStringProperty(nullSwitch(cellData.getValue().searchability(), "", FileSearchability::displayName)));
+
+    colStatus.setCellFactory(col -> new TableCell<>()
+    {
+      @Override protected void updateItem(String value, boolean empty)
+      {
+        super.updateItem(value, empty);
+
+        FileSearchability searchability = empty ? null : nullSwitch(nullSwitch(getTableRow(), null, TableRow::getItem), null, FTSResultRow::searchability);
+
+        setText(empty ? null : value);
+        setTooltip(searchability == null ? null : makeTooltip(searchability.description()));
       }
     });
 
@@ -859,7 +909,12 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   private void executeSearch()
   {
     String queryStr = tfQuery.getText();
-    if (strNullOrBlank(queryStr)) return;
+
+    if (strNullOrBlank(queryStr))
+    {
+      executeListing();
+      return;
+    }
 
     FullTextIndexer indexer = db.getFullTextIndexer();
     if (indexer == null) return;
@@ -897,18 +952,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     // Clear previous state and begin a new hit-set generation for this query
 
-    hitSetService.beginGeneration(new HitSetService.QueryDescriptor(queryStr, searchKeyQuery, searchKeyLookup,
+    resetForNewResults(new HitSetService.QueryDescriptor(queryStr, searchKeyQuery, searchKeyLookup,
       useRecordScope ? recordScopeList::filterResults : null));
-
-    currentPreviewPage = 1;
-    pendingScrollTarget = null;
-    pendingConvertedPassageNdx = -1;
-    previewSettleGate.cancel();
-    PreviewWindow.runWhenSourceActivates(pvsQueriesTab, null);
-    currentPreviewPath = null;
-    convertedAlignment = null;
-    convertedAlignmentPath = null;
-    convertedLaunchPath = null;
 
     // Fast light search: no highlighting, just paths and scores. The searchLight,
     // the per-file match counts and the countMatches all run off the FX thread
@@ -962,6 +1007,9 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     tab.setText(queryStr.length() > 20 ? queryStr.substring(0, 20) + "..." : queryStr);
 
+    listingShown = false;
+    showListingColumns(false);
+
     if (useRecordScope)
     {
       // For record-scoped searches, highlight and filter up front so rows with
@@ -975,6 +1023,204 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
       showResults(rowsFor(lightResults));
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Clears what the previous search or listing left behind, so that the next one's rows meet a
+   * clean preview and hit state, and begins a new hit-set generation for {@code query}, which is
+   * null for a listing, since a listing has no hits.
+   */
+  private void resetForNewResults(HitSetService.QueryDescriptor query)
+  {
+    hitSetService.beginGeneration(query);
+
+    currentPreviewPage = 1;
+    pendingScrollTarget = null;
+    pendingConvertedPassageNdx = -1;
+    previewSettleGate.cancel();
+    PreviewWindow.runWhenSourceActivates(pvsQueriesTab, null);
+    currentPreviewPath = null;
+    convertedAlignment = null;
+    convertedAlignmentPath = null;
+    convertedLaunchPath = null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * What a blank query does: lists the files in the scope instead of searching them. These are
+   * every file under the folder whose name the file mask lets through, or every file the record
+   * scope holds, from the file registry rather than the index, so the files a search could never
+   * find are listed too, and the Index Status column says of each whether a search could find it.
+   * Nothing is listed for the whole database with no file mask, since that is every file in it;
+   * the status label says so.
+   */
+  private void executeListing()
+  {
+    FullTextIndexer indexer = db.getFullTextIndexer();
+    if (indexer == null) return;
+
+    if (listingScopeChosen() == false)
+    {
+      lblStatus.setText("Enter a query, or choose a folder or file mask to list files");
+      setAllVisible(false, btnShowMore, btnShowAll);
+      return;
+    }
+
+    boolean useRecordScope = rbRecordScope.isSelected();
+
+    String maskText     = tfFileMask.getText(),
+           fileMask     = (useRecordScope || strNullOrBlank(maskText)) ? null : maskText,
+           folderPrefix = useRecordScope ? null : computeFolderPrefix();
+
+    SearchResultFileList scopeList = useRecordScope ? recordScopeList : null;
+
+    List<FTSResultRow> rows;
+
+    if (scopeList != null)
+      rows = listedRowsForScope(indexer, scopeList);
+    else
+    {
+      // The registry scan reads the disk once per file to drop the entries no file is behind, so
+      // it runs off the FX thread as a search does; the rows' records are resolved on it, as a
+      // search's are. Unlike a search, a listing has no hit counts to record during the task, so
+      // the previous results' state is cleared only once the listing is in hand.
+
+      List<ListedFile> listed = runSearchTask("Listing files...", () -> indexer.listFiles(folderPrefix, fileMask));
+      if (listed == null) return;
+
+      rows = listedRowsForFolder(listed);
+    }
+
+    resetForNewResults(null);
+
+    lastQueryStr = null;
+    lastSearchKeyQuery = null;
+    lastFileMask = fileMask;
+    lastFolderPrefix = folderPrefix;
+    lastScopeList = scopeList;
+    lastScoreDoc = null;
+    hasMore = false;
+    totalMatchCount = -1;
+
+    tab.setText(listingTitle(scopeList != null, folderPrefix, fileMask));
+
+    listingShown = true;
+    showListingColumns(true);
+    showResults(rows);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Whether the scope controls describe something a blank query can list: a record scope, a
+   *  folder other than the database root, or a file mask. */
+  private boolean listingScopeChosen()
+  {
+    if (rbRecordScope.isSelected()) return recordScopeList != null;
+
+    return (computeFolderPrefix() != null) || strNotNullOrBlank(tfFileMask.getText());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Whether the Search button would list files rather than search them. */
+  private boolean listingRequested()
+  {
+    return strNullOrBlank(tfQuery.getText()) && listingScopeChosen();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Captions the Search button with what it would do. */
+  private void updateSearchButtonCaption()
+  {
+    btnSearch.setText(listingRequested() ? "List files" : "Search");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Shows a listing's Index Status column in the place of a search's Matches and Excerpt
+   *  columns, or the reverse. */
+  private void showListingColumns(boolean listing)
+  {
+    colStatus .setVisible(listing);
+    colMatches.setVisible(listing == false);
+    colExcerpt.setVisible(listing == false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The tab title of a listing, in the place of a search's query text: the folder, or the file
+   *  mask and the folder, or the record scope. */
+  private String listingTitle(boolean recordScope, String folderPrefix, String fileMask)
+  {
+    if (recordScope) return "Scoped files";
+
+    String folderName = (folderPrefix == null) ? "database" : db.getRootPath(folderPrefix.substring(0, folderPrefix.length() - 1)).getNameOnly().toString(),
+           title      = (fileMask == null) ? ("Files in " + folderName) : (fileMask + " in " + folderName);
+
+    return title.length() > 20 ? title.substring(0, 20) + "..." : title;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** A row for a listed file: a result with an empty match list rather than none, since a
+   *  listing has no hits to compute. */
+  private static FTSResultRow listedRow(ListedFile listed, HDT_RecordWithFilePath record)
+  {
+    return new FTSResultRow(new SearchResult(listed.path(), 0f, List.of(), null), record, listed.searchability());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** A row for each listed file, with the record resolved from its path as a search's rows are. */
+  private static List<FTSResultRow> listedRowsForFolder(List<ListedFile> listed)
+  {
+    List<FTSResultRow> rows = new ArrayList<>(listed.size());
+
+    for (ListedFile file : listed)
+      rows.add(listedRow(file, HyperPath.resolveRecordForPage(db.getRootPath(file.path()), 0)));
+
+    return rows;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * A row for each file of a record scope, in each page range the scope holds it in. The record
+   * is the most specific work covering the range, as a search's row would resolve it from its
+   * matches' pages, so an anthology in scope for one of its chapters shows that chapter's work.
+   */
+  private static List<FTSResultRow> listedRowsForScope(FullTextIndexer indexer, SearchResultFileList scopeList)
+  {
+    List<FTSResultRow> rows = new ArrayList<>();
+
+    for (ScopedFile scoped : scopeList.getScopedFiles())
+    {
+      ListedFile listed = indexer.listFile(scoped.filePath());
+      if (listed == null) continue;
+
+      HDT_RecordWithFilePath fallback = HyperPath.resolveRecordForPage(scoped.filePath(), 0),
+                             record   = scoped.hasPageRestriction()
+                                          ? HDT_WorkFile.resolveRecordForPages(scoped.filePath(), IntStream.of(scoped.startPage(), scoped.endPage()), fallback)
+                                          : fallback;
+
+      rows.add(listedRow(listed, record));
+    }
+
+    return rows;
   }
 
 //---------------------------------------------------------------------------
@@ -1314,7 +1560,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
         HDT_RecordWithFilePath newRecord = HDT_WorkFile.resolveRecordForPages(filePath, pages, row.resolvedRecord());
 
         if (newRecord != row.resolvedRecord())
-          allRows.set(ndx, new FTSResultRow(row.result(), newRecord));
+          allRows.set(ndx, new FTSResultRow(row.result(), newRecord, row.searchability()));
 
         return;
       }
@@ -1351,6 +1597,16 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   private void updateContextView(FTSResultRow selectedRow)
   {
     String path = selectedRow.path();
+
+    if (selectedRow.isListed())
+    {
+      // A listed file has no passages; the pane says what a search would make of the file instead
+
+      loadContextHtml(FTSContextPaneRenderer.renderListedFile(path, selectedRow.searchability(), scopedPageRanges(path),
+                                                              HDT_WorkFile.getBoundariesForFile(db.getRootPath(path)), selectedRow.resolvedRecord()));
+      return;
+    }
+
     List<PageMatch> matches = hitSetService.cachedMatches(path);
 
     if (matches == null)
@@ -1362,6 +1618,23 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     List<WorkBoundary> boundaries = HDT_WorkFile.getBoundariesForFile(db.getRootPath(path));
     loadContextHtml(contextPaneRenderer.renderInitial(path, matches, boundaries));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The page ranges of the file that a record-scoped listing holds it in, formatted; empty when
+   *  the whole file is in scope or the listing is not record-scoped. */
+  private List<String> scopedPageRanges(String path)
+  {
+    if (lastScopeList == null) return List.of();
+
+    FilePath filePath = db.getRootPath(path);
+
+    return lastScopeList.getScopedFiles().stream()
+      .filter(scoped -> scoped.hasPageRestriction() && scoped.filePath().equals(filePath))
+      .map(scoped -> formatPageRange(scoped.startPage(), scoped.endPage()))
+      .toList();
   }
 
 //---------------------------------------------------------------------------
@@ -1420,16 +1693,17 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
         hiddenCount = totalCount - shownCount;
 
     String noun = shownCount == 1 ? "file" : "files",
-           hiddenSuffix = hiddenCount > 0 ? " (" + hiddenCount + " unassociated hidden)" : "";
+           hiddenSuffix = hiddenCount > 0 ? " (" + hiddenCount + " unassociated hidden)" : "",
+           noneFound = listingShown ? "No files found" : "No matches found";
 
     if (totalCount == 0)
     {
-      lblStatus.setText("No matches found");
+      lblStatus.setText(noneFound);
       setAllVisible(false, btnShowMore, btnShowAll);
     }
     else if (shownCount == 0)
     {
-      lblStatus.setText("No matches found" + hiddenSuffix);
+      lblStatus.setText(noneFound + hiddenSuffix);
       setAllVisible(false, btnShowMore, btnShowAll);
     }
     else if (hasMore)
@@ -1515,6 +1789,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     disableAllIff(false, rbRecordScope, chkIncludeEdited);
     setAllVisible(true , rbRecordScope, btnViewScope);
     rbRecordScope.setSelected(true);
+    updateSearchButtonCaption();  // The radio may have been selected already, with no scope list yet
 
     Platform.runLater(tfQuery::requestFocus);
   }
@@ -1541,6 +1816,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     rbRecordScope.setDisable(false);
     setAllVisible(false, chkIncludeEdited);
     rbRecordScope.setSelected(true);
+    updateSearchButtonCaption();
 
     Platform.runLater(tfQuery::requestFocus);
   }
@@ -1775,6 +2051,19 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     FilePath filePath = db.getRootPath(row.path());
 
+    if (row.isListed())
+    {
+      // A listed file has no hits, so it shows at once at the current page with none, a converted
+      // office document included: with no hit set to wait for, the pane does not withhold it
+
+      boolean paged = isOfficeDocConvertedToPdf(filePath) || getMediaType(filePath).toString().contains("pdf");
+
+      currentPreviewPath = row.path();
+
+      PreviewWindow.setQueriesFtsPreview(filePath, row.resolvedRecord(), paged, paged ? Math.max(currentPreviewPage, 1) : 1, false, consumeScrollTarget());
+      return;
+    }
+
     List<PageMatch> matches = nullSwitch(row.result().pageMatches(), hitSetService.cachedMatches(row.path()));
 
     // For new files, navigate to the first page with a match (if known)
@@ -2000,7 +2289,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     {
       FTSResultRow row = allRows.get(ndx);
       if (row.resolvedRecord() == record)
-        allRows.set(ndx, new FTSResultRow(row.result(), null));
+        allRows.set(ndx, new FTSResultRow(row.result(), null, row.searchability()));
     }
   }
 

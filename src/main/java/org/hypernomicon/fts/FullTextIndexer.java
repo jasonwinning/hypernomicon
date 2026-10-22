@@ -33,8 +33,7 @@ import java.text.BreakIterator;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.function.IntPredicate;
+import java.util.function.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -257,6 +256,7 @@ public class FullTextIndexer
   private final Set<String> extractionFailures = ConcurrentHashMap.newKeySet();
 
   private RegistryAccessor registry;
+  private Predicate<FilePath> protectedFiles;
   private IndexManifest currentManifest;
   private Tika tika;
   private Directory luceneDir;
@@ -264,7 +264,7 @@ public class FullTextIndexer
   private SearcherManager searcherMgr;
   private Analyzer analyzer;
   private HyperThread backgroundThread;
-  private FilePath dbRoot, indexDir, manifestPath;
+  private FilePath dbRoot, indexDir, manifestPath, xmlFolder;
   private volatile int threadCount;
   private long lastCommitTime, lastConsistencyTime;
 
@@ -638,15 +638,23 @@ public class FullTextIndexer
    * {@link #startIndexing}; if it does not, the existing index contents stay
    * searchable but no new files are indexed.
    *
-   * @param dbRoot   the database root folder
-   * @param indexDir the index storage directory
-   * @param registry the file path registry for iterating database files
+   * @param dbRoot         the database root folder
+   * @param indexDir       the index storage directory
+   * @param registry       the file path registry for iterating database files
+   * @param protectedFiles which files the database protects, such as its .hdb file and its lock
+   *                       and message files; a listing reports them as reserved
    */
-  public void bringOnline(FilePath dbRoot, FilePath indexDir, RegistryAccessor registry) throws IOException
+  public void bringOnline(FilePath dbRoot, FilePath indexDir, RegistryAccessor registry, Predicate<FilePath> protectedFiles) throws IOException
   {
     this.dbRoot = dbRoot;
     this.indexDir = indexDir;
     this.registry = registry;
+    this.protectedFiles = protectedFiles;
+
+    // The XML folder holds files reserved for the database, which are never indexed; it is always
+    // this folder under the root, as the database resolves it, so the indexer works it out itself
+
+    xmlFolder = dbRoot.resolve(DEFAULT_XML_PATH);
 
     FilePath lucenePath = indexDir.resolve(LUCENE_DIR_NAME);
     Files.createDirectories(lucenePath.toPath());
@@ -2429,11 +2437,22 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Whether the file is in the database's XML folder, whose files are reserved for the database
+   *  and never indexed. */
+  private boolean isInXmlFolder(FilePath filePath) { return xmlFolder.contains(filePath); }
+
+  /** Whether a listing reports the file as reserved for the database: anything in its XML folder,
+   *  and any other file the database protects, such as its .hdb file and its lock and message
+   *  files. Indexing checks only the XML folder, since the other protected files are of types it
+   *  never reads. */
+  private boolean isReservedFile(FilePath filePath) { return isInXmlFolder(filePath) || protectedFiles.test(filePath); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private boolean isIndexable(FilePath filePath)
   {
-    if (FilePath.isEmpty(filePath)
-        || ((db != null) && db.xmlPath().contains(filePath))   // db is null in unit tests
-        || isExcluded(filePath))
+    if (FilePath.isEmpty(filePath) || isInXmlFolder(filePath) || isExcluded(filePath))
       return false;
 
     String fileNameStr = filePath.getNameOnly().toString();
@@ -3287,6 +3306,105 @@ public class FullTextIndexer
   {
     try { return doSearch(after, query, null, maxResults, fileMask, pathScope, folderPrefix, onProgress); }
     catch (ParseException e) { return new SearchBatch(List.of(), false); }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** A file under the database root as a blank-query listing reports it: its DB-relative path
+   *  (forward-slash separated, as {@link SearchResult#path()} is) and whether a search can find it. */
+  public record ListedFile(String path, FileSearchability searchability) { }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Lists the files a folder- and file-mask-scoped search would consider, whether or not the
+   * index holds them: every file under the folder whose name the mask lets through. The list
+   * comes from the file registry, not the index, so the files a search cannot find (those
+   * reserved for the database, those of other types, those without text, those in excluded
+   * folders, those the indexer has not reached yet) are listed too, each saying why. Temporary
+   * files are left out, as they are from indexing. Sorted by path.
+   *
+   * @param folderPrefix DB-relative folder prefix ending in '/', or null for the whole database
+   * @param fileMask     comma-separated glob patterns, or null/blank for all files
+   */
+  public List<ListedFile> listFiles(String folderPrefix, String fileMask)
+  {
+    if (registry == null) return List.of();
+
+    List<PathMatcher> matchers = parseFileMask(fileMask);
+    List<ListedFile> listed = new ArrayList<>();
+
+    for (FilePath filePath : registry.allPaths())
+    {
+      String relPath = relativePath(filePath);
+
+      if (strNotNullOrEmpty(folderPrefix) && (relPath.startsWith(folderPrefix) == false)) continue;
+
+      if ((fileNameMatches(relPath, matchers) == false) || (isListable(filePath) == false)) continue;
+
+      listed.add(new ListedFile(relPath, searchabilityOf(filePath, relPath)));
+    }
+
+    listed.sort(Comparator.comparing(ListedFile::path, FilePath::comparePaths));
+    return listed;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The file as a listing reports it (see {@link #listFiles}), or null if it is one a listing
+   *  leaves out or the indexer has not been brought online. */
+  public ListedFile listFile(FilePath filePath)
+  {
+    if ((registry == null) || (isListable(filePath) == false)) return null;
+
+    String relPath = relativePath(filePath);
+    return new ListedFile(relPath, searchabilityOf(filePath, relPath));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Whether a listing includes the path: a real file that is not a temporary file. The
+   *  existence check comes last because it is the one that reads the disk. */
+  private boolean isListable(FilePath filePath)
+  {
+    if (FilePath.isEmpty(filePath) || FilePath.isTemporaryFile(filePath.getNameOnly().toString())) return false;
+
+    return filePath.isFile();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Why a search can or cannot find the file: judged as {@link #isIndexable} judges whether to
+   *  index it, and then by what the last attempt to index it came to. */
+  private FileSearchability searchabilityOf(FilePath filePath, String relPath)
+  {
+    if (isReservedFile(filePath))
+      return FileSearchability.RESERVED_FILE;
+
+    if (isExcluded(filePath) || matchesAnyPattern(filePath.getNameOnly().toString(), excludedFileMasks))
+      return FileSearchability.EXCLUDED;
+
+    String ext = filePath.getExtensionOnly();
+
+    if (strNullOrBlank(ext) || (indexableExtensions().contains(ext.toLowerCase()) == false))
+      return FileSearchability.UNSUPPORTED_TYPE;
+
+    FileIndexEntry entry = metadataMap.get(relPath);
+
+    if (entry == null) return FileSearchability.PENDING;
+
+    return switch (entry.status())
+    {
+      case INDEXED   -> FileSearchability.INDEXED;
+      case NO_TEXT   -> FileSearchability.NO_TEXT;
+      case FAILED    -> FileSearchability.FAILED;
+      case ABANDONED -> FileSearchability.ABANDONED;
+    };
   }
 
 //---------------------------------------------------------------------------

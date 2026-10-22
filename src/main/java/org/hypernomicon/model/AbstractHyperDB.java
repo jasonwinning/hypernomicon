@@ -2853,7 +2853,7 @@ public abstract class AbstractHyperDB
             boolean ftsIndexingEnabled = app.prefs.getBoolean(PrefKey.FTS_INDEXING_ENABLED, true) && (jxBrowserDisabled == false);
             int ftsThreadCount = app.prefs.getInt(PrefKey.FTS_THREAD_COUNT, -1);
 
-            indexer.bringOnline(rootFilePath, indexDir, registryAccessor);
+            indexer.bringOnline(rootFilePath, indexDir, registryAccessor, filePath -> isProtectedFile(filePath, false));
 
             if (ftsIndexingEnabled)
             {

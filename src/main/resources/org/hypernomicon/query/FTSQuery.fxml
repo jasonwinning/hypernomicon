@@ -104,6 +104,7 @@
           <TableColumn fx:id="colMatches" text="Matches" />
           <TableColumn fx:id="colExcerpt" prefWidth="400.0" text="Excerpt" />
           <TableColumn fx:id="colFilePath" prefWidth="200.0" text="File Path" />
+          <TableColumn fx:id="colStatus" prefWidth="120.0" text="Index Status" visible="false" />
         </columns>
       </TableView>
     </AnchorPane>

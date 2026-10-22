@@ -26,16 +26,18 @@ import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 
+import static org.hypernomicon.fts.FileSearchability.*;
+import static org.hypernomicon.model.AbstractHyperDB.*;
 import static org.hypernomicon.util.TestUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.lucene.search.Query;
-import org.hypernomicon.fts.FullTextIndexer.IndexerState;
-import org.hypernomicon.fts.FullTextIndexer.SearchResult;
+import org.hypernomicon.fts.FullTextIndexer.*;
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.searchKeys.SearchKeys;
 import org.hypernomicon.util.file.*;
@@ -78,6 +80,7 @@ class FullTextIndexerTest
   private Path dbRoot, indexDir;
   private RegistryAccessor registry;
   private FullTextIndexer indexer;
+  private Predicate<FilePath> protectedFiles = _ -> false;  // Stands in for the database's protected-file check
 
 //---------------------------------------------------------------------------
 
@@ -214,7 +217,7 @@ class FullTextIndexerTest
     if (indexableExtensions != null)
       indexer.setIndexableExtensionsForTesting(indexableExtensions);
 
-    indexer.bringOnline(FilePath.of(dbRoot), FilePath.of(indexDir), registry);
+    indexer.bringOnline(FilePath.of(dbRoot), FilePath.of(indexDir), registry, protectedFiles);
     return indexer;
   }
 
@@ -803,6 +806,101 @@ class FullTextIndexerTest
     assertEquals(2, indexer.countMatches("alpha", null, Set.of("a.txt", "sub/b.txt", "d.txt"), null), "a path scope counts only its matching files");
 
     closeSession();
+  }
+
+//---------------------------------------------------------------------------
+
+  /** A blank query lists the files in its scope from the file registry rather than the index,
+   *  so the listing also holds the files a search cannot find, each saying why; temporary files
+   *  stay out of it as they stay out of the index. */
+  @Test void listingCoversEveryFileInTheScopeAndSaysWhetherASearchCouldFindIt() throws Exception
+  {
+    Path subDir   = Files.createDirectory(dbRoot.resolve("sub")),
+         exclDir  = Files.createDirectory(dbRoot.resolve("excluded")),
+         indexed  = writeDbFile("a.txt", "alpha"),
+         noText   = writeDbFile("sub/empty.txt", ""),
+         image    = writeDbFile("sub/picture.jpg", new byte[] { 1, 2, 3 }),
+         excluded = writeDbFile("excluded/b.txt", "alpha"),
+         lockFile = writeDbFile("sub/~$lock.txt", "alpha");
+
+    activateRegistry(subDir, exclDir, indexed, noText, image, excluded, lockFile);
+
+    openSession(SCHEMA_V1);
+    indexer.setExcludedPaths(List.of(FilePath.of(exclDir)));
+
+    assertEquals(Map.of("a.txt", PENDING, "sub/empty.txt", PENDING, "sub/picture.jpg", UNSUPPORTED_TYPE, "excluded/b.txt", EXCLUDED),
+                 searchabilities(indexer.listFiles(null, null)),
+                 "before the build, every file but the temporary one is listed, the indexable ones as pending");
+
+    buildAndAwait(indexer);
+
+    assertEquals(Map.of("a.txt", INDEXED, "sub/empty.txt", NO_TEXT, "sub/picture.jpg", UNSUPPORTED_TYPE, "excluded/b.txt", EXCLUDED),
+                 searchabilities(indexer.listFiles(null, null)),
+                 "after the build, each file says what the index made of it");
+
+    assertEquals(List.of("sub/empty.txt", "sub/picture.jpg"), paths(indexer.listFiles("sub/", null)), "a folder lists only the files under it, sorted by path");
+    assertEquals(List.of("a.txt", "excluded/b.txt", "sub/empty.txt"), paths(indexer.listFiles(null, "*.txt")), "a file mask lists only the files whose names it matches");
+    assertEquals(List.of("sub/empty.txt"), paths(indexer.listFiles("sub/", "*.txt")), "a folder and a file mask both apply");
+
+    assertEquals(new ListedFile("sub/empty.txt", NO_TEXT), indexer.listFile(FilePath.of(noText)), "one file is reported as the listing reports it");
+    assertNull(indexer.listFile(FilePath.of(lockFile)), "a temporary file is not reported");
+
+    Files.delete(image);
+
+    assertEquals(List.of("sub/empty.txt"), paths(indexer.listFiles("sub/", null)), "a file that is gone is not listed, though the registry still holds its path");
+
+    closeSession();
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Files reserved for the database are listed as reserved: everything in its XML folder, which is
+   *  never indexed even when of an indexable type, such as a description template, and any other
+   *  file the database protects, such as its .hdb file. An .hdb file it does not protect is listed
+   *  by its type, like any other file. */
+  @Test void listingReportsReservedFilesAsReserved() throws Exception
+  {
+    String recordRelPath   = DEFAULT_XML_PATH + "/Persons.xml",
+           templateRelPath = DEFAULT_XML_PATH + '/' + DESC_TEMPLATE_FOLDER_NAME + "/Work.html";
+
+    Path xmlDir      = Files.createDirectory(dbRoot.resolve(DEFAULT_XML_PATH)),
+         templateDir = Files.createDirectory(xmlDir.resolve(DESC_TEMPLATE_FOLDER_NAME)),
+         recordFile  = writeDbFile(recordRelPath, "<records/>"),
+         template    = writeDbFile(templateRelPath, "<html><body>alpha</body></html>"),
+         hdbFile     = writeDbFile("database.hdb", recordRelPath),
+         otherHdb    = writeDbFile("old copy.hdb", recordRelPath),
+         document    = writeDbFile("a.txt", "alpha");
+
+    activateRegistry(xmlDir, templateDir, recordFile, template, hdbFile, otherHdb, document);
+
+    protectedFiles = filePath -> filePath.equals(FilePath.of(hdbFile));  // As the database protects its own .hdb file
+
+    buildAndAwait(openSession(SCHEMA_V1));
+    awaitTrue(() -> found(indexer, "alpha", "a.txt"), "the document should be indexed");
+
+    assertFalse(found(indexer, "alpha", templateRelPath), "the template is not indexed, though its type is indexable");
+
+    assertEquals(Map.of(recordRelPath, RESERVED_FILE, templateRelPath, RESERVED_FILE, "database.hdb", RESERVED_FILE, "old copy.hdb", UNSUPPORTED_TYPE, "a.txt", INDEXED),
+                 searchabilities(indexer.listFiles(null, null)),
+                 "the files reserved for the database are listed as reserved, the others by what the index made of them");
+
+    closeSession();
+  }
+
+//---------------------------------------------------------------------------
+
+  private static List<String> paths(List<ListedFile> listed)
+  {
+    return listed.stream().map(ListedFile::path).toList();
+  }
+
+//---------------------------------------------------------------------------
+
+  private static Map<String, FileSearchability> searchabilities(List<ListedFile> listed)
+  {
+    Map<String, FileSearchability> map = new HashMap<>();
+    listed.forEach(file -> map.put(file.path(), file.searchability()));
+    return map;
   }
 
 //---------------------------------------------------------------------------

@@ -219,6 +219,16 @@ class SearchResultFileList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** A file of the scope with the page range the scope restricts it to; {@code endPage} is
+   *  {@code 0} when the range runs to the end of the file. */
+  record ScopedFile(FilePath filePath, int startPage, int endPage)
+  {
+    boolean hasPageRestriction() { return (startPage > 1) || (endPage > 0); }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final List<SearchResultFile> list = new ArrayList<>();
   private final List<String> errList = new ArrayList<>();
   private final boolean copyingEntirePDFs, includeEdited;
@@ -508,6 +518,19 @@ class SearchResultFileList
 
     desc.sort(String.CASE_INSENSITIVE_ORDER);
     return desc;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** The scope's files with their page ranges, sorted by path and then by start page; a file
+   *  the scope holds in several separate page ranges appears once per range. */
+  List<ScopedFile> getScopedFiles()
+  {
+    return list.stream()
+      .map(rf -> new ScopedFile(rf.filePath, rf.startPage, (rf.endPage == Integer.MAX_VALUE) ? 0 : rf.endPage))
+      .sorted(Comparator.comparing((ScopedFile scoped) -> scoped.filePath().toString(), FilePath::comparePaths).thenComparingInt(ScopedFile::startPage))
+      .toList();
   }
 
 //---------------------------------------------------------------------------
