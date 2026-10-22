@@ -20,7 +20,6 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.tree.AbstractTreeRow;
@@ -47,6 +46,8 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   private ScheduledExecutorService expandExecutor;
   private TreeItem<?> pendingExpandItem;
 
+  private static boolean dragInProgress = false;  // FX thread only
+
 //---------------------------------------------------------------------------
 
   protected DragNDropContainer()
@@ -61,6 +62,13 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   protected abstract boolean isValidDragTarget(RowType item, DragEvent event, TreeItem<RowType> treeItem);
   protected abstract void dragDroppedOnto(RowType item);
   protected abstract Control getControl();
+
+  /**
+   * Whether a drag that started in one of these containers is in progress. The FX thread is then
+   * inside the drag's own event loop, and a modal dialog opened from there does not respond,
+   * so {@code MainCtrlr.isIdle} counts a drag as being busy.
+   */
+  public static boolean isDragInProgress() { return dragInProgress; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -95,7 +103,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
     }
 
     pendingExpandItem = null;
-    App.dragInProgress = false;
+    dragInProgress = false;
   }
 
 //---------------------------------------------------------------------------
@@ -165,13 +173,17 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
       {
         if ((cell.getItem() == null) || event.isBackButtonDown() || event.isForwardButtonDown()) return;
 
-        App.dragInProgress = true;
-
         Dragboard dragBoard = cell.startDragAndDrop(TransferMode.COPY, TransferMode.MOVE);
         startDrag(cell.getItem());
         ClipboardContent content = new ClipboardContent();
         content.put(HYPERNOMICON_DATA_FORMAT, "");
         dragBoard.setContent(content);
+
+        // Set only once the dragboard has content: the gesture then starts, so DRAG_DONE, which
+        // clears this, is sure to follow. Set before a failure above, it would stay set, and
+        // MainCtrlr.isIdle would refuse every import until another drag ended.
+
+        dragInProgress = true;
       }
       catch (Throwable th)
       {
@@ -192,7 +204,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
         logThrowable(th);
       }
 
-      App.dragInProgress = false;
+      dragInProgress = false;
 
       event.consume();
     });

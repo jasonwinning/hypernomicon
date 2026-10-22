@@ -23,8 +23,11 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.*;
+
+import javafx.application.Platform;
 
 //---------------------------------------------------------------------------
 
@@ -100,6 +103,55 @@ class UtilTest
                  result = removeDuplicatesInPlace(list);
 
     assertEquals(expected, result, "The list should have only one element after removing all duplicates.");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void testIsPausedForRunLaters_OnlyInsideThePause()
+  {
+    FxTestUtil.initJfx();
+
+    AtomicBoolean before = new AtomicBoolean(true), inside = new AtomicBoolean(false), after = new AtomicBoolean(true);
+
+    FxTestUtil.runFxAndWait(() ->
+    {
+      before.set(isPausedForRunLaters());
+
+      Platform.runLater(() -> inside.set(isPausedForRunLaters()));
+      pauseAndWaitForRunLaters();
+
+      after.set(isPausedForRunLaters());
+    });
+
+    assertFalse(before.get(), "isPausedForRunLaters should be false before the pause starts.");
+    assertTrue (inside.get(), "isPausedForRunLaters should be true in a runnable dispatched from the pause.");
+    assertFalse(after .get(), "isPausedForRunLaters should be false once the pause has ended.");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void testIsPausedForRunLaters_NestedPauses()
+  {
+    FxTestUtil.initJfx();
+
+    AtomicBoolean afterInner = new AtomicBoolean(false), afterOuter = new AtomicBoolean(true);
+
+    FxTestUtil.runFxAndWait(() ->
+    {
+      Platform.runLater(() ->
+      {
+        pauseAndWaitForRunLaters();
+        afterInner.set(isPausedForRunLaters());
+      });
+
+      pauseAndWaitForRunLaters();
+      afterOuter.set(isPausedForRunLaters());
+    });
+
+    assertTrue (afterInner.get(), "isPausedForRunLaters should still be true when a pause nested in another one ends.");
+    assertFalse(afterOuter.get(), "isPausedForRunLaters should be false once the outermost pause has ended.");
   }
 
 //---------------------------------------------------------------------------

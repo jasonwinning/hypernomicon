@@ -55,7 +55,6 @@ import com.google.common.base.Suppliers;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert.AlertType;
-import javafx.stage.Modality;
 
 //---------------------------------------------------------------------------
 
@@ -319,16 +318,21 @@ public class FolderTreeWatcher
 
     private void doImport(FilePath filePath)
     {
-      if (alreadyImporting || dragInProgress || (ui.windows.getOutermostModality() != Modality.NONE)) return;
+      // Checked when the request runs on the FX thread, not when it is made: a new file usually
+      // leads here twice at about the same time, from two threads (the size poll its create event
+      // starts, and the watcher thread handling its modify event), and only on the FX thread is the
+      // check free of races. It comes before the call to importWorkFile, which refuses on the same
+      // grounds, because a refusal there looks like a cancelled import, and a file turned away while
+      // something else is open has to stay in recentlyCreated so that its next modify event can
+      // offer it again.
 
       Platform.runLater(() ->
       {
+        if (ui.isIdle() == false) return;
+
         ui.importWorkFile(null, filePath, true);
         recentlyCreated.get().remove(filePath);
-        alreadyImporting = false;
       });
-
-      alreadyImporting = true;
     }
 
     //---------------------------------------------------------------------------
@@ -876,7 +880,6 @@ public class FolderTreeWatcher
   private final Supplier<FilePathSet> recentlyCreated = Suppliers.memoize(FilePathSet::new);
   private final Map<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
   public static final long FOLDER_TREE_WATCHER_POLL_TIME_MS = 250L;
-  private static boolean alreadyImporting = false;
   private volatile boolean stopRequested = false,
                            stopped = true,
                            disabled = false;

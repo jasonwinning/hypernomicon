@@ -1849,6 +1849,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       pdfFilePaths = safeListOf(db.resolveExtFilePath(tfURL.getText()));
 
     BibData workBD = curWork.getBibData();
+    HDT_Work work = curWork;
 
     tabPane.getSelectionModel().select(tabBibDetails);
     setAllVisible(true, btnStop, progressBar);
@@ -1864,23 +1865,32 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         return;
       }
 
-      MergeWorksDlgCtrlr mwd;
+      // The lookup may end while an import or another dialog is open, so the merge dialog waits its
+      // turn. Moving to another record stops a lookup still running; the result of one that has
+      // already finished is dropped here instead.
 
-      try
+      ui.runWhenIdle(() ->
       {
-        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBD, pdfBD, queryBD, supplementBD), curWork, false, true, Ternary.Unset);
-      }
-      catch (IOException e)
-      {
-        errorPopup("Unable to initialize merge dialog window.");
-        return;
-      }
+        if (curWork != work) return;
 
-      if (mwd.showModal() == false) return;
+        MergeWorksDlgCtrlr mwd;
 
-      mwd.mergeIntoWork(curWork);
-      BibManager.refresh();
-      ui.update();
+        try
+        {
+          mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(workBD, pdfBD, queryBD, supplementBD), curWork, false, true, Ternary.Unset);
+        }
+        catch (IOException e)
+        {
+          errorPopup("Unable to initialize merge dialog window.");
+          return;
+        }
+
+        if (mwd.showModal() == false) return;
+
+        mwd.mergeIntoWork(curWork);
+        BibManager.refresh();
+        ui.update();
+      });
     });
   }
 

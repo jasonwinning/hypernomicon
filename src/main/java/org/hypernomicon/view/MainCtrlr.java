@@ -98,6 +98,7 @@ import org.controlsfx.control.textfield.TextFields;
 import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.lucene.search.Query;
 
 import com.google.common.collect.EnumHashBiMap;
@@ -190,7 +191,8 @@ public final class MainCtrlr
   private TextField tfSelector = null;
 
   private boolean selectorTabChangeIsProgrammatic   = false, dontShowOmniTable     = false, maximized    = false,
-                  btnTextSearchToggleIsProgrammatic = false, internetNotCheckedYet = true , shuttingDown = false;
+                  btnTextSearchToggleIsProgrammatic = false, internetNotCheckedYet = true , shuttingDown = false,
+                  importInProgress                  = false;  // FX thread only; see runImport
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
   private Instant lastImportTime = Instant.EPOCH;
   private FilePath lastImportFilePath = null;
@@ -3755,10 +3757,77 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Whether the FX thread is idle, meaning that it is not in the middle of an operation: no import is in
+   * progress, no modal window is open, no drag is in progress ({@link DragNDropContainer#isDragInProgress()}),
+   * and the thread is not in the pause in which a task's progress dialog waits to appear, which opens no
+   * window ({@link Util#isPausedForRunLaters()}). Tasks running in the background do not count.
+   * <p>
+   * Imports start only when this is true ({@link #runImport}), and so do dialogs that come at a time of
+   * their own choosing, such as the merge dialog at the end of a lookup ({@link #runWhenIdle}). Requests
+   * like these, and the folder watcher's, are dispatched from the FX event queue, so they can arrive inside
+   * the nested event loop of a modal window, a drag or that pause, in the middle of the operation that
+   * opened it.
+   */
+  public boolean isIdle()
+  {
+    return (importInProgress == false) && (windows.getOutermostModality() == Modality.NONE) &&
+           (isPausedForRunLaters() == false) && (DragNDropContainer.isDragInProgress() == false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Runs an import, a chain of modal dialogs (selecting a work, merging bibliographic fields, the work or
+   * file dialog) with changes to the database between them, if the FX thread is {@linkplain #isIdle() idle};
+   * otherwise does nothing. No other import can start until it returns.
+   * @return false if the import was refused
+   */
+  public boolean runImport(Runnable importer)
+  {
+    if (isIdle() == false) return false;
+
+    importInProgress = true;
+
+    try
+    {
+      importer.run();
+    }
+    finally
+    {
+      importInProgress = false;
+    }
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Runs {@code action} once the FX thread is {@linkplain #isIdle() idle}: now if it is, otherwise once no
+   * modal window has been open for a moment, when it checks again. For a dialog the user asked for that
+   * opens when something finishes, such as a lookup, so that it waits its turn instead of opening over an
+   * import or another dialog, or being dropped. Unlike {@link #runImport}, it does not count as an import.
+   */
+  public void runWhenIdle(Runnable action)
+  {
+    if (isIdle())
+      action.run();
+    else
+      windows.runInFXThreadAfterModalPopups(250, () -> runWhenIdle(action));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void importMiscFile(FileRow fileRow, FilePath filePath)
   {
-    importMiscFile(fileRow, filePath, true);
+    runImport(() -> importMiscFile(fileRow, filePath, true));
   }
+
+  // Not guarded, unlike the overload above: importWorkFile calls this in the middle of its own import
 
   private void importMiscFile(FileRow fileRow, FilePath filePath, boolean save)
   {
@@ -3789,6 +3858,15 @@ public final class MainCtrlr
   }
 
   private boolean importWorkFile(HDT_Person person, FilePath filePathToUse, boolean promptForExistingRecord, boolean includeMiscFileOption)
+  {
+    MutableBoolean imported = new MutableBoolean(false);
+
+    runImport(() -> imported.setValue(importWorkFileInternal(person, filePathToUse, promptForExistingRecord, includeMiscFileOption)));
+
+    return imported.isTrue();
+  }
+
+  private boolean importWorkFileInternal(HDT_Person person, FilePath filePathToUse, boolean promptForExistingRecord, boolean includeMiscFileOption)
   {
     if (filePathToUse != null)
     {
@@ -3939,7 +4017,9 @@ public final class MainCtrlr
 
   public void handleArgs(List<String> args)
   {
-    if (db.isOffline() || collEmpty(args) || (windows.getOutermostModality() != Modality.NONE)) return;
+    // The imports below check this too, but the popup asking what to import the file as comes first
+
+    if (db.isOffline() || collEmpty(args) || (isIdle() == false)) return;
 
     FilePath filePath = FilePath.of(args.getFirst());
 
@@ -3993,6 +4073,11 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 
   private void importBibFile(List<String> lines, FilePath filePath)
+  {
+    runImport(() -> importBibFileInternal(lines, filePath));
+  }
+
+  private void importBibFileInternal(List<String> lines, FilePath filePath)
   {
     if (cantSaveRecord()) return;
 

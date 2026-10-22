@@ -554,24 +554,29 @@ public final class BibManager extends NonmodalWindow
         return;
       }
 
-      MergeWorksDlgCtrlr mwd;
+      // The lookup may end while an import or another dialog is open, so the merge dialog waits its turn
 
-      try
+      ui.runWhenIdle(() ->
       {
-        mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(entry, pdfBD, queryBD, supplementBD), entry.getWork(), false, false, Ternary.False);
-      }
-      catch (IOException e)
-      {
-        errorPopup("Unable to initialize merge dialog window.");
-        return;
-      }
+        MergeWorksDlgCtrlr mwd;
 
-      if (mwd.showModal() == false) return;
+        try
+        {
+          mwd = new MergeWorksDlgCtrlr("Select How to Merge Fields", Stream.of(entry, pdfBD, queryBD, supplementBD), entry.getWork(), false, false, Ternary.False);
+        }
+        catch (IOException e)
+        {
+          errorPopup("Unable to initialize merge dialog window.");
+          return;
+        }
 
-      mwd.mergeInto(entry);
+        if (mwd.showModal() == false) return;
 
-      refresh();
-      ui.update();
+        mwd.mergeInto(entry);
+
+        refresh();
+        ui.update();
+      });
     });
   }
 

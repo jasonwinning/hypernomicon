@@ -819,6 +819,18 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static int runLaterPauseDepth = 0;  // FX thread only
+
+  /**
+   * Whether the FX thread is inside {@link #pauseAndWaitForRunLaters()}, so that the code
+   * running now was dispatched from that nested event loop, in the middle of whatever
+   * paused. No window shows that this is so, unlike the nested loop of a modal dialog.
+   */
+  public static boolean isPausedForRunLaters() { return runLaterPauseDepth > 0; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /**
    * Pauses execution and waits for pending {@link Platform#runLater(Runnable)} calls
    * to be processed before returning.
@@ -832,7 +844,9 @@ public final class Util
    * wait for itself any other way. The nested loop is a real event loop: input events,
    * timers and other handlers can run inside it, so call this only where that is
    * acceptable, as before a progress dialog is shown or in a test runner, never from
-   * layout or from the middle of a change that other handlers may observe.
+   * layout or from the middle of a change that other handlers may observe. While it runs,
+   * {@link #isPausedForRunLaters()} is true, so code that must not start in the middle of
+   * another operation can tell, as {@code MainCtrlr.isIdle} does.
    * </p>
    * <p>
    * The counterpart for a task thread is {@link org.hypernomicon.HyperTask#waitForFXThread()},
@@ -844,7 +858,17 @@ public final class Util
   {
     Object exitKey = new Object();
     Platform.runLater(() -> Platform.exitNestedEventLoop(exitKey, null));
-    Platform.enterNestedEventLoop(exitKey);
+
+    runLaterPauseDepth++;
+
+    try
+    {
+      Platform.enterNestedEventLoop(exitKey);
+    }
+    finally
+    {
+      runLaterPauseDepth--;
+    }
   }
 
 //---------------------------------------------------------------------------
