@@ -1671,8 +1671,6 @@ public final class FileManager extends NonmodalWindow
 
       stage.setTitle(dialogTitle + " - " + curFolder.filePath());
 
-      fileTV.sort();
-
       if (FilePath.isEmpty(filePath) == false)
         fileTable.selectByFileName(filePath);
     }

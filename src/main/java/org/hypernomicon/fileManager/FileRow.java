@@ -17,7 +17,7 @@
 
 package org.hypernomicon.fileManager;
 
-import java.io.IOException;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.Locale;
 
@@ -51,20 +51,42 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
   private final HyperPath hyperPath;
   private final boolean isDir;
+  private final ObjectCellValue<Instant> modifiedDateCellValue;
+  private final ObjectCellValue<Long> sizeCellValue;
   private MediaType mimetype = null;
 
 //---------------------------------------------------------------------------
 
+  /**
+   * A row for the file table. Its date and size come from {@code attrs}, read when the table listed
+   * the folder, so that showing or sorting by the Modified and Size columns never goes back to the
+   * disk; the table builds new rows each time it lists a folder. Null {@code attrs} (the entry could
+   * not be read) make a file row with no date or size.
+   */
+  FileRow(HyperPath hyperPath, BasicFileAttributes attrs)
+  {
+    this(hyperPath, (attrs != null) && attrs.isDirectory(), attrs, null);
+  }
+
+  /** A row without a date or size. Only the file table shows those, and it builds its rows from attributes. */
   FileRow(HyperPath hyperPath, boolean isDir)
   {
-    this(hyperPath, isDir, null);
+    this(hyperPath, isDir, null, null);
   }
 
   FileRow(HyperPath hyperPath, boolean isDir, TreeModel<FileRow> treeModel)
   {
+    this(hyperPath, isDir, null, treeModel);
+  }
+
+  private FileRow(HyperPath hyperPath, boolean isDir, BasicFileAttributes attrs, TreeModel<FileRow> treeModel)
+  {
     super(treeModel);
     this.hyperPath = hyperPath;
     this.isDir = isDir;
+
+    modifiedDateCellValue = modifiedDateCellValueFrom(attrs);
+    sizeCellValue         = sizeCellValueFrom(attrs, isDir);
 
     if (treeModel != null)
       treeItem = new TreeItem<>(this);
@@ -79,7 +101,10 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
   HyperPath getHyperPath()      { return hyperPath; }
   private void determineType()  { if (mimetype == null) mimetype = getMediaType(hyperPath.filePath()); }
 
-  void setFolderTreeItem(TreeItem<FileRow> treeItem) { this.treeItem  = treeItem; }
+  ObjectCellValue<Instant> getModifiedDateCellValue() { return modifiedDateCellValue; }
+  ObjectCellValue<Long> getSizeCellValue()            { return sizeCellValue; }
+
+  void setFolderTreeItem(TreeItem<FileRow> treeItem)  { this.treeItem  = treeItem; }
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_RecordWithPath> HDT_T getRecord() { return (HDT_T) hyperPath.getRecord(); }
@@ -156,41 +181,31 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ObjectCellValue<Instant> getModifiedDateCellValue()
+  /** The Modified column's value, truncated to milliseconds as {@link FilePath#lastModified()}
+   *  truncates it; blank without attributes. */
+  private static ObjectCellValue<Instant> modifiedDateCellValueFrom(BasicFileAttributes attrs)
   {
-    FilePath filePath = hyperPath.filePath();
-
-    if (FilePath.isEmpty(filePath))
+    if (attrs == null)
       return new ObjectCellValue<>("", NO_DATE);
 
-    try
-    {
-      Instant i = filePath.lastModified();
-      return new ObjectCellValue<>(dateTimeToUserReadableStr(i), i);
-    }
-    catch (IOException e)
-    {
-      return new ObjectCellValue<>("", NO_DATE);
-    }
+    Instant modified = Instant.ofEpochMilli(attrs.lastModifiedTime().toMillis());
+    return new ObjectCellValue<>(dateTimeToUserReadableStr(modified), modified);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ObjectCellValue<Long> getSizeCellValue()
+  /** The Size column's value: blank for a folder, and blank with a value of -1 for a file whose
+   *  attributes could not be read. */
+  private static ObjectCellValue<Long> sizeCellValueFrom(BasicFileAttributes attrs, boolean isDir)
   {
-    long size = 0L;
-    FilePath filePath = hyperPath.filePath();
+    if (isDir)
+      return new ObjectCellValue<>("", 0L);
 
-    if (FilePath.isEmpty(filePath) == false)
-    {
-      if (filePath.isDirectory()) return new ObjectCellValue<>("", 0L);
+    if (attrs == null)
+      return new ObjectCellValue<>("", (long) -1);
 
-      try                   { size = filePath.size(); }
-      catch (IOException e) { return new ObjectCellValue<>("", (long) -1); }
-    }
-
-    return new ObjectCellValue<>(formatFileSize(size, false, 0), size);
+    return new ObjectCellValue<>(formatFileSize(attrs.size(), false, 0), attrs.size());
   }
 
 //---------------------------------------------------------------------------

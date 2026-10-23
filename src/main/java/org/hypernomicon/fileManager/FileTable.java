@@ -24,9 +24,9 @@ import static org.hypernomicon.Const.*;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
@@ -198,6 +198,8 @@ class FileTable extends DragNDropContainer<FileRow>
     if ((folderPath == null) || (folderPath.exists() == false))
       return;
 
+    List<FileRow> newRows = new ArrayList<>();
+
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(folderPath.toPath()))
     {
       for (Path entry: stream)
@@ -205,16 +207,24 @@ class FileTable extends DragNDropContainer<FileRow>
         FilePath filePath = FilePath.of(entry);
 
         Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
-        boolean isDir = filePath.isDirectory();
+
+        // One read tells the row whether the entry is a folder and gives it its date and size, so
+        // that showing or sorting by the Modified and Size columns never goes back to the disk. An
+        // entry that cannot be read (deleted since the listing began, or access denied) is listed
+        // as a file with no date or size.
+
+        BasicFileAttributes attrs;
+
+        try                   { attrs = Files.readAttributes(entry, BasicFileAttributes.class); }
+        catch (IOException e) { attrs = null; }
 
         if (set.isEmpty() == false)
         {
-          FileRow row = new FileRow(set.iterator().next(), isDir);
+          FileRow row = new FileRow(set.iterator().next(), attrs);
+          newRows.add(row);
 
-          if (isDir)
+          if (row.isDirectory())
           {
-            addToSortedList(rows, row);
-
             for (TreeItem<FileRow> childTreeItem : parentTreeItem.getChildren())
             {
               FileRow fileRow = childTreeItem.getValue();
@@ -227,12 +237,10 @@ class FileTable extends DragNDropContainer<FileRow>
                 }
             }
           }
-          else
-            addToSortedList(rows, row);
         }
         else
         {
-          addToSortedList(rows, new FileRow(new HyperPath(filePath), isDir));
+          newRows.add(new FileRow(new HyperPath(filePath), attrs));
         }
       }
     }
@@ -240,6 +248,14 @@ class FileTable extends DragNDropContainer<FileRow>
     {
       errorPopup("An error occurred while displaying the folder's contents: " + getThrowableMessage(e));
     }
+
+    // The table re-sorts itself only when its sort order changes, not when its items do, so the
+    // rows go in already in the order of its sorted columns, or in name order when none is sorted
+
+    Comparator<FileRow> comparator = fileTV.getComparator();
+
+    newRows.sort((comparator == null) ? Comparator.naturalOrder() : comparator);
+    rows.setAll(newRows);
   }
 
 //---------------------------------------------------------------------------
