@@ -844,12 +844,7 @@ public abstract class AbstractHyperDB
     datasets.get(type).writeToXML(xml, task);
 
     if (task != null)
-    {
-      task.completedCount += records(type).size();
-
-      if (EnumSet.of(hdtDebate, hdtNote, hdtPersonGroup, hdtWorkLabel, hdtGlossary).contains(type))
-        task.completedCount--;
-    }
+      task.completedCount += records(type).stream().filter(record -> isUnstoredRecord(record) == false).count();
   }
 
 //---------------------------------------------------------------------------
@@ -865,23 +860,7 @@ public abstract class AbstractHyperDB
 
     HyperTask task = new HyperTask("SaveAllToXML", SAVING_XML_FILES_MESSAGE) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
-      totalCount = 0;
-      accessors.forEach((type, accessor) ->
-      {
-        switch (type)
-        {
-          case hdtNone :
-            break;
-
-          case hdtDebate : case hdtNote : case hdtPersonGroup : case hdtWorkLabel : case hdtGlossary :
-            totalCount += accessor.size() - 1;
-            break;
-
-          default :
-            totalCount += accessor.size();
-            break;
-        }
-      });
+      totalCount = allRecords().filter(record -> isUnstoredRecord(record) == false).count();
 
       try
       {

@@ -569,7 +569,7 @@ public class MainTextCtrlr
 
   public static Stream<RecordType> displayedTypesStream()
   {
-    return EnumSet.allOf(RecordType.class).stream().filter(type -> type.hasMainText() && (type != hdtHub) && (type != hdtWorkLabel));
+    return allRealRecordTypesExceptHubs().stream().filter(type -> type.hasMainText() && (type != hdtWorkLabel));
   }
 
 //---------------------------------------------------------------------------

@@ -57,7 +57,6 @@ class MentionsIndex
                                        mentionedAnywhereToMentioners = new BidiOneToManyRecordMap();
   private final Set<HDT_Record> removedRecords = ConcurrentHashMap.newKeySet();
   private final List<Runnable> ndxCompleteHandlers;
-  private final EnumSet<RecordType> types;
   private final List<String> strList = new ArrayList<>();
   private final List<List<String>> logRows = new ArrayList<>();
   private final boolean asynchronous;
@@ -71,9 +70,6 @@ class MentionsIndex
   {
     this.ndxCompleteHandlers = ndxCompleteHandlers;
     this.asynchronous = asynchronous;
-
-    types = EnumSet.allOf(RecordType.class);
-    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
   }
 
 //---------------------------------------------------------------------------
@@ -81,6 +77,11 @@ class MentionsIndex
   boolean waitUntilRebuildIsDone() { return (asynchronous == false) || (isRebuilding() == false) || (task.runWithProgressDialog() == State.SUCCEEDED); }
   boolean isRebuilding()           { return (task != null) && task.threadIsAlive(); }
   void stopRebuild()               { if (isRebuilding()) task.cancelAndWait(); }
+
+  /** The records worth scanning for mentions: every record but a hub, whose text is its members'
+   *  own and whose mentions the maps credit to them anyway (see
+   *  {@link BidiOneToManyRecordMap#addForward(HDT_Record, HDT_Record)}). */
+  private static Stream<HDT_Record> potentialMentioners() { return db.allRecords().filter(record -> record.getType() != hdtHub); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -305,9 +306,7 @@ class MentionsIndex
 
     clear();
 
-    for (RecordType type : types)
-      for (HDT_Record record : db.records(type))
-        reindexMentioner(record);
+    potentialMentioners().forEach(this::reindexMentioner);
 
     ndxCompleteHandlers.forEach(Runnable::run);
   }
@@ -325,19 +324,20 @@ class MentionsIndex
       {
         clear();
 
-        totalCount = types.stream().map(db::records).mapToLong(Collection::size).sum();
+        List<HDT_Record> mentioners = potentialMentioners().toList();  // A copy, since records can be created and deleted while the task runs
+
+        totalCount = mentioners.size();
 
         MentionsIndex.this.logFileName = logFileName;
 
         try
         {
-          for (RecordType type : types)
-            for (HDT_Record record : List.copyOf(db.records(type)))
-            {
-              incrementAndUpdateProgress(50);
+          for (HDT_Record record : mentioners)
+          {
+            incrementAndUpdateProgress(50);
 
-              reindexMentioner(record);
-            }
+            reindexMentioner(record);
+          }
         }
         finally
         {

@@ -178,7 +178,7 @@ public final class GeneralQueries
     {
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
-        vp1.setPopulator(row, new RecordTypePopulator(true));
+        vp1.setPopulator(row, new RecordTypePopulator(allRealRecordTypesExceptHubs()));
         return true;
       }
 

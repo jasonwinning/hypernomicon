@@ -47,10 +47,7 @@ public class CombinedUnfilteredQuerySource extends QuerySource
     if (newTypes == null)
       types = EnumSet.noneOf(RecordType.class);
     else if (newTypes.contains(hdtNone))
-    {
-      types = EnumSet.allOf(RecordType.class);
-      types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
-    }
+      types = allRealRecordTypesExceptHubs();
     else
       types = newTypes;
   }

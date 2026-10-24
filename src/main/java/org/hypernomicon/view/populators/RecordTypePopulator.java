@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -45,13 +44,7 @@ public class RecordTypePopulator extends Populator
 
 //---------------------------------------------------------------------------
 
-  public RecordTypePopulator(boolean noHubs)
-  {
-    types = EnumSet.allOf(RecordType.class);
-    types.removeAll(noHubs ? EnumSet.of(hdtNone, hdtAuxiliary, hdtHub) : EnumSet.of(hdtNone, hdtAuxiliary));
-  }
-
-//---------------------------------------------------------------------------
+  public RecordTypePopulator(Collection<RecordType> types)  { setTypes(types); }
 
   public RecordTypePopulator(Stream<RecordType> stream)     { setTypes(stream); }
 

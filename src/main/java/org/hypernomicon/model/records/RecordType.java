@@ -67,6 +67,21 @@ public enum RecordType
   hdtGlossary       (HDT_Glossary       .class),
   hdtConceptSense   (HDT_ConceptSense   .class),
 
+  /**
+   * Not a type that a record can be: a stand-in where a record type is required but no one
+   * type applies.
+   * <ul>
+   *   <li>As the object type of a {@link Tag} whose objects can be records of several types
+   *       ({@code spoke}, {@code key_work} and {@code display_item}). Each such XML element
+   *       names its record's type in a {@code type} attribute, which {@code HDX_Element} reads
+   *       in place of a type fixed by the tag.</li>
+   *   <li>As the type of the table cell that stands for the "Show more" button at the bottom of
+   *       an incremental column ({@code HyperTable.newShowMoreRow}, the finder's results), which
+   *       {@code ReadOnlyCell} renders as the button and which never equals a cell of another
+   *       type.</li>
+   * </ul>
+   * No record is of this type, so {@link #allRealRecordTypes()} leaves it out.
+   */
   hdtAuxiliary      (HDT_Record         .class),
 
   hdtHub            (HDT_Hub            .class);
@@ -108,6 +123,38 @@ public enum RecordType
   public boolean getDisregardDates()                  { return disregardDates; }
 
   public static RecordType typeByRecordClass(Class<? extends HDT_Record> klass) { return classToType.getOrDefault(klass, hdtNone); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Every type that a record can be: all the types but {@link #hdtNone}, which stands for no
+   * type or for any type, and {@link #hdtAuxiliary}, a stand-in where no one record type
+   * applies. No record is of either, so the database keeps no records under them.
+   *
+   * @return a new set, which the caller may change
+   */
+  public static EnumSet<RecordType> allRealRecordTypes()
+  {
+    return EnumSet.complementOf(EnumSet.of(hdtNone, hdtAuxiliary));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * {@link #allRealRecordTypes()} without {@link #hdtHub}. A hub only ties together the records
+   * that share one main text, so it is not a type of record to be chosen, queried or indexed
+   * on its own.
+   *
+   * @return a new set, which the caller may change
+   */
+  public static EnumSet<RecordType> allRealRecordTypesExceptHubs()
+  {
+    EnumSet<RecordType> types = allRealRecordTypes();
+    types.remove(hdtHub);
+    return types;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -145,7 +145,7 @@ public abstract class Query<HDT_T extends HDT_Record>
 
   static boolean recordByTypeInit(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2)
   {
-    vp1.setPopulator(row, new RecordTypePopulator(true));
+    vp1.setPopulator(row, new RecordTypePopulator(allRealRecordTypesExceptHubs()));
     vp2.setPopulator(row, new RecordByTypePopulator());
     return true;
   }

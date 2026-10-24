@@ -87,8 +87,8 @@ public class DeletionTestsCtrlr implements TestConsoleTab
 
     Random random = new Random();
 
-    EnumSet<RecordType> types = EnumSet.allOf(RecordType.class);
-    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub, hdtFolder));  // Folders deleted last
+    EnumSet<RecordType> types = allRealRecordTypesExceptHubs();
+    types.remove(hdtFolder);  // Folders deleted last
     List<RecordType> typeList = List.copyOf(types);
 
     int deleteCtr = 0;

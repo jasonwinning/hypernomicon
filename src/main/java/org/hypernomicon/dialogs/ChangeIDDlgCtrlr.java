@@ -60,7 +60,7 @@ public class ChangeIDDlgCtrlr extends ModalDialog
   {
     super("ChangeIDDlg", "Change Record ID", true);
 
-    hcbType   = new HyperCB(cbType  , ctEditableLimitedDropDown, new RecordTypePopulator(false));
+    hcbType   = new HyperCB(cbType  , ctEditableLimitedDropDown, new RecordTypePopulator(allRealRecordTypes()));
     hcbRecord = new HyperCB(cbRecord, ctEditableLimitedDropDown, new RecordByTypePopulator());
 
     hcbType.addListener((oldValue, newValue) ->

@@ -480,6 +480,14 @@ class MentionsAndDisplayIndexTest
       assertTrue(db.firstMentionsSecond(note  , term, false, new MutableBoolean(false)));
       assertTrue(db.firstMentionsSecond(debate, term, false, new MutableBoolean(false)));
 
+      // A rebuild indexes the shared text through the members, never through the hub that holds it
+
+      db.rebuildMentions();
+
+      assertTrue (db.firstMentionsSecond(note           , term, false, new MutableBoolean(false)));
+      assertTrue (db.firstMentionsSecond(debate         , term, false, new MutableBoolean(false)));
+      assertFalse(db.firstMentionsSecond(debate.getHub(), term, false, new MutableBoolean(false)));
+
       assertTrue(debate.getHub().disuniteRecord(hdtDebate));
 
       assertTrue(db.firstMentionsSecond(note  , term, false, new MutableBoolean(false)));
