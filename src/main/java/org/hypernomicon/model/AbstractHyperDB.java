@@ -257,6 +257,7 @@ public abstract class AbstractHyperDB
   public boolean idAvailable(RecordType type, int id)                { return datasets.get(type).idAvailable(id); }
   public Tag mainTextTagForRecordType(RecordType type)               { return nullSwitch(datasets.get(type), null, HyperDataset::getMainTextTag); }
   public long totalRecordCount()                                     { return accessors.values().stream().mapToLong(Collection::size).sum(); }
+  public Stream<HDT_Record> allRecords()                             { return accessors.values().stream().flatMap(Collection::stream); }
   public boolean bibLibraryIsLinked()                                { return bibLibrary != null; }
   public String bibLibraryUserFriendlyName()                         { return bibLibraryIsLinked() ? bibLibrary.getUserFriendlyName() : ""; }
   public void setBibChecksum(String checksum)                        { xmlChecksums.put(BIB_FILE_NAME, checksum); }

@@ -58,7 +58,8 @@ import static org.hypernomicon.util.Util.*;
  * The list of indexable extensions is recorded but never compared: which other
  * file types are indexable has no bearing on the text already extracted from a
  * file. Files of a newly indexable type are picked up by the initial build and
- * the consistency check like any other new file.
+ * the consistency check like any other new file, and the entries of a type that is
+ * no longer indexable are dropped when the index is brought online.
  * <p>
  * A copy is also stored as {@code index-manifest.json} alongside the Lucene index
  * and metadata. It is read back only to interpret a snapshot from a version that

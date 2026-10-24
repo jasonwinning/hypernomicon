@@ -450,6 +450,34 @@ class FullTextIndexerTest
 
 //---------------------------------------------------------------------------
 
+  @Test void removingAnIndexableExtensionDropsItsEntriesWhenTheIndexComesOnline() throws Exception
+  {
+    Path txtFile  = writeDbFile("a.txt",  "alpha alpha alpha"),
+         textFile = writeDbFile("b.text", "charlie charlie charlie");
+
+    activateRegistry(txtFile, textFile);
+
+    buildAndAwait(openSession(SCHEMA_V1, Set.of("txt", "text")));
+    awaitTrue(() -> found(indexer, "charlie", "b.text"), "initial build should index both files");
+    closeSession();
+
+    openSession(SCHEMA_V1, Set.of("txt"));
+
+    // No build has run in this session: bringing the index online is what drops the entry
+
+    assertFalse(indexer.isFileIndexed(FilePath.of(textFile)), "an entry whose type left the live set is dropped");
+    assertFalse(found(indexer, "charlie", "b.text"), "a search no longer finds the dropped entry");
+    assertTrue (found(indexer, "alpha", "a.txt"), "an entry whose type is still indexable keeps its document");
+    assertFalse(indexer.getStatistics().contains("Awaiting re-extraction"), indexer.getStatistics());
+
+    closeSession();
+
+    assertFalse(readMetadata().getArray("files").objStream().anyMatch(obj -> "b.text".equals(obj.getStr("path"))),
+                "the snapshot no longer holds the dropped entry");
+  }
+
+//---------------------------------------------------------------------------
+
   @Test void oneNoteSectionTheParserRejectsIsIndexedFromItsStrings() throws Exception
   {
     Path file = writeDbFile("notes.one", oneNoteSectionTheParserRejects(ONENOTE_HEADER_LENGTH, "charlie", "foxtrot foxtrot foxtrot"));

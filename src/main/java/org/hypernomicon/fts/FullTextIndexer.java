@@ -330,6 +330,8 @@ public class FullTextIndexer
 
   private Set<String> indexableExtensions() { return nullSwitch(indexableExtensionsForTesting, INDEXABLE_EXTENSIONS); }
 
+  private boolean hasIndexableExtension(String path) { return indexableExtensions().contains(FilenameUtils.getExtension(path).toLowerCase()); }
+
   private static boolean isOneNoteSection(String relPath) { return "one".equalsIgnoreCase(FilenameUtils.getExtension(relPath)); }
 
   /** Whether the Lucene index is open and searchable; true in every state except {@code CLOSED}. */
@@ -633,10 +635,10 @@ public class FullTextIndexer
   /**
    * Bring the indexer online: open the Lucene index and make it searchable. This
    * does the unconditional setup (schema housekeeping, Lucene open, metadata load,
-   * exclusion purge) and leaves the indexer in {@code ONLINE_INDEXING_DISABLED}.
-   * To start active background indexing, the caller then invokes
-   * {@link #startIndexing}; if it does not, the existing index contents stay
-   * searchable but no new files are indexed.
+   * purge of entries no longer indexable) and leaves the indexer in
+   * {@code ONLINE_INDEXING_DISABLED}. To start active background indexing, the
+   * caller then invokes {@link #startIndexing}; if it does not, the existing index
+   * contents stay searchable but no new files are indexed.
    *
    * @param dbRoot         the database root folder
    * @param indexDir       the index storage directory
@@ -756,7 +758,7 @@ public class FullTextIndexer
     currentManifest.saveTo(manifestPath);
 
     loadExclusions();
-    purgeExcludedEntries();
+    purgeEntriesNoLongerIndexable();
 
     state = IndexerState.ONLINE_INDEXING_DISABLED;
   }
@@ -2469,8 +2471,7 @@ public class FullTextIndexer
     if (filePath.isFile() == false)
       return false;
 
-    String ext = filePath.getExtensionOnly();
-    return strNotNullOrBlank(ext) && indexableExtensions().contains(ext.toLowerCase());
+    return hasIndexableExtension(fileNameStr);
   }
 
 //---------------------------------------------------------------------------
@@ -2501,8 +2502,9 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 
   /** Commits the Lucene index, refreshes the searcher, and saves the metadata map.
-   *  Called from the background thread, plus once from bringOnline()'s exclusion
-   *  purge before that thread exists; never concurrently, so commits cannot race.
+   *  Called from the background thread, plus once from bringOnline()'s purge of
+   *  entries no longer indexable before that thread exists; never concurrently, so
+   *  commits cannot race.
    *  <p>
    *  The metadata is snapshotted <em>before</em> the Lucene commit because worker
    *  threads may call {@code writer.updateDocument()} then
@@ -3008,13 +3010,18 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void purgeExcludedEntries() throws IOException
+  /**
+   * Drops the entries the current configuration no longer indexes: files under an
+   * excluded folder, files matching an excluded file mask, and files of a type that
+   * is no longer indexable, as when a later version drops a type from the set.
+   */
+  private void purgeEntriesNoLongerIndexable() throws IOException
   {
     Set<String> toPurge = new LinkedHashSet<>();
 
     for (String relPath : metadataMap.keySet())
     {
-      if (isRelPathExcluded(relPath))
+      if (isRelPathExcluded(relPath) || (hasIndexableExtension(relPath) == false))
         toPurge.add(relPath);
 
       int lastSlash = relPath.lastIndexOf('/');
@@ -3031,7 +3038,7 @@ public class FullTextIndexer
 
     commitAndSave();
 
-    System.out.println("Full-text indexer: purged " + toPurge.size() + " excluded entry/entries");
+    System.out.println("Full-text indexer: purged " + toPurge.size() + " entry/entries no longer indexable");
   }
 
 //---------------------------------------------------------------------------

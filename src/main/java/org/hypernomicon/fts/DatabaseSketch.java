@@ -25,16 +25,15 @@ import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javax.xml.stream.*;
-import javax.xml.stream.events.*;
-
 import org.json.simple.parser.ParseException;
 
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.file.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
@@ -62,65 +61,18 @@ public final class DatabaseSketch
 //---------------------------------------------------------------------------
 
   /**
-   * Compute a sketch by scanning record XML files via StAX, extracting only
-   * record ID and type attributes from {@code <record>} elements.
+   * Compute a sketch from a database's records: the IDs of each type's records,
+   * leaving out the root records that every database has and that are never saved.
    *
-   * @param xmlDir The directory containing the record XML files
-   * @param fileNames Stream of XML file names to scan
+   * @param records The records of the database, as loaded from its XML files
    * @return A new DatabaseSketch
    */
-  public static DatabaseSketch compute(FilePath xmlDir, Stream<String> fileNames)
+  public static DatabaseSketch compute(Stream<? extends HDT_Record> records)
   {
     EnumMap<RecordType, List<Integer>> typeToIDList = new EnumMap<>(RecordType.class);
 
-    fileNames.forEach(fileName ->
-    {
-      FilePath filePath = xmlDir.resolve(fileName);
-      if (filePath.exists() == false) return;
-
-      try (InputStream is = new FileInputStream(filePath.toFile()))
-      {
-        XMLInputFactory factory = XMLInputFactory.newInstance();
-
-        factory.setProperty("jdk.xml.totalEntitySizeLimit"     , 0);
-        factory.setProperty("jdk.xml.maxGeneralEntitySizeLimit", 0);
-        factory.setProperty("jdk.xml.entityExpansionLimit"     , 0);
-
-        XMLEventReader reader = factory.createXMLEventReader(is, StandardCharsets.UTF_8.name());
-
-        while (reader.hasNext())
-        {
-          XMLEvent event = reader.nextEvent();
-
-          if (event.isStartElement() == false) continue;
-
-          StartElement startElement = event.asStartElement();
-          if (startElement.getName().getLocalPart().equals(tagRecord.name) == false) continue;
-
-          int id = -1;
-          RecordType type = hdtNone;
-
-          Iterator<Attribute> attributes = startElement.getAttributes();
-
-          while (attributes.hasNext())
-          {
-            Attribute attribute = attributes.next();
-            String attrName = attribute.getName().toString();
-
-            if (attrName.equals(tagID.name))
-              id = parseInt(attribute.getValue(), -1);
-            else if (attrName.equals(tagType.name))
-              type = parseTypeTagStr(attribute.getValue());
-          }
-
-          if ((id > 0) && (type != hdtNone))
-            typeToIDList.computeIfAbsent(type, _type -> new ArrayList<>()).add(id);
-        }
-
-        reader.close();
-      }
-      catch (IOException | XMLStreamException e) { logThrowable(e); }
-    });
+    records.filter(record -> isUnstoredRecord(record) == false)
+           .forEach(record -> typeToIDList.computeIfAbsent(record.getType(), _ -> new ArrayList<>()).add(record.getID()));
 
     EnumMap<RecordType, int[]> typeToIDArray = new EnumMap<>(RecordType.class);
 

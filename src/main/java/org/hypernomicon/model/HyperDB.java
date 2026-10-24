@@ -146,7 +146,7 @@ public final class HyperDB extends AbstractHyperDB
 
     String promptMessage;
 
-    DatabaseSketch currentSketch = DatabaseSketch.compute(xmlPath(), recordXMLFileNames());
+    DatabaseSketch currentSketch = DatabaseSketch.compute(allRecords());
     FilePath indexDir = DatabaseRegistry.resolveIndexDir(dbID);
     DatabaseSketch existingSketch = (indexDir == null) ? null : DatabaseSketch.readFrom(indexDir.resolve("sketch.json"));
 
@@ -197,7 +197,7 @@ public final class HyperDB extends AbstractHyperDB
       if (indexDir == null) return;
 
       if (sketch == null)
-        sketch = DatabaseSketch.compute(xmlPath(), recordXMLFileNames());
+        sketch = DatabaseSketch.compute(allRecords());
 
       sketch.writeTo(indexDir.resolve("sketch.json"));
     }
