@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.security.*;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -76,6 +77,14 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
   private String userID = "", userName = "";
   private MendeleyAuthKeys authKeys;
   private Instant lastSyncTime = Instant.EPOCH;
+
+  // The next sync starts this many seconds before the instant the server stamped on the first read's
+  // response. The server ran that query before stamping, stamps in whole seconds, and may leave the
+  // boundary second out of "modified since", so a document changed on the server right at the stamp
+  // could otherwise be skipped for good. A document read again unchanged is dropped by the filter on
+  // its modified date, so starting a little early costs nothing.
+
+  private static final int SYNC_TIME_MARGIN_SECONDS = 5;
 
   private static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
 
@@ -181,7 +190,40 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private record PagedResponse(JsonArray data, String nextUrl) {}
+  /**
+   * The instant the server stamped on a response (its Date header). The server's clock is the one that
+   * also stamps the documents' modification times, so it is the one a "modified since" read is measured by.
+   * @param headers The response headers; may be null
+   * @param fallback This computer's clock just before the request, returned when there is no usable stamp
+   * @return The server's instant, or the fallback
+   */
+  static Instant serverTimeFromHeaders(HttpHeaders headers, Instant fallback)
+  {
+    String dateStr = (headers == null) ? null : headers.firstValue(HttpHeader.Date.toString()).orElse(null);
+
+    if (strNullOrBlank(dateStr)) return fallback;
+
+    try
+    {
+      return parseHttpDate(dateStr);
+    }
+    catch (DateTimeParseException e)
+    {
+      return fallback;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * One page of a response: its data, the URL of the next page if there is one, and the instant the server
+   * stamped on it (its Date header), or this computer's clock just before the request if it sent none.
+   */
+  private record PagedResponse(JsonArray data, String nextUrl, Instant serverTime) {}
+
+  /** The merged pages of a read, and the server's stamp on the first of them (see {@link PagedResponse}). */
+  private record ReadResponse(JsonArray data, Instant serverTime) {}
 
   private PagedResponse doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType) throws IOException, UnsupportedOperationException, ParseException, CancelledTaskException
   {
@@ -217,6 +259,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
     if (httpRequest == null) return null;
 
     JsonArray jsonArray;
+    Instant requestTime = Instant.now();
 
     try
     {
@@ -232,6 +275,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     String[] nextUrl = { null };
     HttpHeaders headers = jsonClient.getHeaders();
+    Instant serverTime = serverTimeFromHeaders(headers, requestTime);
 
     if (headers != null)
     {
@@ -274,7 +318,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
           }
           catch (InterruptedException | ExecutionException e)
           {
-            return new PagedResponse(jsonArray, nextUrl[0]);
+            return new PagedResponse(jsonArray, nextUrl[0], serverTime);
           }
 
           return doHttpRequest(url, requestType, jsonData, mediaType, ifUnmodifiedSince);
@@ -287,7 +331,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     HyperTask.throwExceptionIfCancelled(syncTask);
 
-    return new PagedResponse(jsonArray, nextUrl[0]);
+    return new PagedResponse(jsonArray, nextUrl[0], serverTime);
   }
 
 //---------------------------------------------------------------------------
@@ -332,7 +376,15 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
         Map<String, JsonObj> remoteChangeIDtoObj = new HashMap<>();
 
         nonTrashedIDs.clear();
-        doReadCommand(MendeleyCmd.readDocuments).getObjs().forEach(jObj ->
+        ReadResponse documents = doReadCommand(MendeleyCmd.readDocuments);
+
+        // The next sync resumes from the server's own clock as of this first read (see SYNC_TIME_MARGIN_SECONDS),
+        // so a document modified on the server while the reads below are in progress is read next time instead
+        // of being skipped for good.
+
+        Instant readTime = documents.serverTime().minusSeconds(SYNC_TIME_MARGIN_SECONDS);
+
+        documents.data().getObjs().forEach(jObj ->
         {
           String entryKey = jObj.getStrSafe("id");
           remoteChangeIDtoObj.put(entryKey, jObj);
@@ -343,7 +395,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 // ------------------------------------------------------------------------------------------------------------------
 
         trashedIDs.clear();
-        doReadCommand(MendeleyCmd.readTrash).getObjs().forEach(jObj ->
+        doReadCommand(MendeleyCmd.readTrash).data().getObjs().forEach(jObj ->
         {
           String entryKey = jObj.getStrSafe("id");
           remoteChangeIDtoObj.put(entryKey, jObj);
@@ -353,18 +405,19 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 // Get list of remotely deleted documents ---------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-        JsonArray remoteDeletions = doReadCommand(MendeleyCmd.readDeletedDocuments);
+        JsonArray remoteDeletions = doReadCommand(MendeleyCmd.readDeletedDocuments).data();
 
 // Locally delete remotely deleted documents ------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
         remoteDeletions.getObjs().forEach(jObj ->
         {
-          changed = true;
           String key = jObj.getStrSafe("id");
 
           if (keyToAllEntry.containsKey(key))
           {
+            changed = true;
+
             // A remote deletion will simply override local changes. Undocument code to change this behavior.
 
 //            MendeleyDocument document = keyToAllEntry.get(key);
@@ -385,8 +438,6 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //            }
           }
         });
-
-        Instant readTime = Instant.now();  // Becomes lastSyncTime only once this pass is complete (see below)
 
 // Ignore documents with old modified date --------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
@@ -511,7 +562,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 // ------------------------------------------------------------------------------------------------------------------
 
       Map<String, JsonObj> remoteFolderIDtoObj = new HashMap<>();
-      doReadCommand(MendeleyCmd.readFolders).getObjs().forEach(jObj -> remoteFolderIDtoObj.put(jObj.getStrSafe("id"), jObj));
+      doReadCommand(MendeleyCmd.readFolders).data().getObjs().forEach(jObj -> remoteFolderIDtoObj.put(jObj.getStrSafe("id"), jObj));
 
 // Delete local folders not on list ---------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
@@ -585,7 +636,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray doReadCommand(MendeleyCmd command) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
+  private ReadResponse doReadCommand(MendeleyCmd command) throws CancelledTaskException, UnsupportedOperationException, IOException, ParseException
   {
     String url = "https://api.mendeley.com/";
 
@@ -624,6 +675,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 
     PagedResponse response = doHttpRequest(url, HttpRequestType.get, null, mediaType);
     JsonArray jsonArray = response.data();
+    Instant serverTime = response.serverTime();
 
     while (response.nextUrl() != null)
     {
@@ -637,7 +689,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
            SC_NOT_MODIFIED,
            SC_PRECONDITION_FAILED ->
 
-        jsonArray;
+        new ReadResponse(jsonArray, serverTime);
 
       default ->
 
@@ -697,7 +749,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray throwResponseException(JsonArray jsonArray, String documentID) throws HttpResponseException
+  private <T> T throwResponseException(JsonArray jsonArray, String documentID) throws HttpResponseException
   {
     StringBuilder serverMsg = new StringBuilder();
 
@@ -770,7 +822,7 @@ public final class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, Mend
   {
     try
     {
-      JsonObj profile = doReadCommand(MendeleyCmd.readProfile).getObj(0);
+      JsonObj profile = doReadCommand(MendeleyCmd.readProfile).data().getObj(0);
 
       userName = profile.getStrSafe("email");
 

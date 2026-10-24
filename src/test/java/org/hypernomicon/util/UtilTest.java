@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import static org.hypernomicon.util.Util.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -174,6 +175,18 @@ class UtilTest
 
     assertFalse(slept, "sleepForMillis should return false when an interrupt cuts the sleep short.");
     assertTrue(stillInterrupted, "sleepForMillis should leave the interrupt status set.");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void testParseHttpDate_ReadsRfc1123DatesAsInstants()
+  {
+    Instant instant = parseIso8601("2026-10-24T12:34:56Z");
+
+    assertEquals(instant, parseHttpDate("Sat, 24 Oct 2026 12:34:56 GMT"), "parseHttpDate should read an RFC 1123 date in GMT as that instant.");
+    assertEquals(instant, parseHttpDate("Sat, 24 Oct 2026 14:34:56 +0200"), "parseHttpDate should apply an explicit offset.");
+    assertEquals(instant, parseHttpDate(dateTimeToHttpDate(instant)), "parseHttpDate should read back what dateTimeToHttpDate wrote.");
   }
 
 //---------------------------------------------------------------------------
