@@ -198,8 +198,8 @@ public final class FileDownloadUtility
 //---------------------------------------------------------------------------
 
   private static void handleResponse(HttpResponse<InputStream> response, String fileURL, FilePath dirPath, String fileNameStr, boolean saveToBuffer,
-                                      StringBuilder fileName, boolean assumeIsImage, AsyncHttpClient httpClient,
-                                      Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
+                                     StringBuilder fileName, boolean assumeIsImage, AsyncHttpClient httpClient,
+                                     Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
   {
     int statusCode = response.statusCode();
 
@@ -261,7 +261,7 @@ public final class FileDownloadUtility
     {
       try (Buffer buffer = new Buffer(response.body()))
       {
-        runInFXThread(() -> successHndlr.accept(buffer));
+        ParsingHttpClient.dispatchSuccess(() -> successHndlr.accept(buffer), failHndlr);
       }
       catch (IOException e)
       {
@@ -285,7 +285,7 @@ public final class FileDownloadUtility
       while ((bytesRead = inputStream.read(byteBuffer)) != -1)
         outputStream.write(byteBuffer, 0, bytesRead);
 
-      runInFXThread(() -> successHndlr.accept(null));
+      ParsingHttpClient.dispatchSuccess(() -> successHndlr.accept(null), failHndlr);
     }
     catch (IOException e)
     {

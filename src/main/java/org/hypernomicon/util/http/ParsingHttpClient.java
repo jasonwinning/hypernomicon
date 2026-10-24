@@ -135,10 +135,11 @@ abstract class ParsingHttpClient
 //---------------------------------------------------------------------------
 
   /**
-   * Runs the success handler, if there is one, on the JavaFX thread.
+   * Runs the success handler, if there is one, on the JavaFX thread. {@link FileDownloadUtility}
+   * reports a finished download through this too.
    * <p>
    * A success handler is seldom the end of the line: it goes on to build something out of
-   * what was parsed, while its caller waits for one of the two handlers to report. So a
+   * what came back, while its caller waits for one of the two handlers to report. So a
    * runtime exception it throws is logged and given to the failure handler. Left to the
    * JavaFX thread, the exception would reach nobody, and the caller would wait forever.
    * </p>
