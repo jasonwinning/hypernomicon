@@ -467,17 +467,12 @@ public final class BibManager extends NonmodalWindow
       iv1.setFitHeight(16);
       btnSync.setGraphic(iv1);
 
-      if (state == State.CANCELLED)
-      {
-        // If the task failed, a popup for its exception is displayed by HyperTask.InnerTask.failed()
+      // A sync that failed has already been reported by HyperTask.InnerTask.failed(), and one that was
+      // cancelled needs no popup. Either way the library is only partly synced, so the status bar must
+      // not say that it was; what did change is still shown and saved.
 
-        Throwable e = syncTask.getException();
-
-        if (e instanceof HyperDataException)
-          errorPopup(e);
-      }
-
-      boolean changed = syncTask.getChanged();
+      boolean changed = syncTask.getChanged(),
+              synced  = (state == State.SUCCEEDED);
       syncTask = null;
 
       if (changed)
@@ -489,8 +484,8 @@ public final class BibManager extends NonmodalWindow
       }
 
       if (alwaysSaveDB || changed)
-        ui.saveAllToXML(true, true, true, false);
-      else
+        ui.saveAllToXML(true, true, synced, false);
+      else if (synced)
         ui.updateSavedStatus(false, true);
     });
 
