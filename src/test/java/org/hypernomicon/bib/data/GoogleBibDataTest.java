@@ -21,9 +21,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 
+import org.json.simple.parser.ParseException;
+
 import org.junit.jupiter.api.*;
 
 import org.hypernomicon.util.http.AsyncHttpClient;
+import org.hypernomicon.util.json.JsonObj;
 
 //---------------------------------------------------------------------------
 
@@ -83,6 +86,29 @@ class GoogleBibDataTest
     assertEquals(1, results.size(), "must complete synchronously with no network involved");
     assertNull(results.getFirst());
     assertEquals(Set.of("9780140449266"), checkedIDs, "nothing new was added, and no blank entry either");
+  }
+
+//---------------------------------------------------------------------------
+
+  /** Google spells an author's name as published, while the work's surname is searched for in English characters: "Godel" is Gödel */
+  @Test
+  void aSurnameWithDiacriticsMatches() throws ParseException
+  {
+    JsonObj response = JsonObj.parseJsonObj("""
+      {"items": [
+        {"volumeInfo": {"title": "Collected Works", "authors": ["Roger Penrose"]}},
+        {"volumeInfo": {"title": "Collected Works", "authors": ["Kurt Gödel"]}}
+      ]}
+      """);
+
+    assertEquals("Penrose", lastNameOfFirstAuthor(GoogleBibData.createFromJSON(response, "Collected Works", List.of()       , "")), "With no author, the first of the two");
+    assertEquals("Gödel"  , lastNameOfFirstAuthor(GoogleBibData.createFromJSON(response, "Collected Works", List.of("Godel"), "")));
+  }
+
+  private static String lastNameOfFirstAuthor(GoogleBibData bd)
+  {
+    assertNotNull(bd);
+    return bd.getAuthors().iterator().next().getName().getLast();
   }
 
 //---------------------------------------------------------------------------

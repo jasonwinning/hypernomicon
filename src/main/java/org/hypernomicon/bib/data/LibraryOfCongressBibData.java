@@ -1107,8 +1107,10 @@ public final class LibraryOfCongressBibData extends BibDataStandalone
 
       if (dist > LEVENSHTEIN_THRESHOLD) continue;
 
+      // The keywords are surnames in English characters (getQueryUrl), so a result's surnames are compared in them too: "Godel" is Gödel
+
       boolean authMatch = (collEmpty(authKeywords) == false) &&
-                          lastNamesOf.apply(result).stream().anyMatch(lastName -> authKeywords.stream().anyMatch(lastName::equalsIgnoreCase)),
+                          lastNamesOf.apply(result).stream().map(StringUtil::convertToEnglishChars).anyMatch(lastName -> authKeywords.stream().anyMatch(lastName::equalsIgnoreCase)),
 
               yearMatch = (year > 0) && (yearOf.applyAsInt(result) == year);
 

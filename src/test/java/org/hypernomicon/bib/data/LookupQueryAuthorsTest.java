@@ -141,6 +141,20 @@ class LookupQueryAuthorsTest
   }
 
 //---------------------------------------------------------------------------
+
+  /** A surname is sent in English characters, which is also what the results' surnames are compared in (GoogleBibDataTest, LocLinkedDataSearchTest) */
+  @Test
+  void aSurnameIsSentInEnglishCharacters()
+  {
+    GoogleBibData.setApiKeyForTesting("");  // Keyless, so no preference is read
+
+    Author godel = new AuthorStandalone(Roles.AUTHOR, new PersonName("Kurt", "Gödel"));
+
+    assertEquals(List.of("Godel"), googleKeywords(godel));
+    assertEquals(List.of("Godel"), locKeywords(godel));
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

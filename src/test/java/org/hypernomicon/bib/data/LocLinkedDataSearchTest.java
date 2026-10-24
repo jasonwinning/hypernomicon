@@ -94,6 +94,16 @@ class LocLinkedDataSearchTest
     ]}
     """;
 
+  /** Penrose's hit for the phrase "collected works", then Gödel's for the phrase with his surname: the hits of two searches, put together so that only the author tells them apart */
+  private static final String COLLECTED_WORKS_HITS = """
+    {"hits": [
+      {"uri": "http://id.loc.gov/resources/works/16174946", "aLabel": "Penrose, Roger. Collected works",
+       "more": {"contributors": ["Penrose, Roger"], "pubdates": ["2011"], "instance": "http://id.loc.gov/resources/instances/16174946"}},
+      {"uri": "http://id.loc.gov/resources/works/2386816", "aLabel": "Gödel, Kurt. Collected works",
+       "more": {"contributors": ["Gödel, Kurt", "Feferman, Solomon"], "pubdates": ["1986/2003"], "instance": "http://id.loc.gov/resources/instances/2386816"}}
+    ]}
+    """;
+
 //---------------------------------------------------------------------------
 
   private static List<Hit> hitsOf(String response) throws ParseException { return LocLinkedDataSearch.hitsIn(JsonObj.parseJsonObj(response)); }
@@ -245,6 +255,18 @@ class LocLinkedDataSearchTest
     assertEquals("13234345", bestTitleHitID(hits, "The Count of Monte Cristo", "2003", List.of("Dumas")));
     assertEquals("3078640" , bestTitleHitID(hits, "The Count of Monte Cristo", ""    , List.of("Dumas")), "With no year, the closest title, which the 1895 edition's trailing dots make another");
     assertEquals("13234345", bestTitleHitID(hits, "The Count of Monte Cristo", "2003", List.of("Buss" )), "A translator's surname counts as the author's does");
+  }
+
+//---------------------------------------------------------------------------
+
+  /** A contributor's surname is compared in English characters, as the work's is searched for: "Godel" is Gödel */
+  @Test
+  void aSurnameWithDiacriticsMatches() throws ParseException
+  {
+    List<Hit> hits = hitsOf(COLLECTED_WORKS_HITS);
+
+    assertEquals("16174946", bestTitleHitID(hits, "Collected Works", "", List.of()), "With no author, the first of the two");
+    assertEquals("2386816" , bestTitleHitID(hits, "Collected Works", "", List.of("Godel")));
   }
 
 //---------------------------------------------------------------------------

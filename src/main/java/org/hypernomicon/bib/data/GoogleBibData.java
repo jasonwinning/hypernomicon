@@ -40,6 +40,7 @@ import org.hypernomicon.model.authors.Author;
 import org.hypernomicon.model.authors.AuthorStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_RecordBase;
+import org.hypernomicon.util.StringUtil;
 import org.hypernomicon.util.http.AsyncHttpClient;
 import org.hypernomicon.util.http.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
@@ -104,7 +105,7 @@ public final class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static GoogleBibData createFromJSON(JsonObj jsonObj, String title, List<String> authKeywords, String queryIsbn)
+  static GoogleBibData createFromJSON(JsonObj jsonObj, String title, List<String> authKeywords, String queryIsbn)
   {
     try
     {
@@ -127,8 +128,10 @@ public final class GoogleBibData extends BibDataStandalone
       {
         JsonObj curObj = curArrObj.getObj("volumeInfo");
 
+        // The keywords are surnames in English characters (getQueryUrl), so Google's author names are compared in them too: "Godel" is Gödel
+
         boolean authMatch = (authKeywords.size() > 0) &&
-                            curObj.getArraySafe("authors").strStream().anyMatch(jsonAuthStr -> authKeywords.stream().anyMatch(jsonAuthStr::contains));
+                            curObj.getArraySafe("authors").strStream().map(StringUtil::convertToEnglishChars).anyMatch(jsonAuthStr -> authKeywords.stream().anyMatch(jsonAuthStr::contains));
 
         GoogleBibData curBD = new GoogleBibData(curObj, queryIsbn);
 
