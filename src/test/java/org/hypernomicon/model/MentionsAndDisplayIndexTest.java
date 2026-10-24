@@ -462,6 +462,32 @@ class MentionsAndDisplayIndexTest
 //---------------------------------------------------------------------------
 
   @Test
+  void aConceptsOwnKeyMakesItsMentionersMentionersOfTheTerm()
+  {
+    HDT_Term term = HDT_Term.create(db.glossaries.getByID(1));
+    HDT_Concept concept = term.concepts.getFirst();
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+
+    try
+    {
+      assertDoesNotThrow(() -> concept.setSearchKey("efficient cause", true));
+      assertTrue(term.getSearchKey().isBlank(), "The term itself has no key: only the concept is reachable");
+
+      note.getMainText().setHtml("The efficient cause is the agent of change.");
+
+      assertTrue(firstMentionsSecond(note, concept, false), "The note reaches the concept through the concept's own key");
+      assertTrue(firstMentionsSecond(note, term   , false), "A mention of a concept counts as a mention of its term");
+    }
+    finally
+    {
+      db.deleteRecord(note);
+      db.deleteRecord(term);
+    }
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
   void testUniteAndDisuniteMentioner()
   {
     HDT_Note note = db.createNewBlankRecord(hdtNote);
