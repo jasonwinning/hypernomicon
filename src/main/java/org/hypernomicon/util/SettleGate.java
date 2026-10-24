@@ -17,8 +17,6 @@
 
 package org.hypernomicon.util;
 
-import static org.hypernomicon.App.*;
-
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 
@@ -44,11 +42,6 @@ public final class SettleGate implements RequestGate
   private final long quietMillis;
   private final PauseTransition timer;
 
-  /** When non-null (and debugging is on), every gate decision is logged under this
-   *  label, so deferred-vs-immediate execution and stale-release ordering can be
-   *  reconstructed from the log. */
-  private final String debugLabel;
-
   private long lastRequestNanos = 0;
   private Runnable pending = null;
 
@@ -56,25 +49,10 @@ public final class SettleGate implements RequestGate
 
   public SettleGate(long quietMillis)
   {
-    this(quietMillis, null);
-  }
-
-  public SettleGate(long quietMillis, String debugLabel)
-  {
     this.quietMillis = quietMillis;
-    this.debugLabel = debugLabel;
 
     timer = new PauseTransition(Duration.millis(quietMillis));
     timer.setOnFinished(event -> timerFinished());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void logDecision(String message)
-  {
-    if (debugLabel != null)
-      debugLog("SettleGate[" + debugLabel + "]: " + message);
   }
 
 //---------------------------------------------------------------------------
@@ -92,13 +70,9 @@ public final class SettleGate implements RequestGate
 
     if (quiet && (pending == null))
     {
-      logDecision("quiet; running immediately");
-
       action.run();
       return;
     }
-
-    logDecision("burst (quiet=" + quiet + ", hadPending=" + (pending != null) + "); deferred as latest");
 
     pending = action;
     timer.playFromStart();
@@ -110,9 +84,6 @@ public final class SettleGate implements RequestGate
   /** Discards any stored action and stops the timer. */
   @Override public void cancel()
   {
-    if (pending != null)
-      logDecision("cancelled; pending action dropped");
-
     timer.stop();
     pending = null;
   }
@@ -130,13 +101,9 @@ public final class SettleGate implements RequestGate
 
     if (((System.nanoTime() - lastRequestNanos) / 1_000_000L) < quietMillis)
     {
-      logDecision("timer fired early relative to last request; rearmed");
-
       timer.playFromStart();
       return;
     }
-
-    logDecision("burst settled; running deferred latest");
 
     Runnable action = pending;
     pending = null;

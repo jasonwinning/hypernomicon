@@ -155,6 +155,28 @@ class UtilTest
   }
 
 //---------------------------------------------------------------------------
+
+  @Test
+  void testSleepForMillis_Uninterrupted_ReturnsTrue()
+  {
+    assertTrue(sleepForMillis(1), "sleepForMillis should return true when it sleeps for the full duration.");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void testSleepForMillis_Interrupted_ReturnsFalseAndKeepsInterruptStatus()
+  {
+    Thread.currentThread().interrupt();
+
+    boolean slept = sleepForMillis(10_000),
+            stillInterrupted = Thread.interrupted();  // Also clears the status, so later tests on this thread are unaffected
+
+    assertFalse(slept, "sleepForMillis should return false when an interrupt cuts the sleep short.");
+    assertTrue(stillInterrupted, "sleepForMillis should leave the interrupt status set.");
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

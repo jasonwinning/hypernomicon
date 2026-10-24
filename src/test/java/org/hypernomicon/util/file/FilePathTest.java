@@ -23,8 +23,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 //---------------------------------------------------------------------------
@@ -435,6 +439,51 @@ class FilePathTest
     Files.createDirectory(dir.resolve("emptySubdir"));
 
     assertFalse(FilePath.of(dir).dirContainsAnyFiles());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------
+  // replaceFileAtomically
+  // -------------------------------------------------------------------------
+
+  /**
+   * An interrupt ends the retry loop at once instead of retrying until the timeout.
+   * A directory as the destination makes every attempt fail with
+   * {@link AccessDeniedException}, the exception the loop retries on. Windows only:
+   * elsewhere the loop has no timeout, and renaming a file onto a directory fails
+   * with a different exception.
+   */
+  @Test
+  @EnabledOnOs(OS.WINDOWS)
+  void replaceFileAtomically_interrupted_rethrowsWithoutWaitingOutTheTimeout() throws IOException
+  {
+    FilePath src  = tempFilePath("src.txt"),
+             dest = tempFilePath("destDir");
+
+    Files.writeString(src.toPath(), "data");
+    Files.createDirectory(dest.toPath());
+
+    AtomicBoolean retried = new AtomicBoolean(false);
+    long startNanos = System.nanoTime();
+
+    Thread.currentThread().interrupt();
+
+    try
+    {
+      assertThrows(AccessDeniedException.class, () -> src.replaceFileAtomically(dest, _ -> retried.set(true)));
+      assertTrue(Thread.currentThread().isInterrupted(), "The interrupt status should still be set.");
+    }
+    finally
+    {
+      Thread.interrupted();  // Clear the status so later tests on this thread are unaffected
+    }
+
+    long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+
+    assertTrue(retried.get(), "The rename should have reached its retry loop.");
+    assertTrue(elapsedMillis < 5_000, "The interrupt should end the retry loop at once, but it took " + elapsedMillis + " ms.");
   }
 
 //---------------------------------------------------------------------------
