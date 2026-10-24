@@ -106,8 +106,8 @@
 
     // Map normalized positions back to original positions
 
-    const matchStart = normToOrig[pos + entries[m].s];
-    const matchEnd = normToOrig[Math.min(pos + entries[m].e, normToOrig.length - 1)];
+    const matchStart = normToOrig[pos + entries[m].s],
+          matchEnd = normToOrig[pos + entries[m].e - 1] + 1;
 
     // Check overlap with already-found positions
 
