@@ -236,7 +236,6 @@ public abstract class HyperTask
   private final String threadName;
 
   private volatile HyperThread thread;
-  private volatile boolean interruptOnCancel = false;
   private boolean skippable = false, initialized = false, showDialogImmediately = false,
                   waitOnCancel = true, daemonThread = false;
   private long dialogDelayMillis = -1;  // -1 means use default
@@ -297,15 +296,14 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 
   /**
-   * Terminates execution of this task. If the task is running and
-   * {@link #setInterruptOnCancel(boolean)} was set to true, the thread
-   * will be interrupted to cancel any blocking I/O operations.
+   * Terminates execution of this task. The task is marked as cancelled first, and then its
+   * thread is interrupted (JavaFX's {@code Task.cancel()} does both), which wakes it from a
+   * sleep or a wait and breaks off interruptible I/O such as an HTTP request in progress.
+   * Because the cancellation is recorded before the interrupt arrives, a check of
+   * {@link #isCancelled()} made once the thread wakes always finds it.
    */
   public void cancel()
   {
-    if (interruptOnCancel && (thread != null))
-      thread.interrupt();
-
     innerTask.cancel();
   }
 
@@ -423,25 +421,6 @@ public abstract class HyperTask
     if (initialized) throw new IllegalStateException("Already initialized");
 
     this.skippable = skippable;
-    return this;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  /**
-   * If true, calling {@link #cancel()} will interrupt the task's thread to
-   * cancel any blocking I/O operations (e.g., HTTP requests). If false
-   * (the default), cancellation is cooperative and the task must check
-   * {@link #isCancelled()} at checkpoints.
-   * @param interruptOnCancel Whether to interrupt the thread when cancelled
-   * @return This HyperTask
-   */
-  public HyperTask setInterruptOnCancel(boolean interruptOnCancel)
-  {
-    if (initialized) throw new IllegalStateException("Already initialized");
-
-    this.interruptOnCancel = interruptOnCancel;
     return this;
   }
 

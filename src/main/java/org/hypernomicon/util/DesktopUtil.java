@@ -869,7 +869,6 @@ public final class DesktopUtil
 
       }}.setSilent(true)
         .setSkippable(true)
-        .setInterruptOnCancel(true)
         .addMessage("Press \"Skip\" if internet connection is not needed.");
 
       if (task.runWithProgressDialog() == State.SUCCEEDED)

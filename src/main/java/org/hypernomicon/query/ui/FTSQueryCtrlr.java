@@ -847,7 +847,6 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     }
 
     SearchTask task = (SearchTask) new SearchTask()
-      .setInterruptOnCancel(true)
       .setWaitOnCancel(false)   // Lucene search isn't responsive to interrupt; abandon stale tasks
       .setDaemonThread(true);   // ...and don't let an abandoned task block JVM exit
 
