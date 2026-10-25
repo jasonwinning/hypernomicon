@@ -724,6 +724,16 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
       {
         JsonObj jObj = jArr.getObj(0);
 
+        if (versionsCmd == ZoteroCmd.readTrashVersions)
+        {
+          // An item in the local trash that is not in the remote trash was remotely restored. An item in the remote
+          // trash that is outside the local trash was remotely trashed, so its object moves into the local trash,
+          // where it is updated below instead of being read in again as a second object with the same key.
+
+          keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
+          jObj.keySet().forEach(key -> nullSwitch(keyToAllEntry.get(key), item -> keyToTrashEntry.putIfAbsent(key, item)));
+        }
+
         jObj.keySet().forEach(key ->
         {
           ZEntity entity = keyToEntity.get(key);
@@ -737,9 +747,6 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
               downloadQueue.add(key);
           }
         });
-
-        if (versionsCmd == ZoteroCmd.readTrashVersions) // This if block is necessary to determine if an item in the trash was remotely restored
-          keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
       }
 
       while ((downloadQueue.size() > 0) && (jsonClient.getStatusCode() == SC_OK))
@@ -766,7 +773,12 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
                 ZoteroItem.create(ZoteroWrapper.this, jObj));
 
               if (entity != null)
+              {
                 keyToEntity.put(key, entity);
+
+                if (readCmd == ZoteroCmd.readTrash)  // As when the library file is loaded, an item in the trash is also among all entries
+                  keyToAllEntry.put(key, (ZoteroItem)entity);
+              }
             }
             else
             {
