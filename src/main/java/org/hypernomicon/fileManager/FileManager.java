@@ -127,6 +127,7 @@ public final class FileManager extends NonmodalWindow
   FileRow getFolderRow()                       { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).getFirst()); }
   FileRow selectedFileRow()                    { return fileTV.getSelectionModel().getSelectedItem(); }
   HyperTable getRecordTable()                  { return recordTable; }  // Make accessible to test runner
+  boolean isNeedRefreshSuppressed()            { return suppressNeedRefresh; }  // Make accessible to test runner
 
   public static void clearHistory()            { instance.history.clear(); }
   public static void setNeedRefresh()          { setNeedRefresh(RefreshLevel.REFRESH          ); }
@@ -1141,78 +1142,97 @@ public final class FileManager extends NonmodalWindow
 
     suppressNeedRefresh = true;
 
-    // Pass 1: Delete directories one at a time. HDT_Folder.delete takes each one's directory tree and
-    // record tree, and detaches any note assigned to the folder
+    // The finally block restores the watcher and the refresh requests even if a step throws. Otherwise
+    // the watcher would stay off, and every refresh owed to this window would be ignored, until some
+    // later operation happened to restore them
 
-    boolean aborted = false;
-
-    for (AbstractEntityWithPath item : rowInfoList)
+    try
     {
-      if (item.isDirectory() && (((HDT_Folder) item.getHyperPath().getRecord()).delete() == false))
+      // Pass 1: Delete directories one at a time. HDT_Folder.delete takes each one's directory tree and
+      // record tree, and detaches any note assigned to the folder. A directory without a folder record
+      // (made outside the program and not yet reached by the watcher) cannot hold anything the database
+      // tracks, so it is deleted as a plain directory
+
+      boolean aborted = false;
+
+      for (AbstractEntityWithPath item : rowInfoList)
       {
-        aborted = true;
-        break;
+        if (item.isDirectory() == false) continue;
+
+        HDT_Folder folder = (HDT_Folder) item.getHyperPath().getRecord();
+
+        boolean deleted = (folder == null)
+          ? (FileDeletion.ofDirWithContents(item.getFilePath()).interactive().execute() == DeletionResult.SUCCESS)
+          : folder.delete();
+
+        if (deleted == false)
+        {
+          aborted = true;
+          break;
+        }
       }
-    }
 
-    // Pass 2: Batch delete all files
+      // Pass 2: Batch delete all files
 
-    if (aborted == false)
-    {
-      var fileItems = rowInfoList.stream()
-        .filter(item -> item.isDirectory() == false)
-        .toList();
-
-      if (fileItems.isEmpty() == false)
+      if (aborted == false)
       {
-        List<FilePath> filePaths = fileItems.stream()
-          .map(AbstractEntityWithPath::getFilePath)
+        var fileItems = rowInfoList.stream()
+          .filter(item -> item.isDirectory() == false)
           .toList();
 
-        // Resolve the records now: the deletion evicts the paths from the registry, so the
-        // lookup finds nothing afterward
-
-        Map<FilePath, Set<HyperPath>> relatedPaths = new LinkedHashMap<>();
-
-        for (AbstractEntityWithPath item : fileItems)
-          if (item.isRelated())
-            relatedPaths.put(item.getFilePath(), HyperPath.getHyperPathSetForFilePath(item.getFilePath()));
-
-        BatchBuilder batch = FileDeletion.ofFiles(filePaths).interactive();
-        DeletionResult result = batch.execute();
-
-        if (result != DeletionResult.ABORTED)
+        if (fileItems.isEmpty() == false)
         {
-          Set<FilePath> failedPaths = batch.getFailedPaths();
+          List<FilePath> filePaths = fileItems.stream()
+            .map(AbstractEntityWithPath::getFilePath)
+            .toList();
 
-          for (Entry<FilePath, Set<HyperPath>> entry : relatedPaths.entrySet())
+          // Resolve the records now: the deletion evicts the paths from the registry, so the
+          // lookup finds nothing afterward
+
+          Map<FilePath, Set<HyperPath>> relatedPaths = new LinkedHashMap<>();
+
+          for (AbstractEntityWithPath item : fileItems)
+            if (item.isRelated())
+              relatedPaths.put(item.getFilePath(), HyperPath.getHyperPathSetForFilePath(item.getFilePath()));
+
+          BatchBuilder batch = FileDeletion.ofFiles(filePaths).interactive();
+          DeletionResult result = batch.execute();
+
+          if (result != DeletionResult.ABORTED)
           {
-            if (failedPaths.contains(entry.getKey()))
-              continue;
+            Set<FilePath> failedPaths = batch.getFailedPaths();
 
-            for (HyperPath setPath : entry.getValue())
+            for (Entry<FilePath, Set<HyperPath>> entry : relatedPaths.entrySet())
             {
-              if (setPath.getRecordType() == hdtPerson)
-                unassignPicture((HDT_Person) setPath.getRecord());
-              else if (setPath.getRecordType() != hdtNone)
-                db.deleteRecord(setPath.getRecord());
+              if (failedPaths.contains(entry.getKey()))
+                continue;
+
+              for (HyperPath setPath : entry.getValue())
+              {
+                if (setPath.getRecordType() == hdtPerson)
+                  unassignPicture((HDT_Person) setPath.getRecord());
+                else if (setPath.getRecordType() != hdtNone)
+                  db.deleteRecord(setPath.getRecord());
+              }
             }
           }
         }
       }
+
+      folderTree.prune();
     }
-
-    folderTree.prune();
-
-    folderTreeWatcher.createNewWatcherAndStart();
-
-    suppressNeedRefresh = false;
-
-    Platform.runLater(() ->
+    finally
     {
-      refresh();
-      ui.update();
-    });
+      folderTreeWatcher.createNewWatcherAndStart();
+
+      suppressNeedRefresh = false;
+
+      Platform.runLater(() ->
+      {
+        refresh();
+        ui.update();
+      });
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1387,11 +1407,18 @@ public final class FileManager extends NonmodalWindow
 
     if (isDir)
     {
-      suppressNeedRefresh = true;
+      boolean renamed;
 
-      boolean renamed = fileRow.rename(newName);
+      try
+      {
+        suppressNeedRefresh = true;
 
-      suppressNeedRefresh = false;
+        renamed = fileRow.rename(newName);
+      }
+      finally
+      {
+        suppressNeedRefresh = false;
+      }
 
       if (renamed) Platform.runLater(() ->
       {

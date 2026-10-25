@@ -145,7 +145,10 @@ public class HyperPath
       return;
     }
 
-    folder = folderRecordFor(filePath, false);
+    // The folder that holds the entry. Looking up the entry's own path instead would find nothing for a
+    // directory without a record, and the path would then have no folder: filePath() would return the bare name
+
+    folder = folderRecordFor(filePath.getParent(), false);
     assignNameInternal(filePath.getNameOnly());
   }
 

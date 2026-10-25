@@ -56,8 +56,9 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
  * the clipboard and drag variants of paste (Phase 36), the folder history with the Refresh
  * button (Phase 37), the single warning for several in-use files deleted outside at once
  * (Phase 38), the record table catching up with records changed outside the File Manager
- * (Phase 39), and the record table dropping a listed record deleted outside it (Phase 40),
- * launched from the Test Console's File Manager tab.
+ * (Phase 39), the record table dropping a listed record deleted outside it (Phase 40), and
+ * the deletion of a folder that has no record yet (Phase 41), launched from the Test Console's
+ * File Manager tab.
  *
  * <p>This class lives in {@code org.hypernomicon.fileManager} so it can access
  * package-private members: {@link FileManager#paste}, {@link FileManager#moveCopy},
@@ -66,7 +67,8 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
  * {@link FileManager#goToFilePath}, {@link FileManager#selectRows},
  * {@link FileManager#userRequestsToGoBackward}, {@link FileManager#userRequestsToGoForward},
  * {@link FileManager#openFileRow}, {@link FileManager#requestOwedRefresh},
- * {@link FileManager#getRecordTable}, and the {@link FileRow} constructor.</p>
+ * {@link FileManager#getRecordTable}, {@link FileManager#isNeedRefreshSuppressed}, and the
+ * {@link FileRow} constructor.</p>
  *
  * <p>All test files are created under the transient database's
  * {@code _test_fm/} directory (internal) and a sibling {@code _test_fm_ext/}
@@ -126,6 +128,12 @@ public final class FileManagerTestRunner
 
       PopupRobot.setActive(false);  // after the cleanup, so that nothing it pops up can block
       PopupRobot.clear();
+
+      // Phase 41 pauses the watcher and leaves restarting it to the deletion it tests; if the step fails
+      // before that, restart it here
+
+      if (folderTreeWatcher.isRunning() == false)
+        folderTreeWatcher.createNewWatcherAndStart();
 
       if (onFinished != null)
         onFinished.run();
@@ -4602,10 +4610,17 @@ public final class FileManagerTestRunner
       work.setName("Test work p35s158");
       work.addWorkFile(workFile.getID());
 
-      // The picture goes to the person the Persons tab is showing, assigned the way the tab does it, so that the tab's
-      // own copy of the path holds it too
+      // The picture goes to a person the Persons tab is showing, assigned the way the tab does it, so that the tab's
+      // own copy of the path holds it too. The person is created and shown here: the main window is on the Persons
+      // tab at this point only if the suite started there, since step 130 deletes the record showing and the tab then
+      // moves to another record of its own type. Step 161 deletes the person
 
-      HDT_Person person = assertInstanceOf(HDT_Person.class, ui.activeRecord(), "Persons tab should be showing a person");
+      HDT_Person person = db.createNewBlankRecord(hdtPerson);
+      person.setName(new PersonName("Test", "Person158"));
+
+      ui.goToRecord(person, false);
+
+      assertSame(person, ui.activeRecord(), "Persons tab should be showing the person");
 
       ui.personHyperTab().assignPicture(dir.resolve("pic.jpg"), false);
 
@@ -5303,6 +5318,83 @@ public final class FileManagerTestRunner
 
     seq.setDelayMS(400);
 
+    // =====================================================================
+    //  Phase 41: Deleting a Folder That Has No Record Yet (3 steps)
+    // =====================================================================
+
+    // Step 184: A folder with a record; open the File Manager on it
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath dir = createTestDir("p41s184", "dir");
+
+      assertNotNull(HyperPath.folderRecordFor(dir, false), "folder record should exist");
+
+      FileManager.instance();  // show() is a no-op until the instance exists
+      FileManager.show(dir);
+    });
+
+    // Step 186 checks the refresh the deletion in step 185 requests, which the throttle may defer by up to 500 ms
+    seq.setDelayMS(1000);
+
+    // Step 185: With the watcher paused, a subfolder appears on disk and the table is rebuilt before any folder record
+    // exists for it, as when Refresh is clicked right after a folder is made outside the program. Deleting its row
+    // deletes the subfolder. Before the change, the row's path was the subfolder's bare name, and the deletion threw on
+    // the missing record, leaving the watcher off and every refresh owed to the window ignored
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath unrecorded = testRoot.resolve("p41s184", "dir", "unrecorded");
+      FileManager fileManager = FileManager.instance();
+
+      folderTreeWatcher.stop();  // not restarted here: the deletion restarts it, which step 186 checks
+
+      try { Files.createDirectory(unrecorded.toPath()); }
+      catch (IOException e) { throw new AssertionError(e); }
+
+      FileManager.pruneAndRefresh(true);  // the Refresh button; rebuilds the table at once
+
+      assertNull(HyperPath.folderRecordFor(unrecorded, false), "subfolder should have no record");
+
+      fileManager.selectRows(unrecorded);  // not goToFilePath, which would create the subfolder's record
+
+      FileRow row = fileManager.selectedFileRow();
+
+      assertNotNull(row, "subfolder's row should be selected");
+      assertNull(row.getRecord(), "row should have no folder record");
+      assertTrue(row.isDirectory(), "row should be a folder");
+      assertEquals(unrecorded, row.getFilePath(), "row's path should be the subfolder's full path, not its bare name");
+
+      PopupRobot.clear();
+      PopupRobot.setDefaultResponse(mrYes);  // "Are you sure you want to permanently delete the folder ..."
+
+      fileManager.delete(row);
+
+      PopupRobot.setDefaultResponse(mrOk);
+
+      assertEquals(1, PopupRobot.getInvocationCount(), "should ask once");
+      assertTrue(PopupRobot.getLastMessage().contains("all the files/subfolders it contains"), "the question should be the one for a folder without records");
+      assertGone(unrecorded, "deleted subfolder");
+    });
+
+    // Step 186: The watcher is running again, the window accepts refresh requests again, and its table no longer
+    // lists the subfolder
+    seq.thenRunAfterDelay(() ->
+    {
+      FilePath unrecorded = testRoot.resolve("p41s184", "dir", "unrecorded");
+      FileManager fileManager = FileManager.instance();
+
+      assertTrue(folderTreeWatcher.isRunning(), "FolderTreeWatcher should be running after the deletion");
+      assertFalse(fileManager.isNeedRefreshSuppressed(), "the File Manager should accept refresh requests after the deletion");
+
+      fileManager.selectRows(unrecorded);
+
+      assertNull(fileManager.selectedFileRow(), "file table should no longer list the deleted subfolder");
+
+      selectRootFolder();  // park the window at the root, outside the tree the cleanup removes
+      FileManager.close(false);
+    });
+
+    seq.setDelayMS(400);
+
     // Start the sequence
     seq.start();
   }
@@ -5952,6 +6044,10 @@ public final class FileManagerTestRunner
     // Phase 40: The record table after a listed record is deleted elsewhere (Steps 181-183)
 
     setupDir(testRoot, "p40s181", "dir");
+
+    // Phase 41: Deleting a folder that has no record yet (Steps 184-186)
+
+    setupDir(testRoot, "p41s184", "dir");
   }
 
 //---------------------------------------------------------------------------
