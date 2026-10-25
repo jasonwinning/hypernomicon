@@ -62,7 +62,7 @@ class BibEntryTable extends HasRightClickableRows<BibEntryRow>
   private final TableView<BibEntryRow> tv;
   private boolean noRefresh = false;
 
-  void updateKey(String oldKey, String newKey) { keyToRow.put(newKey, keyToRow.remove(oldKey)); }
+  void updateKey(String oldKey, String newKey) { nullSwitch(keyToRow.remove(oldKey), row -> keyToRow.put(newKey, row)); }
   boolean containsKey(String bibEntryKey)      { return keyToRow.containsKey(bibEntryKey); }
 
 //---------------------------------------------------------------------------

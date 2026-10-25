@@ -402,6 +402,10 @@ public final class BibManager extends NonmodalWindow
     }
     else
     {
+      // Set here, not when a sync starts, because the Settings dialog's sync does not go through doSync
+
+      libraryWrapper.setKeyChangeHandler(entryTable::updateKey);
+
       setToolTip(btnSync, "Synchronize with " + libraryWrapper.getUserFriendlyName() + " (" + (IS_OS_MAC ? "Cmd" : "Ctrl") + "-S)");
       initEntryTypeCB(cbNewType);
       rebuildCollectionTree();
@@ -454,8 +458,6 @@ public final class BibManager extends NonmodalWindow
     seqT.play();
 
     btnStop.setDisable(false);
-
-    libraryWrapper.setKeyChangeHandler(entryTable::updateKey);
 
     syncTask.addDoneHandler(state ->
     {
