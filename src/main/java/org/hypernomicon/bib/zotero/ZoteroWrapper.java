@@ -537,10 +537,7 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
         if (syncChangedEntriesToServer() == false)
           statusCode = SC_PRECONDITION_FAILED;
         else
-        {
           statusCode = jsonClient.getStatusCode();
-          changed = true;
-        }
 
     /* ******************************************* */
     /*         Retrieve remote updates             */
@@ -662,6 +659,11 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
 
         if (statusCode == SC_OK)
         {
+          // Set for each batch rather than once the push returns, so that the server keys applied
+          // from this batch are saved even if a later batch's request throws
+
+          changed = true;
+
           JsonObj jSuccess   = jArr.getObj(0).getObj("successful"),
                   jUnchanged = jArr.getObj(0).getObj("unchanged"),
                   jFailed    = jArr.getObj(0).getObj("failed");
@@ -689,6 +691,12 @@ public final class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollec
           });
 
           jUnchanged.keySet().forEach(queueNdx -> getEntryByKey(jUnchanged.getStr(queueNdx)).mergeWithBackupCopy());
+
+          // A 200 means the library had not changed since the version this request was sent with, so this batch's
+          // writes are the only changes since then. Zotero's sync protocol has the next write sent with the version
+          // they produced; sent with the old one, the next batch would be refused with a 412.
+
+          offlineLibVersion = onlineLibVersion;
 
           uploadQueue.subList(0, uploadCount).clear();
         }
