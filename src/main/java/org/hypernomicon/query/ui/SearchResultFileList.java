@@ -204,7 +204,7 @@ class SearchResultFileList
                 }
               }
 
-              destPdf.save(destFilePath.toString());
+              FilePath.filesWrite(destFilePath, destPdf::save);
             }
           }
         }

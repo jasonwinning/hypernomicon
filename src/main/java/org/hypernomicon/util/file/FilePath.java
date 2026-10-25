@@ -47,6 +47,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.*;
+import org.apache.commons.io.function.IOConsumer;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 //---------------------------------------------------------------------------
@@ -131,7 +132,7 @@ public class FilePath implements Comparable<FilePath>
   }
 
 
-  /** Set the hook that receives index events for file move/copy operations.
+  /** Set the hook that receives index events for file move/copy/write operations.
    *  Wired by AbstractHyperDB to {@code indexer::queueEvent} during FTS startup. */
   public static void setIndexEventHook(Consumer<IndexEvent> hook) { indexEventHook = hook; }
 
@@ -395,6 +396,43 @@ public class FilePath implements Comparable<FilePath>
       if (startWatcher)
         folderTreeWatcher.createNewWatcherAndStart();
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Central function for writing a file whose contents the program produces itself, such as a
+   * document a library saves, rather than copying or moving an existing file. All database-relevant
+   * writes of that kind should go through this method. Handles watcher stop/restart (if the path is
+   * under the DB root) and index event notification via the hook set by {@link #setIndexEventHook},
+   * and owes the File Manager a refresh, as {@link #copyTo} does. The writer is given a buffered
+   * stream, which this method closes.
+   */
+  public static void filesWrite(FilePath dest, IOConsumer<OutputStream> writer) throws IOException
+  {
+    boolean destUnderRoot = dest.isUnderDbRoot(),
+            startWatcher = destUnderRoot && folderTreeWatcher.stop();
+
+    try
+    {
+      try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(dest.toPath())))
+      {
+        writer.accept(os);
+      }
+
+      Consumer<IndexEvent> hookSnapshot = indexEventHook;
+
+      if ((hookSnapshot != null) && destUnderRoot)
+        hookSnapshot.accept(IndexEvent.create(dest, false));
+    }
+    finally
+    {
+      if (startWatcher)
+        folderTreeWatcher.createNewWatcherAndStart();
+    }
+
+    FileManager.setNeedRefresh();
   }
 
 //---------------------------------------------------------------------------
