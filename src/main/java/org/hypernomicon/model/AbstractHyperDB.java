@@ -1434,6 +1434,8 @@ public abstract class AbstractHyperDB
    * <p>Actions performed by this method:</p>
    * <ul>
    *   <li>Sets <code>bibLibrary</code> to null</li>
+   *   <li>Forgets the checksum recorded for the library file, so that a save no longer checks that file
+   *       for outside changes and the integrity manifest no longer lists it</li>
    *   <li>Clears bibliographic entry keys for all works</li>
    *   <li>Triggers registered handlers for bibliographic data changes</li>
    *   <li>Removes stored user identifiers and synchronization metadata from DB settings</li>
@@ -1446,6 +1448,7 @@ public abstract class AbstractHyperDB
   private void clearBibLinkData()
   {
     bibLibrary = null;
+    xmlChecksums.remove(BIB_FILE_NAME);
 
     works.forEach(work -> work.setBibEntryKey(""));
 
