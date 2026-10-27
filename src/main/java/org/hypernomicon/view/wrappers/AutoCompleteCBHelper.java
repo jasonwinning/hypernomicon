@@ -69,8 +69,9 @@ public class AutoCompleteCBHelper
   private Runnable enterKeyHandler;
 
   private HyperTableCell typedMatch,
-                         startValue; // This is the previous value that gets restored if no match is found for what the user typed
-                                     // and the user must select one of the existing values
+                         declinedMatch, // The autocompletion the user deleted; if it is the only match, Enter asks instead of choosing it
+                         startValue;    // This is the previous value that gets restored if no match is found for what the user typed
+                                        // and the user must select one of the existing values
 
   private boolean somethingWasTyped = false, listenForActionEvents = true;
 
@@ -145,6 +146,8 @@ public class AutoCompleteCBHelper
   void resetTypedMatch()         { somethingWasTyped = false; }
   HyperTableCell getTypedMatch() { return somethingWasTyped ? typedMatch : null; }
 
+  private HyperTableCell getDeclinedMatch() { return somethingWasTyped ? declinedMatch : null; }
+
   void setEnterKeyHandler(Runnable handler) { enterKeyHandler = handler; }
 
 //---------------------------------------------------------------------------
@@ -162,28 +165,33 @@ public class AutoCompleteCBHelper
 
     listenForActionEvents = false;
 
-    HyperTableCell actualTypedMatch = getTypedMatch();
-
-    if (HyperTableCell.getCellID(actualTypedMatch) >= 1)
+    try
     {
-      HyperCB.select((ComboBox<HyperTableCell>)cb, actualTypedMatch);
-    }
-    else
-    {
-      String str = convertToEnglishChars(cb.getEditor().getText()).strip().toLowerCase();
+      HyperTableCell actualTypedMatch = getTypedMatch();
 
-      if (str.length() > 0)
+      if (HyperTableCell.getCellID(actualTypedMatch) >= 1)
       {
-        HyperTableCell selectedCell = selectedCellByText(str, hcb);
-        if (selectedCell != null)
-          HyperCB.select((ComboBox<HyperTableCell>)cb, selectedCell);
+        HyperCB.select((ComboBox<HyperTableCell>)cb, actualTypedMatch);
       }
+      else
+      {
+        String str = convertToEnglishChars(cb.getEditor().getText()).strip().toLowerCase();
+
+        if (str.length() > 0)
+        {
+          HyperTableCell selectedCell = selectedCellByText(str, hcb);
+          if (selectedCell != null)
+            HyperCB.select((ComboBox<HyperTableCell>)cb, selectedCell);
+        }
+      }
+
+      if (hcb != null)
+        hcb.endEditModeIfInTable(event);
     }
-
-    if (hcb != null)
-      hcb.endEditModeIfInTable(event);
-
-    listenForActionEvents = true;
+    finally
+    {
+      listenForActionEvents = true;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -202,7 +210,9 @@ public class AutoCompleteCBHelper
 
     if (atLeastOneStrongMatch.isTrue())
     {
-      if ((cells.size() > 1) && (ui.isShuttingDown() == false))
+      boolean loneMatchWasDeclined = (cells.size() == 1) && cells.getFirst().equals(getDeclinedMatch());
+
+      if (((cells.size() > 1) || loneMatchWasDeclined) && (ui.isShuttingDown() == false))
       {
         if ((hcb != null) && (hcb.getPopulator().getValueType(hcb.getRow()) == CellValueType.cvtRecord))
         {
@@ -321,11 +331,15 @@ public class AutoCompleteCBHelper
   {
     if (notNormalTypingEvent(event))  // arrow keys, page up/down, escape, etc.
     {
+      if ((typedMatch != null) && ((event.getCode() == KeyCode.BACK_SPACE) || (event.getCode() == KeyCode.DELETE)))
+        declinedMatch = typedMatch;  // The keystroke deleted the autocompleted text
+
       typedMatch = null;
       return;
     }
 
     somethingWasTyped = true;
+    declinedMatch = null;
 
     List<? extends HyperTableCell> items = cb.getItems();
 

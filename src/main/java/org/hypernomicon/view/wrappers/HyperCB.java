@@ -238,12 +238,19 @@ public class HyperCB implements CommitableWrapper
 
     silentMode = true;
 
-    List<? extends HyperTableCell> choices = populator.populate(row, force);
-    cb.setItems(null);
-    cb.setItems((ObservableList<HyperTableCell>) FXCollections.observableList(choices));
-    select(cell);
+    List<? extends HyperTableCell> choices;
 
-    silentMode = false;
+    try
+    {
+      choices = populator.populate(row, force);
+      cb.setItems(null);
+      cb.setItems((ObservableList<HyperTableCell>) FXCollections.observableList(choices));
+      select(cell);
+    }
+    finally
+    {
+      silentMode = false;
+    }
 
     if ((choices.size() > 0) && HyperTableCell.isEmpty(cell))
       nullSwitch(getCBListView(cb), lv -> lv.scrollTo(0));
