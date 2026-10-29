@@ -73,7 +73,9 @@ public class AutoCompleteCBHelper
                          startValue;    // This is the previous value that gets restored if no match is found for what the user typed
                                         // and the user must select one of the existing values
 
-  private boolean somethingWasTyped = false, listenForActionEvents = true;
+  private boolean somethingWasTyped = false, listenForActionEvents = true,
+                  selectingByText = false,     // True while the Enter key's text search runs; a dialog it opens takes the focus from the field
+                  focusLeftForDialog = false;  // That dialog has the focus, so the focus coming back is not the user returning to the field
 
   // Both somethingWasTyped and typedMatch are needed because somethingWasTyped determines whether it pops up the list of
   // options even if typedMatch was not set to a match.
@@ -100,6 +102,12 @@ public class AutoCompleteCBHelper
     // add a focus listener such that if not in focus, reset the filtered typed keys
     cb.getEditor().focusedProperty().addListener((ob, oldValue, newValue) ->
     {
+      if (selectingByText || focusLeftForDialog)  // The user has not left the field, so keep the typing state and the value to restore
+      {
+        focusLeftForDialog = Boolean.FALSE.equals(newValue);
+        return;
+      }
+
       somethingWasTyped = false;
 
       if (Boolean.TRUE.equals(newValue))
@@ -179,7 +187,19 @@ public class AutoCompleteCBHelper
 
         if (str.length() > 0)
         {
-          HyperTableCell selectedCell = selectedCellByText(str, hcb);
+          HyperTableCell selectedCell;
+
+          selectingByText = true;
+
+          try
+          {
+            selectedCell = selectedCellByText(str, hcb);
+          }
+          finally
+          {
+            selectingByText = false;
+          }
+
           if (selectedCell != null)
             HyperCB.select((ComboBox<HyperTableCell>)cb, selectedCell);
         }
