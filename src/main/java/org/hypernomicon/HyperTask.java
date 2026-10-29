@@ -240,6 +240,13 @@ public abstract class HyperTask
                   waitOnCancel = true, daemonThread = false;
   private long dialogDelayMillis = -1;  // -1 means use default
 
+  // A cancel and the point of no return are decided against each other under cancelLock, so that
+  // at most one of them takes effect: see cancel() and passPointOfNoReturn()
+
+  private final Object cancelLock = new Object();
+  private boolean cancelAccepted = false, pastPointOfNoReturn = false;
+  private final ReadOnlyBooleanWrapper cancellable = new ReadOnlyBooleanWrapper(true);  // Only changed on the FX thread
+
   /**
    * If completedCount is negative, then the progress will be shown as indeterminate, regardless of what totalCount is.
    * This is due to the behavior of how the Task class uses its corresponding properties.
@@ -261,8 +268,9 @@ public abstract class HyperTask
   public boolean isDone()                     { return innerTask.isDone(); }
   public boolean willHaveProgressUpdates()    { return innerTask.withProgressUpdates; }
 
-  public ReadOnlyStringProperty  messageProperty () { return innerTask.messageProperty (); }
-  public ReadOnlyDoubleProperty  progressProperty() { return innerTask.progressProperty(); }
+  public ReadOnlyStringProperty  messageProperty    () { return innerTask.messageProperty (); }
+  public ReadOnlyDoubleProperty  progressProperty   () { return innerTask.progressProperty(); }
+  public ReadOnlyBooleanProperty cancellableProperty() { return cancellable.getReadOnlyProperty(); }
 
   protected void incrementAndUpdateProgress() throws CancelledTaskException { completedCount++; updateProgress(); }
 
@@ -301,10 +309,47 @@ public abstract class HyperTask
    * sleep or a wait and breaks off interruptible I/O such as an HTTP request in progress.
    * Because the cancellation is recorded before the interrupt arrives, a check of
    * {@link #isCancelled()} made once the thread wakes always finds it.
+   * <p>
+   * A task that has passed its point of no return (see {@link #passPointOfNoReturn()}) refuses:
+   * it is neither marked as cancelled nor interrupted, and runs to the end.
+   * @return false if the task refused, true otherwise
    */
-  public void cancel()
+  public boolean cancel()
   {
+    synchronized (cancelLock)
+    {
+      if (pastPointOfNoReturn) return false;
+
+      cancelAccepted = true;
+    }
+
+    // Not under the lock: on the FX thread, this runs the done handlers, which can wait for the task's thread to die
+
     innerTask.cancel();
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Marks the point in {@link #call()} after which the task must not be stopped, because
+   * stopping would leave inconsistent what it has done so far (such as writing a set of files
+   * that must match one another). A cancel made before this point is raised here; one made
+   * after it is refused (see {@link #cancel()}). The progress dialog then disables Cancel and
+   * Skip and ignores the window's close button.
+   * @throws CancelledTaskException if the task was cancelled before reaching this point
+   */
+  protected final void passPointOfNoReturn() throws CancelledTaskException
+  {
+    synchronized (cancelLock)
+    {
+      if (cancelAccepted) throw new CancelledTaskException();
+
+      pastPointOfNoReturn = true;
+    }
+
+    runInFXThread(() -> cancellable.set(false));
   }
 
 //---------------------------------------------------------------------------
@@ -531,13 +576,17 @@ public abstract class HyperTask
 //---------------------------------------------------------------------------
 
   /**
-   * Terminates execution of this task and waits for the thread to die.
+   * Terminates execution of this task and waits for the thread to die. A task that has passed
+   * its point of no return refuses (see {@link #cancel()}); this then returns at once, without
+   * waiting.
+   * @return false if the task refused, true otherwise
    */
-  public void cancelAndWait()
+  public boolean cancelAndWait()
   {
-    cancel();
+    if (cancel() == false) return false;
 
     waitUntilThreadDies();
+    return true;
   }
 
 //---------------------------------------------------------------------------

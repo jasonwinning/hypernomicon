@@ -39,10 +39,13 @@ public final class ProgressDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private final HyperTask task;
+  private final boolean startedByUs;
+
   private Label lblPercent;
   private long lastPercent = -200;
 
-  @FXML private Button btnSkip;
+  @FXML private Button btnCancel, btnSkip;
   @FXML private ProgressBar progressBar;
   @FXML private VBox vbox;
 
@@ -58,9 +61,12 @@ public final class ProgressDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ProgressDlgCtrlr(HyperTask task)
+  private ProgressDlgCtrlr(HyperTask task, boolean startedByUs)
   {
     super("ProgressDlg", appTitle, true);
+
+    this.task = task;
+    this.startedByUs = startedByUs;
 
     task.setInitialized();  // Prevent progress dialog configuration from being changed
 
@@ -73,6 +79,15 @@ public final class ProgressDlgCtrlr extends ModalDialog
 
     if (task.getSkippable() == false)
       removeFromParent(btnSkip);
+
+    // A task we started refuses to be cancelled once it passes its point of no return, so the
+    // buttons that would cancel it are disabled then. For any other task, they only end the wait.
+
+    if (startedByUs)
+    {
+      btnCancel.disableProperty().bind(task.cancellableProperty().not());
+      btnSkip  .disableProperty().bind(task.cancellableProperty().not());
+    }
 
     updateProgressLabel(task.progressProperty().longValue());
 
@@ -95,16 +110,27 @@ public final class ProgressDlgCtrlr extends ModalDialog
 
     task.addDoneHandler(state -> stage.close());
 
+    stage.setOnCloseRequest(event ->
+    {
+      if (stopTask(task, startedByUs) == false)
+        event.consume();
+    });
+
     stage.setOnHiding(event ->
     {
       lblMessage .textProperty    ().unbind();
       progressBar.progressProperty().unbind();
+      btnCancel  .disableProperty ().unbind();
+      btnSkip    .disableProperty ().unbind();
     });
   }
 
 //---------------------------------------------------------------------------
 
   @Override protected boolean isValid() { return true; }
+
+  @Override protected void btnOkClick    () { if (stopTask(task, startedByUs)) super.btnOkClick    (); }  // The Skip button
+  @Override protected void btnCancelClick() { if (stopTask(task, startedByUs)) super.btnCancelClick(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -137,6 +163,29 @@ public final class ProgressDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 
   /**
+   * What Cancel, Skip and the window's close button do before the dialog closes, and what a
+   * simulated Cancel does. If we started the task and it is still running, it is cancelled so the
+   * caller can safely clean up data structures. By default we also wait for the thread to die;
+   * tasks that opt out via setWaitOnCancel(false), typically because the underlying work doesn't
+   * respond promptly to Thread.interrupt(), get a fire-and-forget cancel and the orphan continues
+   * running until it naturally completes.
+   * <p>
+   * A task that has passed its point of no return refuses, and the dialog stays open: the
+   * window's close button is ignored, and so is a click on Cancel or Skip made just before the
+   * dialog disabled them.
+   * @return false if the task refused, so the dialog must stay open
+   */
+  private static boolean stopTask(HyperTask task, boolean startedByUs)
+  {
+    if ((startedByUs == false) || (task.isRunning() == false)) return true;
+
+    return task.getWaitOnCancel() ? task.cancelAndWait() : task.cancel();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Run the specified task while showing progress updates in a progress dialog.
    * This method blocks execution in the calling thread until the task completes.
    *
@@ -150,6 +199,10 @@ public final class ProgressDlgCtrlr extends ModalDialog
    * <p>If the task was already running, and the user clicks Cancel or Skip,
    * this method does not tell the task to cancel or terminate; this should
    * be handled by the caller.</p>
+   *
+   * <p>Once a task this method started passes its point of no return (see
+   * {@code HyperTask.passPointOfNoReturn}), Cancel and Skip are disabled and the
+   * window's close button is ignored.</p>
    *
    * <p>To show an indeterminate animation in the progress dialog, pass <code>false</code> for the
    * <code>withProgressUpdates</code> parameter in the {@link HyperTask} constructor.</p>
@@ -202,33 +255,13 @@ public final class ProgressDlgCtrlr extends ModalDialog
 
     // Task still running; show dialog
 
-    // PopupRobot interception: simulate Cancel on progress dialog
+    // PopupRobot interception: simulate Cancel on progress dialog. A task past its point of
+    // no return refuses, as it would a click on Cancel, and the dialog is shown.
 
-    if (PopupRobot.isActive() && PopupRobot.shouldCancelProgressDialog())
-    {
-      if (startedByUs && task.isRunning())
-        task.cancelAndWait();
-
+    if (PopupRobot.isActive() && PopupRobot.shouldCancelProgressDialog() && stopTask(task, startedByUs))
       return task.getState();
-    }
 
-    boolean ok = new ProgressDlgCtrlr(task).showModal();
-
-    // If we started the task and it's still running (user cancelled or
-    // skipped the dialog), cancel so the caller can safely clean up data
-    // structures. By default we also wait for the thread to die; tasks that
-    // opt out via setWaitOnCancel(false), typically because the underlying
-    // work doesn't respond promptly to Thread.interrupt(), get a fire-and-
-    // forget cancel and the orphan continues running until it naturally
-    // completes.
-
-    if (startedByUs && task.isRunning())
-    {
-      if (task.getWaitOnCancel())
-        task.cancelAndWait();
-      else
-        task.cancel();
-    }
+    boolean ok = new ProgressDlgCtrlr(task, startedByUs).showModal();
 
     return ok ? State.SUCCEEDED : task.getState();
   }

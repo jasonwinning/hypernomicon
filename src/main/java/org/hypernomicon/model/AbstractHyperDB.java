@@ -854,22 +854,16 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final String SAVING_XML_FILES_MESSAGE = "Saving to XML files...";
+
   public boolean saveAllToPersistentStorage(HyperFavorites favorites)
   {
     if (isLoaded() == false) return false;
 
     if (checkChecksums() == false) return false;
 
-    HyperTask task = new HyperTask("SaveAllToXML", "Saving to XML files...") { @Override protected void call() throws CancelledTaskException, HyperDataException
+    HyperTask task = new HyperTask("SaveAllToXML", SAVING_XML_FILES_MESSAGE) { @Override protected void call() throws CancelledTaskException, HyperDataException
     {
-      if (bibLibraryIsLinked())
-      {
-        updateMessage("Saving bibliographic data...");
-        bibLibrary.saveAllToPersistentStorage(this::updateMessage);
-      }
-
-      updateMessage("Saving to XML files...");
-
       totalCount = 0;
       accessors.forEach((type, accessor) ->
       {
@@ -917,6 +911,18 @@ public abstract class AbstractHyperDB
         writeDatasetToXML(xmlList, this, hdtWork);            finalizeXMLFile(xmlList, filenameList, WORK_FILE_NAME);
         writeDatasetToXML(xmlList, this, hdtNote);            finalizeXMLFile(xmlList, filenameList, NOTE_FILE_NAME);
         writeDatasetToXML(xmlList, this, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
+
+        // Nothing has been written so far, so the save can still be cancelled. Once the files are being
+        // written, a cancel would leave them out of step with one another on disk.
+
+        passPointOfNoReturn();
+
+        if (bibLibraryIsLinked())
+        {
+          updateMessage("Saving bibliographic data...");
+          bibLibrary.saveAllToPersistentStorage(this::updateMessage);
+          updateMessage(SAVING_XML_FILES_MESSAGE);
+        }
 
         for (int ndx = 0; ndx < filenameList.size(); ndx++)
           xmlChecksums.put(filenameList.get(ndx), xmlPath(filenameList.get(ndx)).saveCharSequenceAtomically(xmlList.get(ndx), XML_FILES_CHARSET, this::updateMessage));

@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.*;
@@ -43,6 +44,9 @@ import javafx.scene.control.Alert.AlertType;
  * A task that posts work to the FX thread can wait for that thread to catch up. The wait must
  * return only once everything posted so far has run, and a cancellation made while the task is
  * waiting must end the task without the FX thread's help.
+ * <p>
+ * A task can pass a point of no return. A cancel made before it is raised there; one made after
+ * it is refused, and the task runs to the end without being interrupted.
  * <p>
  * A task that fails must tell the user, whatever it died of: a data error carries its own message,
  * and anything else is reported as an unexpected error and logged as well, unless the task was made
@@ -239,6 +243,109 @@ class HyperTaskTest
 
     assertReached(done, "The task did not finish");
     assertEquals(State.CANCELLED, finalState.get());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void aCancelBeforeThePointOfNoReturnIsRaisedThere() throws Exception
+  {
+    CountDownLatch started = new CountDownLatch(1),
+                   never   = new CountDownLatch(1),
+                   done    = new CountDownLatch(1);
+
+    AtomicBoolean raisedThere = new AtomicBoolean(), wentPast = new AtomicBoolean();
+    AtomicReference<State> finalState = new AtomicReference<>();
+
+    HyperTask task = new HyperTask("PointOfNoReturnTest", "", 1) { @Override protected void call() throws CancelledTaskException
+    {
+      started.countDown();
+      awaitQuietly(never);  // The cancel's interrupt ends this wait
+
+      try
+      {
+        passPointOfNoReturn();
+      }
+      catch (CancelledTaskException e)
+      {
+        raisedThere.set(true);
+        throw e;
+      }
+
+      wentPast.set(true);
+    }};
+
+    task.addDoneHandler(state ->
+    {
+      finalState.set(state);
+      done.countDown();
+    });
+
+    task.startWithNewThread(true);
+
+    assertReached(started, "The task did not start");
+    assertTrue(task.cancel(), "A cancel before the point of no return must be accepted");
+
+    assertReached(done, "The task did not finish");
+    assertEquals(State.CANCELLED, finalState.get());
+    assertTrue(raisedThere.get(), "The point of no return must raise the cancellation");
+    assertFalse(wentPast.get(), "A cancelled task must not go past its point of no return");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void aCancelAfterThePointOfNoReturnIsRefused() throws Exception
+  {
+    CountDownLatch passed  = new CountDownLatch(1),
+                   carryOn = new CountDownLatch(1),
+                   done    = new CountDownLatch(1);
+
+    AtomicBoolean finished = new AtomicBoolean(), interrupted = new AtomicBoolean(), cancellable = new AtomicBoolean(true);
+    AtomicReference<State> finalState = new AtomicReference<>();
+
+    HyperTask task = new HyperTask("PointOfNoReturnTest", "", 1) { @Override protected void call() throws CancelledTaskException
+    {
+      passPointOfNoReturn();
+      passed.countDown();
+
+      awaitQuietly(carryOn);
+
+      interrupted.set(Thread.currentThread().isInterrupted());
+      finished.set(true);
+    }};
+
+    task.addDoneHandler(state ->
+    {
+      finalState.set(state);
+      done.countDown();
+    });
+
+    task.startWithNewThread(true);
+
+    try
+    {
+      assertReached(passed, "The task did not pass its point of no return");
+
+      assertFalse(task.cancel(), "A cancel after the point of no return must be refused");
+
+      // Well short of the task's own wait, which only ends when this test lets it carry on (or times out)
+
+      assertFalse(assertTimeoutPreemptively(Duration.ofSeconds(2), task::cancelAndWait),
+                  "A refused cancelAndWait must return at once, without waiting for the task");
+
+      FxTestUtil.runFxAndWait(() -> cancellable.set(task.cancellableProperty().get()));
+      assertFalse(cancellable.get(), "The task must no longer be cancellable once the FX thread has caught up");
+    }
+    finally
+    {
+      carryOn.countDown();
+    }
+
+    assertReached(done, "The task did not finish");
+    assertEquals(State.SUCCEEDED, finalState.get());
+    assertTrue(finished.get(), "The task must run to the end");
+    assertFalse(interrupted.get(), "A refused cancel must not interrupt the task");
   }
 
 //---------------------------------------------------------------------------
