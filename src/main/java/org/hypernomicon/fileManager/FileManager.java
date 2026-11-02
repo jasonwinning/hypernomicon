@@ -2145,7 +2145,7 @@ public final class FileManager extends NonmodalWindow
 
   public static void show(FilePath filePath)
   {
-    if ((instance == null) || FilePath.isEmpty(filePath)) return;
+    if ((instance == null) || FilePath.isEmpty(filePath) || db.isOffline()) return;
 
     show();
     instance.goToFilePath(filePath, false);
@@ -2156,8 +2156,8 @@ public final class FileManager extends NonmodalWindow
 
   public static void show()
   {
-    if (ui.cantSaveRecord(false) == false)
-     show(instance);
+    if (db.isOnline() && (ui.cantSaveRecord(false) == false))
+      show(instance);
   }
 
 //---------------------------------------------------------------------------

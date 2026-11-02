@@ -883,6 +883,8 @@ public final class MainCtrlr
 
     selectorTabPane.layoutXProperty().addListener((obs, ov, nv) -> AnchorPane.setLeftAnchor(lblFindToast, nv.doubleValue()));
     btnTextSearch  .layoutXProperty().addListener((obs, ov, nv) -> AnchorPane.setLeftAnchor(gpFindTable , nv.doubleValue()));
+
+    enableControls(false);
   }
 
 //---------------------------------------------------------------------------
