@@ -113,7 +113,9 @@ final class DocumentArtifactService
   record ArtifactKey(FilePath sourceFile, long size, Instant modified, boolean convertToHtml) { }
 
   /** Converter-process lifecycle, observable so display adapters can choose
-   *  between "starting converter" and "generating preview" messaging. */
+   *  between "starting converter" and "generating preview" messaging.
+   *  STARTING lasts through the first conversion after a (re)start, not just
+   *  the process launch; see {@link ConversionWorker#convert}. */
   enum ConverterState { STOPPED, STARTING, RUNNING }
 
 //---------------------------------------------------------------------------
@@ -507,14 +509,6 @@ final class DocumentArtifactService
         return;
       }
 
-      // The office manager is up. This transition must happen here, before
-      // markConverting's subscriber push, not after the first conversion
-      // completes: the progress displays key on it to flip from "starting the
-      // office document previewer" to "generating the preview", and a
-      // first-ever conversion is exactly when that flip is visible.
-
-      converterState = ConverterState.RUNNING;
-
       FilePath targetFile;
 
       try
@@ -568,6 +562,19 @@ final class DocumentArtifactService
           if (shutDown) break;
         }
       }
+
+      // Only now is the converter RUNNING, not as soon as ensureRunning returns:
+      // the office process accepts connections before it has finished
+      // initializing, and the first conversion absorbs the rest of that time
+      // (observed as a long first conversion). Leaving the state STARTING until
+      // here keeps the "starting office document previewer" message up through
+      // that wait (markConverting's push re-derives the same progress view)
+      // instead of flipping to "generating the preview" and looking stalled. The
+      // artifact-directory failure above returns with it still STARTING, so the
+      // next conversion still counts as the first. Set before the terminal
+      // transitions so their subscribers see it.
+
+      converterState = ConverterState.RUNNING;
 
       // Transitions fire subscriber callbacks (display on the FX thread,
       // extraction futures on this thread), so they happen with no service

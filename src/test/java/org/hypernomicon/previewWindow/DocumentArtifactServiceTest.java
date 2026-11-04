@@ -347,17 +347,18 @@ class DocumentArtifactServiceTest
 
 //---------------------------------------------------------------------------
 
-  @Test void converterStateProgressesStartingToRunning() throws Exception
+  @Test void converterStateStaysStartingThroughFirstConversion() throws Exception
   {
     assertEquals(ConverterState.STOPPED, DocumentArtifactService.converterState());
 
     backend.ensureRunningStarted = new CountDownLatch(1);
     backend.ensureRunningMayProceed = new CountDownLatch(1);
     backend.convertStarted = new CountDownLatch(1);
+    backend.convertMayProceed = new CountDownLatch(1);
 
-    ConversionSession session = sessionFor(newSourceDoc("a.docx"));
-    CompletableFuture<FilePath> future = session.subscribeExtraction();
-    DocumentArtifactService.enqueue(session);
+    ConversionSession first = sessionFor(newSourceDoc("first.docx"));
+    CompletableFuture<FilePath> firstFuture = first.subscribeExtraction();
+    DocumentArtifactService.enqueue(first);
 
     // While the office manager is starting up, the state is STARTING (the
     // "starting office document previewer" progress-message window).
@@ -368,18 +369,37 @@ class DocumentArtifactServiceTest
 
     backend.ensureRunningMayProceed.countDown();
 
-    // The manager is up BEFORE the first conversion begins: RUNNING is what
-    // flips the progress message from "starting the previewer" to "generating
-    // the preview", so it must not wait for the first conversion to complete
-    // (a first-ever conversion is exactly when the flip is user-visible).
+    // The manager being up does not end the window: the office process is
+    // still initializing, and the first conversion absorbs the rest of that
+    // time, so the session is converting while the state stays STARTING.
+
+    assertTrue(backend.convertStarted.await(10, TimeUnit.SECONDS));
+
+    assertEquals(ConversionState.CONVERTING, first.state());
+    assertEquals(ConverterState.STARTING, DocumentArtifactService.converterState());
+
+    backend.convertMayProceed.countDown();
+
+    firstFuture.get(10, TimeUnit.SECONDS);
+
+    assertEquals(ConverterState.RUNNING, DocumentArtifactService.converterState());
+
+    // Later conversions run against the warmed-up process
+
+    backend.convertStarted = new CountDownLatch(1);
+    backend.convertMayProceed = new CountDownLatch(1);
+
+    ConversionSession second = sessionFor(newSourceDoc("second.docx"));
+    CompletableFuture<FilePath> secondFuture = second.subscribeExtraction();
+    DocumentArtifactService.enqueue(second);
 
     assertTrue(backend.convertStarted.await(10, TimeUnit.SECONDS));
 
     assertEquals(ConverterState.RUNNING, DocumentArtifactService.converterState());
 
-    future.get(10, TimeUnit.SECONDS);
+    backend.convertMayProceed.countDown();
 
-    assertEquals(ConverterState.RUNNING, DocumentArtifactService.converterState());
+    secondFuture.get(10, TimeUnit.SECONDS);
   }
 
 //---------------------------------------------------------------------------
