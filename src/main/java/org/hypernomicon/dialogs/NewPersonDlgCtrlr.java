@@ -76,6 +76,12 @@ public class NewPersonDlgCtrlr extends ModalDialog
   private boolean alreadyChangingName = false, noTabUpdate = false;
   private HyperTask task;
 
+  /**
+   * Unscaled height of the root pane once the duplicate author tabs are showing: the tab pane's
+   * top anchor in NewPersonDlg.fxml, plus the tab header and the six rows of the duplicate tab.
+   */
+  private static final double EXPANDED_HEIGHT = 419.0;
+
   public HDT_Person getPerson() { return person; }
   public PersonName getName()   { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
 
@@ -328,11 +334,22 @@ public class NewPersonDlgCtrlr extends ModalDialog
 
       if (tabPane.isVisible() == false) // Expand dialog vertically to reveal duplicate author tabs
       {
-        double height = scalePropertyValueForDPI(419),
-               diff = stage.getHeight() - rootPane.getHeight();
+        if (getIsScaled(rootPane))
+        {
+          double height = scalePropertyValueForDPI(EXPANDED_HEIGHT),
+                 diff = stage.getHeight() - rootPane.getHeight();
 
-        setHeights(rootPane, height);
-        setHeights(stage   , height + diff);
+          setHeights(rootPane, height);
+          setHeights(stage   , height + diff);
+        }
+        else
+        {
+          // Not shown yet (the matches were passed to the constructor). The DPI rescale on first
+          // show multiplies the root pane's heights and sizes the stage to match, so the value is
+          // written unscaled here; a scaled one would be scaled twice.
+
+          setHeights(rootPane, EXPANDED_HEIGHT);
+        }
 
         tabPane.setVisible(true);
 
