@@ -18,6 +18,7 @@
 package org.hypernomicon.model.unities;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -100,10 +101,21 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
   {
     final MainText mainText = getMainText();
 
+    // A united record's description, display items and key works are its hub's. The XML files store them
+    // only with the hub (see HDI_OfflineMainTextAndHub.writeToXml), so a saved copy read from them has
+    // none, and the hub's own restore puts them back. Restoring them here as well would empty the shared
+    // text; at load that was hidden because hubs are restored after their united records.
+
+    if ((val.hubID > 0) && (tag != tagHub))
+      return;
+
     switch (tag)
     {
       case tagDisplayRecord :
 
+        // Unregister the record display items being replaced; the ones the backup names are registered again below
+
+        mainText.getRecordDisplayItems().forEach(displayed -> db.handleDisplayRecord(mainText, displayed.getMainText(), false));
         mainText.displayItems.clear();
 
         if (val.displayItems.size() > 0)
@@ -136,6 +148,14 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
         break;
 
       case tagKeyWork :
+
+        // Unregister the key works the backup does not have, for every record they were registered for
+        // (each of a hub's united records), as MainText.setKeyWorksFromList does
+
+        Set<HDT_Record> backupKeyWorkRecords = val.keyWorks.stream().map(KeyWork::getRecord).collect(Collectors.toSet());
+
+        mainText.keyWorksStream().map(KeyWork::getRecord).filter(Predicate.not(backupKeyWorkRecords::contains))
+                .forEach(keyWorkRecord -> mainText.runKeyWorkHandler(keyWorkRecord, false));
 
         mainText.keyWorks.clear();
 

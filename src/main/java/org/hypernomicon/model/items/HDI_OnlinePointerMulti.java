@@ -162,7 +162,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
     Stream<String> strStream = stream.map(strFunction).filter(Predicate.not(String::isBlank));
 
-    return limitTo20Items ? strStream.limit(20).collect(Collectors.joining("; ")) : strStream.collect(Collectors.joining("; "));
+    return (limitTo20Items ? strStream.limit(20) : strStream).collect(Collectors.joining("; "));
   }
 
 //---------------------------------------------------------------------------

@@ -371,7 +371,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Set<HDT_RecordWithMainText> getRecordDisplayItems()
+  Set<HDT_RecordWithMainText> getRecordDisplayItems()
   {
     return displayItems.stream().filter(item -> item.type == diRecord).map(item -> item.record).collect(Collectors.toSet());
   }
@@ -407,7 +407,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void runKeyWorkHandler(HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord, boolean affirm)
+  void runKeyWorkHandler(HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord, boolean affirm)
   {
     if (recordWMT == null) return;
 

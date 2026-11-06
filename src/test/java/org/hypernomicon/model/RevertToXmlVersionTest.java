@@ -20,10 +20,15 @@ package org.hypernomicon.model;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.PopupDialog.DialogResult.*;
+
+import java.util.List;
 
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.unities.HDT_Hub;
+import org.hypernomicon.model.unities.*;
+import org.hypernomicon.model.unities.MainText.DisplayItem;
+import org.hypernomicon.util.PopupRobot;
 
 import org.junit.jupiter.api.*;
 
@@ -33,8 +38,8 @@ import org.junit.jupiter.api.*;
  * "Revert to XML version" restores a record from its saved copy, which names the records it
  * points to by ID. These tests pin what keeps those IDs meaning the same records (an ID freed by a
  * deletion or an ID change is not reused until the next save, and a save replaces the saved copies
- * only once it can no longer be cancelled) and the refusal to revert a united record whose unity
- * has changed since the save.
+ * only once it can no longer be cancelled), the refusal to revert a united record whose unity has
+ * changed since the save, and what a revert restores of single pointers, key works and display items.
  */
 class RevertToXmlVersionTest
 {
@@ -81,6 +86,53 @@ class RevertToXmlVersionTest
     HDT_Work work = db.createNewBlankRecord(hdtWork);
     work.setName(title);
     return work;
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Saves the records to XML in memory and reopens the database from that XML, so that the records'
+   * saved copies are the ones a load reads from the files rather than the ones a save keeps.
+   */
+  private static void saveAndReopen() throws Exception
+  {
+    AbstractHyperDB.RecordsXML xml = db.buildRecordsXML(null);
+
+    for (int ndx = 0; ndx < xml.fileNames().size(); ndx++)
+    {
+      String content = xml.contents().get(ndx).toString();
+      db.setRecordsLoadFilter(xml.fileNames().get(ndx), _ -> content);
+    }
+
+    PopupRobot.setDefaultResponse(mrYes);  // Continue past the integrity-checksum prompt, since the files no longer match the manifest
+
+    try
+    {
+      db.closeAndOpen();
+    }
+    finally
+    {
+      PopupRobot.setDefaultResponse(mrOk);
+      db.setRecordsLoadFilter(null, null);
+    }
+
+    assertTrue(db.isOnline(), () -> "Reload failed: " + PopupRobot.getLastMessage());
+  }
+
+//---------------------------------------------------------------------------
+
+  private static void addKeyWork(HDT_RecordWithMainText record, HDT_Work work)
+  {
+    List<KeyWork> keyWorks = record.getMainText().getKeyWorksCopy();
+    keyWorks.add(new KeyWork(work));
+    record.getMainText().setKeyWorksFromList(keyWorks);
+  }
+
+//---------------------------------------------------------------------------
+
+  private static boolean keyWorkIndexed(HDT_Work work, HDT_RecordWithMainText record)
+  {
+    return db.keyWorkMentionerStream(work, false).anyMatch(mentioner -> mentioner == record);
   }
 
 //---------------------------------------------------------------------------
@@ -297,6 +349,87 @@ class RevertToXmlVersionTest
 
     assertNull(hub.getLabel(), "A refused revert does not put the label back in the unity");
     assertFalse(label.hasHub());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void aRevertTakesKeyWorksAndDisplayItemsAddedSinceTheSaveOutOfTheIndexes() throws Exception
+  {
+    HDT_Debate debate = db.createNewBlankRecord(hdtDebate), displayed = db.createNewBlankRecord(hdtDebate);
+    HDT_Work work = work("Key work");
+
+    save();
+
+    addKeyWork(debate, work);
+
+    List<DisplayItem> items = debate.getMainText().getDisplayItemsCopy();
+    items.add(new DisplayItem(displayed));
+    debate.getMainText().setDisplayItemsFromList(items);
+
+    debate.revertToXmlVersion();
+
+    assertTrue(debate.getMainText().getKeyWorksUnmod().isEmpty());
+    assertFalse(keyWorkIndexed(work, debate), "The work is no longer listed as a key work of the debate");
+    assertFalse(db.displayerStream(displayed).anyMatch(displayer -> displayer == debate), "Nor the debate as displaying the other one");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void aRevertTakesAKeyWorkAddedToAUnitySinceTheSaveOutOfTheIndexForEveryUnitedRecord() throws Exception
+  {
+    HDT_Position position = db.createNewBlankRecord(hdtPosition);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+    HDT_Work work = work("Key work");
+
+    HDT_Hub.uniteRecords(position, note, HTML_AS_SAVED);
+
+    save();
+
+    addKeyWork(note, work);
+
+    assertTrue(keyWorkIndexed(work, position) && keyWorkIndexed(work, note));
+
+    position.revertToXmlVersion();
+
+    assertTrue(note.getMainText().getKeyWorksUnmod().isEmpty());
+    assertFalse(keyWorkIndexed(work, position));
+    assertFalse(keyWorkIndexed(work, note));
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * A united record's saved copy as a load reads it from the files holds only its hub; the shared text
+   * and key works are in the hub's. Restoring the record used to empty them after the hub's restore.
+   */
+  @Test
+  void revertingAUnitedRecordReadFromTheFilesKeepsTheSharedTextAndKeyWorks() throws Exception
+  {
+    HDT_Position position = db.createNewBlankRecord(hdtPosition);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+    HDT_Work work = work("Key work");
+
+    HDT_Hub.uniteRecords(position, note, HTML_AS_SAVED);
+    addKeyWork(position, work);
+
+    int positionID = position.getID(), noteID = note.getID(), workID = work.getID();
+
+    saveAndReopen();
+
+    HDT_Position loadedPosition = db.positions.getByID(positionID);
+    HDT_Note loadedNote = db.notes.getByID(noteID);
+    HDT_Work loadedWork = db.works.getByID(workID);
+
+    loadedNote.getMainText().setHtml(HTML_EDITED);
+
+    loadedPosition.revertToXmlVersion();
+
+    assertEquals("As saved", loadedPosition.getMainText().getPlain().strip());
+    assertEquals("As saved", loadedNote    .getMainText().getPlain().strip());
+    assertEquals(1, loadedPosition.getMainText().getKeyWorksUnmod().size());
+    assertTrue(keyWorkIndexed(loadedWork, loadedPosition) && keyWorkIndexed(loadedWork, loadedNote));
   }
 
 //---------------------------------------------------------------------------
