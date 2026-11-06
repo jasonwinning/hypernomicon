@@ -123,12 +123,24 @@ public class ChangeIDDlgCtrlr extends ModalDialog
     if (HDT_Record.isEmpty(record, false))
       return falseWithErrorPopup("Unable to change record ID.", cbRecord);
 
-    if ((parseInt(tfNewID.getText(), -1) < 1) || lblNotAvailable.isVisible())
+    int newID = parseInt(tfNewID.getText(), -1);
+
+    if (newID < 1)
       return falseWithErrorPopup("You must enter a valid numeric ID.", tfNewID);
+
+    if (newID == record.getID())
+      return falseWithErrorPopup("The record already has that ID.", tfNewID);
+
+    if (db.idFreedSinceSave(record.getType(), newID))
+      return falseWithErrorPopup("That ID cannot be used until the database is saved again.\n" +
+                                 "The record that had it was deleted or given another ID since the last save.", tfNewID);
+
+    if (db.idAvailable(record.getType(), newID) == false)
+      return falseWithErrorPopup("That ID is already in use.", tfNewID);
 
     try
     {
-      db.changeRecordID(record, parseInt(tfNewID.getText(), -1));
+      db.changeRecordID(record, newID);
     }
     catch (HyperDataException e)
     {

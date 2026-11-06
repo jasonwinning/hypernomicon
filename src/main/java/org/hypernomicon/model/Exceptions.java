@@ -193,6 +193,14 @@ public final class Exceptions
     }
   }
 
+  public static class HubSpokesChangedException extends RestoreException
+  {
+    public HubSpokesChangedException()
+    {
+      super("The set of records united with this record has changed.");
+    }
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

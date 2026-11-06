@@ -101,7 +101,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public Iterable<KeywordBinding> getSearchKeys() { return db.getKeysByRecord(this); }
   @Override public String firstActiveKeyWord()              { return db.firstActiveKeyWord(this); }
 
-  @Override public final void writeStoredStateToXML(StringBuilder xml)        { xmlState.writeToXML(xml); }
+  @Override public final void setStoredState(RecordState state)               { xmlState = state; }
   @Override public void setSearchKey(String newKey, boolean confirmDup) throws DuplicateSearchKeyException, SearchKeyTooShortException
   { setSearchKey(newKey, false, true, confirmDup); }
 
@@ -351,12 +351,19 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final void saveToStoredState() throws HDB_InternalError
+  /**
+   * Appends the record's current state to XML being built for a save, and returns that state,
+   * now marked as stored. The record's saved copy is left as it is: the save passes the returned
+   * state to {@link #setStoredState} once it can no longer be cancelled.
+   */
+  @Override public final RecordState writeCurrentStateToXML(StringBuilder xml) throws HDB_InternalError
   {
     if (online == false)
       throw new HDB_InternalError(62039);
 
-    xmlState = getRecordStateBackup();
+    RecordState state = getRecordStateBackup();
+    state.writeToXML(xml);
+    return state;
   }
 
 //---------------------------------------------------------------------------

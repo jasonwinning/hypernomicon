@@ -26,7 +26,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="115.0" minHeight="115.0" minWidth="600.0" prefHeight="115.0" prefWidth="880.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.ChangeIDDlgCtrlr">
+<AnchorPane maxHeight="115.0" minHeight="115.0" minWidth="700.0" prefHeight="115.0" prefWidth="880.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.ChangeIDDlgCtrlr">
   <GridPane layoutX="283.0" layoutY="45.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" percentWidth="28.0" />
@@ -65,7 +65,7 @@
           <Font name="System Bold" />
         </font>
       </Label>
-      <Button layoutX="491.0" layoutY="9.0" mnemonicParsing="false" onAction="#btnOkClick" text="Change ID" AnchorPane.rightAnchor="75.0" />
+      <Button layoutX="491.0" layoutY="9.0" mnemonicParsing="false" onAction="#btnOkClick" text="Change ID and Save All to XML" AnchorPane.rightAnchor="75.0" />
       <Button layoutX="572.0" layoutY="8.0" mnemonicParsing="false" onAction="#btnCancelClick" text="Cancel" AnchorPane.rightAnchor="14.0" />
     </AnchorPane>
   </GridPane>

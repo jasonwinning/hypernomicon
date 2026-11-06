@@ -255,6 +255,7 @@ public abstract class AbstractHyperDB
   public boolean resolvingPointers()                                 { return pointerResolutionInProgress; }
   public int getNextID(RecordType type)                              { return datasets.get(type).getNextID(); }
   public boolean idAvailable(RecordType type, int id)                { return datasets.get(type).idAvailable(id); }
+  public boolean idFreedSinceSave(RecordType type, int id)           { return datasets.get(type).idFreedSinceSave(id); }
   public Tag mainTextTagForRecordType(RecordType type)               { return nullSwitch(datasets.get(type), null, HyperDataset::getMainTextTag); }
   public long totalRecordCount()                                     { return accessors.values().stream().mapToLong(Collection::size).sum(); }
   public Stream<HDT_Record> allRecords()                             { return accessors.values().stream().flatMap(Collection::stream); }
@@ -817,19 +818,28 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void finalizeXMLFile(List<StringBuilder> xmlList, List<String> filenameList, String fileName)
+  /**
+   * The records XML files as a save writes them, built by {@link #buildRecordsXML}, and the state
+   * each record was written in, which becomes its saved copy at {@link #commitSavedCopies}.
+   */
+  record RecordsXML(List<String> fileNames, List<StringBuilder> contents, Map<HDT_Record, RecordState> writtenStates) { }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void finalizeXMLFile(RecordsXML recordsXML, String fileName)
   {
-    xmlList.getLast().append(System.lineSeparator()).append("</records>");
-    filenameList.add(fileName);
-    xmlList.add(new StringBuilder());
+    recordsXML.contents().getLast().append(System.lineSeparator()).append("</records>");
+    recordsXML.fileNames().add(fileName);
+    recordsXML.contents().add(new StringBuilder());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void writeDatasetToXML(List<StringBuilder> xmlList, HyperTask task, RecordType type) throws HDB_InternalError, CancelledTaskException
+  private void writeDatasetToXML(RecordsXML recordsXML, HyperTask task, RecordType type) throws HDB_InternalError, CancelledTaskException
   {
-    StringBuilder xml = xmlList.getLast();
+    StringBuilder xml = recordsXML.contents().getLast();
 
     if (xml.isEmpty())
     {
@@ -841,10 +851,66 @@ public abstract class AbstractHyperDB
          .append('>').append(System.lineSeparator()).append(System.lineSeparator());
     }
 
-    datasets.get(type).writeToXML(xml, task);
+    datasets.get(type).writeToXML(xml, task, recordsXML.writtenStates());
 
     if (task != null)
       task.completedCount += records(type).stream().filter(record -> isUnstoredRecord(record) == false).count();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds the text of every records XML file, as a save writes them. No record is changed: the
+   * records' saved copies stay as they were until {@link #commitSavedCopies}.
+   * @param task the save task, for progress and cancellation; may be null
+   */
+  RecordsXML buildRecordsXML(HyperTask task) throws HDB_InternalError, CancelledTaskException
+  {
+    RecordsXML xml = new RecordsXML(new ArrayList<>(), Lists.newArrayList(new StringBuilder()), new IdentityHashMap<>());
+
+    writeDatasetToXML(xml, task, hdtPersonStatus);    writeDatasetToXML(xml, task, hdtRank);            writeDatasetToXML(xml, task, hdtField);
+    writeDatasetToXML(xml, task, hdtSubfield);        writeDatasetToXML(xml, task, hdtWorkType);        writeDatasetToXML(xml, task, hdtFileType);
+    writeDatasetToXML(xml, task, hdtCountry);         writeDatasetToXML(xml, task, hdtRegion);          writeDatasetToXML(xml, task, hdtPositionVerdict);
+    writeDatasetToXML(xml, task, hdtArgumentVerdict); writeDatasetToXML(xml, task, hdtInstitutionType); writeDatasetToXML(xml, task, hdtPersonGroup);
+
+                                                      finalizeXMLFile(xml, OTHER_FILE_NAME);
+
+    writeDatasetToXML(xml, task, hdtPerson);          finalizeXMLFile(xml, PERSON_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtInstitution);     finalizeXMLFile(xml, INSTITUTION_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtInvestigation);   finalizeXMLFile(xml, INVESTIGATION_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtDebate);          finalizeXMLFile(xml, DEBATE_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtArgument);        finalizeXMLFile(xml, ARGUMENT_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtPosition);        finalizeXMLFile(xml, POSITION_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtGlossary);
+    writeDatasetToXML(xml, task, hdtConceptSense);
+    writeDatasetToXML(xml, task, hdtTerm);
+    writeDatasetToXML(xml, task, hdtConcept);         finalizeXMLFile(xml, TERM_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtFolder);
+    writeDatasetToXML(xml, task, hdtMiscFile);
+    writeDatasetToXML(xml, task, hdtWorkFile);        finalizeXMLFile(xml, FILE_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtWorkLabel);
+    writeDatasetToXML(xml, task, hdtWork);            finalizeXMLFile(xml, WORK_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtNote);            finalizeXMLFile(xml, NOTE_FILE_NAME);
+    writeDatasetToXML(xml, task, hdtHub);             finalizeXMLFile(xml, HUB_FILE_NAME);
+
+    return xml;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Makes the states that {@link #buildRecordsXML} wrote the records' saved copies (what "Revert to
+   * XML version" restores), and makes the IDs freed since the last save available again. A save
+   * calls this once it can no longer be cancelled. Both happen together, for every dataset, because
+   * a saved copy taken before a deletion or an ID change can name the ID that was freed; only once
+   * every saved copy is replaced can a new record take that ID without a revert pointing at it.
+   */
+  void commitSavedCopies(RecordsXML recordsXML)
+  {
+    recordsXML.writtenStates().forEach(HDT_Record::setStoredState);
+    datasets.values().forEach(HyperDataset::releaseFreedIDs);
   }
 
 //---------------------------------------------------------------------------
@@ -864,38 +930,14 @@ public abstract class AbstractHyperDB
 
       try
       {
-        List<String> filenameList = new ArrayList<>();
-        List<StringBuilder> xmlList = Lists.newArrayList(new StringBuilder());
+        RecordsXML recordsXML = buildRecordsXML(this);
 
-        writeDatasetToXML(xmlList, this, hdtPersonStatus);    writeDatasetToXML(xmlList, this, hdtRank);            writeDatasetToXML(xmlList, this, hdtField);
-        writeDatasetToXML(xmlList, this, hdtSubfield);        writeDatasetToXML(xmlList, this, hdtWorkType);        writeDatasetToXML(xmlList, this, hdtFileType);
-        writeDatasetToXML(xmlList, this, hdtCountry);         writeDatasetToXML(xmlList, this, hdtRegion);          writeDatasetToXML(xmlList, this, hdtPositionVerdict);
-        writeDatasetToXML(xmlList, this, hdtArgumentVerdict); writeDatasetToXML(xmlList, this, hdtInstitutionType); writeDatasetToXML(xmlList, this, hdtPersonGroup);
-
-                                                              finalizeXMLFile(xmlList, filenameList, OTHER_FILE_NAME);
-
-        writeDatasetToXML(xmlList, this, hdtPerson);          finalizeXMLFile(xmlList, filenameList, PERSON_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtInstitution);     finalizeXMLFile(xmlList, filenameList, INSTITUTION_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtInvestigation);   finalizeXMLFile(xmlList, filenameList, INVESTIGATION_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtDebate);          finalizeXMLFile(xmlList, filenameList, DEBATE_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtArgument);        finalizeXMLFile(xmlList, filenameList, ARGUMENT_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtPosition);        finalizeXMLFile(xmlList, filenameList, POSITION_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtGlossary);
-        writeDatasetToXML(xmlList, this, hdtConceptSense);
-        writeDatasetToXML(xmlList, this, hdtTerm);
-        writeDatasetToXML(xmlList, this, hdtConcept);         finalizeXMLFile(xmlList, filenameList, TERM_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtFolder);
-        writeDatasetToXML(xmlList, this, hdtMiscFile);
-        writeDatasetToXML(xmlList, this, hdtWorkFile);        finalizeXMLFile(xmlList, filenameList, FILE_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtWorkLabel);
-        writeDatasetToXML(xmlList, this, hdtWork);            finalizeXMLFile(xmlList, filenameList, WORK_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtNote);            finalizeXMLFile(xmlList, filenameList, NOTE_FILE_NAME);
-        writeDatasetToXML(xmlList, this, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
-
-        // Nothing has been written so far, so the save can still be cancelled. Once the files are being
-        // written, a cancel would leave them out of step with one another on disk.
+        // Nothing has been written or changed so far, so the save can still be cancelled. Once the files
+        // are being written, a cancel would leave them out of step with one another on disk.
 
         passPointOfNoReturn();
+
+        commitSavedCopies(recordsXML);
 
         if (bibLibraryIsLinked())
         {
@@ -904,8 +946,10 @@ public abstract class AbstractHyperDB
           updateMessage(SAVING_XML_FILES_MESSAGE);
         }
 
-        for (int ndx = 0; ndx < filenameList.size(); ndx++)
-          xmlChecksums.put(filenameList.get(ndx), xmlPath(filenameList.get(ndx)).saveCharSequenceAtomically(xmlList.get(ndx), XML_FILES_CHARSET, this::updateMessage));
+        List<String> fileNames = recordsXML.fileNames();
+
+        for (int ndx = 0; ndx < fileNames.size(); ndx++)
+          xmlChecksums.put(fileNames.get(ndx), xmlPath(fileNames.get(ndx)).saveCharSequenceAtomically(recordsXML.contents().get(ndx), XML_FILES_CHARSET, this::updateMessage));
       }
       catch (IOException | HDB_InternalError e)
       {

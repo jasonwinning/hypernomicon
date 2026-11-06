@@ -110,8 +110,7 @@ class MissingBibEntryLoadTest
       work.setBibEntryKey(MISSING_ENTRY_KEY);
 
       StringBuilder xml = new StringBuilder();
-      work.saveToStoredState();
-      work.writeStoredStateToXML(xml);
+      work.writeCurrentStateToXML(xml);
 
       String recordXml = xml.toString();
       assertTrue(recordXml.contains(MISSING_ENTRY_KEY), "The key must be in the record as the save writes it");

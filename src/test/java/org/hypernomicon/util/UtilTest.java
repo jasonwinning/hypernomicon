@@ -21,10 +21,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import static org.hypernomicon.util.Util.*;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.xml.stream.*;
 
 import org.junit.jupiter.api.*;
 
@@ -187,6 +191,55 @@ class UtilTest
     assertEquals(instant, parseHttpDate("Sat, 24 Oct 2026 12:34:56 GMT"), "parseHttpDate should read an RFC 1123 date in GMT as that instant.");
     assertEquals(instant, parseHttpDate("Sat, 24 Oct 2026 14:34:56 +0200"), "parseHttpDate should apply an explicit offset.");
     assertEquals(instant, parseHttpDate(dateTimeToHttpDate(instant)), "parseHttpDate should read back what dateTimeToHttpDate wrote.");
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * XML 1.0 forbids most control characters, and U+FFFE and U+FFFF, even when written as character
+   * references, so one of them in a record's text would leave the saved XML file unloadable. Every
+   * place the records XML is written escapes text with {@code xmlContentEscaper} or
+   * {@code xmlAttributeEscaper}, which replace each such character with U+FFFD rather than dropping
+   * it, so the spot where it was stays visible.
+   */
+  @Test
+  void testXmlEscapers_ReplaceForbiddenCharactersSoTheXmlStillParses()
+  {
+    List<Character> forbidden = new ArrayList<>(List.of((char) 0xFFFE, (char) 0xFFFF));
+
+    for (char ch = 0x00; ch < 0x20; ch++)
+      if ((ch != '\t') && (ch != '\n') && (ch != '\r'))
+        forbidden.add(ch);
+
+    for (char ch : forbidden)
+    {
+      String raw = "A" + ch + "B",
+             codePoint = String.format("U+%04X", (int) ch),
+             xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><r a=\"" + xmlAttributeEscaper.escape(raw) + "\">" + xmlContentEscaper.escape(raw) + "</r>";
+
+      List<String> parsed = assertDoesNotThrow(() -> attributeAndTextFromXml(xml), "XML containing escaped " + codePoint + " should still parse.");
+
+      assertEquals(List.of("A�B", "A�B"), parsed, codePoint + " should be replaced with U+FFFD in an attribute and in element text.");
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Parses the XML the way the records XML loader does (UTF-8 bytes through the JDK's StAX parser)
+   * and returns the root element's {@code a} attribute and its text.
+   */
+  private static List<String> attributeAndTextFromXml(String xml) throws XMLStreamException
+  {
+    XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name());
+
+    reader.nextTag();
+
+    String attribute = reader.getAttributeValue(null, "a"),
+           text      = reader.getElementText();
+
+    return List.of(attribute, text);
   }
 
 //---------------------------------------------------------------------------

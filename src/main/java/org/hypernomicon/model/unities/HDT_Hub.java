@@ -18,6 +18,7 @@
 package org.hypernomicon.model.unities;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
@@ -26,7 +27,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.DatasetAccessor;
-import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
 
 //---------------------------------------------------------------------------
@@ -123,6 +124,31 @@ public class HDT_Hub extends HDT_RecordWithMainText
     spokes.values().forEach(HDT_RecordWithMainText::modifyMainText);
 
     alreadyModifying = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Refuses to restore an online hub whose united records are not the ones the backup names. The
+   * restore would put back the backup's spokes without removing any, and would not change the
+   * united records' own hub pointers, so the unity would be left half restored.
+   */
+  @Override public void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError
+  {
+    if (isOnline())
+    {
+      HDI_OfflineHubSpokes backupSpokes = (HDI_OfflineHubSpokes) backupState.items.get(tagSpokeRecord);
+
+      if ((backupSpokes.debateID   != HDT_Record.getIDSafe(getDebate  ())) ||
+          (backupSpokes.positionID != HDT_Record.getIDSafe(getPosition())) ||
+          (backupSpokes.conceptID  != HDT_Record.getIDSafe(getConcept ())) ||
+          (backupSpokes.noteID     != HDT_Record.getIDSafe(getNote    ())) ||
+          (backupSpokes.labelID    != HDT_Record.getIDSafe(getLabel   ())))
+        throw new HubSpokesChangedException();
+    }
+
+    super.restoreTo(backupState, rebuildMentions);
   }
 
 //---------------------------------------------------------------------------

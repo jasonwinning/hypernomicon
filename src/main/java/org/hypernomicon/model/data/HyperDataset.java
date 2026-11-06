@@ -88,7 +88,19 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
   public DatasetAccessor<HDT_DT> getAccessor()            { return core; }
 
-  public boolean idAvailable(int id)                      { return (isUnstoredRecord(id, type) == false) && (core.containsID(id) == false); }
+  public boolean idAvailable(int id)                      { return (isUnstoredRecord(id, type) == false) && (core.containsID(id) == false) && (core.wasFreedSinceSave(id) == false); }
+
+  /**
+   * True if a record had this ID at the last save (or the load, before the first save) and has since
+   * been deleted or given another ID. Such an ID is not available until the next save; see HyperCore.freedIDs.
+   */
+  public boolean idFreedSinceSave(int id)                 { return core.wasFreedSinceSave(id) && (core.containsID(id) == false); }
+
+  /**
+   * Makes the IDs freed since the last save available again. Called by a save once it has replaced the
+   * saved copies of all the records it wrote.
+   */
+  public void releaseFreedIDs()                           { core.releaseFreedIDs(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -257,7 +269,13 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void writeToXML(StringBuilder xml, HyperTask task) throws HDB_InternalError, CancelledTaskException
+  /**
+   * Appends this dataset's records to the XML being built for a save. No record's saved copy (what
+   * "Revert to XML version" restores) is replaced here: the state each record was written in is put
+   * in {@code writtenStates}, and the save makes those the saved copies once it can no longer be
+   * cancelled, so a save cancelled partway through leaves every saved copy as it was.
+   */
+  public void writeToXML(StringBuilder xml, HyperTask task, Map<HDT_Record, RecordState> writtenStates) throws HDB_InternalError, CancelledTaskException
   {
     if (core.isEmpty()) return;
 
@@ -271,8 +289,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
       if (isUnstoredRecord(record.getID(), type) || ((record instanceof HDT_Folder folder) && (folder.getPath().isInUse() == false)))
         continue;
 
-      record.saveToStoredState();
-      record.writeStoredStateToXML(xml);
+      writtenStates.put(record, record.writeCurrentStateToXML(xml));
       wroteAny = true;
 
       if (task != null)

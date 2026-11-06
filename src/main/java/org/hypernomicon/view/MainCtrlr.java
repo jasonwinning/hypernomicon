@@ -88,6 +88,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -1224,6 +1225,12 @@ public final class MainCtrlr
     db.rebuildMentions();
 
     favorites.changeRecordID(changedType, oldID, newID);
+
+    // Save now, so that the saved copies "Revert to XML version" restores name the record by its new
+    // ID. Until the next save they name the old one, which no record has any more, so reverting a
+    // record that points to this one would drop that pointer.
+
+    saveAllToXML(false, true, false, false);
 
     update();
   }
@@ -2723,6 +2730,16 @@ public final class MainCtrlr
       case hdtPerson : if (((HDT_Person)record).investigations.size() > 0) additionalMsg = "\n\nNote: Reverting a Person record does not automatically revert associated Investigation records."; break;
 
       default : break;
+    }
+
+    if (record.isUnitable() && (((HDT_RecordWithMainText) record).getHub() instanceof HDT_Hub hub))
+    {
+      String unitedRecords = hub.getSpokes().filter(spoke -> spoke != record)
+                                            .map(spoke -> getTypeName(spoke.getType()) + " \"" + spoke.defaultChoiceText() + '"')
+                                            .collect(Collectors.joining(", "));
+
+      additionalMsg += "\n\nNote: This record is united with " + unitedRecords + ".\n" +
+                       "The description and key works they share will also be reverted.";
     }
 
     String name = record.defaultChoiceText();

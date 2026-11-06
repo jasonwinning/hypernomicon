@@ -139,10 +139,7 @@ class SubjectOrderTest
     StringBuilder xml = new StringBuilder();
 
     for (HDT_RecordBase record : records)
-    {
-      record.saveToStoredState();
-      record.writeStoredStateToXML(xml);
-    }
+      record.writeCurrentStateToXML(xml);
 
     return xml.toString();
   }

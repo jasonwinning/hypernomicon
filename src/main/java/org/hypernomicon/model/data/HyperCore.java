@@ -67,6 +67,14 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
   private final Map<Integer, String> idToKey    = new HashMap<>();
   private final Map<Integer, HDT_DT> idToRecord = new HashMap<>();
 
+  // IDs of the records removed from this core (deleted, or renumbered by an ID change) since the
+  // last save, or since the load before the first save. Every record's saved copy, which "Revert
+  // to XML version" restores, names the records it points to by ID, and one taken before a removal
+  // can still name the removed record. So these IDs are not reused until a save has replaced the
+  // saved copies; otherwise a revert would point at whichever new record took the ID.
+
+  private final Set<Integer> freedIDs = new HashSet<>();
+
   private final RecordType type;
 
   private int modCount = 0;
@@ -85,6 +93,8 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
   private HDT_DT getByIDNdx(int ndx)   { return getByID(getIDbyIDNdx(ndx)); }
 
   boolean containsID(int id)           { return idToRecord.containsKey(id); }
+  boolean wasFreedSinceSave(int id)    { return freedIDs.contains(id); }
+  void releaseFreedIDs()               { freedIDs.clear(); }
 
   @Override public int size()                           { return sortedIDs.size(); }
   @Override public Stream<HDT_DT> stream()              { return sortedIDs.stream().map(idToRecord::get); }
@@ -190,6 +200,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
     idToKey   .clear();
     sortedIDs .clear();
     sortedKeys.clear();
+    freedIDs  .clear();
     modCount++;
   }
 
@@ -260,6 +271,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
         int id = entry.getKey();
 
         it.remove();
+        freedIDs.add(id);
 
         sortedIDs.remove(getIDNdxByID(id));
 
@@ -298,6 +310,7 @@ final class HyperCore<HDT_DT extends HDT_Record> implements DatasetAccessor<HDT_
     sortedKeys.remove(getKeyNdxByID(id));
     idToKey   .remove(id);
     idToRecord.remove(id);
+    freedIDs  .add   (id);
     modCount++;
   }
 
