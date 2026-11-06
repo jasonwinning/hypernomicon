@@ -112,6 +112,41 @@ class RevertToXmlVersionTest
 //---------------------------------------------------------------------------
 
   @Test
+  void aRevertClearsASinglePointerSetSinceTheSave() throws Exception
+  {
+    HDT_Work book = work("Book"), chapter = work("Chapter");
+
+    save();
+
+    chapter.largerWork.set(book);
+
+    chapter.revertToXmlVersion();
+
+    assertNull(chapter.largerWork.get(), "The saved copy has no larger work");
+    assertTrue(book.subWorks.isEmpty());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void aRevertClearsASinglePointerWhoseSavedTargetHasAnotherIDNow() throws Exception
+  {
+    HDT_Work book = work("Book"), chapter = work("Chapter");
+
+    chapter.largerWork.set(book);
+
+    save();
+
+    db.changeRecordID(book, db.getNextID(hdtWork));
+
+    chapter.revertToXmlVersion();
+
+    assertNull(chapter.largerWork.get(), "No record has the ID the saved copy names, as with a multiple pointer");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
   void aDeletedRecordsIDIsAvailableAgainAfterTheNextSave() throws Exception
   {
     HDT_Work first = work("First");

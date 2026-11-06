@@ -76,9 +76,20 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
     HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
     RecordType objType = db.getObjType(relType);
 
-    int objID = val.getObjID(); if (objID < 1) return;
+    int objID = val.getObjID();
+    HDT_Record obj = objID < 1 ? null : db.records(objType).getByID(objID);
 
-    HDT_Record obj = db.records(objType).getByID(objID); if (obj == null) return;
+    // A backup that names no record, or one that no longer has that ID, leaves the pointer empty. When a
+    // record is first brought online it is empty already, but "Revert to XML version" restores a record
+    // that is online, whose pointer may have been set since the save.
+
+    if (obj == null)
+    {
+      if (objList.isEmpty() == false)
+        objList.clear();
+
+      return;
+    }
 
     if (objList.contains(obj)) return;
 
