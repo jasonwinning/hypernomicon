@@ -103,8 +103,23 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
   @Override public void resolvePointers() throws HDB_InternalError
   {
-    if (HDT_Record.isEmptyThrowsException(recordWMT.hub, false))
+    HDT_Hub hub = recordWMT.hub;  // A hub's own hub is itself
+
+    if ((recordWMT.getType() != hdtHub) && (hub != null) && (HDT_Record.isEmptyThrowsException(hub, false) || (hub.spokes.get(recordWMT.getType()) != recordWMT)))
+    {
+      // Only an out-of-sync set of files produces a record that names a hub which does not list it, or
+      // which no longer exists. Such a record was sharing the hub's text without being a member of the
+      // unity, so it was not registered for the key works (only listed members are; see
+      // setFromOfflineValue). Give it a text of its own, as a disunite does, and register it
+
       recordWMT.hub = null;
+      recordWMT.mainText = new MainText(recordWMT.mainText, recordWMT);
+      recordWMT.mainText.resolvePointers();
+
+      recordWMT.keyWorksStream().forEach(keyWork -> db.handleKeyWork(recordWMT, keyWork.getRecord(), true));
+      recordWMT.modifyNow();
+      return;
+    }
 
     getMainText().resolvePointers();
   }
@@ -183,6 +198,13 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
           }
 
           HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord = keyWork.getRecord();
+
+          // Only an out-of-sync set of files, or a saved copy from before a deletion, names a key work that
+          // no record has. Registering it would file the record under a null key work record, and
+          // resolvePointers would drop it anyway
+
+          if (keyWorkRecord == null) continue;
+
           mainText.keyWorks.add(keyWork.getOnlineCopy());
 
           RecordState recordState = val.getRecordState();

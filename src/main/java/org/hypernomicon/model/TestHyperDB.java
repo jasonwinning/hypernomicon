@@ -19,6 +19,7 @@ package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.TestContext.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -26,6 +27,7 @@ import static org.hypernomicon.util.Util.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -406,6 +408,57 @@ public final class TestHyperDB extends AbstractHyperDB
     }
 
     open(newRootFilePath, creatingNew);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Saves the records to XML in memory, hands each record file's name and text to {@code tamper}, and
+   * reopens the database from what it returns, past the integrity-checksum prompt that the changed
+   * files raise. With the identity function this reloads the session as saved, so that the records'
+   * saved copies are the ones a load reads from the files rather than the ones a save keeps. A tamper
+   * that edits one file lets a test load a set of files that are out of sync with one another, as a
+   * sync that copied only some of them, or one file restored from a backup, leaves them.
+   *
+   * @param tamper takes a record XML file's name and text and returns the text to load
+   * @throws AssertionError if the database is closed, the XML cannot be built or the reload fails
+   */
+  public void saveAndReopen(BinaryOperator<String> tamper)
+  {
+    RecordsXML xml;
+
+    try
+    {
+      xml = buildRecordsXML(null);
+    }
+    catch (HDB_InternalError | CancelledTaskException e)
+    {
+      throw newAssertionError(e);
+    }
+
+    try
+    {
+      // Inside the try, so that a tamper that throws does not leave the filters already set in place for the next load
+
+      for (int ndx = 0; ndx < xml.fileNames().size(); ndx++)
+      {
+        String content = tamper.apply(xml.fileNames().get(ndx), xml.contents().get(ndx).toString());
+        setRecordsLoadFilter(xml.fileNames().get(ndx), _ -> content);
+      }
+
+      PopupRobot.setDefaultResponse(mrYes);  // Continue past the integrity-checksum prompt, since the files no longer match the manifest
+
+      closeAndOpen();
+    }
+    finally
+    {
+      PopupRobot.setDefaultResponse(mrOk);
+      setRecordsLoadFilter(null, null);
+    }
+
+    if (isOffline())
+      throw new AssertionError("Reload failed: " + PopupRobot.getLastMessage());
   }
 
 //---------------------------------------------------------------------------

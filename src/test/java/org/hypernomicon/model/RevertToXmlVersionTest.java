@@ -20,7 +20,6 @@ package org.hypernomicon.model;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 
 import java.util.List;
 
@@ -28,7 +27,6 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.unities.*;
 import org.hypernomicon.model.unities.MainText.DisplayItem;
-import org.hypernomicon.util.PopupRobot;
 
 import org.junit.jupiter.api.*;
 
@@ -94,29 +92,9 @@ class RevertToXmlVersionTest
    * Saves the records to XML in memory and reopens the database from that XML, so that the records'
    * saved copies are the ones a load reads from the files rather than the ones a save keeps.
    */
-  private static void saveAndReopen() throws Exception
+  private static void saveAndReopen()
   {
-    AbstractHyperDB.RecordsXML xml = db.buildRecordsXML(null);
-
-    for (int ndx = 0; ndx < xml.fileNames().size(); ndx++)
-    {
-      String content = xml.contents().get(ndx).toString();
-      db.setRecordsLoadFilter(xml.fileNames().get(ndx), _ -> content);
-    }
-
-    PopupRobot.setDefaultResponse(mrYes);  // Continue past the integrity-checksum prompt, since the files no longer match the manifest
-
-    try
-    {
-      db.closeAndOpen();
-    }
-    finally
-    {
-      PopupRobot.setDefaultResponse(mrOk);
-      db.setRecordsLoadFilter(null, null);
-    }
-
-    assertTrue(db.isOnline(), () -> "Reload failed: " + PopupRobot.getLastMessage());
+    db.saveAndReopen((_, content) -> content);
   }
 
 //---------------------------------------------------------------------------

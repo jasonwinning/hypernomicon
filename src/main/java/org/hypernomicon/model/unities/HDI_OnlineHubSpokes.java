@@ -98,11 +98,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void resolvePointers() throws HDB_InternalError
   {
-    // All of the logic in this function is for cases where
-    // a hub has less than 2 spokes when the database is first
-    // loaded from XML. Under normal circumstances, the hub gets
-    // deleted when HDI_OnlineMainTextAndHub.expire calls
-    // HDT_Hub.disuniteRecord.
+    // All of the logic in this function is for cases where a hub lists
+    // a record that does not exist or does not name the hub, or has less
+    // than 2 spokes, when the database is first loaded from XML. Under
+    // normal circumstances, the hub gets deleted when
+    // HDI_OnlineMainTextAndHub.expire calls HDT_Hub.disuniteRecord.
 
     int spokeCount = 0;
 
@@ -110,10 +110,22 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
     while (iterator.hasNext())
     {
-      Entry<RecordType, HDT_RecordWithMainText> entry = iterator.next();
+      HDT_RecordWithMainText spoke = iterator.next().getValue();
 
-      if (HDT_Record.isEmptyThrowsException(entry.getValue(), false))
+      if (HDT_Record.isEmptyThrowsException(spoke, false))
         iterator.remove();
+      else if (spoke.hub != hub)
+      {
+        // Only an out-of-sync set of files produces a listed record that does not name the hub. It kept a
+        // text of its own, so it is not a member; the hub's key works were registered for it when the hub
+        // came online (HDI_OnlineMainTextAndHub.setFromOfflineValue), undo that for the ones its own text lacks
+
+        iterator.remove();
+
+        hub.keyWorksStream().map(KeyWork::getRecord)
+                            .filter(keyWorkRecord -> spoke.keyWorksStream().noneMatch(keyWork -> keyWork.getRecord() == keyWorkRecord))
+                            .forEach(keyWorkRecord -> db.handleKeyWork(spoke, keyWorkRecord, false));
+      }
       else
         spokeCount++;
     }

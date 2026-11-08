@@ -209,8 +209,8 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MainText(MainText mainText, HDT_RecordWithMainText recordWMT)  // called by HDT_Hub.disuniteRecords
-  {
+  MainText(MainText mainText, HDT_RecordWithMainText recordWMT)  // called by HDT_Hub.disuniteRecord, and by HDI_OnlineMainTextAndHub.resolvePointers
+  {                                                              // for a record that an out-of-sync set of files left sharing a hub's text without being a member
     this.recordWMT = recordWMT;
 
     mainText.keyWorks.forEach(keyWork -> keyWorks.add(keyWork.getOnlineCopy()));

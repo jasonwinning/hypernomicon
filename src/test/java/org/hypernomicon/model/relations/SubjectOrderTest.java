@@ -18,7 +18,6 @@
 package org.hypernomicon.model.relations;
 
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -70,18 +69,10 @@ class SubjectOrderTest
 
 //---------------------------------------------------------------------------
 
-  @AfterEach
-  void clearLoadFilters()
-  {
-    db.setRecordsLoadFilter(null, null);
-  }
-
-//---------------------------------------------------------------------------
-
   @AfterAll
   static void tearDownOnce()
   {
-    db.closeAndOpen();  // Leave no injected records behind for other test classes
+    db.closeAndOpen();  // Leave no records behind for other test classes
   }
 
 //---------------------------------------------------------------------------
@@ -142,23 +133,6 @@ class SubjectOrderTest
       record.writeCurrentStateToXML(xml);
 
     return xml.toString();
-  }
-
-//---------------------------------------------------------------------------
-
-  /**
-   * Reopens the database with the given records added to the template's works file, so that
-   * they go through the real loader.
-   */
-  private static void reloadWithWorks(String recordsXml)
-  {
-    db.setRecordsLoadFilter("Works.xml", xml -> xml.replace("</records>", recordsXml + "</records>"));
-
-    PopupRobot.setDefaultResponse(mrYes);  // Continue past the integrity-checksum prompt, since the works file no longer matches the manifest
-
-    db.closeAndOpen();
-
-    assertTrue(db.isOnline(), () -> "Reload failed: " + PopupRobot.getLastMessage());
   }
 
 //---------------------------------------------------------------------------
@@ -263,7 +237,7 @@ class SubjectOrderTest
     book1.subWorks.reorder(List.of(chapterB1, chapterA1), false);
     book2.subWorks.reorder(List.of(chapterB2, chapterA2), false);
 
-    reloadWithWorks(xmlOf(book1, chapterA1, chapterB1, book2, chapterA2, chapterB2, book3, chapterA3, chapterB3));
+    db.saveAndReopen((_, xml) -> xml);
 
     assertEquals(List.of(3, 2), ids(db.works.getByID(1).subWorks));
     assertEquals(List.of(6, 5), ids(db.works.getByID(4).subWorks));
@@ -293,11 +267,12 @@ class SubjectOrderTest
     HDT_Work chapterC = workWithID(2, "Chapter C");
     chapterC.largerWork.set(book);
 
-    String xml = xmlOf(book, chapterC, chapterA, chapterB).replace(pointerTag("larger_work", book, 3), pointerTag("larger_work", book));
+    String tagWithPosition    = pointerTag("larger_work", book, 3),
+           tagWithoutPosition = pointerTag("larger_work", book);
 
-    assertTrue(xml.contains(pointerTag("larger_work", book)));  // Chapter C's tag now has no position, as in the earlier form
+    assertTrue(xmlOf(chapterC).contains(tagWithPosition));  // The tamper removes this position from Chapter C's tag, as in the earlier form
 
-    reloadWithWorks(xml);
+    db.saveAndReopen((fileName, xml) -> fileName.equals("Works.xml") ? xml.replace(tagWithPosition, tagWithoutPosition) : xml);
 
     assertEquals(List.of(4, 3, 2), ids (db.works.getByID(1).subWorks));
     assertEquals(List.of(1, 2, 3), ords(db.works.getByID(1).subWorks));
