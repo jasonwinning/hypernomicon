@@ -2035,6 +2035,14 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   private void setPreview(FTSResultRow row)
   {
+    // The pane is shared with the other queries sub-tabs, so this one previews only while it is
+    // the selected one: a settle-gated selection or newly computed matches arriving after the
+    // user moved to another sub-tab would otherwise replace that sub-tab's preview. activate()
+    // previews the selected row again when this tab is returned to (not tab.isSelected(), which
+    // is still false at that point; see isCurrentSubTab).
+
+    if (isCurrentSubTab() == false) return;
+
     if ((row == null) || (db.getRootPath(row.path()).exists() == false))
     {
       PreviewWindow.runWhenSourceActivates(pvsQueriesTab, null);

@@ -64,6 +64,21 @@ public abstract class QuerySubCtrlr
 //---------------------------------------------------------------------------
 
   /**
+   * Whether this is the selected sub-tab. Unlike {@code tab.isSelected()}, this is already true
+   * while the selection change that activates this sub-tab is being handled ({@link #activate}
+   * runs inside it): JavaFX marks the tab itself selected only after notifying the selection
+   * model's listeners. False once the tab is closed.
+   */
+  boolean isCurrentSubTab()
+  {
+    TabPane tabPane = tab.getTabPane();
+    return (tabPane != null) && (tabPane.getSelectionModel().getSelectedItem() == tab);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
    * Called when this sub-tab becomes the active tab within the Queries tab.
    * Must add the shared WebView to this tab's description pane and restore
    * any cached content and scroll position.
