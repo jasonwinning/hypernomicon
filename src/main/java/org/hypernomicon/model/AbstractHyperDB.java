@@ -208,7 +208,7 @@ public abstract class AbstractHyperDB
 
   private final SearchKeys searchKeys = new SearchKeys();
   private final MentionsIndex mentionsIndex = createMentionsIndex(dbMentionsNdxCompleteHandlers);
-  private final Map<HDT_RecordWithAuthors<? extends RecordAuthors>, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
+  private final SetMultimap<HDT_RecordWithAuthors<? extends RecordAuthors>, HDT_RecordWithMainText> keyWorkIndex = HashMultimap.create();
   private final BidiOneToManyMap<HDT_RecordWithMainText, MainText> displayedAtIndex = new BidiOneToManyMap<>();  // key=displayed, value=displayers
   private final Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
   private final List<HDT_Record> initialNavList = new ArrayList<>();
@@ -3203,9 +3203,9 @@ public abstract class AbstractHyperDB
   public void handleKeyWork(HDT_RecordWithMainText record, HDT_RecordWithAuthors<? extends RecordAuthors> keyWorkRecord, boolean affirm)
   {
     if (affirm)
-      keyWorkIndex.computeIfAbsent(keyWorkRecord, _ -> new HashSet<>()).add(record);
+      keyWorkIndex.put(keyWorkRecord, record);
     else
-      nullSwitch(keyWorkIndex.get(keyWorkRecord), set -> set.remove(record));
+      keyWorkIndex.remove(keyWorkRecord, record);  // The multimap drops the key work's entry with its last mentioner, so a deleted work's does not stay for the session
 
     nullSwitch(keyWorkHandlers.get(record.getType()), handler -> runInFXThread(() -> handler.handle(keyWorkRecord, record, affirm)));
   }
@@ -3263,11 +3263,7 @@ public abstract class AbstractHyperDB
    */
   public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends RecordAuthors> record, boolean mainSpokes)
   {
-    Set<HDT_RecordWithMainText> set = keyWorkIndex.get(record);
-
-    if (set == null) return Stream.empty();
-
-    Stream<HDT_RecordWithMainText> stream = set.stream();
+    Stream<HDT_RecordWithMainText> stream = keyWorkIndex.get(record).stream();
 
     return mainSpokes ?
       stream.map(HDT_RecordWithMainText::mainSpoke).distinct()
@@ -3280,9 +3276,7 @@ public abstract class AbstractHyperDB
 
   public <HDT_MT extends HDT_RecordWithMainText> Stream<HDT_MT> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends RecordAuthors> record, Class<HDT_MT> klazz)
   {
-    return nullSwitch(keyWorkIndex.get(record),
-                      Stream.empty(),
-                      set -> set.stream().filter(recordWMT -> recordWMT.getClass() == klazz).map(klazz::cast));
+    return keyWorkIndex.get(record).stream().filter(recordWMT -> recordWMT.getClass() == klazz).map(klazz::cast);
   }
 
 //---------------------------------------------------------------------------
@@ -3290,9 +3284,7 @@ public abstract class AbstractHyperDB
 
   public Stream<HDT_RecordWithMainText> keyWorkMentionerStream(HDT_RecordWithAuthors<? extends RecordAuthors> record, RecordType mentionerType)
   {
-    return nullSwitch(keyWorkIndex.get(record),
-                      Stream.empty(),
-                      set -> set.stream().filter(recordWMT -> recordWMT.getType() == mentionerType));
+    return keyWorkIndex.get(record).stream().filter(recordWMT -> recordWMT.getType() == mentionerType);
   }
 
 //---------------------------------------------------------------------------

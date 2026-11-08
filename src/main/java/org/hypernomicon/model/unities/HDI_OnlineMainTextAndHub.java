@@ -67,15 +67,11 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
   @Override public void expire()
   {
-    // Spoke and hub records share a single MainText object
+    // Spoke and hub records share a single MainText object. Its key works are registered for the spokes and
+    // never for the hub, and a hub is deleted only once its last spoke has left, so a hub has nothing to
+    // unregister here
 
-    if (recordWMT.getType() == hdtHub)
-    {
-      // For each key work, remove it from the index and run handler (remove from TreeView)
-
-      recordWMT.keyWorksUnmod().forEach(keyWork -> db.handleKeyWork(recordWMT, keyWork.getRecord(), false));
-    }
-    else
+    if (recordWMT.getType() != hdtHub)
     {
       if (hasHub())
       {
