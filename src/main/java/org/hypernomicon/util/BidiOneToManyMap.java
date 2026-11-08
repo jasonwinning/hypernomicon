@@ -17,37 +17,48 @@
 
 package org.hypernomicon.util;
 
-import java.util.Collections;
-import java.util.Map;
+import static org.hypernomicon.util.Util.*;
+
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 //---------------------------------------------------------------------------
 
-public class BidiOneToManyMap<T>
+/**
+ * A one-to-many map readable in both directions: each key maps to a set of values, and each value
+ * maps to the set of keys it appears under. Mutations are serialized. Reads take no lock, see the
+ * sets as they are at the time of the call, and never add entries; a key or value whose set becomes
+ * empty is dropped.
+ *
+ * @param <K> the key type
+ * @param <V> the value type
+ */
+public class BidiOneToManyMap<K, V>
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private final Object lock = new Object();
-  private final Map<T, Set<T>> forwardMap = new ConcurrentHashMap<>(),
-                               reverseMap = new ConcurrentHashMap<>();
+  private final Map<K, Set<V>> forwardMap = new ConcurrentHashMap<>();
+  private final Map<V, Set<K>> reverseMap = new ConcurrentHashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()                      { forwardMap.clear(); reverseMap.clear();  }
-  public Stream<T> getForwardStream(T key) { return getSet(forwardMap, key).stream(); }
+  public void clear()                      { forwardMap.clear(); reverseMap.clear(); }
+  public Stream<V> getForwardStream(K key) { return stream(forwardMap, key); }
+  public Set<V> getForwardSet(K key)       { return unmodifiableSet(forwardMap, key); }
+  public Set<K> getReverseSet(V value)     { return unmodifiableSet(reverseMap, value); }
 
-  public Stream<Entry<T, Set<T>>> getForwardStream() { return forwardMap.entrySet().stream(); }
+  public Stream<Entry<K, Set<V>>> getForwardStream() { return forwardMap.entrySet().stream(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addForward(T key, T value)
+  public void addForward(K key, V value)
   {
     synchronized (lock)
     {
@@ -59,108 +70,122 @@ public class BidiOneToManyMap<T>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeForward(T key, T value)
+  public void removeForward(K key, V value)
   {
     synchronized (lock)
     {
-      getSet(forwardMap, key  ).remove(value);
-      getSet(reverseMap, value).remove(key  );
+      removeFromSet(forwardMap, key  , value);
+      removeFromSet(reverseMap, value, key  );
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void removeItem(T item)
-  {
-    removeKey(forwardMap, reverseMap, item);
-    removeKey(reverseMap, forwardMap, item);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void removeReverseKey(T key)
-  {
-    removeKey(reverseMap, forwardMap, key);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void removeKey(Map<T, Set<T>> keyMap, Map<T, Set<T>> valueMap, T key)
-  {
-    if (keyMap.containsKey(key) == false) return;
-
-    keyMap.get(key).removeIf(target ->
-    {
-      getSet(valueMap, target).remove(key);
-      return true;
-    });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   /**
-   * Replaces an old key with a new key in both maps.
+   * Removes a key together with every pair it is part of.
    *
-   * @param oldItem the old key
-   * @param newItem the new key
+   * @param key the key
    */
-  public void replaceItem(T oldItem, T newItem)
+  public void removeForwardKey(K key)
   {
-    if ((oldItem == null) || (newItem == null) || (oldItem == newItem))
-      return;
-
     synchronized (lock)
     {
-      replaceInMap(forwardMap, reverseMap, oldItem, newItem);
-      replaceInMap(reverseMap, forwardMap, oldItem, newItem);
+      removeKey(forwardMap, reverseMap, key);
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static <T> void replaceInMap(Map<T, Set<T>> keyToValueMap, Map<T, Set<T>> valueToKeyMap, T oldKey, T newKey)
+  /**
+   * Removes a value together with every pair it is part of.
+   *
+   * @param value the value
+   */
+  public void removeReverseKey(V value)
   {
-    if (keyToValueMap.containsKey(oldKey) == false)
-      return;
-
-    Set<T> oldSet = keyToValueMap.remove(oldKey);
-
-    oldSet.forEach(relatedMT ->
+    synchronized (lock)
     {
-      valueToKeyMap.get(relatedMT).remove(oldKey);
-      valueToKeyMap.get(relatedMT).add   (newKey);
-    });
-
-    keyToValueMap.merge(newKey, oldSet, (newSet, _oldSet) -> { newSet.addAll(_oldSet); return newSet; });
+      removeKey(reverseMap, forwardMap, value);
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static <T> Set<T> getSet(Map<T, Set<T>> map, T key)
+  private static <K1, V1> void removeKey(Map<K1, Set<V1>> keyMap, Map<V1, Set<K1>> valueMap, K1 key)
+  {
+    Set<V1> set = keyMap.remove(key);
+
+    if (set != null)
+      set.forEach(target -> removeFromSet(valueMap, target, key));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Replaces a value with another one in every pair the old value is part of; the keys stay as they
+   * are, and pairs the new value is already part of are kept.
+   *
+   * @param oldValue the value being replaced
+   * @param newValue the value taking its place
+   */
+  public void replaceValue(V oldValue, V newValue)
+  {
+    if ((oldValue == null) || (newValue == null) || (oldValue == newValue))
+      return;
+
+    synchronized (lock)
+    {
+      Set<K> keys = reverseMap.remove(oldValue);
+
+      if (keys == null) return;
+
+      keys.forEach(key ->
+      {
+        Set<V> values = getSet(forwardMap, key);
+
+        values.remove(oldValue);
+        values.add   (newValue);
+      });
+
+      getSet(reverseMap, newValue).addAll(keys);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static <K1, V1> void removeFromSet(Map<K1, Set<V1>> map, K1 key, V1 value)
+  {
+    Set<V1> set = map.get(key);
+
+    if (set == null) return;
+
+    set.remove(value);
+
+    if (set.isEmpty())
+      map.remove(key);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static <K1, V1> Set<V1> getSet(Map<K1, Set<V1>> map, K1 key)
   {
     return map.computeIfAbsent(key, _ -> ConcurrentHashMap.newKeySet());
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public Set<T> getForwardSet(T key)
+  private static <K1, V1> Stream<V1> stream(Map<K1, Set<V1>> map, K1 key)
   {
-    return Collections.unmodifiableSet(getSet(forwardMap, key));
+    return nullSwitch(map.get(key), Stream.empty(), Set::stream);
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public Set<T> getReverseSet(T value)
+  private static <K1, V1> Set<V1> unmodifiableSet(Map<K1, Set<V1>> map, K1 key)
   {
-    return Collections.unmodifiableSet(getSet(reverseMap, value));
+    return nullSwitch(map.get(key), Collections.emptySet(), Collections::unmodifiableSet);
   }
 
 //---------------------------------------------------------------------------

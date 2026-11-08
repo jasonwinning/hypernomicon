@@ -72,14 +72,16 @@ class MentionsAndDisplayIndexTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Whether the displayer's own display items name the displayed record. Asserts that the index
+   * agrees, which holds whenever the displayed record is not united: the members of a unity report
+   * each other's displayers.
+   */
   private static boolean firstDisplaysSecond(HDT_RecordWithMainText displayer, HDT_RecordWithMainText displayed)
   {
     boolean rv1 = displayer.displayItemsStream().filter(item -> item.type == DisplayItemType.diRecord)
-                                                .anyMatch(item -> item.record == displayed);
-
-    HDT_RecordWithMainText mainSpoke = displayer.mainSpoke();
-
-    boolean rv2 = db.displayerStream(displayed).anyMatch(mainSpoke::equals);
+                                                .anyMatch(item -> item.record == displayed),
+            rv2 = indexSaysDisplays(displayer, displayed);
 
     assertEquals(rv1, rv2);
 
@@ -89,9 +91,22 @@ class MentionsAndDisplayIndexTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean displaysNoRecords(HDT_RecordWithMainText displayer)
+  /**
+   * Whether the index lists the displayer, as its main spoke, among the records displaying the displayed record.
+   */
+  private static boolean indexSaysDisplays(HDT_RecordWithMainText displayer, HDT_RecordWithMainText displayed)
   {
-    return db.displayerStream(displayer).findAny().isEmpty();
+    HDT_RecordWithMainText mainSpoke = displayer.mainSpoke();
+
+    return db.displayerStream(displayed).anyMatch(mainSpoke::equals);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean hasNoDisplayers(HDT_RecordWithMainText displayed)
+  {
+    return db.displayerStream(displayed).findAny().isEmpty();
   }
 
 //---------------------------------------------------------------------------
@@ -438,7 +453,7 @@ class MentionsAndDisplayIndexTest
 
     db.deleteRecord(person);
 
-    assertTrue(displaysNoRecords(concept));
+    assertTrue(hasNoDisplayers(concept));
   }
 
 //---------------------------------------------------------------------------
@@ -456,7 +471,8 @@ class MentionsAndDisplayIndexTest
 
     db.deleteRecord(term);
 
-    assertTrue(displaysNoRecords(person));
+    assertFalse(person.displayItemsStream().anyMatch(item -> item.record == concept), "Deleting the displayed record drops the display item");
+    assertTrue(hasNoDisplayers(concept), "and takes the displayer out of the index");
   }
 
 //---------------------------------------------------------------------------
@@ -551,6 +567,148 @@ class MentionsAndDisplayIndexTest
 
     assertTrue(firstDisplaysSecond(debate, concept));
     assertTrue(firstDisplaysSecond(note  , concept));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void theMembersOfAUnityReportEachOthersDisplayers()
+  {
+    HDT_Person person = db.createNewBlankRecord(hdtPerson);
+    HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+
+    person.getMainText().setDisplayItemsFromList(List.of(new DisplayItem(debate)));
+
+    assertTrue (indexSaysDisplays(person, debate));
+    assertFalse(indexSaysDisplays(person, note));
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(debate, note, ""));
+
+    assertTrue(indexSaysDisplays(person, debate));
+    assertTrue(indexSaysDisplays(person, note), "The person shows the text the note now shares, so the note reports the person too");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void aRecordLeavingAUnityKeepsItsDisplayersAndTheOthersLoseThem()
+  {
+    HDT_Person person = db.createNewBlankRecord(hdtPerson);
+    HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+    HDT_Concept concept = HDT_Term.create(db.glossaries.getByID(1)).concepts.getFirst();
+
+    person.getMainText().setDisplayItemsFromList(List.of(new DisplayItem(debate)));
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(debate, note, ""));
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(concept, note, ""));
+
+    HDT_Hub hub = note.getHub();
+
+    assertTrue(indexSaysDisplays(person, concept));
+
+    assertTrue(hub.disuniteRecord(hdtDebate));
+    assertEquals(2, hub.getSpokes().count(), "The note and the concept stay united");
+
+    assertTrue (indexSaysDisplays(person, debate));
+    assertFalse(indexSaysDisplays(person, note));
+    assertFalse(indexSaysDisplays(person, concept));
+
+    assertTrue(hub.disuniteRecord(hdtNote), "Dissolves the unity");
+
+    assertTrue (indexSaysDisplays(person, debate));
+    assertFalse(indexSaysDisplays(person, note));
+    assertFalse(indexSaysDisplays(person, concept));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void aDisplayerAddedWhileUnitedFollowsTheRecordItNamesAfterASplit()
+  {
+    HDT_Person person = db.createNewBlankRecord(hdtPerson);
+    HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(debate, note, ""));
+
+    person.getMainText().setDisplayItemsFromList(List.of(new DisplayItem(debate)));
+
+    assertTrue(indexSaysDisplays(person, note));
+
+    assertTrue(debate.getHub().disuniteRecord(hdtDebate));
+
+    assertTrue (indexSaysDisplays(person, debate));
+    assertFalse(indexSaysDisplays(person, note));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void aDisplayerOfTwoMembersStaysWithBothWhenOneLeaves()
+  {
+    HDT_Person person = db.createNewBlankRecord(hdtPerson);
+    HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+    HDT_Concept concept = HDT_Term.create(db.glossaries.getByID(1)).concepts.getFirst();
+
+    person.getMainText().setDisplayItemsFromList(List.of(new DisplayItem(debate), new DisplayItem(note)));
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(debate, note, ""));
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(concept, note, ""));
+
+    assertTrue(note.getHub().disuniteRecord(hdtDebate));
+
+    assertTrue(indexSaysDisplays(person, debate));
+    assertTrue(indexSaysDisplays(person, note));
+    assertTrue(indexSaysDisplays(person, concept), "Still united with the note");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void deletingADisplayedMemberDropsItsDisplayersFromTheUnity()
+  {
+    HDT_Person person = db.createNewBlankRecord(hdtPerson);
+    HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+    HDT_Concept concept = HDT_Term.create(db.glossaries.getByID(1)).concepts.getFirst();
+
+    person.getMainText().setDisplayItemsFromList(List.of(new DisplayItem(debate)));
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(debate, note, ""));
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(concept, note, ""));
+
+    db.deleteRecord(debate);
+
+    assertEquals(2, note.getHub().getSpokes().count());
+    assertFalse(person.displayItemsStream().anyMatch(item -> item.record == debate));
+    assertFalse(indexSaysDisplays(person, note));
+    assertFalse(indexSaysDisplays(person, concept));
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test
+  void droppingADisplayItemAfterItsRecordLeftAUnityUnregistersIt()
+  {
+    HDT_Person person = db.createNewBlankRecord(hdtPerson);
+    HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+    HDT_Concept concept = HDT_Term.create(db.glossaries.getByID(1)).concepts.getFirst();
+
+    person.getMainText().setDisplayItemsFromList(List.of(new DisplayItem(debate)));
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(debate, note, ""));
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(concept, note, ""));
+    assertTrue(note.getHub().disuniteRecord(hdtDebate));
+
+    person.getMainText().setDisplayItemsFromList(List.of());
+
+    assertFalse(indexSaysDisplays(person, debate));
+    assertFalse(indexSaysDisplays(person, note));
+    assertFalse(indexSaysDisplays(person, concept));
   }
 
 //---------------------------------------------------------------------------

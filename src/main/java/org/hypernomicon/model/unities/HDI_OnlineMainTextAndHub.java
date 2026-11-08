@@ -74,13 +74,28 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
       // For each key work, remove it from the index and run handler (remove from TreeView)
 
       recordWMT.keyWorksUnmod().forEach(keyWork -> db.handleKeyWork(recordWMT, keyWork.getRecord(), false));
-      return;
+    }
+    else
+    {
+      if (hasHub())
+      {
+        // A record whose hub does not list it (only hand-edited files produce one) shares the hub's text
+        // with the hub's real spokes and has nothing of its own to expire; disuniting by type would
+        // disconnect whichever record of this type the hub does list
+
+        if (getHub().spokes.get(recordWMT.getType()) != recordWMT)
+          return;
+
+        getHub().disuniteRecord(recordWMT.getType());
+      }
+
+      getMainText().expire();
     }
 
-    if (hasHub())
-      getHub().disuniteRecord(recordWMT.getType());
+    // By now the text is this record's alone: a hub is deleted only once it has no spokes, and the
+    // disunite above gave a spoke a text of its own. A deleted record's text displays nothing.
 
-    getMainText().expire();
+    db.removeDisplayer(getMainText());
   }
 
 //---------------------------------------------------------------------------
@@ -115,7 +130,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
 
         // Unregister the record display items being replaced; the ones the backup names are registered again below
 
-        mainText.getRecordDisplayItems().forEach(displayed -> db.handleDisplayRecord(mainText, displayed.getMainText(), false));
+        mainText.getRecordDisplayItems().forEach(displayed -> db.handleDisplayRecord(mainText, displayed, false));
         mainText.displayItems.clear();
 
         if (val.displayItems.size() > 0)
@@ -130,7 +145,7 @@ public class HDI_OnlineMainTextAndHub extends HDI_OnlineBase<HDI_OfflineMainText
               {
                 mainText.displayItems.add(new MainText.DisplayItem(displayed));
 
-                db.handleDisplayRecord(mainText, displayed.getMainText(), true);
+                db.handleDisplayRecord(mainText, displayed, true);
               }
             }
             else if (displayItem.type == diKeyWorks)

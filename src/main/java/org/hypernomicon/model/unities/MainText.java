@@ -228,7 +228,7 @@ public class MainText
         if (srcItem.type == diRecord)
         {
           displayItems.add(new DisplayItem(srcItem.record));
-          db.handleDisplayRecord(this, srcItem.record.getMainText(), true);
+          db.handleDisplayRecord(this, srcItem.record, true);
         }
         else
           displayItems.add(new DisplayItem(srcItem.type));
@@ -309,7 +309,14 @@ public class MainText
 
   void resolvePointers()
   {
-    displayItems.removeIf(item -> (item.type == diRecord) && HDT_Record.isEmpty(item.record, false));
+    displayItems.removeIf(item ->
+    {
+      if ((item.type != diRecord) || (HDT_Record.isEmpty(item.record, false) == false))
+        return false;
+
+      db.handleDisplayRecord(this, item.record, false);
+      return true;
+    });
 
     removeKeyWorks(true);
   }
@@ -390,14 +397,14 @@ public class MainText
     for (HDT_RecordWithMainText displayRecord : oldSet)
       if (newSet.contains(displayRecord) == false)
       {
-        db.handleDisplayRecord(this, displayRecord.getMainText(), false);
+        db.handleDisplayRecord(this, displayRecord, false);
         modify = true;
       }
 
     for (HDT_RecordWithMainText displayRecord : newSet)
       if (oldSet.contains(displayRecord) == false)
       {
-        db.handleDisplayRecord(this, displayRecord.getMainText(), true);
+        db.handleDisplayRecord(this, displayRecord, true);
         modify = true;
       }
 

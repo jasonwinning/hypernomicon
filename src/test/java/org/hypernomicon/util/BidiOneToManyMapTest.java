@@ -37,7 +37,7 @@ class BidiOneToManyMapTest
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private BidiOneToManyMap<String> map;
+  private BidiOneToManyMap<String, String> map;
 
   @BeforeEach
   void setUp()
@@ -79,14 +79,34 @@ class BidiOneToManyMapTest
   }
 
   @Test
-  void testRemoveItem()
+  void testRemoveForwardDropsEmptiedKeys()
+  {
+    map.addForward("key1", "value1");
+    map.removeForward("key1", "value1");
+    assertTrue(map.getForwardStream().noneMatch(e -> "key1".equals(e.getKey())));
+  }
+
+  @Test
+  void testReadsDoNotAddEntries()
+  {
+    map.getForwardStream("key1");
+    map.getForwardSet("key1");
+    map.getReverseSet("value1");
+    map.removeForward("key1", "value1");
+    assertEquals(0, map.getForwardStream().count());
+  }
+
+  @Test
+  void testRemoveForwardKey()
   {
     map.addForward("key1", "value1");
     map.addForward("key1", "value2");
-    map.removeItem("key1");
+    map.addForward("key2", "value2");
+    map.removeForwardKey("key1");
     assertTrue(map.getForwardSet("key1").isEmpty());
     assertFalse(map.getReverseSet("value1").contains("key1"));
     assertFalse(map.getReverseSet("value2").contains("key1"));
+    assertTrue(map.getReverseSet("value2").contains("key2"));
   }
 
   @Test
@@ -101,31 +121,46 @@ class BidiOneToManyMapTest
   }
 
   @Test
-  void testReplaceItem()
+  void testReplaceValue()
   {
     map.addForward("key1", "value1");
-    map.addForward("key1", "value2");
-    map.replaceItem("key1", "key2");
-    assertTrue(map.getForwardSet("key2").contains("value1"));
+    map.addForward("key2", "value1");
+    map.replaceValue("value1", "value2");
+    assertTrue(map.getForwardSet("key1").contains("value2"));
     assertTrue(map.getForwardSet("key2").contains("value2"));
     assertFalse(map.getForwardSet("key1").contains("value1"));
-    assertFalse(map.getForwardSet("key1").contains("value2"));
+    assertFalse(map.getForwardSet("key2").contains("value1"));
+    assertTrue(map.getReverseSet("value2").contains("key1"));
+    assertTrue(map.getReverseSet("value2").contains("key2"));
+    assertTrue(map.getReverseSet("value1").isEmpty());
   }
 
   @Test
-  void testReplaceItemNull()
+  void testReplaceValueKeepsTheNewValuesOwnPairs()
   {
     map.addForward("key1", "value1");
-    map.replaceItem("key1", null);
+    map.addForward("key2", "value2");
+    map.replaceValue("value1", "value2");
+    assertTrue(map.getForwardSet("key1").contains("value2"));
+    assertTrue(map.getForwardSet("key2").contains("value2"));
+    assertTrue(map.getReverseSet("value2").contains("key1"));
+    assertTrue(map.getReverseSet("value2").contains("key2"));
+  }
+
+  @Test
+  void testReplaceValueNull()
+  {
+    map.addForward("key1", "value1");
+    map.replaceValue("value1", null);
     assertTrue(map.getForwardSet("key1").contains("value1"));
     assertTrue(map.getReverseSet("value1").contains("key1"));
   }
 
   @Test
-  void testReplaceItemSame()
+  void testReplaceValueSame()
   {
     map.addForward("key1", "value1");
-    map.replaceItem("key1", "key1");
+    map.replaceValue("value1", "value1");
     assertTrue(map.getForwardSet("key1").contains("value1"));
     assertTrue(map.getReverseSet("value1").contains("key1"));
   }

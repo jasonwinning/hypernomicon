@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableSet;
 
 //---------------------------------------------------------------------------
 
-public class BidiOneToManyRecordMap extends BidiOneToManyMap<HDT_Record>
+public class BidiOneToManyRecordMap extends BidiOneToManyMap<HDT_Record, HDT_Record>
 {
 
 //---------------------------------------------------------------------------
@@ -47,6 +47,20 @@ public class BidiOneToManyRecordMap extends BidiOneToManyMap<HDT_Record>
   public <HDT_T extends HDT_Record> Set<HDT_T> getReverseRecordSet(HDT_Record fromRecord)
   {
     return (Set<HDT_T>) getReverseSet(fromRecord);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Removes a record from both sides of the map, together with every pair it is part of.
+   *
+   * @param record the record
+   */
+  public void removeItem(HDT_Record record)
+  {
+    removeForwardKey(record);
+    removeReverseKey(record);
   }
 
 //---------------------------------------------------------------------------

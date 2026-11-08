@@ -209,7 +209,7 @@ public abstract class AbstractHyperDB
   private final SearchKeys searchKeys = new SearchKeys();
   private final MentionsIndex mentionsIndex = createMentionsIndex(dbMentionsNdxCompleteHandlers);
   private final Map<HDT_RecordWithAuthors<? extends RecordAuthors>, Set<HDT_RecordWithMainText>> keyWorkIndex = new HashMap<>();
-  private final BidiOneToManyMap<MainText> displayedAtIndex = new BidiOneToManyMap<>();
+  private final BidiOneToManyMap<HDT_RecordWithMainText, MainText> displayedAtIndex = new BidiOneToManyMap<>();  // key=displayed, value=displayers
   private final Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
   private final List<HDT_Record> initialNavList = new ArrayList<>();
   private final EnumMap<RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(RecordType.class);
@@ -337,14 +337,22 @@ public abstract class AbstractHyperDB
   public DBState getState () { return state; }
 
   /**
-   * This updates the displayedAt index when the MainText object for a record is being replaced.
-   * This does not assume that the record's MainText reference has been changed yet, and does
-   * not change the record's MainText reference; the caller usually does that right after calling
-   * this function.
+   * This updates the displayedAt index when the MainText object for a record is being replaced:
+   * the new object takes the old one's place on the displayer side. The displayed side is keyed
+   * by record, so it needs no update. This does not assume that the record's MainText reference
+   * has been changed yet, and does not change the record's MainText reference; the caller usually
+   * does that right after calling this function.
    * @param oldMT The previous MainText object the record was pointing to
    * @param newMT The new MainText object the record will be pointing to
    */
-  public void replaceMainText(MainText oldMT, MainText newMT) { displayedAtIndex.replaceItem(oldMT, newMT); }
+  public void replaceMainText(MainText oldMT, MainText newMT) { displayedAtIndex.replaceValue(oldMT, newMT); }
+
+  /**
+   * Takes a MainText object out of the displayer side of the displayedAt index, once its record
+   * has been deleted.
+   * @param displayer The deleted record's MainText object
+   */
+  public void removeDisplayer(MainText displayer)             { displayedAtIndex.removeReverseKey(displayer); }
 
   public void rebuildMentions()                               { rebuildMentions(""); }
   public void rebuildMentions(String logFileName)             { if (isOnline() && (recordDeletionTestInProgress == false)) mentionsIndex.startRebuild(logFileName); }
@@ -3205,7 +3213,14 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void handleDisplayRecord(MainText displayer, MainText displayed, boolean affirm)
+  /**
+   * Registers or unregisters a display item: the text {@code displayer} now shows, or no longer
+   * shows, the record {@code displayed}.
+   * @param displayer The MainText object whose display items name the record
+   * @param displayed The record the display item names
+   * @param affirm True to register, false to unregister
+   */
+  public void handleDisplayRecord(MainText displayer, HDT_RecordWithMainText displayed, boolean affirm)
   {
     if (affirm)
       displayedAtIndex.addForward(displayed, displayer);
@@ -3216,9 +3231,19 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returns the records whose text displays the given record, each as its main spoke. The index
+   * is keyed by the record a display item names, so uniting, disuniting and deleting need no
+   * re-keying of that side. A displayer of any member of a unity shows the text the members
+   * share, so the members of a unity report the displayers of all of them.
+   * @param displayed The record being displayed
+   * @return A stream of the displayers' main spokes
+   */
   public Stream<HDT_RecordWithMainText> displayerStream(HDT_RecordWithMainText displayed)
   {
-    return displayedAtIndex.getForwardStream(displayed.getMainText()).filter(Predicate.not(mainText ->
+    Stream<HDT_RecordWithMainText> members = displayed.hasHub() ? displayed.getHub().getSpokes() : Stream.of(displayed);
+
+    return members.flatMap(displayedAtIndex::getForwardStream).distinct().filter(Predicate.not(mainText ->
     {
       HDT_RecordWithMainText record = mainText.getRecord();
       return HDT_Record.isEmpty(record, false) || (record.getMainText() != mainText);

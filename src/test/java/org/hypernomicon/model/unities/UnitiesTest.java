@@ -26,6 +26,8 @@ import org.hypernomicon.model.records.*;
 
 import org.junit.jupiter.api.*;
 
+import java.util.List;
+
 //---------------------------------------------------------------------------
 
 class UnitiesTest
@@ -156,6 +158,41 @@ class UnitiesTest
 
     assertEquals(html1, note .getMainText().getHtml());
     assertEquals("", label.getMainText().getHtml());
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Only hand-edited files produce a record that names a hub which does not list it. Such a record
+   * shares the hub's text, so deleting it must leave that text, its key works and its display
+   * registrations intact for the hub's real spokes.
+   */
+  @Test
+  void deletingARecordItsHubDoesNotListLeavesTheSharedTextAlone()
+  {
+    HDT_Position position = db.createNewBlankRecord(hdtPosition);
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+    HDT_Debate displayed = db.createNewBlankRecord(hdtDebate);
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(position, note, "<p>shared</p>"));
+
+    HDT_Hub hub = position.getHub();
+
+    position.getMainText().setKeyWorksFromList(List.of(new KeyWork(work)));
+    position.getMainText().setDisplayItemsFromList(List.of(new MainText.DisplayItem(displayed)));
+
+    HDT_RecordWithMainText phantom = db.createNewBlankRecord(hdtDebate);
+    phantom.hub = hub;                     // What such a file produces: the record names the hub and so
+    phantom.mainText = hub.getMainText();  // shares its text, but the hub does not list the record
+
+    db.deleteRecord(phantom);
+
+    assertSame(hub, position.getHub());
+    assertEquals(2, hub.getSpokes().count());
+    assertEquals(List.of(work), hub.getMainText().keyWorksStream().map(KeyWork::getRecord).toList(), "The shared key works survive");
+    assertTrue(db.keyWorkMentionerStream(work, false).anyMatch(rec -> rec == position), "and stay registered for the real spokes");
+    assertTrue(db.displayerStream(displayed).anyMatch(displayer -> displayer == position), "The shared text still counts as displaying what it displays");
   }
 
 //---------------------------------------------------------------------------
