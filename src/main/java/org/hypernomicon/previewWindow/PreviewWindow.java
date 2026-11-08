@@ -140,6 +140,11 @@ public final class PreviewWindow extends NonmodalWindow
   /** The file the pane for {@code src} is about (see {@link PreviewPaneHost#intendedFile}). */
   public static FilePath getFilePath(PreviewSource src) { return hostFor(src).intendedFile(); }
 
+  /** The page the pane for {@code src} is showing, if {@code filePath} is the file it is about and the viewer has confirmed
+   *  its load; -1 otherwise. A status display and a load still in flight track the file too, but at a notional page that
+   *  is no page to come back to. */
+  public static int getPageNum(PreviewSource src, FilePath filePath) { return (filePath.equals(getFilePath(src)) && filePath.equals(hostFor(src).confirmedFile())) ? hostFor(src).pageNum() : -1; }
+
   private PreviewSource curSource()              { return tabToSource.get(tpPreview.getSelectionModel().getSelectedItem()); }
   private PreviewPaneHost curHost()              { return hostFor(curSource()); }
   int curPage()                                  { return (int) sldPreview.getValue(); }

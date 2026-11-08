@@ -177,9 +177,16 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
   private int currentPreviewPage = 1, totalMatchCount = -1;
   private boolean hasMore;
 
+  /** Whether {@code currentPreviewPage} is the page the selected row's preview was on when this
+   *  tab was last left (see {@link #deactivate}), which the first page with a hit must not
+   *  replace when the tab is returned to; cleared when another row is selected. */
+  private boolean keepPreviewPage = false;
+
   /** {@code listingShown}: whether the table holds the files a blank query listed rather than
-   *  the results of a search (see {@link #executeListing}). */
-  private boolean listingShown;
+   *  the results of a search (see {@link #executeListing}). {@code resultsShown}: whether a
+   *  search or listing has filled the table yet; until one has, the status label has nothing
+   *  to report on and is left as it is. */
+  private boolean listingShown, resultsShown;
 
   /**
    * Settle gate for result-row selection: rapid selection (key-repeat through
@@ -622,6 +629,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       }
 
       currentPreviewPage = 1;
+      keepPreviewPage = false;
       pendingScrollTarget = null;
       pendingConvertedPassageNdx = -1;
       updateContextView(newValue);  // Context view is cheap; only the preview work is settle-gated
@@ -1037,6 +1045,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     hitSetService.beginGeneration(query);
 
     currentPreviewPage = 1;
+    keepPreviewPage = false;
     pendingScrollTarget = null;
     pendingConvertedPassageNdx = -1;
     previewSettleGate.cancel();
@@ -1247,6 +1256,7 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
     }
 
     allRows.setAll(shown);
+    resultsShown = true;
 
     if (allRows.isEmpty())
       loadContextHtml("");
@@ -1687,6 +1697,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
   private void updateStatusLabel()
   {
+    if (resultsShown == false) return;
+
     int totalCount = allRows.size(),
         shownCount = filteredRows.size(),
         hiddenCount = totalCount - shownCount;
@@ -1977,6 +1989,37 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Returning to this tab re-previews the selected row ({@link #activate}). Meanwhile another
+   * queries sub-tab can preview its own file in the shared pane, and the viewer's own page
+   * changes (scrolling, the Preview Window's buttons) never reach {@code currentPreviewPage}, so
+   * the page the preview is on is taken now, while the pane still shows this tab's file. Only a
+   * loaded document has a page to come back to: a conversion still running, a display withheld
+   * for its hits, or an unable notice leaves none, and the return derives its page as a fresh
+   * selection does. The pane discards this file's hits along with the file, so a converted
+   * document's hit pipeline has to run again on return.
+   */
+  @Override void deactivate()
+  {
+    if (currentPreviewPath != null)
+    {
+      int pageNum = PreviewWindow.getPageNum(pvsQueriesTab, db.getRootPath(currentPreviewPath));
+
+      if (pageNum > 0)
+      {
+        currentPreviewPage = pageNum;
+        keepPreviewPage = true;
+      }
+    }
+
+    convertedLaunchPath = null;
+
+    super.deactivate();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /** Hands off the pending clicked-match target to the intent that carries it;
    *  the deferral and early-return paths of {@link #setPreview} deliberately do
    *  not consume, so a later re-invocation for the same row still carries it. */
@@ -2065,9 +2108,10 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     List<PageMatch> matches = nullSwitch(row.result().pageMatches(), hitSetService.cachedMatches(row.path()));
 
-    // For new files, navigate to the first page with a match (if known)
+    // For new files, navigate to the first page with a match (if known); a page kept from when
+    // this tab was left is the page to return to, even page 1
 
-    if ((currentPreviewPage <= 1) && (collEmpty(matches) == false))
+    if ((keepPreviewPage == false) && (currentPreviewPage <= 1) && (collEmpty(matches) == false))
     {
       int firstPage = matches.stream()
         .mapToInt(PageMatch::pageNumber)
@@ -2094,17 +2138,19 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       // any navigation away, the pane host discards the delivered hit status
       // (hitsStatus resets to Pending for the new file), so a revisit needs the
       // pipeline relaunched even though the conversion itself is cached; without
-      // this, the revisited document displays but its hits never arrive.
+      // this, the revisited document displays but its hits never arrive. Leaving
+      // this tab counts as navigating away (see deactivate).
 
       boolean alreadyLaunched = row.path().equals(convertedLaunchPath) && row.path().equals(currentPreviewPath);
 
       currentPreviewPath = row.path();
 
       // The first display derives its page from the hit set; subsequent
-      // same-file navigation (passage clicks) honors the explicit page
+      // same-file navigation (passage clicks) honors the explicit page, and so
+      // does a return to this tab, at the page kept when it was left
 
       PreviewWindow.setQueriesFtsPreview(filePath, row.resolvedRecord(), true,
-        alreadyLaunched ? currentPreviewPage : -1, true, consumeScrollTarget());
+        (alreadyLaunched || keepPreviewPage) ? currentPreviewPage : -1, true, consumeScrollTarget());
 
       if (alreadyLaunched == false)
       {
