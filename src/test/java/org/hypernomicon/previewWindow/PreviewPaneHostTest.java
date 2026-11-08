@@ -45,8 +45,10 @@ import org.junit.jupiter.api.io.TempDir;
  * They pin the rules that sit above the pane's own tests: the early-versus-
  * stale treatment of hits that arrive while an intent is gated, confirmation
  * by document identity, the atomic intent-plus-snapshot issue, what the
- * chrome's refresh, page navigation, and clear do to the viewer, and the two
- * readings of the current file (intended at issue, confirmed on report).
+ * chrome's refresh, page navigation, and clear do to the viewer, the two
+ * readings of the current file (intended at issue, confirmed on report), the
+ * annotated and hit pages the chrome's page-stepping buttons read, and the
+ * order in which a load's metadata and its hits reach the chrome.
  * Files here do not exist on disk, so every one is a natively viewable
  * artifact (no conversion service involved); paged versus direct is chosen
  * explicitly. The one exception is the empty OneNote section written to a
@@ -87,11 +89,14 @@ class PreviewPaneHostTest
 //---------------------------------------------------------------------------
 
   /** Records every command; the tests confirm loads through the sink it is given. */
-  private static final class RecordingViewer implements PaneViewer
+  private final class RecordingViewer implements PaneViewer
   {
     final List<String> calls = new ArrayList<>();
     PaneEventSink sink = null;
     boolean directShowable = true;
+
+    /** The host's page count at the moment hits were last applied (see {@link #setAllHits}). */
+    int pageCountWhenHitsApplied = -1;
 
     @Override public boolean ensureInitialized() { return true; }
     @Override public void setPaneEventSink(PaneEventSink sink) { this.sink = sink; }
@@ -110,7 +115,7 @@ class PreviewPaneHostTest
     }
 
     @Override public void goToPage(int pageNum) { calls.add("goToPage:" + pageNum); }
-    @Override public void setAllHits(String hitsJson) { calls.add("hits:" + hitsJson); }
+    @Override public void setAllHits(String hitsJson) { calls.add("hits:" + hitsJson); pageCountWhenHitsApplied = host.numPages(); }
     @Override public void clearAllHits() { calls.add("clearHits"); }
     @Override public void scrollToHighlight(int matchNdx, int pageNum, int ndxOnPage) { calls.add("scroll:" + pageNum + '/' + ndxOnPage); }
     @Override public boolean zoom(boolean zoomingIn) { return false; }
@@ -402,6 +407,76 @@ class PreviewPaneHostTest
 
 //---------------------------------------------------------------------------
 
+  @Test void hitPagesFollowTheHitsAppliedToTheViewer()
+  {
+    String hits = "{\"7\":[[0,3]],\"2\":[[4,11]],\"5\":[[1,2],[8,9]]}";
+
+    host.setPreview(A, null, true, 1, true, null);
+    host.updateHitsPaged(A, hits, 2);
+
+    assertEquals(-1, host.lowestHitPage(), "nothing is highlighted until the load confirms");
+
+    viewer.confirm(A);  // 10 pages; the hits are applied
+
+    assertEquals("hits:" + hits, calls().getLast());
+    assertEquals(2, host.lowestHitPage());
+    assertEquals(7, host.highestHitPage());
+    assertEquals(-1, host.getPrevHitPage(2));
+    assertEquals(2, host.getPrevHitPage(5));
+    assertEquals(7, host.getNextHitPage(5));
+    assertEquals(-1, host.getNextHitPage(7));
+
+    host.setPreview(A, null, true, 1, false, null);  // the same file, now without highlighting
+
+    assertEquals("clearHits", calls().getLast());
+    assertEquals(-1, host.lowestHitPage(), "the hit pages go with the highlighting");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void anotherDocumentStartsWithNoHitPages()
+  {
+    host.setPreview(A, null, true, 1, true, null);
+    host.updateHitsPaged(A, HITS, 2);
+    viewer.confirm(A);
+
+    assertEquals(2, host.lowestHitPage());
+
+    host.setPreview(B, null, true, 1, false, null);
+
+    assertEquals(-1, host.lowestHitPage());
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void directContentHitsHaveNoPagesToStepThrough()
+  {
+    String hits = "{\"matches\":[{\"ctx\":\"a needle here\",\"s\":2,\"e\":8}]}";
+
+    host.setPreview(A, null, false, 1, true, null);
+    host.updateHitsDirect(A, hits);
+    viewer.confirm(A);
+
+    assertEquals("hits:" + hits, calls().getLast(), "the highlighting is applied");
+    assertEquals(-1, host.lowestHitPage(), "but it is not addressed by page");
+  }
+
+//---------------------------------------------------------------------------
+
+  @Test void hitsApplyWithTheDocumentMetadataAlreadyInPlace()
+  {
+    host.setPreview(A, null, true, 1, true, null);
+    host.updateHitsPaged(A, HITS, 2);
+
+    viewer.confirm(A);  // 10 pages; the confirmation both stores the metadata and applies the hits
+
+    assertEquals("hits:" + HITS, calls().getLast());
+    assertEquals(10, viewer.pageCountWhenHitsApplied,
+      "the metadata lands before the hits apply, so the controls refreshed from the hit application see the real page count");
+  }
+
+//---------------------------------------------------------------------------
+
   @Test void navigationBeforeAnyIntentIsANoOp()
   {
     host.navigateToPage(4);
@@ -433,6 +508,8 @@ class PreviewPaneHostTest
     assertEquals(1, count("direct:a.pdf"));
     assertEquals("unable:a.pdf", calls().getLast());
     assertEquals(A, host.intendedFile(), "the controls still name the file the pane is about");
+    assertEquals(1, host.pageNum(), "at a status display's one notional page");
+    assertNull(host.confirmedFile(), "which the confirmed-file read-back does not vouch for: nothing loaded, so there is no page to come back to");
   }
 
 //---------------------------------------------------------------------------

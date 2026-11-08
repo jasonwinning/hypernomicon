@@ -24,6 +24,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -40,6 +41,9 @@ import org.hypernomicon.previewWindow.ViewerPort.ViewerMeta;
 import org.hypernomicon.util.RequestGate;
 import org.hypernomicon.util.SettleGate;
 import org.hypernomicon.util.file.FilePath;
+import org.hypernomicon.util.json.JsonObj;
+
+import org.json.simple.parser.ParseException;
 
 import javafx.application.Platform;
 import javafx.scene.control.MenuItem;
@@ -59,7 +63,8 @@ import javafx.scene.control.Tab;
  * that it holds what the window's chrome reads and what it navigates with:
  * the record behind the intent, the FTS hit flow, the navigation history
  * ({@link PreviewNavHistory}), the current page and the work start/end pages,
- * the displayed document's metadata, and the annotated-page scan. The viewer
+ * the displayed document's metadata, the annotated-page scan, and the pages
+ * the applied search hits are on. The viewer
  * is reached through {@link PaneViewer} ({@link PreviewWrapper} in production,
  * a recording fake in the contract tests).
  * <p>
@@ -204,6 +209,19 @@ final class PreviewPaneHost
    *  be mistaken for "no annotations". */
   private boolean annotScanInProgress = false;
 
+  /** The pages the viewer's search-hit highlighting is on, ascending; null
+   *  while the displayed document has none (no highlighting wanted, no hits
+   *  found, or direct content, whose hits are not addressed by page). Set as
+   *  the hits are applied to the viewer and cleared with them, so the hit
+   *  navigation buttons follow what is actually highlighted. */
+  private List<Integer> hitPages = null;
+
+  /** Whether the issued document is paged (issued through {@code showDocument}) rather than direct
+   *  ({@code showContent}), and so whether the hits the pane pushes for it are keyed by page. Taken
+   *  from the command that issued the document, not from {@link #hitsStatus}: a newer intent can
+   *  have replaced that status by the time a reconcile queued before it applies this document's hits. */
+  private boolean issuedPaged = false;
+
   /** The viewer's events, handed to the core's identity gate and to this
    *  pane's own bookkeeping. Installed on the viewer at every intent set:
    *  cheap, and a viewer the window replaced gets it too. */
@@ -263,6 +281,13 @@ final class PreviewPaneHost
   boolean annotScanInProgress()            { return annotScanInProgress; }
   int lowestHilitePage()                   { return collEmpty(hilitePages) ? -1 : hilitePages.getFirst(); }
   int highestHilitePage()                  { return collEmpty(hilitePages) ? -1 : hilitePages.getLast(); }
+  int getPrevHilite(int curPage)           { return prevPageIn(hilitePages, curPage); }
+  int getNextHilite(int curPage)           { return nextPageIn(hilitePages, curPage); }
+
+  int lowestHitPage()                      { return collEmpty(hitPages) ? -1 : hitPages.getFirst(); }
+  int highestHitPage()                     { return collEmpty(hitPages) ? -1 : hitPages.getLast(); }
+  int getPrevHitPage(int curPage)          { return prevPageIn(hitPages, curPage); }
+  int getNextHitPage(int curPage)          { return nextPageIn(hitPages, curPage); }
 
   boolean canStepPage(boolean forward)     { return history.canStepPage(forward); }
   boolean canStepFile(boolean forward)     { return history.canStepFile(forward); }
@@ -500,31 +525,35 @@ final class PreviewPaneHost
 
   private void onOpened(FilePath file, boolean success, ViewerMeta meta)
   {
-    core.onOpened(file, success, meta, null);
-
     // As with page changes: only the issued document's completion feeds this
     // pane's bookkeeping (metadata, first history entry, controls). The
     // metadata is the report's own: attributing it by reading the viewer's
-    // current state would race the next document's load.
+    // current state would race the next document's load. It is queued ahead
+    // of the report's delivery to the pane, whose confirm reconcile applies
+    // the document's hits and, through setHits, refreshes the controls: they
+    // must see the loaded document's page count, not the pageless placeholder.
 
-    if (core.isIssuedDocument(file) == false) return;
-
-    paneExecutor.execute(() ->
+    if (core.isIssuedDocument(file))
     {
-      Entry entry = history.current();
-      if (entry == null) return;
+      paneExecutor.execute(() ->
+      {
+        Entry entry = history.current();
+        if (entry == null) return;
 
-      if (success)
-        this.meta = meta;
+        if (success)
+          this.meta = meta;
 
-      // The first page of a freshly tracked file enters its page history on
-      // load; later pages enter through the page-change event or a chrome jump.
+        // The first page of a freshly tracked file enters its page history on
+        // load; later pages enter through the page-change event or a chrome jump.
 
-      if (entry.hasPages() == false)
-        history.recordPage(pageNum);
+        if (entry.hasPages() == false)
+          history.recordPage(pageNum);
 
-      refreshControls();
-    });
+        refreshControls();
+      });
+    }
+
+    core.onOpened(file, success, meta, null);
   }
 
 //---------------------------------------------------------------------------
@@ -573,6 +602,7 @@ final class PreviewPaneHost
 
     meta = ViewerMeta.PAGELESS;  // until the newly tracked file's load confirms
     hilitePages = null;
+    hitPages = null;             // a newly issued document has no highlighting until its hits are applied
 
     annotScanSeq++;               // a scan of the previous file must not deliver into this one
     annotScanInProgress = false;  // no scan is running for the newly tracked file yet; a paged load starts one
@@ -857,13 +887,14 @@ final class PreviewPaneHost
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  int getPrevHilite(int curPage)
+  /** The nearest page in {@code pages} before {@code curPage}, or -1 if there is none. */
+  private static int prevPageIn(List<Integer> pages, int curPage)
   {
-    if (collEmpty(hilitePages)) return -1;
+    if (collEmpty(pages)) return -1;
 
     int newPage = -1;
 
-    for (Integer page : hilitePages)
+    for (Integer page : pages)
       if ((page < curPage) && (page > newPage))
         newPage = page;
 
@@ -873,17 +904,60 @@ final class PreviewPaneHost
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  int getNextHilite(int curPage)
+  /** The nearest page in {@code pages} after {@code curPage} and within the document, or -1 if there is none. */
+  private int nextPageIn(List<Integer> pages, int curPage)
   {
-    if (collEmpty(hilitePages)) return -1;
+    if (collEmpty(pages)) return -1;
 
     int numPages = numPages(), newPage = numPages + 1;
 
-    for (Integer page : hilitePages)
+    for (Integer page : pages)
       if ((page > curPage) && (page < newPage))
         newPage = page;
 
     return newPage > numPages ? -1 : newPage;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Records the pages the viewer's hit highlighting is now on, bringing the window's controls up to date if they changed. */
+  private void setHitPages(List<Integer> pages)
+  {
+    if (Objects.equals(pages, hitPages)) return;
+
+    hitPages = pages;
+
+    refreshControls();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The pages a paged hit set highlights, ascending, or {@code null} if none:
+   * the keys of the per-page hit JSON the viewer is given
+   * ({@code {"page":[[start,end],...],...}}, built by
+   * {@code FTSUtil.buildAllHitsJson}). Read from that JSON rather than carried
+   * beside it, so the hit navigation cannot disagree with the highlighting.
+   */
+  static List<Integer> pagesWithHits(String hitsJson)
+  {
+    try
+    {
+      List<Integer> pages = JsonObj.parseJsonObj(hitsJson).keySet().stream()
+        .map(key -> parseInt(key, -1))
+        .filter(page -> page > 0)
+        .sorted()
+        .toList();
+
+      return pages.isEmpty() ? null : pages;
+    }
+    catch (ParseException e)
+    {
+      logThrowable(e);
+      return null;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -956,6 +1030,7 @@ final class PreviewPaneHost
 
       trackFile(core.intentFile());
 
+      issuedPaged = true;
       PreviewPaneHost.this.pageNum = pageNum;
 
       startAnnotationScan(documentPath);
@@ -973,6 +1048,7 @@ final class PreviewPaneHost
 
       trackFile(sourceFile);
 
+      issuedPaged = false;
       pageNum = 1;
 
       if (viewer.showDirect(sourceFile, contentPath) == false)
@@ -993,6 +1069,11 @@ final class PreviewPaneHost
     @Override public void setHits(long gen, String hitsJson)
     {
       viewer.setAllHits(hitsJson);
+
+      // Only a paged hit set is keyed by page; direct content's hits are
+      // context windows located in the page's text
+
+      setHitPages(issuedPaged ? pagesWithHits(hitsJson) : null);
     }
 
   //---------------------------------------------------------------------------
@@ -1000,6 +1081,8 @@ final class PreviewPaneHost
     @Override public void clearHits(long gen)
     {
       viewer.clearAllHits();
+
+      setHitPages(null);
     }
 
   //---------------------------------------------------------------------------

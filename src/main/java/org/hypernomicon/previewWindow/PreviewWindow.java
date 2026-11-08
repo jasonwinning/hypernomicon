@@ -61,8 +61,9 @@ public final class PreviewWindow extends NonmodalWindow
 
   @FXML TabPane tpPreview;
   @FXML private AnchorPane apManager, apOther, apPerson, apQuery, apTree, apWork;
-  @FXML private Button btnContents, btnEndPage, btnFileBack, btnFileForward, btnGoToMain, btnGoToManager, btnHiliteNext, btnHilitePrev,
-                       btnLaunch, btnPreviewBack, btnPreviewForward, btnPreviewNext, btnPreviewPrev, btnRefresh, btnSetEnd, btnSetStart, btnStartPage;
+  @FXML private Button btnContents, btnEndPage, btnFileBack, btnFileForward, btnFTHitNext, btnFTHitPrev, btnGoToMain, btnGoToManager, btnHiliteNext,
+                       btnHilitePrev, btnLaunch, btnPreviewBack, btnPreviewForward, btnPreviewNext, btnPreviewPrev, btnRefresh, btnSetEnd, btnSetStart,
+                       btnStartPage;
   @FXML private Label lblPreviewPages, lblRecord;
   @FXML private Pane paneType;
   @FXML private Slider sldPreview;
@@ -250,6 +251,18 @@ public final class PreviewWindow extends NonmodalWindow
         navigateToPage(curHost().getNextHilite((int) sldPreview.getValue()));
     });
 
+    btnFTHitPrev.setOnAction(event ->
+    {
+      if (tfPreviewPage.isDisabled() == false)
+        navigateToPage(curHost().getPrevHitPage((int) sldPreview.getValue()));
+    });
+
+    btnFTHitNext.setOnAction(event ->
+    {
+      if (tfPreviewPage.isDisabled() == false)
+        navigateToPage(curHost().getNextHitPage((int) sldPreview.getValue()));
+    });
+
     ClickHoldButton chbBack    = new ClickHoldButton(btnPreviewBack   , Side.BOTTOM);
     ClickHoldButton chbForward = new ClickHoldButton(btnPreviewForward, Side.BOTTOM);
 
@@ -280,20 +293,22 @@ public final class PreviewWindow extends NonmodalWindow
     setToolTip(btnGoToManager   , "Go to File Manager");
 
     setToolTip(btnLock          , "Don't change the current view when a different record is selected in another window");
-    setToolTip(btnPreviewNext   , "Go forward 1 page");
-    setToolTip(btnPreviewPrev   , "Go back 1 page");
-    setToolTip(btnPreviewBack   , "Click to go back, hold to see history");
-    setToolTip(btnPreviewForward, "Click to go forward, hold to see history");
+    setToolTip(btnPreviewNext   , "Go forward one page");
+    setToolTip(btnPreviewPrev   , "Go back one page");
+    setToolTip(btnPreviewBack   , "Click to go back to the page viewed before this one, hold to see history");
+    setToolTip(btnPreviewForward, "Click to go forward to the page viewed after this one, hold to see history");
     setToolTip(btnFileBack      , "Go to the file that was viewed before this one");
     setToolTip(btnFileForward   , "Go to the file that was viewed after this one");
     setToolTip(btnHilitePrev    , "Go to previous annotated page");
     setToolTip(btnHiliteNext    , "Go to next annotated page");
+    setToolTip(btnFTHitPrev     , "Go to previous page with a full-text search hit");
+    setToolTip(btnFTHitNext     , "Go to next page with a full-text search hit");
     setToolTip(btnRefresh       , "Refresh current view");
     setToolTip(btnContents      , "Show list of works and page numbers assigned to this work file");
     setToolTip(btnStartPage     , "Jump to this page");
     setToolTip(btnEndPage       , "Jump to this page");
-    setToolTip(btnSetStart      , "Set start page to page currently showing");
-    setToolTip(btnSetEnd        , "Set end page to page currently showing");
+    setToolTip(btnSetStart      , "Set work record's start page to page currently showing");
+    setToolTip(btnSetEnd        , "Set work record's end page to page currently showing");
     setToolTip(sldPreview       , "Navigate to different page");
 
     btnFileBack   .setOnAction(event -> curHost().fileNavClick(false));
@@ -910,7 +925,7 @@ public final class PreviewWindow extends NonmodalWindow
 
     setHiliteScanningIndicator(false);
 
-    disableAll(tfPreviewPage, btnPreviewPrev, btnPreviewNext, btnHilitePrev, btnHiliteNext, btnPreviewBack, btnPreviewForward);
+    disableAll(tfPreviewPage, btnPreviewPrev, btnPreviewNext, btnHilitePrev, btnHiliteNext, btnFTHitPrev, btnFTHitNext, btnPreviewBack, btnPreviewForward);
 
     sldPreview.setValue(1);
     lblPreviewPages.setText("");
@@ -965,6 +980,23 @@ public final class PreviewWindow extends NonmodalWindow
   {
     btnFileBack   .setDisable(curHost().canStepFile(false) == false);
     btnFileForward.setDisable(curHost().canStepFile(true ) == false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Enables a previous/next pair that steps through a set of marked pages
+   * (annotated pages, pages with search hits): each button only while there
+   * is a marked page in its direction.
+   *
+   * @param lowest  the first marked page, or -1 if no page is marked
+   * @param highest the last marked page, or -1 if no page is marked
+   */
+  private static void updateMarkedPageBtns(Button btnPrev, Button btnNext, int pageNum, int lowest, int highest)
+  {
+    btnPrev.setDisable((lowest < 0) || (pageNum <= lowest ));
+    btnNext.setDisable((lowest < 0) || (pageNum >= highest));
   }
 
 //---------------------------------------------------------------------------
@@ -1079,19 +1111,10 @@ public final class PreviewWindow extends NonmodalWindow
     {
       setHiliteScanningIndicator(false);
 
-      int lowest = host.lowestHilitePage();
-
-      if (lowest < 0)
-      {
-        btnHilitePrev.setDisable(true);
-        btnHiliteNext.setDisable(true);
-      }
-      else
-      {
-        btnHilitePrev.setDisable(pageNum <= lowest);
-        btnHiliteNext.setDisable(pageNum >= host.highestHilitePage());
-      }
+      updateMarkedPageBtns(btnHilitePrev, btnHiliteNext, pageNum, host.lowestHilitePage(), host.highestHilitePage());
     }
+
+    updateMarkedPageBtns(btnFTHitPrev, btnFTHitNext, pageNum, host.lowestHitPage(), host.highestHitPage());
 
     lblPreviewPages.setText(pageNum + " / " + numPages);
 
