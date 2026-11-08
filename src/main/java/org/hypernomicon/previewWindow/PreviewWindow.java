@@ -607,6 +607,17 @@ public final class PreviewWindow extends NonmodalWindow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Drops the preview scheduled to run for {@code src} when the Lock button is next unlocked,
+   *  for an initiator whose later request the locked view already satisfies. */
+  public static void cancelLockedReplay(PreviewSource src)
+  {
+    if (instance != null)
+      instance.srcToLockedReplay.remove(src);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   /**
    * Whether a preview set for {@code src} would be shown immediately rather than deferred: the preview
    * window is open and {@code src} is its active tab. Mirrors the guard inside {@link #doSetPreview},
@@ -788,6 +799,24 @@ public final class PreviewWindow extends NonmodalWindow
 
     if (btnLock.isSelected() && (curSource() == src) && (hostFor(src).confirmedFile() != null))
     {
+      PreviewPaneHost host = hostFor(src);
+
+      if ((clearing == false) && filePath.equals(host.intendedFile()) && (record == host.intendedRecord()))
+      {
+        // The pane already shows this selection (as when a tab comes back to the record it was
+        // locked on): there is nothing to defer, and a replay on unlock would move the view to
+        // the work's start page. It supersedes any other selection deferred in the meantime.
+        // Its work pages still apply, in case they were edited while locked.
+
+        srcToLockedReplay.remove(src);
+        host.setWorkPageNums(startPageNum, endPageNum);
+
+        if (host.pageNum() > 0)
+          refreshControlsIfShowing(host, host.pageNum(), host.numPages());
+
+        return;
+      }
+
       srcToLockedReplay.put(src, () -> doSetPreview(src, filePath, startPageNum, endPageNum, record));
       return;
     }

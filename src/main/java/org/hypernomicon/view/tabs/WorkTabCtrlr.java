@@ -852,9 +852,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       else if (miscFileCnt > 0)                         tpsm.select(tabMiscFiles);
       else if (tpsm.getSelectedItem() != tabBibDetails) tpsm.select(tabWorkFiles);
 
+      // A work whose file the pane already shows is left where it is, unless its start page says
+      // where to go. Not while the Lock button is on: the lock's gate must see this selection, so
+      // that it drops a selection deferred in the meantime (this one supersedes it) while keeping
+      // the view as it is; it refreshes the controls itself.
+
       if (FilePath.isEmpty(filePath) == false)
         if (filePath.equals(PreviewWindow.getFilePath(pvsWorkTab)))
-          if (curWork.getStartPageNum() < 2)
+          if ((curWork.getStartPageNum() < 2) && (PreviewWindow.isPreviewLocked(pvsWorkTab) == false))
             updatePreview = false;
     }
 

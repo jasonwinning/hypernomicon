@@ -2063,10 +2063,14 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       return;
     }
 
-    // The lock defers previews of OTHER files; re-previews of the locked file
-    // itself (passage clicks navigating within it) proceed as page navigation
+    FilePath filePath = db.getRootPath(row.path());
 
-    if (PreviewWindow.isPreviewLocked(pvsQueriesTab) && (row.path().equals(currentPreviewPath) == false))
+    // The lock defers previews of files other than the one the pane is showing; re-previews of
+    // that file itself (passage clicks navigating within it) proceed as page navigation. The
+    // pane is shared with the other queries sub-tabs, so the file this tab last previewed is
+    // not necessarily the one showing (on a return to this tab, it usually is not).
+
+    if (PreviewWindow.isPreviewLocked(pvsQueriesTab) && (filePath.equals(PreviewWindow.getFilePath(pvsQueriesTab)) == false))
     {
       // Keep the current preview and replay this row's preview on unlock, with
       // the same context re-checks as the activation replay below
@@ -2079,6 +2083,13 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
       return;
     }
+
+    // Locked on this row's own file: this request supersedes whatever another queries sub-tab
+    // left to show on unlock (it was deferred while that sub-tab was selected, and nothing
+    // checks on unlock whether that sub-tab still is)
+
+    if (PreviewWindow.isPreviewLocked(pvsQueriesTab))
+      PreviewWindow.cancelLockedReplay(pvsQueriesTab);
 
     if (PreviewWindow.isSourceActiveAndShowing(pvsQueriesTab) == false)
     {
@@ -2098,8 +2109,6 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
       return;
     }
-
-    FilePath filePath = db.getRootPath(row.path());
 
     if (row.isListed())
     {
