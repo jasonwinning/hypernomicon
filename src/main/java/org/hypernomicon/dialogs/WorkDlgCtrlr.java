@@ -47,6 +47,7 @@ import org.hypernomicon.Const.PrefKey;
 import org.hypernomicon.Const.TablePrefKey;
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.authors.BibAuthors.SettledNames;
 import org.hypernomicon.bib.data.*;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.dialogs.base.ModalDialog;
@@ -1014,7 +1015,12 @@ public class WorkDlgCtrlr extends ModalDialog
 
     lblAutoPopulated.setText("");
     mwd.mergeInto(curBD);
-    populateFieldsFromBibData(curBD, true);
+    populateFieldsFromBibData(curBD, false);
+
+    // The merge dialog checked the authors for duplicates when it loaded them, so they go into the table as chosen there
+
+    if (BibAuthors.isEmpty(curBD.getAuthors()) == false)
+      loadAuthors(curBD.getAuthors().normalizedList(false), htAuthors, true);
 
     if (db.bibLibraryIsLinked() && curWork.getBibEntryKey().isBlank())
     {
@@ -1176,15 +1182,25 @@ public class WorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void loadFromBibAuthors(BibAuthors bibAuthors, HyperTable htAuthors, boolean hasShowInFileCol, HDT_Work destWork)
+  /**
+   * Load the authors into the table, checking the ones without person records for duplicates
+   * @param settledNames Names not to check; see {@link BibAuthors#getListForWorkMerge(HDT_Work, SettledNames)}
+   */
+  public static void loadFromBibAuthors(BibAuthors bibAuthors, HyperTable htAuthors, boolean hasShowInFileCol, HDT_Work destWork, SettledNames settledNames)
   {
     if (BibAuthors.isEmpty(bibAuthors)) return;
 
-    List<Author> listForWorkMerge = bibAuthors.getListForWorkMerge(destWork);
+    loadAuthors(bibAuthors.getListForWorkMerge(destWork, settledNames), htAuthors, hasShowInFileCol);
+  }
 
-    clearAuthors(htAuthors, true);  // Getting the list may have resulted in one or more new person records being created so force repopulate
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    listForWorkMerge.forEach(bibAuthor -> addAuthorToTable(bibAuthor, htAuthors, hasShowInFileCol));
+  private static void loadAuthors(List<Author> authors, HyperTable htAuthors, boolean hasShowInFileCol)
+  {
+    clearAuthors(htAuthors, true);  // Person records may have been created while the list was being built, so force repopulate
+
+    authors.forEach(author -> addAuthorToTable(author, htAuthors, hasShowInFileCol));
   }
 
 //---------------------------------------------------------------------------
@@ -1277,7 +1293,7 @@ public class WorkDlgCtrlr extends ModalDialog
     htISBN.buildRows(curBD.getMultiStr(bfISBNs), (row, isbnStr) -> row.setCellValue(0, isbnStr, hdtNone));
 
     if (populateAuthors)
-      loadFromBibAuthors(curBD.getAuthors(), htAuthors, true, curWork);
+      loadFromBibAuthors(curBD.getAuthors(), htAuthors, true, curWork, new SettledNames());
   }
 
 //---------------------------------------------------------------------------

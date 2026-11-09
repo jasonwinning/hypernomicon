@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.*;
 
 import org.hypernomicon.App;
+import org.hypernomicon.bib.authors.BibAuthors.SettledNames;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.zotero.ZoteroItem;
@@ -77,7 +78,8 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
 
   /**
    * @param bibFieldEnum The field this row is for
-   * @param bibDataList The sources; the row shows one per column (the title row stacks them one per line instead)
+   * @param bibDataList The sources, the first being the data merged into; the row shows one per column (the title
+   *                    row stacks them one per line instead)
    * @param destWork The work being merged into, if any
    * @param readOnly Whether the row only shows the field's values without offering them for the
    * merge, because the field can be stored only in a reference manager entry and no library is
@@ -341,6 +343,8 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
 
   protected static final class AuthorsRow extends ToggleRow<AuthorsCtrlr>
   {
+    private SettledNames settledNames;  // Can't be final or have an initializer: the super constructor calls createCtrlr, which initializes it
+
     private AuthorsRow(List<BibData> bibDataList, HDT_Work destWork) throws IOException
     {
       super(bfAuthors, bibDataList, destWork);
@@ -348,7 +352,14 @@ public abstract class BibFieldRow<BibFieldCtrlr_T extends BibFieldCtrlr>
 
     @Override protected AuthorsCtrlr createCtrlr(BibData bibData, HDT_Work destWork) throws IOException
     {
-      return new AuthorsCtrlr(bibData, destWork);
+      // Columns are created in source order, and the first source is the data being merged into.
+      // Its authors without person records were settled when they were entered, so neither they
+      // nor authors with the same names in the other sources are checked for duplicates again.
+
+      if (settledNames == null)
+        settledNames = new SettledNames(bibData.getAuthors());
+
+      return new AuthorsCtrlr(bibData, destWork, settledNames);
     }
 
     @Override protected Double getHeight() { return AUTHORS_HEIGHT; }

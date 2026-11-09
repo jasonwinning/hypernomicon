@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.authors.BibAuthors.SettledNames;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Tag;
@@ -356,7 +357,7 @@ public class WorkAuthors extends RecordAuthors
 
     if (BibAuthors.isEmpty(bibAuthors)) return;
 
-    bibAuthors.getListForWorkMerge(work).forEach(bibAuthor ->
+    bibAuthors.getListForWorkMerge(work, new SettledNames()).forEach(bibAuthor ->
     {
       if (bibAuthor.getPerson() == null)
         add(bibAuthor.getName(), bibAuthor.getRoles(), Ternary.Unset);

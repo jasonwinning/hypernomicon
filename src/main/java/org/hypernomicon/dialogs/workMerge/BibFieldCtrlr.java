@@ -37,6 +37,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.App;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager;
+import org.hypernomicon.bib.authors.BibAuthors.SettledNames;
 import org.hypernomicon.bib.data.*;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.zotero.ZoteroItem;
@@ -271,7 +272,7 @@ public abstract class BibFieldCtrlr
     private final HyperTable htAuthors;
     private final boolean sourceAuthorsNotEmpty;
 
-    AuthorsCtrlr(BibData bibData, HDT_Work destWork) throws IOException
+    AuthorsCtrlr(BibData bibData, HDT_Work destWork, SettledNames settledNames) throws IOException
     {
       super("AuthorsCtrl", bfAuthors, bibData);
 
@@ -322,7 +323,7 @@ public abstract class BibFieldCtrlr
       {
         htAuthors.getPopulator(0).populate(false);
 
-        loadFromBibAuthors(bibData.getAuthors(), htAuthors, false, destWork);
+        loadFromBibAuthors(bibData.getAuthors(), htAuthors, false, destWork, settledNames);
       }
 
       sourceAuthorsNotEmpty = (htAuthors.dataRowCount() > 0);

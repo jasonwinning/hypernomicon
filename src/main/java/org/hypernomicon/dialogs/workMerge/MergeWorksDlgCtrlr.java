@@ -90,7 +90,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
   /**
    * Show popup window to merge information about a work or bibliographic entry from multiple sources
    * @param title Title of the popup
-   * @param newBibDataStream Stream of BibData sources
+   * @param newBibDataStream Stream of BibData sources; the first is the data being merged into
    * @param destWork The work we are merging information into, if any
    * @param creatingNewWork Whether a new work record is being created
    * @param showNewEntry Whether to show the checkbox to create a new bibliographic entry
@@ -105,7 +105,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
   /**
    * Show popup window to merge information about a work or bibliographic entry from multiple sources
    * @param title Title of the popup
-   * @param newBibDataStream Stream of BibData sources
+   * @param newBibDataStream Stream of BibData sources; the first is the data being merged into
    * @param destWork The work we are merging information into, if any
    * @param creatingNewWork Whether a new work record is being created
    * @param showNewEntry Whether to show the checkbox to create a new bibliographic entry
@@ -121,7 +121,7 @@ public class MergeWorksDlgCtrlr extends ModalDialog
   /**
    * Show popup window to merge information about a work or bibliographic entry from multiple sources
    * @param title Title of the popup
-   * @param newBibDataStream Stream of BibData sources
+   * @param newBibDataStream Stream of BibData sources; the first is the data being merged into
    * @param destWork The work we are merging information into, if any
    * @param creatingNewWork Whether a new work record is being created
    * @param showNewEntry Whether to show the checkbox to create a new bibliographic entry

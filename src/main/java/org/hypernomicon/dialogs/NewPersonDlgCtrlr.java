@@ -95,12 +95,16 @@ public class NewPersonDlgCtrlr extends ModalDialog
 
   /**
    * Create popup window to select how to update or merge authors
-   * @param mustCreate If true, the option to update without creating a person record will not be shown, even if
+   * @param mustCreate If true, the option to update without creating a person record will be disabled, even if
    *                   the author does not have an associated person record.
    * @param name New name to default into the name fields; cannot be null. This name may be different from
    *             the one in origAuthor, if origAuthor was previously saved to its associated work record.
-   * @param origAuthor Author object containing original name of author, associated work, and associated HDT_Person record.
-   *                   If the work is non-null, this may or may not indicate that the author was previously saved to the work.
+   * @param origAuthor The author as it stands before the dialog: its name, its person record if any, and its work.
+   *                   The work is the one whose author list this author belongs to or is about to be added to, and
+   *                   may be null; the author may or may not already be saved in that list. The work keeps the
+   *                   duplicate search from matching other authors of the same work, enables the option to add the
+   *                   author without creating a person record (disabled when the work is null), and, when merging,
+   *                   lets the dialog link the person record to the author's entry if it is already saved in the work.
    */
   public NewPersonDlgCtrlr(boolean mustCreate, String name, RecordAuthor origAuthor)
   {
@@ -112,8 +116,12 @@ public class NewPersonDlgCtrlr extends ModalDialog
    * @param personName New name to default into the name fields; cannot be null. This name may be different from
    *                   the one in origAuthor, if origAuthor was previously saved to its associated work record.
    * @param searchKey New searchKey to default into the name fields; will be generated from personName if null
-   * @param origAuthor Author object containing original name of author, associated work, and associated HDT_Person record.
-   *                   If the work is non-null, this may or may not indicate that the author was previously saved to the work.
+   * @param origAuthor The author as it stands before the dialog: its name, its person record if any, and its work.
+   *                   The work is the one whose author list this author belongs to or is about to be added to, and
+   *                   may be null; the author may or may not already be saved in that list. The work keeps the
+   *                   duplicate search from matching other authors of the same work, enables the option to add the
+   *                   author without creating a person record (disabled when the work is null), and, when merging,
+   *                   lets the dialog link the person record to the author's entry if it is already saved in the work.
    * @param origMatches Duplicate matches to default in. May not be null but may be empty. If empty, the popup will
    *                    immediately find matches.
    */
@@ -125,13 +133,17 @@ public class NewPersonDlgCtrlr extends ModalDialog
   /**
    * Create popup window to select how to update or merge authors
    * @param title Title of the popup window
-   * @param mustCreate If true, the option to update without creating a person record will not be shown, even if
+   * @param mustCreate If true, the option to update without creating a person record will be disabled, even if
    *                   the author does not have an associated person record.
    * @param personName New name to default into the name fields; cannot be null. This name may be different from
    *                   the one in origAuthor, if origAuthor was previously saved to its associated work record.
    * @param searchKey New searchKey to default into the name fields; will be generated from personName if null
-   * @param origAuthor Author object containing original name of author, associated work, and associated HDT_Person record.
-   *                   If the work is non-null, this may or may not indicate that the author was previously saved to the work.
+   * @param origAuthor The author as it stands before the dialog: its name, its person record if any, and its work.
+   *                   The work is the one whose author list this author belongs to or is about to be added to, and
+   *                   may be null; the author may or may not already be saved in that list. The work keeps the
+   *                   duplicate search from matching other authors of the same work, enables the option to add the
+   *                   author without creating a person record (disabled when the work is null), and, when merging,
+   *                   lets the dialog link the person record to the author's entry if it is already saved in the work.
    * @param origMatches Duplicate matches to default in. May not be null but may be empty. If empty, the popup will
    *                    immediately find matches.
    */
@@ -212,7 +224,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
           change.setText(pName.getLast());
 
           alreadyChangingName = false;
-          setSearchKey(new PersonName(tfFirstName.getText(), change.getControlNewText()));
+          setSearchKey  (new PersonName(tfFirstName.getText(), change.getControlNewText()));
           startDupThread(new PersonName(tfFirstName.getText(), change.getControlNewText()));
           return change;
         }
@@ -220,7 +232,7 @@ public class NewPersonDlgCtrlr extends ModalDialog
 
       if (change.isContentChange())
       {
-        setSearchKey(new PersonName(tfFirstName.getText(), change.getControlNewText()));
+        setSearchKey  (new PersonName(tfFirstName.getText(), change.getControlNewText()));
         startDupThread(new PersonName(tfFirstName.getText(), change.getControlNewText()));
       }
 

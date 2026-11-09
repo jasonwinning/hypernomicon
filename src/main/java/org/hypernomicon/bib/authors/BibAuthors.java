@@ -85,6 +85,18 @@ public abstract class BibAuthors implements Iterable<Author>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * The form of a name used to tell whether two authors' names are the same:
+   * English characters, lower case, and no parentheticals.
+   */
+  private static PersonName comparableName(PersonName name)
+  {
+    return new PersonName(removeAllParentheticals(name.getFirst()), removeAllParentheticals(name.getLast())).toEngChar().toLowerCase();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final class BibAuthorKey
   {
     private final PersonName name;
@@ -95,13 +107,7 @@ public abstract class BibAuthors implements Iterable<Author>
     private BibAuthorKey(Author bibAuthor)
     {
       person = bibAuthor.getPerson();
-
-      PersonName realName = bibAuthor.getPerson() == null ? bibAuthor.getName() : bibAuthor.getPerson().getName();
-
-      String firstName = removeAllParentheticals(realName.getFirst()),
-             lastName  = removeAllParentheticals(realName.getLast ());
-
-      name = new PersonName(firstName, lastName).toEngChar().toLowerCase();
+      name = comparableName(person == null ? bibAuthor.getName() : person.getName());
     }
 
   //---------------------------------------------------------------------------
@@ -119,6 +125,47 @@ public abstract class BibAuthors implements Iterable<Author>
 
       return ((person != null) && (other.person != null)) ? (person == other.person) : name.equals(other.name);
     }
+
+  //---------------------------------------------------------------------------
+
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Names of authors without person records that {@link #getListForWorkMerge(HDT_Work, SettledNames)}
+   * does not check for duplicates, shared by the author lists loaded for one merge. Names are compared
+   * as {@link #normalizeAuthors(Iterable, boolean)} compares them.
+   */
+  public static final class SettledNames
+  {
+    private final Set<PersonName> names = new HashSet<>();
+
+  //---------------------------------------------------------------------------
+
+    /** Nothing is settled yet */
+    public SettledNames() { }
+
+    /**
+     * @param currentAuthors The authors of the data being merged into, which may be null; the ones
+     *                       without person records were settled when they were entered
+     */
+    public SettledNames(BibAuthors currentAuthors)
+    {
+      if (currentAuthors == null) return;
+
+      currentAuthors.forEach(author ->
+      {
+        if (author.getPerson() == null)
+          add(author.getName());
+      });
+    }
+
+  //---------------------------------------------------------------------------
+
+    private void add(PersonName name)         { names.add(comparableName(name)); }
+    private boolean contains(PersonName name) { return names.contains(comparableName(name)); }
 
   //---------------------------------------------------------------------------
 
@@ -202,11 +249,15 @@ public abstract class BibAuthors implements Iterable<Author>
    * {@link #normalizeAuthors(Iterable, boolean)} merges them.
    * <p>
    * This also uses a duplicate search algorithm and prompts the user to merge authors
-   * that appear to be a duplicate with one in the database.
+   * that appear to be a duplicate with one in the database. Authors without a person record
+   * whose names are settled are not checked. When the user keeps an author without a person
+   * record, the name it is kept under becomes settled; if the user changed the name, the
+   * original is not settled, so another source listing it is still checked.
    * @param destWork The work record data will be merged into
+   * @param settledNames Names not to check, shared by the author lists loaded for one merge
    * @return The consolidated list
    */
-  public List<Author> getListForWorkMerge(HDT_Work destWork)
+  public List<Author> getListForWorkMerge(HDT_Work destWork, SettledNames settledNames)
   {
     List<Author> outputList = normalizeAuthors(this, true);
 
@@ -219,7 +270,7 @@ public abstract class BibAuthors implements Iterable<Author>
     {
       Author bibAuthor = outputList.get(ndx);
 
-      if (bibAuthor.getPerson() == null)
+      if ((bibAuthor.getPerson() == null) && (settledNames.contains(bibAuthor.getName()) == false))
       {
         nonRecordAuthors.add(new PersonForDupCheck(new RecordAuthor(destWork, bibAuthor, Ternary.Unset)));
         outputIndices.add(ndx);
@@ -247,9 +298,16 @@ public abstract class BibAuthors implements Iterable<Author>
         int outputListNdx = outputIndices.get(ndx);
         Author origAuthor = person.getAuthor();
 
-        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(origAuthor.getName(), null, new RecordAuthor(null, origAuthor.getName(), origAuthor.getRoles(), Ternary.Unset), matcher.getMatches(person));
+        NewPersonDlgCtrlr npdc = new NewPersonDlgCtrlr(origAuthor.getName(), null, new RecordAuthor(destWork, origAuthor.getName(), origAuthor.getRoles(), Ternary.Unset), matcher.getMatches(person));
 
-        if (npdc.showModal() == false) continue;
+        if (npdc.showModal() == false)  // Cancelling keeps the author as it came, without a person record
+        {
+          settledNames.add(origAuthor.getName());
+          continue;
+        }
+
+        if (npdc.getPerson() == null)
+          settledNames.add(npdc.getName());
 
         outputList.set(outputListNdx, new AuthorStandalone(npdc.getName(), npdc.getPerson(), origAuthor.getRoles()));
 
