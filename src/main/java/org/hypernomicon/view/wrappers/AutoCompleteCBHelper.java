@@ -147,6 +147,13 @@ public class AutoCompleteCBHelper
     });
 
     cb.setOnKeyReleased(this::handleKeyReleased);
+
+    // While the popup list is showing, each key press reaches the list before the editor, and Enter or Space
+    // there picks the list's keyboard-focused row. When the value is not one of the choices, JavaFX leaves that
+    // focus on the first row, so the first row would replace whatever was typed.
+
+    alignListFocusWithSelection(getCBListView(cb));
+    cb.skinProperty().addListener((ob, oldValue, newValue) -> alignListFocusWithSelection(getCBListView(cb)));
   }
 
 //---------------------------------------------------------------------------
@@ -443,6 +450,39 @@ public class AutoCompleteCBHelper
   private static boolean notNormalTypingEvent(KeyEvent event)
   {
     return event.isShortcutDown() || IGNORED_KEYS.contains(event.getCode());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Keeps Enter and Space in the popup list from replacing typed text with a row the user did not choose.
+   * <p>
+   * A {@code ListView} keeps its keyboard focus separate from its selection, and whenever its items are set
+   * or replaced, it puts the focus on the first row ({@code ListView.ListViewFocusModel.updateDefaultFocus}).
+   * A combo box's popup list is no exception: {@code ComboBoxListViewSkin} turns off the matching default
+   * for the selection (the list's {@code "selectFirstRowByDefault"} property) but not the one for the focus.
+   * So when the combo box's value is not one of its choices, the list has no selected row, but its focus is
+   * on the first row. Enter and Space make the list select its focused row ({@code ListViewBehavior.activate}),
+   * and whenever the list's selection changes, the combo box copies the selected row into the editor; so the
+   * first row would replace whatever was typed.
+   * <p>
+   * Before the list acts on a key press, this moves its focus to its selected row, or to no row if none is
+   * selected. Selecting the row that is already selected, or no row when none is, changes nothing, so the
+   * typed text stays.
+   */
+  private static void alignListFocusWithSelection(ListView<?> lv)
+  {
+    if (lv == null) return;
+
+    lv.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    {
+      FocusModel<?> focusModel = lv.getFocusModel();
+      int selectedNdx = lv.getSelectionModel().getSelectedIndex();
+
+      if (focusModel.getFocusedIndex() != selectedNdx)
+        focusModel.focus(selectedNdx);
+    });
   }
 
 //---------------------------------------------------------------------------
