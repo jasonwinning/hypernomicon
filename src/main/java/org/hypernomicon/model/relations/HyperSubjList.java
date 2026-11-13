@@ -26,6 +26,8 @@ import java.util.Objects;
 
 import org.hypernomicon.model.records.HDT_Record;
 
+import static org.hypernomicon.util.Util.*;
+
 //---------------------------------------------------------------------------
 
 public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements List<HDT_SubjType>
@@ -189,21 +191,30 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
   public void reorder(List<HDT_SubjType> list, boolean modTracking)
   {
-    boolean changed = false;
+    globalLock.lock();
 
-    if (size() != list.size()) throw new NoSuchElementException();
-
-    if (list.stream().allMatch(this::contains) == false)
-      throw new NoSuchElementException();
-
-    for (int ndx = 0; ndx < size(); ndx++)
+    try
     {
-      if (list.contains(get(ndx)) == false) throw new NoSuchElementException();
-      if (list.get(ndx) != get(ndx)) changed = true;
-    }
+      boolean changed = false;
 
-    relSet.reorderSubjects(obj, list);
-    if (modTracking && changed) obj.modifyNow();
+      if (size() != list.size()) throw new NoSuchElementException();
+
+      if (list.stream().allMatch(this::contains) == false)
+        throw new NoSuchElementException();
+
+      for (int ndx = 0; ndx < size(); ndx++)
+      {
+        if (list.contains(get(ndx)) == false) throw new NoSuchElementException();
+        if (list.get(ndx) != get(ndx)) changed = true;
+      }
+
+      relSet.reorderSubjects(obj, list);
+      if (modTracking && changed) obj.modifyNow();
+    }
+    finally
+    {
+      globalLock.unlock();
+    }
   }
 
 //---------------------------------------------------------------------------

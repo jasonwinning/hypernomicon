@@ -329,11 +329,13 @@ public class HyperPath
    * records are created and no side effects occur. To look up the record registered for exactly
    * a path, with no normalization, use {@link #existingFolderRecordAtExactly(FilePath)}.
    * <p>
-   * This method is {@code synchronized} because it is called from both the FX thread (UI
-   * operations, FileManager paste) and the FolderTreeWatcher thread ({@code registerTree}).
+   * This method is {@code synchronized} because it is called from more than one thread: the FX
+   * thread (UI operations, and the batch in which the FolderTreeWatcher's {@code registerTree}
+   * has the FX thread create the records its walk found missing) and the thread of the File
+   * Manager's paste task, which creates the folder records of its destination directories.
    * The check-then-create sequence (lookup in the registry, then
    * {@code createNewRecordFromState}) must be atomic to prevent duplicate records or stale
-   * state when both threads attempt to create a folder record for the same path.
+   * state when two threads attempt to create a folder record for the same path.
    *
    * @param filePath       The filesystem path of the directory. A path that has a folder record is
    *                       taken as a directory's whether or not the directory still exists on disk.

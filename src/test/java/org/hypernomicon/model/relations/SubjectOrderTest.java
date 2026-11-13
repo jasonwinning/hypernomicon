@@ -18,10 +18,12 @@
 package org.hypernomicon.model.relations;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.Util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.hypernomicon.model.TestHyperDB;
 import org.hypernomicon.model.records.*;
@@ -39,7 +41,8 @@ import org.junit.jupiter.api.*;
  * arranged are saved without one and come back in the order they were brought online. The reload
  * tests feed records written by the application's own XML writer back through the loader, including
  * a file in the form earlier versions wrote, which carried the attribute only for subjects that had
- * been reordered.
+ * been reordered. The last test pins that arranging a subject list waits for the lock that every
+ * change to a relation takes.
  */
 class SubjectOrderTest
 {
@@ -313,6 +316,52 @@ class SubjectOrderTest
     assertEquals(List.of(1, 2), ords(university.subInstitutions));
     assertTrue(xmlOf(division2).contains(pointerTag("parent_institution", university, 1)));
     assertTrue(xmlOf(division1).contains(pointerTag("parent_institution", university, 2)));
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Arranging an object's subjects changes the relation's structures, so it takes the lock that
+   * every other change to a relation takes, as arranging a subject's objects does.
+   */
+  @Test
+  void reorderingSubWorksWaitsForTheGlobalLock() throws Exception
+  {
+    HDT_Work book = work("Book"), chapterA = work("Chapter A"), chapterB = work("Chapter B");
+
+    chapterA.largerWork.set(book);
+    chapterB.largerWork.set(book);
+
+    ReentrantLock lock = (ReentrantLock) globalLock;
+    Thread arranger = Thread.ofPlatform().daemon().unstarted(() -> book.subWorks.reorder(List.of(chapterB, chapterA), false));
+
+    lock.lock();
+
+    try
+    {
+      arranger.start();
+
+      // The arranging thread either queues for the lock held here or, if it does not take the lock,
+      // runs to its end; so this loop needs no timed wait
+
+      while (lock.hasQueuedThread(arranger) == false)
+      {
+        assertTrue(arranger.isAlive(), "The sub-works were arranged without waiting for the lock");
+        Thread.onSpinWait();
+      }
+
+      assertEquals(List.of(chapterA, chapterB), book.subWorks);
+    }
+    finally
+    {
+      lock.unlock();
+    }
+
+    arranger.join(10_000);
+
+    assertFalse(arranger.isAlive(), "The arranging thread should finish once the lock is free");
+    assertFalse(lock.isLocked(), "The lock should be released once the sub-works are arranged");
+    assertEquals(List.of(chapterB, chapterA), book.subWorks);
   }
 
 //---------------------------------------------------------------------------
