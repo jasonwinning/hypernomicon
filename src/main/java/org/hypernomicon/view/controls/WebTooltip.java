@@ -45,6 +45,7 @@ public class WebTooltip extends Tooltip
     webView.setPrefSize(1024, -1);
     webView.setFontSmoothingType(FontSmoothingType.GRAY);
     webView.setMouseTransparent(true);
+    webView.setFocusTraversable(false); // Otherwise the tooltip passes keys pressed in the owner window to the WebView
     webView.setCache(true);
     webView.setCacheHint(CacheHint.QUALITY);
     webView.getEngine().loadContent("<html><head><style>" +

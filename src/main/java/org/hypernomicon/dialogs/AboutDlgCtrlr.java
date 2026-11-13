@@ -29,7 +29,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.StringUtil.*;
-import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.time.ZoneId;
@@ -103,7 +102,7 @@ public class AboutDlgCtrlr extends ModalDialog
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) -> MainTextUtil.handleJSEvent("", webView.getEngine()));
 
-    webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
+    webView.setOnContextMenuRequested(event -> MainTextUtil.setHTMLContextMenu());
 
     webView.setOnDragOver   (Event::consume);
     webView.setOnDragDropped(Event::consume);

@@ -28,6 +28,7 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -55,10 +56,18 @@ import org.jsoup.parser.Parser;
 
 import com.google.common.collect.Ordering;
 
+import javafx.collections.ListChangeListener;
+import javafx.event.EventHandler;
+import javafx.scene.*;
+import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.*;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
+import javafx.stage.Window;
 
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
@@ -1063,6 +1072,95 @@ public final class MainTextUtil
     app.prefs.putInt(prefID, ndx);
     view.setZoom(zoomFactors.get(ndx) / 100.0);
     ui.lblStatus.setText("Zoom: " + zoomFactors.get(ndx) + '%');
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // The hacky nature of this function is due to the fact that the webview context menu is not publicly accessible
+  // See https://bugs.openjdk.java.net/browse/JDK-8090931
+  //
+  // It is called from a WebView's context-menu-requested handler and edits the first open ContextMenu window,
+  // which is the menu WebKit has just opened for that WebView: WebKit shows its menu while handling the mouse
+  // event, before the context-menu-requested event fires, and only one context menu is open at a time.
+  //
+  // WebView.setContextMenuEnabled(false) is not used instead, even for a WebView that needs no menu items,
+  // because it also keeps the page from receiving contextmenu events. Record descriptions rely on those: their
+  // keyword links act on right-click as on click, and their work and note links open the file on right-click.
+  // Disabling the menu only for WebViews whose pages ignore right-clicks today would break silently if one of
+  // those pages later handled them.
+
+  public static void setHTMLContextMenu(MenuItem... items)
+  {
+    Parent parent = nullSwitch(nullSwitch(findFirst(Window.getWindows(), window -> window instanceof ContextMenu),
+                                          null, Window::getScene), null, Scene::getRoot);
+    if (parent == null) return;
+
+    List<Node> rootChildren = parent.getChildrenUnmodifiable();
+    if (rootChildren.isEmpty()) return;
+
+    Node contextMenuContent = nullSwitch(rootChildren.getFirst().lookup(".context-menu"), null,
+                                         bridge -> ((Parent)bridge).getChildrenUnmodifiable().getFirst());
+
+    if (contextMenuContent == null) return;
+
+    try
+    {
+      Class<?> contextMenuContentClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent"),
+               menuItemContainerClass  = Class.forName("com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer");
+
+      Constructor<?> ctor = menuItemContainerClass.getDeclaredConstructor(contextMenuContentClass, MenuItem.class);
+
+      List<Node> list = ((VBox)contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent)).getChildren();
+
+      list.clear();
+
+      for (MenuItem item : items)
+        list.add((Node) ctor.newInstance(contextMenuContent, item));
+    }
+    catch (Exception e)
+    {
+      logThrowable(e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // This is a workaround for: https://bugs.openjdk.org/browse/JDK-8391779 (fixed in JavaFX 27.0.2 and 28)
+  //
+  // WebKit's Copy command crashes the JVM if it runs while the page has no selection at all. Editor::canCopy()
+  // returns true in that state, and the JavaFX port's Editor::writeSelectionToPasteboard (EditorJava.cpp) then
+  // dereferences the empty result of selectedRange(). Tabbing into a WebView that has never been clicked and
+  // pressing Ctrl+C is enough. In a read-only page with only a caret, Copy does not crash, but it replaces the
+  // clipboard contents with empty text; the fix for JDK-8391779 leaves that unchanged.
+  //
+  // So every window gets a filter that keeps WebKit's Copy key bindings (EditorClientJava.cpp, which matches
+  // modifiers exactly, as KeyCodeCombination does) from reaching a WebView whose selection is not a range.
+  // Selection.type is checked rather than isCollapsed because isCollapsed is true for text selected inside an
+  // <input>.
+
+  public static void installWebViewCopyGuard()
+  {
+    KeyCombination copyKeys       = new KeyCodeCombination(KeyCode.C     , KeyCombination.SHORTCUT_DOWN),
+                   copyKeysInsert = new KeyCodeCombination(KeyCode.INSERT, KeyCombination.CONTROL_DOWN);
+
+    // A single instance, so adding it again when a window is reshown is a no-op
+
+    EventHandler<KeyEvent> webViewCopyGuard = event ->
+    {
+      if ((event.getTarget() instanceof WebView webView) && (copyKeys.match(event) || copyKeysInsert.match(event)) &&
+          ("Range".equals(webView.getEngine().executeScript("window.getSelection().type")) == false))
+        event.consume();
+    };
+
+    Window.getWindows().forEach(window -> window.addEventFilter(KeyEvent.KEY_PRESSED, webViewCopyGuard));
+
+    Window.getWindows().addListener((ListChangeListener<Window>) change ->
+    {
+      while (change.next())
+        change.getAddedSubList().forEach(window -> window.addEventFilter(KeyEvent.KEY_PRESSED, webViewCopyGuard));
+    });
   }
 
 //---------------------------------------------------------------------------

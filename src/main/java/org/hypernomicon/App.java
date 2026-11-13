@@ -44,6 +44,7 @@ import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.MainCtrlr.ShutDownMode;
+import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 
 import org.json.simple.parser.ParseException;
@@ -309,6 +310,8 @@ public final class App extends Application
     stage.setTitle(appTitle);
 
     shortcuts.setValue(Shortcut.loadFromPrefs());
+
+    MainTextUtil.installWebViewCopyGuard();
 
     if (debugging())
       DPIScaleAudit.install();

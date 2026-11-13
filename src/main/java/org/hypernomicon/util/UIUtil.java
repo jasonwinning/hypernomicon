@@ -25,7 +25,6 @@ import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.function.*;
 import java.util.prefs.Preferences;
@@ -507,46 +506,6 @@ public final class UIUtil
 
     if ((children != null) && (children.contains(child) == false))
       children.add(child);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  // The hacky nature of this function is due to the fact that the webview context menu is not publicly accessible
-  // See https://bugs.openjdk.java.net/browse/JDK-8090931
-
-  public static void setHTMLContextMenu(MenuItem... items)
-  {
-    Parent parent = nullSwitch(nullSwitch(findFirst(Window.getWindows(), window -> window instanceof ContextMenu),
-                                          null, Window::getScene), null, Scene::getRoot);
-    if (parent == null) return;
-
-    List<Node> rootChildren = parent.getChildrenUnmodifiable();
-    if (rootChildren.isEmpty()) return;
-
-    Node contextMenuContent = nullSwitch(rootChildren.getFirst().lookup(".context-menu"), null,
-                                         bridge -> ((Parent)bridge).getChildrenUnmodifiable().getFirst());
-
-    if (contextMenuContent == null) return;
-
-    try
-    {
-      Class<?> contextMenuContentClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent"),
-               menuItemContainerClass  = Class.forName("com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer");
-
-      Constructor<?> ctor = menuItemContainerClass.getDeclaredConstructor(contextMenuContentClass, MenuItem.class);
-
-      List<Node> list = ((VBox)contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent)).getChildren();
-
-      list.clear();
-
-      for (MenuItem item : items)
-        list.add((Node) ctor.newInstance(contextMenuContent, item));
-    }
-    catch (Exception e)
-    {
-      logThrowable(e);
-    }
   }
 
 //---------------------------------------------------------------------------
