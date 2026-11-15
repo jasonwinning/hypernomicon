@@ -814,8 +814,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_RecordWithMainText>
       PersonName personName = new PersonName(tfFirst.getText(), tfLast.getText());
 
       if ((personName.getFirst().equalsIgnoreCase(curPerson.getFirstName()) == false) ||
-          (personName.getLast().equalsIgnoreCase(curPerson.getLastName()) == false))
+          (personName.getLast ().equalsIgnoreCase(curPerson.getLastName ()) == false))
+      {
         if (saveNameToRecord(personName) == false) return false;
+      }
+      else
+        curPerson.setName(personName);  // At most the capitalization changed, which needs no duplicate check
     }
 
     // -----------------------------------------------------------------

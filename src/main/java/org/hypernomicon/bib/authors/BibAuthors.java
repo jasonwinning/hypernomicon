@@ -34,7 +34,6 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.query.personMatch.PersonForDupCheck;
 import org.hypernomicon.query.personMatch.PersonMatcher;
 
-import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -85,21 +84,9 @@ public abstract class BibAuthors implements Iterable<Author>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * The form of a name used to tell whether two authors' names are the same:
-   * English characters, lower case, and no parentheticals.
-   */
-  private static PersonName comparableName(PersonName name)
-  {
-    return new PersonName(removeAllParentheticals(name.getFirst()), removeAllParentheticals(name.getLast())).toEngChar().toLowerCase();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private static final class BibAuthorKey
   {
-    private final PersonName name;
+    private final String name;
     private final HDT_Person person;
 
   //---------------------------------------------------------------------------
@@ -107,7 +94,7 @@ public abstract class BibAuthors implements Iterable<Author>
     private BibAuthorKey(Author bibAuthor)
     {
       person = bibAuthor.getPerson();
-      name = comparableName(person == null ? bibAuthor.getName() : person.getName());
+      name = (person == null ? bibAuthor.getName() : person.getName()).sameNameKey();
     }
 
   //---------------------------------------------------------------------------
@@ -140,7 +127,7 @@ public abstract class BibAuthors implements Iterable<Author>
    */
   public static final class SettledNames
   {
-    private final Set<PersonName> names = new HashSet<>();
+    private final Set<String> names = new HashSet<>();
 
   //---------------------------------------------------------------------------
 
@@ -164,8 +151,8 @@ public abstract class BibAuthors implements Iterable<Author>
 
   //---------------------------------------------------------------------------
 
-    private void add(PersonName name)         { names.add(comparableName(name)); }
-    private boolean contains(PersonName name) { return names.contains(comparableName(name)); }
+    private void add(PersonName name)         { names.add(name.sameNameKey()); }
+    private boolean contains(PersonName name) { return names.contains(name.sameNameKey()); }
 
   //---------------------------------------------------------------------------
 
@@ -176,10 +163,10 @@ public abstract class BibAuthors implements Iterable<Author>
 
   /**
    * Return a consolidated version of the passed in iterable so that no two authors have the same
-   * person record or, where either has none, the same name (compared in English characters,
-   * ignoring case and parentheticals). Duplicates are merged whatever their roles: if any of them
-   * was a plain author, the merged author is a plain author; otherwise their editor and translator
-   * roles combine.
+   * person record or, where either has none, the same name ({@link PersonName#sameNameKey()}:
+   * ignoring case, diacritics and parentheticals). Duplicates are merged whatever their roles:
+   * if any of them was a plain author, the merged author is a plain author; otherwise their
+   * editor and translator roles combine.
    * @param origAuthors Source for the authors to consolidate
    * @param doLookup Whether to lookup person records by name
    * @return The consolidated list
@@ -190,7 +177,7 @@ public abstract class BibAuthors implements Iterable<Author>
 
     if ((origAuthors == null) || (origAuthors.iterator().hasNext() == false)) return outputList;
 
-    Set<PersonName> existingNames   = new HashSet<>();  // These allow us to avoid the sequential search in
+    Set<String>     existingNames   = new HashSet<>();  // These allow us to avoid the sequential search in
     Set<HDT_Person> existingPersons = new HashSet<>();  // the vast majority of cases
 
     for (Author bibAuthor : origAuthors)

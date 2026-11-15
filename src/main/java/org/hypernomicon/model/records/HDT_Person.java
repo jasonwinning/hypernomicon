@@ -206,10 +206,11 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
 //---------------------------------------------------------------------------
 
   /**
-   * Finds an existing person record that matches the given name. First attempts to find a person
-   * whose search key would conflict with the name (via {@link #generateSearchKeyCheckingIfUsed}); if
-   * no key conflict is found, falls back to a sort-key comparison across all person records,
-   * ignoring parenthetical portions such as nicknames.
+   * Finds an existing person record that matches the given name. If every search key the name
+   * would get is already taken and one of them identifies a person (see
+   * {@link #generateSearchKeyCheckingIfUsed}), that person is returned. Otherwise the first person
+   * whose name is the same name ({@link PersonName#sameNameKey()}: ignoring case and diacritics, and
+   * with every parenthetical in either part removed) is returned.
    *
    * <p>Used to resolve bibliographic author names to existing person records: when importing
    * bibliography entries, when the user types a name into a person combo box, and when the
@@ -222,12 +223,16 @@ public class HDT_Person extends HDT_RecordWithMainText implements HDT_RecordWith
   {
     PersonSearchKeyResult result = generateSearchKeyCheckingIfUsed(name, null);
 
-    if (result.searchKey().isEmpty())
+    if (result.searchKey().isEmpty() && (result.existingPerson() != null))
       return result.existingPerson();
 
-    String sortKey = removeAllParentheticals(name.toEngChar().getSortKey());
+    // Each person's name is compared, not the record's sort key: a sort_key attribute replaces the
+    // record's sort key, and for a person with only one name part the record's sort key ends in a
+    // separator that PersonName.getSortKey never adds.
 
-    return findFirst(db.persons, _person -> removeAllParentheticals(_person.getSortKey()).equalsIgnoreCase(sortKey));
+    String sameNameKey = name.sameNameKey();
+
+    return findFirst(db.persons, _person -> _person.getName().sameNameKey().equals(sameNameKey));
   }
 
 //---------------------------------------------------------------------------

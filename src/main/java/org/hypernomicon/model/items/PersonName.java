@@ -28,6 +28,35 @@ import org.hypernomicon.util.SplitString;
 
 //---------------------------------------------------------------------------
 
+/**
+ * A person's name in two parts, first and last, each kept in canonical composition (NFC) form.
+ *
+ * <h2>When two names count as the same</h2>
+ *
+ * There are four levels, each with its own purpose. The first three are successively looser: names
+ * that are the same at one of them are the same at the next.
+ * <ol>
+ *   <li><b>Exactly as written</b>: the parts compared as strings ({@link #getFirst()},
+ *       {@link #getLast()}, {@link #getLastFirst()}). For telling whether a name was changed at all,
+ *       as {@code AuthorStandalone.equals} and {@code RecordAuthor.equalsObjGroup} do.</li>
+ *   <li><b>Equal, ignoring case</b>: {@link #equals}, {@link #hashCode} and the natural order
+ *       ({@link #compareTo}) all go through {@link #getSortKey()}: the last part, then the first, in
+ *       lower case. A name with only one part has that part as its whole key, so it equals the same
+ *       text in the other part ("Plato" as a first name equals "Plato" as a last name). For sorting,
+ *       and for authors kept in collections.</li>
+ *   <li><b>The same name</b>: {@link #sameNameKey()} also ignores diacritics and removes every
+ *       parenthetical from both parts. Names with equal keys are treated as one name wherever the
+ *       application decides that without asking: when it consolidates an author list
+ *       ({@code BibAuthors.normalizeAuthors}) and when it finds the person record for a name
+ *       ({@code HDT_Person.lookUpByName}). It is a key for equality, not an order, so
+ *       {@link #compareTo} does not use it.</li>
+ *   <li><b>Similar names</b>: the duplicate check in {@code org.hypernomicon.query.personMatch}
+ *       ({@code PersonForDupCheck}, {@code NameMatcher}) allows for initials, omitted given names and
+ *       a nickname in parentheses. It only suggests matches for the user to confirm.</li>
+ * </ol>
+ * {@link #equalsExceptParenthetical} lies between the second and third levels and serves one purpose:
+ * telling whether a reference manager entry's authors changed since the last sync.
+ */
 public final class PersonName implements Comparable<PersonName>, Cloneable
 {
 
@@ -187,22 +216,38 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
   @Override public int hashCode()
   {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + getFirst().hashCode();
-    result = prime * result + getLast().hashCode();
-    return result;
+    return getSortKey().hashCode();  // equals compares sort keys, so names it finds equal must hash alike
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Whether the names are {@linkplain #equals equal} once the first parenthetical of each first name
+   * is removed. Used to tell whether a reference manager entry's authors changed since the last sync:
+   * parentheticals are removed from first names when authors are sent, so they must not count as a
+   * change. It removes only the first one, though sending removes them all.
+   */
   public boolean equalsExceptParenthetical(PersonName other)
   {
-    PersonName this1 = new PersonName(removeFirstParenthetical(getFirst()), getLast());
-    PersonName other1 = new PersonName(removeFirstParenthetical(other.getFirst()), other.getLast());
+    PersonName this1  = new PersonName(removeFirstParenthetical(getFirst()), getLast()),
+               other1 = new PersonName(removeFirstParenthetical(other.getFirst()), other.getLast());
 
     return this1.equals(other1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * The key that decides whether two names are the same name (see the class description): the
+   * {@linkplain #getSortKey() sort key} of this name in English characters, with every parenthetical
+   * removed from both parts whatever it holds. Compare keys with {@code equals}, or keep them in a
+   * hash set.
+   */
+  public String sameNameKey()
+  {
+    return new PersonName(removeAllParentheticals(first), removeAllParentheticals(last)).toEngChar().getSortKey();
   }
 
 //---------------------------------------------------------------------------

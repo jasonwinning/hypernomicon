@@ -125,11 +125,19 @@ public final class RecordAuthor extends Author implements Cloneable, Comparable<
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Whether the author table row the group was made from leaves this author as it is. For an author
+   * without a person record, the row's text must be exactly the text the author tables show for the
+   * name ({@link PersonName#getLastFirst}). Comparing names parsed from the text instead would miss an
+   * edit that changes only capitalization or a parenthetical, or would count a row nobody edited as
+   * changed whenever parsing the text gives a slightly different name (parsing title-cases a name
+   * written in one case, for instance).
+   */
   public boolean equalsObjGroup(ObjectGroup objGroup)
   {
     if (person != objGroup.getPrimary()) return false;
 
-    return ((person != null) || name.equalsExceptParenthetical(new PersonName(objGroup.getPrimaryStr())))  &&
+    return ((person != null) || name.getLastFirst().equals(objGroup.getPrimaryStr()))                      &&
 
            nullSwitch(objGroup.getValue(tagInFileName), true, val -> val.ternary == getInFileName())       &&
            nullSwitch(objGroup.getValue(tagEditor    ), true, val -> val.bool    == getIsEditor  ())       &&

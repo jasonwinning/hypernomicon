@@ -17,6 +17,8 @@
 
 package org.hypernomicon.model.authors;
 
+import static org.hypernomicon.model.HDI_Schema.HyperDataCategory.*;
+import static org.hypernomicon.model.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,8 +29,12 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.relations.NestedValue;
+import org.hypernomicon.model.relations.ObjectGroup;
 
 import org.junit.jupiter.api.*;
+
+import java.util.List;
 
 //---------------------------------------------------------------------------
 
@@ -84,6 +90,73 @@ class WorkAuthorsTest
 
     assertEquals(2, authors.size(), "The person should still be listed once");
     assertEquals(Roles.EDITOR, work.personRoles(person), "Adding the person again should not change their roles");
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * The group an author table row gives for an author without a person record, as a plain author
+   * with "in file name" unset
+   */
+  private static ObjectGroup rowGroup(String text)
+  {
+    ObjectGroup group = new ObjectGroup(text);
+
+    group.addNestedEntry(tagEditor    , new NestedValue(hdcBoolean));
+    group.addNestedEntry(tagTranslator, new NestedValue(hdcBoolean));
+    group.addNestedEntry(tagInFileName, new NestedValue(hdcTernary));
+
+    return group;
+  }
+
+//---------------------------------------------------------------------------
+
+  private static String onlyAuthorName(HDT_Work work)
+  {
+    assertEquals(1, work.getAuthors().size());
+
+    return work.getAuthors().iterator().next().nameLastFirst();
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * An edit to an author without a person record is saved even when it changes only the
+   * capitalization or a parenthetical in the first name.
+   */
+  @Test
+  void editChangingOnlyCaseOrParentheticalIsSaved()
+  {
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+
+    work.getAuthors().add(new RecordAuthor(work, new PersonName("John (Jack)", "Smith"), Roles.AUTHOR, Ternary.Unset));
+
+    for (String text : List.of("Smith, John", "Smith, John (Johnny)", "smith, John (Johnny)"))
+    {
+      work.setAuthors(List.of(rowGroup(text)));
+
+      assertEquals(text, onlyAuthorName(work));
+    }
+  }
+
+//---------------------------------------------------------------------------
+
+  /**
+   * Saving a row nobody edited leaves the author's name as it is, although parsing the row's text
+   * would give a different name (in title case, for a name written in capitals).
+   */
+  @Test
+  void unchangedRowLeavesNameAsItIs()
+  {
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+
+    work.getAuthors().add(new RecordAuthor(work, new PersonName("JOHN", "SMITH"), Roles.AUTHOR, Ternary.Unset));
+
+    assertEquals("Smith, John", new PersonName("SMITH, JOHN").getLastFirst());
+
+    work.setAuthors(List.of(rowGroup("SMITH, JOHN")));
+
+    assertEquals("SMITH, JOHN", onlyAuthorName(work));
   }
 
 //---------------------------------------------------------------------------
