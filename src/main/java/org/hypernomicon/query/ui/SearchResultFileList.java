@@ -83,6 +83,7 @@ class SearchResultFileList
 //---------------------------------------------------------------------------
 
     private boolean hasPageRestriction()             { return (startPage > 1) || (endPage < Integer.MAX_VALUE); }
+    private boolean holdsPage(int pageNum)           { return (pageNum >= startPage) && (pageNum <= endPage); }
     private boolean overlaps(SearchResultFile other) { return filePath.equals(other.filePath) && (endPage >= other.startPage) && (other.endPage >= startPage); }
 
 //---------------------------------------------------------------------------
@@ -315,6 +316,24 @@ class SearchResultFileList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Adds a file in the page ranges that {@code scope} holds it in and that hold at least one of
+   * {@code matches}; in all of those ranges if {@code matches} is empty or has a match that is
+   * not on a page (the file is not paged). This is how a scope is narrowed to the files of a
+   * search made within it, without widening a file to pages the scope left out.
+   */
+  void addRangesHoldingMatches(SearchResultFileList scope, FilePath filePath, List<PageMatch> matches)
+  {
+    boolean allRanges = collEmpty(matches) || matches.stream().anyMatch(match -> match.pageNumber() == 0);
+
+    scope.list.stream()
+      .filter(rf -> rf.filePath.equals(filePath) && (allRanges || matches.stream().anyMatch(match -> rf.holdsPage(match.pageNumber()))))
+      .forEach(rf -> addFile(rf.filePath, rf.startPage, rf.endPage));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void addFile(FilePath filePath, int startPage, int endPage)
   {
     if (filePath.exists() == false)
@@ -488,7 +507,7 @@ class SearchResultFileList
         continue;
       }
 
-      if (entries.stream().anyMatch(entry -> (pm.pageNumber() >= entry.startPage) && (pm.pageNumber() <= entry.endPage)))
+      if (entries.stream().anyMatch(entry -> entry.holdsPage(pm.pageNumber())))
         filtered.add(pm);
     }
 

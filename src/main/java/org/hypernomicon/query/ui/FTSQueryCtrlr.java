@@ -282,6 +282,8 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 
     disableAll(rbRecordScope, lblRecordScope, chkIncludeEdited, btnViewScope);
 
+    bindManagedToVisible(chkIncludeEdited);  // Hidden for a scope not built from records, and then takes up no room
+
     initSearchHelp();
 
     btnChooseFolder.setOnAction(event ->
@@ -1487,16 +1489,28 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
    */
   private void sortByMatchesAfterLoadingAll()
   {
-    if (hasMore)
-    {
-      List<FTSResultRow> rows = loadMoreResults(true, allRows.size());
-      if (rows == null) return;
-
-      appendLoadedResults(rows);
-    }
+    if (loadRemainingResults() == false) return;
 
     colMatches.setSortType(TableColumn.SortType.DESCENDING);
     tvResults.getSortOrder().setAll(List.of(colMatches));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Adds every result not loaded yet to the table, if there are any.
+   * @return false if loading them was cancelled or failed
+   */
+  private boolean loadRemainingResults()
+  {
+    if (hasMore == false) return true;
+
+    List<FTSResultRow> rows = loadMoreResults(true, allRows.size());
+    if (rows == null) return false;
+
+    appendLoadedResults(rows);
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -1529,6 +1543,38 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
       if (FilePath.isEmpty(filePath) == false)
         fileList.addFilePath(filePath);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Builds the scope for a search within this tab's results: the files of the rows shown (so
+   * not the unassociated ones while they are hidden), after loading any results not loaded yet,
+   * since the scope has to hold all of them. Each file is whole, unless this tab's results came
+   * from a record-scoped search or listing; then it keeps the page ranges of that scope that hold
+   * its matches, so that the new scope narrows that one rather than widening a file to pages it
+   * left out.
+   *
+   * @return the scope, or null if loading the remaining results was cancelled or failed
+   */
+  SearchResultFileList buildResultFilesScope()
+  {
+    if (loadRemainingResults() == false) return null;
+
+    SearchResultFileList scopeList = new SearchResultFileList(false, true);
+
+    for (FTSResultRow row : List.copyOf(filteredRows))
+    {
+      FilePath filePath = db.getRootPath(row.path());
+
+      if (lastScopeList == null)
+        scopeList.addFilePath(filePath);
+      else
+        scopeList.addRangesHoldingMatches(lastScopeList, filePath, row.isListed() ? List.of() : nullSwitch(hitSetService.cachedMatches(row.path()), row.result().pageMatches()));
+    }
+
+    return scopeList;
   }
 
 //---------------------------------------------------------------------------
@@ -1809,22 +1855,41 @@ public class FTSQueryCtrlr extends QuerySubCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /**
-   * Scopes the search to a single file. Reuses the record-scope path filtering
-   * mechanism with a one-file scope list; "Include edited works" is hidden because
-   * it only applies when the scope came from record query results.
-   */
+  /** Scopes the search to a single file. */
   void setFileScope(FilePath filePath)
   {
     SearchResultFileList scopeList = new SearchResultFileList(false, true);
     scopeList.addFilePath(filePath);
 
+    setScopeWithoutRecords(scopeList, "Single file", filePath.toDbRelativeStr());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /** Scopes the search to the files of another tab's results, as {@link #buildResultFilesScope} gave them. */
+  void setResultFilesScope(SearchResultFileList scopeList)
+  {
+    setScopeWithoutRecords(scopeList, "By file content search results", scopeList.getSummary());
+    setAllVisible(true, btnViewScope);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Scopes the search to files that did not come from records, reusing the record-scope path
+   * filtering; "Include edited works" is hidden because it only applies when the scope came
+   * from records.
+   */
+  private void setScopeWithoutRecords(SearchResultFileList scopeList, String radioCaption, String summary)
+  {
     recordScopeList = scopeList;
     recordScopeRecords = null;
 
-    lblRecordScope.setText(filePath.toDbRelativeStr());
+    lblRecordScope.setText(summary);
 
-    rbRecordScope.setText("Single file");
+    rbRecordScope.setText(radioCaption);
     rbRecordScope.setDisable(false);
     setAllVisible(false, chkIncludeEdited);
     rbRecordScope.setSelected(true);

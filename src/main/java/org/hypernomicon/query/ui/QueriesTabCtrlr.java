@@ -165,8 +165,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     btnNewFTSSearch.setOnAction(event -> goToNewFTSTab());
     setToolTip(btnNewFTSSearch, "Open a new tab for searching file contents (full-text search)");
 
-    setToolTip(btnSearchWithinFiles, "Search file contents within the files associated with the current query results");
-
     bindManagedToVisible(btnNewFTSSearch, btnSearchWithinFiles);
 
     tabPane.getTabs().addListener((Change<? extends Tab> c) -> Platform.runLater(tabPane::requestLayout));
@@ -288,7 +286,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     setToolTip(btnFileActionsHelp, "File Actions Help");
 
     btnSearchWithinFiles.setOnAction(event -> searchWithinFiles());
-    setToolTip(btnSearchWithinFiles, "Search file contents of the current query results");
+    setToolTip(btnSearchWithinFiles, "Open a new file content search of the files in the current results");
   }
 
 //---------------------------------------------------------------------------
@@ -296,6 +294,12 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void searchWithinFiles()
   {
+    if (curSubCtrlr instanceof FTSQueryCtrlr ftsCtrlr)
+    {
+      searchWithinFTSResultFiles(ftsCtrlr);
+      return;
+    }
+
     if (inReportMode())
     {
       errorPopup("This cannot be used with reports.");
@@ -341,6 +345,35 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     }
 
     goToNewFTSTab().setRecordScope(scopeList, sourceRecords, null, includeEdited);
+
+    scopeList.showErrors();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Opens a new FTS tab scoped to the files of an FTS tab's results, so that a second query
+   * searches within the results of the first.
+   */
+  private void searchWithinFTSResultFiles(FTSQueryCtrlr ftsCtrlr)
+  {
+    if (ftsCtrlr.hasResults() == false)
+    {
+      errorPopup("No search results to search within.");
+      return;
+    }
+
+    SearchResultFileList scopeList = ftsCtrlr.buildResultFilesScope();
+    if (scopeList == null) return;  // Loading the rest of the results was cancelled
+
+    if (scopeList.getPathScope().isEmpty())
+    {
+      errorPopup("No indexable files found in the search results.");
+      return;
+    }
+
+    goToNewFTSTab().setResultFilesScope(scopeList);
 
     scopeList.showErrors();
   }
@@ -560,21 +593,12 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  /** Shows/hides the always-visible "+ File Content Search" toolbar button to match whether FTS is
-   *  enabled for the current database on this computer. Called on database load (the state is per-DB). */
+  /** Shows/hides the "+ File Content Search" and "Search Within Result Files" toolbar buttons, which
+   *  every kind of sub-tab shows, to match whether FTS is enabled for the current database on this
+   *  computer. Called on database load (the state is per-DB). */
   public void updateFtsToolbar()
   {
-    boolean ftsEnabled = db.ftsEnabledOnThisComputer();
-
-    setAllVisible(ftsEnabled, btnNewFTSSearch);
-
-    // btnSearchWithinFiles is otherwise shown/hidden per active sub-tab by setQueryToolbarVisible; force it
-    // hidden here when FTS is off so it can't linger visible from a previously-active record-query tab.
-
-    if (ftsEnabled == false)
-    {
-      setAllVisible(false, btnSearchWithinFiles);
-    }
+    setAllVisible(db.ftsEnabledOnThisComputer(), btnNewFTSSearch, btnSearchWithinFiles);
   }
 
 //---------------------------------------------------------------------------
@@ -925,9 +949,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     btnToggleFavorite.setDisable(visible == false);
     if (visible == false)
       setFavNameToggle(false);
-
-    boolean showSearchWithin = visible && db.ftsEnabledOnThisComputer();
-    setAllVisible(showSearchWithin, btnSearchWithinFiles);
   }
 
 //---------------------------------------------------------------------------
