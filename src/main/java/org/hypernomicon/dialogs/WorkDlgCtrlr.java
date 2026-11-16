@@ -91,7 +91,7 @@ public class WorkDlgCtrlr extends ModalDialog
 //---------------------------------------------------------------------------
 
   @FXML private AnchorPane apMain;
-  @FXML private Button btnRegenerateFilename, btnStop, btnDest, btnPaste;
+  @FXML private Button btnRegenerateFilename, btnStop, btnDest, btnPaste, btnDOIPaste;
   @FXML private CheckBox chkSetDefault, chkCreateBibEntry, chkKeepFilenameUnchanged;
   @FXML private ComboBox<EntryType> cbEntryType;
   @FXML private ComboBox<HyperTableCell> cbType;
@@ -459,6 +459,9 @@ public class WorkDlgCtrlr extends ModalDialog
     });
 
     setToolTip(btnPaste, "Paste file path from clipboard");
+
+    btnDOIPaste.setOnAction(event -> tfDOI.setText(getClipboardText(true)));
+    setToolTip(btnDOIPaste, "Paste DOI from clipboard");
 
     mnuPopulateUsingDOI.setOnAction(event ->
     {

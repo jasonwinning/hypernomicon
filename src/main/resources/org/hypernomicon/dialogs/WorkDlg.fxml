@@ -106,8 +106,15 @@
       </graphic>
     </SplitMenuButton>
     <Label layoutX="209.0" layoutY="272.0" text="DOI:" AnchorPane.leftAnchor="209.0" AnchorPane.topAnchor="272.0" />
-    <TextField fx:id="tfDOI" layoutX="235.0" layoutY="268.0" prefHeight="22.0" prefWidth="166.0" AnchorPane.leftAnchor="235.0" AnchorPane.topAnchor="268.0" />
-    <Label fx:id="lblAutoPopulated" alignment="CENTER_RIGHT" layoutX="407.0" layoutY="272.0" prefHeight="17.0" prefWidth="463.0" style="-fx-font-weight: bold;" text="Data has been auto-populated from PDF." textFill="RED" AnchorPane.leftAnchor="407.0" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="272.0" />
+    <Button fx:id="btnDOIPaste" layoutX="235.0" layoutY="268.0" maxHeight="22.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="32.0" AnchorPane.leftAnchor="235.0" AnchorPane.topAnchor="268.0">
+      <graphic>
+        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+          <Image url="@../resources/images/page_paste.png" />
+        </ImageView>
+      </graphic>
+    </Button>
+    <TextField fx:id="tfDOI" layoutX="270.0" layoutY="268.0" prefHeight="22.0" prefWidth="166.0" AnchorPane.leftAnchor="270.0" AnchorPane.topAnchor="268.0" />
+    <Label fx:id="lblAutoPopulated" alignment="CENTER_RIGHT" layoutX="442.0" layoutY="272.0" prefHeight="17.0" prefWidth="428.0" style="-fx-font-weight: bold;" text="Data has been auto-populated from PDF." textFill="RED" AnchorPane.leftAnchor="442.0" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="272.0" />
     <ProgressBar fx:id="progressBar" layoutX="666.0" layoutY="275.0" prefWidth="200.0" visible="false" AnchorPane.rightAnchor="51.0" AnchorPane.topAnchor="275.0" />
     <Button fx:id="btnStop" layoutX="873.0" layoutY="271.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="5.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="271.0">
       <graphic>
