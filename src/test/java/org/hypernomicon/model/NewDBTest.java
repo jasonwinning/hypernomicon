@@ -19,6 +19,7 @@ package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.StringUtil.*;
 import static org.hypernomicon.util.Util.*;
@@ -41,6 +42,9 @@ import javax.xml.stream.*;
 import org.apache.commons.io.FilenameUtils;
 
 import org.hypernomicon.App;
+import org.hypernomicon.model.records.HDT_Debate;
+import org.hypernomicon.model.records.HDT_Note;
+import org.hypernomicon.model.unities.HDT_Hub;
 import org.hypernomicon.util.PopupRobot;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.prefs.XmlSupport;
@@ -213,6 +217,42 @@ class NewDBTest
     assertTrue(PopupRobot.getLastMessage().contains("People.xml"), "Message should mention People.xml");
     assertTrue(PopupRobot.getLastMessage().contains("Works.xml"), "Message should mention Works.xml");
     assertTrue(PopupRobot.getLastMessage().contains("One or more database files appear"), "Message should use plural form for multiple mismatches");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * A records file out of step with the others, as a save that was interrupted can leave it, can name
+   * a hub that the hubs file does not have. The user is asked about the files being out of sync before
+   * the records are brought online, where that reference would make the load fail.
+   */
+  @Test
+  void outOfSyncFilesAreAskedAboutBeforeRecordsComeOnline() throws Exception
+  {
+    HDT_Note note = db.createNewBlankRecord(hdtNote);
+    HDT_Debate debate = db.createNewBlankRecord(hdtDebate);
+
+    assertDoesNotThrow(() -> HDT_Hub.uniteRecords(note, debate, ""));
+
+    StringBuilder xml = new StringBuilder();
+    note.writeCurrentStateToXML(xml);
+
+    String noteXml = xml.toString();
+    assertTrue(noteXml.contains("<hub "), noteXml);
+
+    db.setRecordsLoadFilter("Notes.xml", notesXml -> notesXml.replace("</records>", noteXml + "</records>"));  // Hubs.xml is left without the hub
+
+    PopupRobot.setDefaultResponse(mrNo);  // Abort loading
+
+    db.closeAndOpen();
+
+    assertTrue(db.isOffline(), "Aborting must leave the database closed");
+    assertEquals(1, PopupRobot.getInvocationCount(), "Expected only the integrity-checksum prompt");
+    assertTrue(PopupRobot.getLastMessage().contains("Notes.xml"), PopupRobot.getLastMessage());
+
+    db.setRecordsLoadFilter(null, null);
+    db = TestHyperDB.instance();  // Reopen for the tests that follow
   }
 
 //---------------------------------------------------------------------------

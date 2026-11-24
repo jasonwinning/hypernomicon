@@ -158,7 +158,13 @@ public abstract class AbstractHyperDB
   protected abstract void checkWhetherFoldersExist();
   protected abstract void loadMainTextTemplates();
   protected abstract void populateFilePathRegistry();
-  protected abstract void loadSettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException;
+
+  /**
+   * Reads the settings file into {@link #prefs}, with {@link #readSettingsFromStream}. It runs before
+   * the records are brought online, so the integrity check can warn about files that are out of
+   * step before they cause errors; {@link #applySettings} then does the part that needs the records.
+   */
+  protected abstract void readSettings() throws HyperDataException;
 
   /**
    * Check this database's DBID against the DatabaseRegistry to detect
@@ -1099,11 +1105,14 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 
   /**
-   * Compares the integrity manifest saved in Settings.xml against the checksums
-   * computed during load. Prompts the user if any files are out of sync.
+   * Compares the integrity manifest saved in Settings.xml against the checksums of the records
+   * files computed during load, before the records are brought online, and asks the user whether to
+   * go on if any of them is out of sync or if the manifest is missing. The library file is checked
+   * later, by {@link #validateLibraryFileChecksum}, because its checksum is known only once the
+   * library has been read.
    * @return true if loading should continue, false if the user chose to abort
    */
-  private boolean validateIntegrityChecksums()
+  private boolean validateRecordsFileChecksums()
   {
     Map<String, String> manifest = parseIntegrityManifest(prefs.get(PrefKey.INTEGRITY_CHECKSUMS, ""));
 
@@ -1116,6 +1125,33 @@ public abstract class AbstractHyperDB
       return true;
     }
 
+    return confirmMismatchedFiles(manifest, fileName -> BIB_FILE_NAME.equals(fileName) == false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Compares the library file's checksum, computed when the library was read, with the integrity
+   * manifest, and asks the user whether to go on if they differ. A missing manifest was already
+   * asked about by {@link #validateRecordsFileChecksums}.
+   * @return true if loading should continue, false if the user chose to abort
+   */
+  private boolean validateLibraryFileChecksum()
+  {
+    return confirmMismatchedFiles(parseIntegrityManifest(prefs.get(PrefKey.INTEGRITY_CHECKSUMS, "")), BIB_FILE_NAME::equals);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Asks the user whether to go on loading if any of the given files has a checksum other than the
+   * one the manifest names for it. A file whose checksum was not computed is not compared.
+   * @return true if loading should continue, false if the user chose to abort
+   */
+  private boolean confirmMismatchedFiles(Map<String, String> manifest, Predicate<String> fileNameFilter)
+  {
     List<String> mismatched = new ArrayList<>();
 
     for (Entry<String, String> entry : manifest.entrySet())
@@ -1124,7 +1160,7 @@ public abstract class AbstractHyperDB
              expected = entry.getValue(),
              actual   = xmlChecksums.get(filename);
 
-      if ((actual != null) && (actual.equalsIgnoreCase(expected) == false))
+      if (fileNameFilter.test(filename) && (actual != null) && (actual.equalsIgnoreCase(expected) == false))
         mismatched.add(filename);
     }
 
@@ -1269,6 +1305,28 @@ public abstract class AbstractHyperDB
       return false;
     }
 
+    try
+    {
+      readSettings();
+    }
+    catch (HyperDataException e)
+    {
+      errorPopup(e);
+
+      close(null);
+      return false;
+    }
+
+    // Records files left out of step with one another, as by a save that was interrupted, can
+    // make bringing the records online fail (for example, a record naming a hub that its file
+    // does not have), so the user is asked about them first
+
+    if (validateRecordsFileChecksums() == false)
+    {
+      close(null);
+      return false;
+    }
+
     if (bringAllRecordsOnline() == false)
     {
       close(null);
@@ -1279,7 +1337,7 @@ public abstract class AbstractHyperDB
 
     try
     {
-      loadSettings(creatingNew, favorites);
+      applySettings(creatingNew, favorites);
     }
     catch (HyperDataException e)
     {
@@ -1311,7 +1369,7 @@ public abstract class AbstractHyperDB
       return false;
     }
 
-    if (validateIntegrityChecksums() == false)
+    if (validateLibraryFileChecksum() == false)
     {
       close(null);
       return false;
@@ -1927,7 +1985,7 @@ public abstract class AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void loadSettingsFromStream(InputStream is, boolean creatingNew, HyperFavorites favorites) throws HyperDataException
+  protected void readSettingsFromStream(InputStream is) throws HyperDataException
   {
     MessageDigest md = newMessageDigest();
 
@@ -1936,81 +1994,91 @@ public abstract class AbstractHyperDB
       prefs = XmlSupport.importPreferences(dis, XML_FILES_CHARSET).node("org").node("hypernomicon").node("model");
 
       xmlChecksums.put(SETTINGS_FILE_NAME, digestHexStr(md));
-
-      if (favorites != null)
-        favorites.loadFromPrefNode();
-
-      String versionStr = prefs.get(PrefKey.SETTINGS_VERSION, "");
-      if (versionStr.isBlank())
-        throw new HyperDataException("XML settings data version number not found.");
-
-      VersionNumber settingsVersion = new VersionNumber(versionStr);
-      checkVersion(creatingNew, settingsVersion, "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
-
-      boolean writeFolderIDs = false;
-
-      if (ComparableUtils.is(settingsVersion).lessThanOrEqualTo(new VersionNumber(1)))  // Backwards compatibility with settings version 1.0
-      {
-        papersFolder    = folders.getByID(2);
-        booksFolder     = folders.getByID(3);
-        miscFilesFolder = folders.getByID(4);
-        picturesFolder  = folders.getByID(5);
-        topicalFolder   = folders.getByID(6);
-        unenteredFolder = folders.getByID(7);
-        resultsFolder   = folders.getByID(8);
-        xmlFolder       = HyperPath.folderRecordFor(getRootPath(DEFAULT_XML_PATH), true);
-
-        writeFolderIDs = true;
-      }
-      else
-      {
-        xmlFolder       = folders.getByID(prefs.getInt(FolderIDPrefKey.XML       , -1));
-        picturesFolder  = folders.getByID(prefs.getInt(FolderIDPrefKey.PICTURES  , -1));
-        booksFolder     = folders.getByID(prefs.getInt(FolderIDPrefKey.BOOKS     , -1));
-        papersFolder    = folders.getByID(prefs.getInt(FolderIDPrefKey.PAPERS    , -1));
-        resultsFolder   = folders.getByID(prefs.getInt(FolderIDPrefKey.RESULTS   , -1));
-        unenteredFolder = folders.getByID(prefs.getInt(FolderIDPrefKey.UNENTERED , -1));
-        miscFilesFolder = folders.getByID(prefs.getInt(FolderIDPrefKey.MISC_FILES, -1));
-        topicalFolder   = folders.getByID(prefs.getInt(FolderIDPrefKey.TOPICAL   , -1));
-      }
-
-      if (specialFolders().anyMatch(folder -> HDT_Record.isEmpty(folder, false)))
-        throw new HyperDataException("Unable to load information about paths from database settings file.");
-
-      // Critical folders must be unique
-      // Non-critical overlaps (e.g. Books == Papers) are allowed
-
-      checkUniqueSpecialFolder(xmlFolder      , "XML");
-      checkUniqueSpecialFolder(resultsFolder  , "Search Results");
-      checkUniqueSpecialFolder(unenteredFolder, "Works Not Entered Yet");
-
-      if (writeFolderIDs)  // Backwards compatibility with settings version 1.0
-      {
-        prefs.putInt(FolderIDPrefKey.XML       , xmlFolder      .getID());
-        prefs.putInt(FolderIDPrefKey.PICTURES  , picturesFolder .getID()); prefs.remove("picturesPath" );
-        prefs.putInt(FolderIDPrefKey.BOOKS     , booksFolder    .getID()); prefs.remove("booksPath"    );
-        prefs.putInt(FolderIDPrefKey.PAPERS    , papersFolder   .getID()); prefs.remove("papersPath"   );
-        prefs.putInt(FolderIDPrefKey.RESULTS   , resultsFolder  .getID()); prefs.remove("resultsPath"  );
-        prefs.putInt(FolderIDPrefKey.UNENTERED , unenteredFolder.getID()); prefs.remove("unenteredPath"); prefs.remove("unenteredPat");
-        prefs.putInt(FolderIDPrefKey.MISC_FILES, miscFilesFolder.getID()); prefs.remove("suppFilesPath");
-        prefs.putInt(FolderIDPrefKey.TOPICAL   , topicalFolder  .getID()); prefs.remove("topicsPath"   );
-      }
-
-      String dbCreationDateStr = prefs.get(PrefKey.DB_CREATION_DATE, "");
-      if (strNotNullOrEmpty(dbCreationDateStr))
-      {
-        dbCreationDate = parseIso8601offset(dbCreationDateStr);
-
-        if (dbCreationDate.isAfter(Instant.now())) // Creation date in template is year 9999 so it will be set
-          dbCreationDate = Instant.now();          // to the current date when loaded for the first time
-      }
-
-      dbID = prefs.get(PrefKey.DB_ID, "");
     }
     catch (IOException | InvalidPreferencesFormatException e)
     {
       throw new HyperDataException("An error occurred while attempting to read database settings: " + getThrowableMessage(e), e);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Applies the settings that {@link #readSettings} read, once the records are online: the favorites
+   * and the special folders refer to records.
+   */
+  private void applySettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException
+  {
+    if (favorites != null)
+      favorites.loadFromPrefNode();
+
+    String versionStr = prefs.get(PrefKey.SETTINGS_VERSION, "");
+    if (versionStr.isBlank())
+      throw new HyperDataException("XML settings data version number not found.");
+
+    VersionNumber settingsVersion = new VersionNumber(versionStr);
+    checkVersion(creatingNew, settingsVersion, "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
+
+    boolean writeFolderIDs = false;
+
+    if (ComparableUtils.is(settingsVersion).lessThanOrEqualTo(new VersionNumber(1)))  // Backwards compatibility with settings version 1.0
+    {
+      papersFolder    = folders.getByID(2);
+      booksFolder     = folders.getByID(3);
+      miscFilesFolder = folders.getByID(4);
+      picturesFolder  = folders.getByID(5);
+      topicalFolder   = folders.getByID(6);
+      unenteredFolder = folders.getByID(7);
+      resultsFolder   = folders.getByID(8);
+      xmlFolder       = HyperPath.folderRecordFor(getRootPath(DEFAULT_XML_PATH), true);
+
+      writeFolderIDs = true;
+    }
+    else
+    {
+      xmlFolder       = folders.getByID(prefs.getInt(FolderIDPrefKey.XML       , -1));
+      picturesFolder  = folders.getByID(prefs.getInt(FolderIDPrefKey.PICTURES  , -1));
+      booksFolder     = folders.getByID(prefs.getInt(FolderIDPrefKey.BOOKS     , -1));
+      papersFolder    = folders.getByID(prefs.getInt(FolderIDPrefKey.PAPERS    , -1));
+      resultsFolder   = folders.getByID(prefs.getInt(FolderIDPrefKey.RESULTS   , -1));
+      unenteredFolder = folders.getByID(prefs.getInt(FolderIDPrefKey.UNENTERED , -1));
+      miscFilesFolder = folders.getByID(prefs.getInt(FolderIDPrefKey.MISC_FILES, -1));
+      topicalFolder   = folders.getByID(prefs.getInt(FolderIDPrefKey.TOPICAL   , -1));
+    }
+
+    if (specialFolders().anyMatch(folder -> HDT_Record.isEmpty(folder, false)))
+      throw new HyperDataException("Unable to load information about paths from database settings file.");
+
+    // Critical folders must be unique
+    // Non-critical overlaps (e.g. Books == Papers) are allowed
+
+    checkUniqueSpecialFolder(xmlFolder      , "XML");
+    checkUniqueSpecialFolder(resultsFolder  , "Search Results");
+    checkUniqueSpecialFolder(unenteredFolder, "Works Not Entered Yet");
+
+    if (writeFolderIDs)  // Backwards compatibility with settings version 1.0
+    {
+      prefs.putInt(FolderIDPrefKey.XML       , xmlFolder      .getID());
+      prefs.putInt(FolderIDPrefKey.PICTURES  , picturesFolder .getID()); prefs.remove("picturesPath" );
+      prefs.putInt(FolderIDPrefKey.BOOKS     , booksFolder    .getID()); prefs.remove("booksPath"    );
+      prefs.putInt(FolderIDPrefKey.PAPERS    , papersFolder   .getID()); prefs.remove("papersPath"   );
+      prefs.putInt(FolderIDPrefKey.RESULTS   , resultsFolder  .getID()); prefs.remove("resultsPath"  );
+      prefs.putInt(FolderIDPrefKey.UNENTERED , unenteredFolder.getID()); prefs.remove("unenteredPath"); prefs.remove("unenteredPat");
+      prefs.putInt(FolderIDPrefKey.MISC_FILES, miscFilesFolder.getID()); prefs.remove("suppFilesPath");
+      prefs.putInt(FolderIDPrefKey.TOPICAL   , topicalFolder  .getID()); prefs.remove("topicsPath"   );
+    }
+
+    String dbCreationDateStr = prefs.get(PrefKey.DB_CREATION_DATE, "");
+    if (strNotNullOrEmpty(dbCreationDateStr))
+    {
+      dbCreationDate = parseIso8601offset(dbCreationDateStr);
+
+      if (dbCreationDate.isAfter(Instant.now())) // Creation date in template is year 9999 so it will be set
+        dbCreationDate = Instant.now();          // to the current date when loaded for the first time
+    }
+
+    dbID = prefs.get(PrefKey.DB_ID, "");
   }
 
 //---------------------------------------------------------------------------

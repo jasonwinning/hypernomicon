@@ -215,9 +215,9 @@ public final class TestHyperDB extends AbstractHyperDB
 
   /**
    * Registers a filter that transforms the text of Settings.xml during
-   * {@link #loadSettings}. The bytes read from the zip are decoded with
+   * {@link #readSettings}. The bytes read from the zip are decoded with
    * {@link AbstractHyperDB#XML_FILES_CHARSET}, passed through the filter, and
-   * encoded again before they reach {@code loadSettingsFromStream}, allowing
+   * encoded again before they reach {@code readSettingsFromStream}, allowing
    * tests to simulate modified settings (e.g. missing integrity checksums).
    *
    * @param filter a function that transforms the original text, or
@@ -304,7 +304,7 @@ public final class TestHyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void loadSettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException
+  @Override protected void readSettings() throws HyperDataException
   {
     if (settingsFileBuffer == null)
     {
@@ -313,7 +313,7 @@ public final class TestHyperDB extends AbstractHyperDB
 
     byte[] bytes = settingsLoadFilter != null ? applyLoadFilter(settingsLoadFilter, settingsFileBuffer) : settingsFileBuffer;
 
-    loadSettingsFromStream(new ByteArrayInputStream(bytes), creatingNew, favorites);
+    readSettingsFromStream(new ByteArrayInputStream(bytes));
   }
 
 //---------------------------------------------------------------------------

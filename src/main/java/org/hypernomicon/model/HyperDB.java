@@ -52,7 +52,6 @@ import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.file.*;
 import org.hypernomicon.util.file.deletion.FileDeletion;
-import org.hypernomicon.view.HyperFavorites;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
 
 import com.google.common.collect.SetMultimap;
@@ -466,11 +465,11 @@ public final class HyperDB extends AbstractHyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void loadSettings(boolean creatingNew, HyperFavorites favorites) throws HyperDataException
+  @Override protected void readSettings() throws HyperDataException
   {
     try (InputStream is = Files.newInputStream(xmlPath(SETTINGS_FILE_NAME).toPath()))
     {
-      loadSettingsFromStream(is, creatingNew, favorites);
+      readSettingsFromStream(is);
     }
     catch (IOException e)
     {
