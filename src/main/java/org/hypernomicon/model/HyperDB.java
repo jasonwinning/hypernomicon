@@ -514,13 +514,27 @@ public final class HyperDB extends AbstractHyperDB
   {
     for (Entry<String, String> entry : xmlChecksums.entrySet())
     {
-      String hex = "";
+      String hex;
 
       try (InputStream is = Files.newInputStream(xmlPath(entry.getKey()).toPath()))
       {
         hex = md5Hex(is);
       }
-      catch (IOException e) { noOp(); }
+      catch (NoSuchFileException e)
+      {
+        hex = "";  // A file deleted from outside was changed from outside
+      }
+      catch (IOException e)
+      {
+        // The file may or may not have been changed; it could not be read, for example because
+        // another process had it open, so say that instead of reporting a change
+
+        if (confirmDialog("Unable to check whether " + entry.getKey() + " was changed\nfrom outside of this instance of " + appTitle +
+                          ", because it could not be read:\n\n" + getThrowableMessage(e) + "\n\nSave anyway?", false))
+          continue;
+
+        return false;
+      }
 
       if (hex.equalsIgnoreCase(entry.getValue()) == false)
       {
