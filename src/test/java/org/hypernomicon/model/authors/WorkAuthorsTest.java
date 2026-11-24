@@ -160,6 +160,30 @@ class WorkAuthorsTest
   }
 
 //---------------------------------------------------------------------------
+
+  /**
+   * A group that gives none of the values for an author without a person record takes each one, under
+   * its own tag, from the work's author of the same name.
+   */
+  @Test
+  void missingValuesAreTakenFromAuthorOfSameName()
+  {
+    HDT_Work work = db.createNewBlankRecord(hdtWork);
+    WorkAuthors authors = work.getAuthors();
+
+    authors.add(new RecordAuthor(work, new PersonName("John", "Smith"), Roles.EDITOR, Ternary.True));
+
+    authors.update(List.of(new ObjectGroup("Smith, John")));
+
+    assertEquals("Smith, John", onlyAuthorName(work));
+
+    RecordAuthor author = authors.iterator().next();
+
+    assertEquals(Roles.EDITOR, author.getRoles());
+    assertEquals(Ternary.True, author.getInFileName());
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

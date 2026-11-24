@@ -258,7 +258,7 @@ public class WorkAuthors extends RecordAuthors
       default            :                                       break;
     }
 
-    objGroup.addNestedEntry(tagInFileName, val);
+    objGroup.addNestedEntry(tag, val);
   }
 
 //---------------------------------------------------------------------------
