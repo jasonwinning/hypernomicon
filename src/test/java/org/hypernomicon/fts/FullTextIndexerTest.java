@@ -882,6 +882,44 @@ class FullTextIndexerTest
 
 //---------------------------------------------------------------------------
 
+  /** An exclusions file that cannot be read leaves nothing excluded, but is kept: saving settings that
+   *  did not change writes nothing, and saving different ones first keeps a copy of the file. */
+  @Test void unreadableExclusionsFileIsKept() throws Exception
+  {
+    Path exclDir        = Files.createDirectory(dbRoot.resolve("excluded")),
+         exclusionsFile = indexDir.resolve("exclusions.json");
+
+    String unreadable = "{ \"excludedPaths\": [ \"excluded\"";  // Cut off
+
+    Files.writeString(exclusionsFile, unreadable, StandardCharsets.UTF_8);
+
+    activateRegistry(exclDir);
+    openSession(SCHEMA_V1);
+
+    assertNotNull(indexer.exclusionsReadError(), "the failure to read the file is reported");
+    assertEquals(List.of(), indexer.getExcludedPaths(), "nothing is excluded until the file can be read");
+
+    indexer.setExcludedFileMasks("");
+    indexer.setExcludedPaths(List.of());
+
+    assertEquals(unreadable, Files.readString(exclusionsFile, StandardCharsets.UTF_8), "saving settings that did not change leaves the file as it was");
+
+    indexer.setExcludedPaths(List.of(FilePath.of(exclDir)));
+
+    assertEquals(unreadable, Files.readString(indexDir.resolve("exclusions-unreadable.json"), StandardCharsets.UTF_8), "a copy of the unreadable file is kept");
+    assertNull(indexer.exclusionsReadError(), "the file now holds what was saved");
+
+    closeSession();
+    openSession(SCHEMA_V1);
+
+    assertNull(indexer.exclusionsReadError(), "the saved file can be read");
+    assertEquals(List.of(FilePath.of(exclDir)), indexer.getExcludedPaths(), "the saved exclusions are read back");
+
+    closeSession();
+  }
+
+//---------------------------------------------------------------------------
+
   /** Files reserved for the database are listed as reserved: everything in its XML folder, which is
    *  never indexed even when of an indexable type, such as a description template, and any other
    *  file the database protects, such as its .hdb file. An .hdb file it does not protect is listed

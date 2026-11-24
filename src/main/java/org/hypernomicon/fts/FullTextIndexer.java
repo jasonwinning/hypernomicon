@@ -292,7 +292,8 @@ public class FullTextIndexer
   private volatile Runnable statusListener;
   private volatile List<PathMatcher> excludedFileMasks = List.of();
   private volatile List<String> excludedPaths = List.of();
-  private volatile String excludedFileMasksStr = "";
+  private volatile String excludedFileMasksStr = "",
+                          exclusionsReadError = null;  // Why the exclusions file could not be read, or null if it was read or there is none
   private volatile IndexerState state = IndexerState.CLOSED;
   private volatile boolean stopRequested, rebuildRequested, retryFailedRequested;
   private volatile int buildTotalFiles, buildProcessedFiles;
@@ -2974,17 +2975,22 @@ public class FullTextIndexer
 
   private static final String EXCLUSIONS_FILENAME = "exclusions.json";
 
+  /**
+   * Reads the exclusions file. If it cannot be read, nothing is excluded for now, but the file is
+   * left as it is and {@link #exclusionsReadError()} says why: saving the same empty lists again
+   * writes nothing, and a save of different ones first keeps a copy of the file.
+   */
   private void loadExclusions()
   {
-    FilePath exclusionsFile = indexDir.resolve(EXCLUSIONS_FILENAME);
+    FilePath exclusionsFile = exclusionsFilePath();
+
+    excludedPaths = List.of();
+    excludedFileMasksStr = "";
+    excludedFileMasks = List.of();
+    exclusionsReadError = null;
 
     if (exclusionsFile.exists() == false)
-    {
-      excludedPaths = List.of();
-      excludedFileMasksStr = "";
-      excludedFileMasks = List.of();
       return;
-    }
 
     try
     {
@@ -2992,20 +2998,30 @@ public class FullTextIndexer
       JsonObj obj = JsonObj.parseJsonObj(json);
 
       JsonArray arr = obj.getArray("excludedPaths");
-      excludedPaths = (arr == null) ? List.of() : arr.strStream().toList();
+      List<String> paths = (arr == null) ? List.of() : arr.strStream().toList();
 
-      excludedFileMasksStr = obj.getStrSafe("excludedFileMasks");
-      excludedFileMasks = parseFileMask(excludedFileMasksStr);
+      String masksStr = obj.getStrSafe("excludedFileMasks");
+      List<PathMatcher> masks = parseFileMask(masksStr);
+
+      excludedPaths = paths;
+      excludedFileMasksStr = masksStr;
+      excludedFileMasks = masks;
     }
     catch (Exception e)
     {
-      System.out.println("Full-text indexer: failed to load exclusions: " + getThrowableMessage(e));
+      exclusionsReadError = getThrowableMessage(e);
 
-      excludedPaths = List.of();
-      excludedFileMasksStr = "";
-      excludedFileMasks = List.of();
+      System.out.println("Full-text indexer: failed to load exclusions: " + exclusionsReadError);
     }
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public FilePath exclusionsFilePath() { return indexDir.resolve(EXCLUSIONS_FILENAME); }
+
+  /** Why the exclusions file could not be read when the indexer came online, or null if it was read or there is none */
+  public String exclusionsReadError()  { return exclusionsReadError; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -3059,9 +3075,24 @@ public class FullTextIndexer
     if (excludedFileMasksStr.isEmpty() == false)
       obj.put("excludedFileMasks", excludedFileMasksStr);
 
+    FilePath exclusionsFile = exclusionsFilePath();
+
     try
     {
-      indexDir.resolve(EXCLUSIONS_FILENAME).saveCharSequenceAtomically(obj.toString(), StandardCharsets.UTF_8);
+      if ((exclusionsReadError != null) && exclusionsFile.exists())
+      {
+        // Keep the lists that could not be read instead of replacing them with ones made without them
+
+        FilePath copy = indexDir.resolve("exclusions-unreadable.json");
+
+        for (int num = 2; copy.exists(); num++)
+          copy = indexDir.resolve("exclusions-unreadable-" + num + ".json");
+
+        exclusionsFile.copyTo(copy, false);
+      }
+
+      exclusionsFile.saveCharSequenceAtomically(obj.toString(), StandardCharsets.UTF_8);
+      exclusionsReadError = null;
     }
     catch (IOException e)
     {
@@ -3082,14 +3113,19 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Sets the excluded folders, saving them only if they changed */
   public void setExcludedPaths(List<FilePath> paths)
   {
-    excludedPaths = paths.stream()
-                         .map(dbRoot::relativize)
-                         .filter(Objects::nonNull)
-                         .map(rel -> rel.toString().replace('\\', '/'))
-                         .sorted()
-                         .toList();
+    List<String> newPaths = paths.stream()
+                                 .map(dbRoot::relativize)
+                                 .filter(Objects::nonNull)
+                                 .map(rel -> rel.toString().replace('\\', '/'))
+                                 .sorted()
+                                 .toList();
+
+    if (newPaths.equals(excludedPaths)) return;
+
+    excludedPaths = newPaths;
 
     saveExclusions();
   }
@@ -3105,9 +3141,14 @@ public class FullTextIndexer
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /** Sets the excluded file masks, saving them only if they changed */
   public void setExcludedFileMasks(String masks)
   {
-    excludedFileMasksStr = safeStr(masks).strip();
+    String newMasksStr = safeStr(masks).strip();
+
+    if (newMasksStr.equals(excludedFileMasksStr)) return;
+
+    excludedFileMasksStr = newMasksStr;
     excludedFileMasks = parseFileMask(excludedFileMasksStr);
 
     saveExclusions();

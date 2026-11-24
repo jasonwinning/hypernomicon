@@ -2896,6 +2896,14 @@ public abstract class AbstractHyperDB
 
             indexer.bringOnline(rootFilePath, indexDir, registryAccessor, filePath -> isProtectedFile(filePath, false));
 
+            nullSwitch(indexer.exclusionsReadError(), readError -> warningPopup
+            (
+              "Full-text search could not read its list of excluded folders and file masks:\n\n" + readError + "\n\n" +
+              "Until the list can be read, nothing is excluded from indexing.\nThe file is left as it is:\n\n" +
+              indexer.exclusionsFilePath() + "\n\n" +
+              "If the exclusions are changed in Settings, a copy of that file is kept beside it."
+            ));
+
             if (ftsIndexingEnabled)
             {
               indexer.startIndexing(ftsThreadCount);
