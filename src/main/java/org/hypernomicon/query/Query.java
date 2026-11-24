@@ -140,6 +140,17 @@ public abstract class Query<HDT_T extends HDT_Record>
   @SuppressWarnings("unused")
   public boolean hasOperand(int opNum, HyperTableCell op1, HyperTableCell op2) { return true; }
 
+  /**
+   * Override this to return true for each operand number whose cell can be a record chosen by the
+   * user, even if the operand can hold text instead. A query favorite keeps such an operand pointing
+   * at its record: it follows the record to a new ID and is emptied when the record is deleted. The
+   * other operands are left alone, because a cell there can carry a record type and a number that is
+   * not a record's ID, such as a relation or a field. The query tab reports an internal error if the
+   * query gives a record populator to an operand for which this returns false.
+   */
+  @SuppressWarnings("unused")
+  public boolean isRecordOperand(int opNum) { return false; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

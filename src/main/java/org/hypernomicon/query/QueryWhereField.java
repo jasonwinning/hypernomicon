@@ -64,6 +64,7 @@ class QueryWhereField extends RecordQuery
 //---------------------------------------------------------------------------
 
   @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
+  @Override public boolean isRecordOperand(int opNum)                       { return opNum == 3; }  // Text for some fields and operators, but a text cell has ID -1, so favorites leave it alone
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

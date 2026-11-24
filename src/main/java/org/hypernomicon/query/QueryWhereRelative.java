@@ -58,6 +58,7 @@ public class QueryWhereRelative extends RecordQuery
 //---------------------------------------------------------------------------
 
   @Override public boolean show(QueryType queryType, RecordType recordType) { return true; }
+  @Override public boolean isRecordOperand(int opNum)                       { return opNum == 3; }  // Text for the contains-text operators, but a text cell has ID -1, so favorites leave it alone
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

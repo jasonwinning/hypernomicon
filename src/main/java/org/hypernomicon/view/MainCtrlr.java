@@ -834,6 +834,8 @@ public final class MainCtrlr
         updateFavorites();
       }
 
+      favorites.removeRecordFromQueries(record);
+
       htFind.removeRowsIf(row -> row.getRecord() == record);
       viewSequence.removeRecord(record);
       tree().removeRecordFromRecentAncestry(record);

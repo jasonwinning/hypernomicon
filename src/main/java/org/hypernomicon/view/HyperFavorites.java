@@ -20,9 +20,8 @@ package org.hypernomicon.view;
 import org.hypernomicon.model.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.view.cellValues.GenericNonRecordHTC;
-import org.hypernomicon.view.cellValues.HyperTableCell;
-import org.hypernomicon.view.cellValues.RecordHTC;
+import org.hypernomicon.query.QueryRegistry;
+import org.hypernomicon.view.cellValues.*;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -35,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import java.util.stream.Stream;
 
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -135,7 +135,13 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 
   private final List<MenuItem> recordFavList, queryFavList;
-  private static final int QUERY_FAV_ROW_COLUMN_COUNT = 5;
+
+  // A query favorite's row holds the query table's cells from the query type column on
+
+  private static final int QUERY_FAV_ROW_COLUMN_COUNT = 5,
+                           QUERY_COL_NDX              = 1,
+                           FIRST_OPERAND_COL_NDX      = 2;
+
   public static final int FIRST_FAV_MENU_ITEM_NDX = 4;
 
   HyperFavorites(Menu mnuFavorites, Menu mnuQueries)
@@ -143,6 +149,11 @@ public class HyperFavorites
     recordFavList = mnuFavorites.getItems();
     queryFavList  = mnuQueries  .getItems();
   }
+
+//---------------------------------------------------------------------------
+
+  private Stream<QueryRow> queryFavRows()                     { return queryFavList.stream().flatMap(menuItem -> ((QueryFavorite)menuItem).rows.stream()); }
+  private static HyperTableCell emptyOperand(RecordType type) { return new RecordHTC(-1, "", type); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -257,6 +268,8 @@ public class HyperFavorites
               new RecordHTC(id, text, "all".equals(typeStr) ? hdtNone : Tag.parseTypeTagStr(typeStr));
           }
 
+          emptyOperandsNamingMissingRecords(row);
+
           query.rows.add(row);
         }
 
@@ -309,16 +322,65 @@ public class HyperFavorites
 
   void changeRecordID(RecordType changedType, int oldID, int newID)
   {
-    queryFavList.stream().map(menuItem -> (QueryFavorite)menuItem).forEach(favItem -> favItem.rows.forEach(row ->
+    queryFavRows().forEach(row ->
     {
-      for (int colNdx = 0; colNdx < QUERY_FAV_ROW_COLUMN_COUNT; colNdx++)
-      {
-        HyperTableCell cell = row.cells[colNdx];
+      for (int colNdx = FIRST_OPERAND_COL_NDX; colNdx < QUERY_FAV_ROW_COLUMN_COUNT; colNdx++)
+        if (namesRecord(row, colNdx, changedType, oldID))
+          row.cells[colNdx] = row.cells[colNdx].getCopyWithID(newID);
+    });
+  }
 
-        if ((getCellID(cell) == oldID) && (getCellType(cell) == changedType))
-          row.cells[colNdx] = cell.getCopyWithID(newID);
-      }
-    }));
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Empties each query favorite operand that names the record, so that a record created later with
+   * the same ID does not take its place.
+   */
+  void removeRecordFromQueries(HDT_Record record)
+  {
+    queryFavRows().forEach(row ->
+    {
+      for (int colNdx = FIRST_OPERAND_COL_NDX; colNdx < QUERY_FAV_ROW_COLUMN_COUNT; colNdx++)
+        if (namesRecord(row, colNdx, record.getType(), record.getID()))
+          row.cells[colNdx] = emptyOperand(record.getType());
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Empties each operand of the row that names a record that does not exist, as one deleted before
+   * deletions emptied the operands that named the record.
+   */
+  private static void emptyOperandsNamingMissingRecords(QueryRow row)
+  {
+    for (int colNdx = FIRST_OPERAND_COL_NDX; colNdx < QUERY_FAV_ROW_COLUMN_COUNT; colNdx++)
+    {
+      RecordType type = getCellType(row.cells[colNdx]);
+      int id = getCellID(row.cells[colNdx]);
+
+      if (allRealRecordTypes().contains(type) && namesRecord(row, colNdx, type, id) && (db.records(type).getByID(id) == null))
+        row.cells[colNdx] = emptyOperand(type);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether the cell in the given column of a query favorite's row names the record with the given type
+   * and ID. Only the operands that the row's query says can hold a record can name one: in the others,
+   * a cell can carry the same type and number without naming a record.
+   */
+  private static boolean namesRecord(QueryRow row, int colNdx, RecordType type, int id)
+  {
+    HyperTableCell cell = row.cells[colNdx];
+
+    return (colNdx >= FIRST_OPERAND_COL_NDX) && (id > 0) && (getCellID(cell) == id) && (getCellType(cell) == type) &&
+           nullSwitch(QueryRegistry.withID(getCellID(row.cells[QUERY_COL_NDX])), false,
+                      query -> query.isRecordOperand(colNdx - FIRST_OPERAND_COL_NDX + 1));
   }
 
 //---------------------------------------------------------------------------

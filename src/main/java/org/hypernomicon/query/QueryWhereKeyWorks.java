@@ -45,6 +45,10 @@ public class QueryWhereKeyWorks extends RecordQuery
   }
 
 //---------------------------------------------------------------------------
+
+  @Override public boolean isRecordOperand(int opNum) { return opNum == 3; }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public final boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)

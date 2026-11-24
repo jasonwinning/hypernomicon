@@ -107,8 +107,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private Node tabNewHeader;
   private PauseTransition popupDismissTimer;
 
-  private static final List<Query<?>> allQueries = new ArrayList<>();
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -146,14 +144,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public QueriesTabCtrlr(Tab tab) throws IOException
   {
     super(TabEnum.queryTabEnum, tab, "query/QueriesTab");
-
-    GeneralQueries .addQueries(allQueries);
-    FolderQueries  .addQueries(allQueries);
-    PersonQueries  .addQueries(allQueries);
-    ArgumentQueries.addQueries(allQueries);
-    WorkQueries    .addQueries(allQueries);
-
-//---------------------------------------------------------------------------
 
     btnExecute.setOnAction(event -> btnExecuteClick());
     btnToggleFavorite.setOnAction(event -> nullSwitch(curQueryCtrlr(), QueryCtrlr::btnFavoriteClick));
@@ -646,7 +636,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       return;
     }
 
-    allQueries.stream().filter(query -> query.show(newType, newType.getRecordType())).forEach(query -> pop.addQuery(row, query));
+    QueryRegistry.all().stream().filter(query -> query.show(newType, newType.getRecordType())).forEach(query -> pop.addQuery(row, query));
   }
 
 //---------------------------------------------------------------------------

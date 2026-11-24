@@ -204,6 +204,8 @@ public final class GeneralQueries
 
     allQueries.add(new FilteredRecordQuery(QUERY_RECORD_EQUALS, "show specified record")
     {
+      @Override public boolean isRecordOperand(int opNum) { return opNum == 2; }
+
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
         return recordByTypeInit(row, vp1, vp2);
@@ -267,6 +269,8 @@ public final class GeneralQueries
 
     allQueries.add(new RecordQuery(QUERY_LINKING_TO_RECORD, "with description linking to record")
     {
+      @Override public boolean isRecordOperand(int opNum) { return opNum == 2; }
+
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
         return recordByTypeInit(row, vp1, vp2);
@@ -309,6 +313,8 @@ public final class GeneralQueries
 
     allQueries.add(new FilteredRecordQuery(QUERY_MATCHING_RECORD, "with any text that would link to this record")
     {
+      @Override public boolean isRecordOperand(int opNum) { return opNum == 2; }
+
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
         return recordByTypeInit(row, vp1, vp2);
@@ -355,6 +361,8 @@ public final class GeneralQueries
 
     allQueries.add(new FilteredRecordQuery(QUERY_MATCHING_WORK_OR_SUBWORKS, "with any text that would link to this work or its child works")
     {
+      @Override public boolean isRecordOperand(int opNum) { return opNum == 1; }
+
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
         RecordByTypePopulator rtp = new RecordByTypePopulator();
@@ -458,6 +466,8 @@ public final class GeneralQueries
 
     allQueries.add(new RecordQuery(QUERY_MENTIONED_BY, "that are mentioned by record")
     {
+      @Override public boolean isRecordOperand(int opNum) { return opNum == 2; }
+
       @Override public boolean initRow(HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
       {
         return recordByTypeInit(row, vp1, vp2);

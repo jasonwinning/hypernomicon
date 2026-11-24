@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import java.util.Map.Entry;
 
@@ -1170,7 +1171,7 @@ public final class QueryCtrlr extends QuerySubCtrlr
 
     clearOperands(row, 1);
 
-    return (query == null) || query.initRow(row, htFields.getPopulator(OPERAND_1_COL_NDX), htFields.getPopulator(OPERAND_2_COL_NDX), htFields.getPopulator(OPERAND_3_COL_NDX));
+    return (query == null) || checkRecordOperands(query, row, query.initRow(row, htFields.getPopulator(OPERAND_1_COL_NDX), htFields.getPopulator(OPERAND_2_COL_NDX), htFields.getPopulator(OPERAND_3_COL_NDX)));
   }
 
 //---------------------------------------------------------------------------
@@ -1184,7 +1185,7 @@ public final class QueryCtrlr extends QuerySubCtrlr
 
     if ((query == null) || (getQueryType(row) == qtReport)) return true;
 
-    return query.op1Change(op1, row, htFields.getPopulator(OPERAND_1_COL_NDX), htFields.getPopulator(OPERAND_2_COL_NDX), htFields.getPopulator(OPERAND_3_COL_NDX));
+    return checkRecordOperands(query, row, query.op1Change(op1, row, htFields.getPopulator(OPERAND_1_COL_NDX), htFields.getPopulator(OPERAND_2_COL_NDX), htFields.getPopulator(OPERAND_3_COL_NDX)));
   }
 
 //---------------------------------------------------------------------------
@@ -1200,7 +1201,25 @@ public final class QueryCtrlr extends QuerySubCtrlr
 
     HyperTableCell op1 = row.getCell(OPERAND_1_COL_NDX);
 
-    return query.op2Change(op1, op2, row, htFields.getPopulator(OPERAND_1_COL_NDX), htFields.getPopulator(OPERAND_2_COL_NDX), htFields.getPopulator(OPERAND_3_COL_NDX));
+    return checkRecordOperands(query, row, query.op2Change(op1, op2, row, htFields.getPopulator(OPERAND_1_COL_NDX), htFields.getPopulator(OPERAND_2_COL_NDX), htFields.getPopulator(OPERAND_3_COL_NDX)));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Reports an internal error if the query has given an operand a record populator without saying, in
+   * {@link Query#isRecordOperand isRecordOperand}, that the operand holds records: a query favorite
+   * would then leave the operand's record alone when the record is deleted or its ID changes. It takes
+   * the result of the query's operand setup and returns it unchanged, so it wraps that call.
+   */
+  private boolean checkRecordOperands(Query<?> query, HyperTableRow row, boolean needsUpdate)
+  {
+    if (IntStream.rangeClosed(1, 3).anyMatch(opNum -> (htFields.getPopulator(opNum + QUERY_COL_NDX).getValueType(row) == cvtRecord) &&
+                                                      (query.isRecordOperand(opNum) == false)))
+      internalErrorPopup(90232);
+
+    return needsUpdate;
   }
 
 //---------------------------------------------------------------------------
