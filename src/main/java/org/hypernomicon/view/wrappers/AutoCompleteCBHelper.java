@@ -77,6 +77,9 @@ public class AutoCompleteCBHelper
                   selectingByText = false,     // True while the Enter key's text search runs; a dialog it opens takes the focus from the field
                   focusLeftForDialog = false;  // That dialog has the focus, so the focus coming back is not the user returning to the field
 
+  private String textAtLastKeyRelease = "";       // The editor's text after the last key release that was not a shortcut's own key
+  private int typedLengthAtLastKeyRelease = 0;    // How much of that text came before the selection
+
   // Both somethingWasTyped and typedMatch are needed because somethingWasTyped determines whether it pops up the list of
   // options even if typedMatch was not set to a match.
 
@@ -113,6 +116,8 @@ public class AutoCompleteCBHelper
       if (Boolean.TRUE.equals(newValue))
       {
         startValue = hcb == null ? HyperCB.selectedHTC(cb, cellFactory) : hcb.selectedHTC();
+        textAtLastKeyRelease = safeStr(cb.getEditor().getText());
+        typedLengthAtLastKeyRelease = 0;  // The whole text is about to be selected
         Platform.runLater(() -> cb.getEditor().selectAll());
       }
       else
@@ -354,7 +359,63 @@ public class AutoCompleteCBHelper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  /**
+   * Releasing a key that types nothing itself, such as Shift, Ctrl or Caps Lock, leaves the autocompletion
+   * alone; otherwise it would bring back a completion the user just deleted, or replace the text after the
+   * caret with one. The exception is a release that follows a shortcut that added text, like Ctrl+V when
+   * the V is let go first: the V's release is not handled as typing (the modifier is still held), so the
+   * modifier's release is.
+   */
   private void handleKeyReleased(KeyEvent event)
+  {
+    boolean typesNothing = typesNothing(event.getCode());
+
+    if ((typesNothing == false) || textAddedSinceLastKeyRelease())
+      updateAutoCompletion(event);
+
+    if (typesNothing || (event.isShortcutDown() == false))  // A shortcut's own key keeps the earlier text for the modifier's release to compare with
+      rememberEditorText();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean typesNothing(KeyCode code)
+  {
+    return code.isModifierKey() || code.isFunctionKey() || (code == KeyCode.CAPS) || (code == KeyCode.NUM_LOCK) || (code == KeyCode.SCROLL_LOCK);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  /**
+   * Whether text was added since the last key release that was not a shortcut's own key: the editor's text
+   * changed, and the part of it before the selection got longer. A deletion, or moving the caret, does not
+   * count.
+   */
+  private boolean textAddedSinceLastKeyRelease()
+  {
+    TextField editor = cb.getEditor();
+
+    return (safeStr(editor.getText()).equals(textAtLastKeyRelease) == false) &&
+           (editor.getSelection().getStart() > typedLengthAtLastKeyRelease);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void rememberEditorText()
+  {
+    TextField editor = cb.getEditor();
+
+    textAtLastKeyRelease = safeStr(editor.getText());
+    typedLengthAtLastKeyRelease = editor.getSelection().getStart();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateAutoCompletion(KeyEvent event)
   {
     if (notNormalTypingEvent(event))  // arrow keys, page up/down, escape, etc.
     {
