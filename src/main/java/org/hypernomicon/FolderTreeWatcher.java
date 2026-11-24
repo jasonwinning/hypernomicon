@@ -247,9 +247,10 @@ public class FolderTreeWatcher
               FilePath parentPath = folder.isConnectedToRoot() ? folder.filePath() : FilePath.of((Path) watchKey.watchable()),
                        filePath = parentPath.resolve(FilePath.of(watchEvent.context()));  // This is what actually changed
 
-              // Inter-computer message and lock files are never associated with database records;
-              // skip them to avoid unnecessary FileManager refreshes.
-              // These files are handled directly by handleInterComputerMessage().
+              // Inter-computer files (the lock file and the request and response message files) and
+              // temporary files are never associated with database records; skip them to avoid
+              // unnecessary FileManager refreshes. The message files are handled directly by
+              // handleInterComputerMessage().
 
               if (db.isInterComputerFile(filePath) || FilePath.isTemporaryFile(filePath.getNameOnly().toString()))
                 continue;
@@ -366,7 +367,7 @@ public class FolderTreeWatcher
       for (FilePath filePath : snapshot)
         if (filePath.exists() == false)
         {
-          // For files, suppress warnings when the parent directory was recently deleted externally.
+          // For files, suppress warnings when a folder containing the file was recently deleted externally.
           // For folders, suppress children when an ancestor is already in the confirmed list.
 
           if ((isAboutFoldersNotFiles ? confirmed : recentlyExternallyDeletedDirs).stream().noneMatch(ancestor -> ancestor.contains(filePath)))
@@ -439,10 +440,16 @@ public class FolderTreeWatcher
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
+    /**
+     * Handles a batch of events. A failure to register a new or renamed folder's tree does not stop
+     * the rest of the batch, or the File Manager refresh it calls for: the first such failure is
+     * thrown at the end, with any others added to it as suppressed exceptions.
+     */
     private void processEventList(List<WatcherEvent> eventList) throws IOException
     {
       boolean bannerPrinted = false;
       RefreshNeeded refreshNeeded = RefreshNeeded.NONE;
+      List<IOException> failures = new ArrayList<>();
 
       for (WatcherEvent watcherEvent : eventList)
       {
@@ -455,7 +462,7 @@ public class FolderTreeWatcher
           case wekCreate:
           {
             if (watcherEvent.isDirectory())
-              registerTree(newPath);
+              registerTree(newPath, failures);
             else if (((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
                      app.prefs.getBoolean(PrefKey.AUTO_IMPORT, true) &&
                      (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
@@ -535,13 +542,10 @@ public class FolderTreeWatcher
 
             nullSwitch(generalEventHook, hook -> hook.accept(IndexEvent.delete(oldPathInfo.getFilePath(), watcherEvent.isDirectory())));
 
-            // Evict the deleted path from the registry so stale entries don't linger
+            // Evict the deleted path (and, for a folder, everything under it) from the registry so
+            // stale entries don't linger
 
             nullSwitch(evictionHook, hook -> hook.accept(oldPathInfo.getFilePath()));
-
-            // There is no need to stop the watcher because nothing else should need to be deleted.
-            // Also, if it is restarted, state information about the inter-computer request and
-            // response is lost.
 
             refreshNeeded = RefreshNeeded.PRUNE_AND_REFRESH;
 
@@ -569,7 +573,8 @@ public class FolderTreeWatcher
 
             boolean inUse = HyperPath.isInUseByRecords(hyperPath);
 
-            // Evict old path from registry; new path will be interned via FilePath.of() as needed
+            // Evict the old path (and, for a folder, everything under it) from the registry; the new
+            // path will be interned via FilePath.of() as needed
 
             nullSwitch(evictionHook, hook -> hook.accept(oldPathInfo.getFilePath()));
 
@@ -652,7 +657,7 @@ public class FolderTreeWatcher
 
               runInFXThread(() -> hyperPath.assign(hyperPath.parentFolder(), newPath.getNameOnly()));
 
-              registerTree(newPath);
+              registerTree(newPath, failures);
             }
 
             nullSwitch(generalEventHook, hook -> hook.accept(IndexEvent.move(oldPathInfo.getFilePath(), newPath, watcherEvent.isDirectory())));
@@ -667,7 +672,7 @@ public class FolderTreeWatcher
             break;
         }
 
-        // Skip printing directory modify events - they're typically noise from Dropbox, antivirus, etc.
+        // Skip printing directory modify events; they're typically noise from Dropbox, antivirus, etc.
 
         if (consoleLogging && ((watcherEvent.kind != wekModify) || (watcherEvent.isDirectory() == false)))
         {
@@ -690,11 +695,40 @@ public class FolderTreeWatcher
         }
       }
 
+      // Prune through the throttle rather than stopping the watcher first: called from this
+      // thread, stop() would wait forever for this thread to end, and a restarted watcher would
+      // lose its state about an inter-computer request and response.
+
       switch (refreshNeeded)
       {
         case PRUNE_AND_REFRESH : FileManager.pruneAndRefresh(false); break;
         case REFRESH           : FileManager.refresh(); break;
         default                : break;
+      }
+
+      if (failures.isEmpty()) return;
+
+      IOException first = failures.getFirst();
+      failures.stream().skip(1).forEach(first::addSuppressed);
+      throw first;
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    /**
+     * Registers a folder's tree as {@link #registerTree(FilePath)} does, adding a failure to the
+     * given list instead of throwing it, so that the caller can go on with its other events.
+     */
+    private void registerTree(FilePath rootFilePath, List<IOException> failures)
+    {
+      try
+      {
+        registerTree(rootFilePath);
+      }
+      catch (IOException e)
+      {
+        failures.add(e);
       }
     }
 
@@ -704,24 +738,28 @@ public class FolderTreeWatcher
     /**
      * Walks the directory subtree rooted at {@code rootFilePath} and ensures every
      * directory has a corresponding {@link org.hypernomicon.model.records.HDT_Folder HDT_Folder}
-     * record and a registered {@link WatchKey}. This is the mechanism that keeps the
-     * in-memory database model synchronized with the physical filesystem: every folder
-     * under the database root must have a record (a fundamental invariant), and every
-     * folder must be watched so that external changes (renames, deletions, new files)
-     * are detected and surfaced to the user via the File Manager.
+     * record and a registered {@link WatchKey}. This is how folders found on disk get
+     * into the in-memory database model: every folder under the database root must
+     * have a record (a fundamental invariant), and every folder must be watched so
+     * that external changes (renames, deletions, new files) are detected and surfaced
+     * to the user via the File Manager.
      * <p>
-     * Called at watcher startup to establish the initial watch tree, on
-     * {@code wekCreate} when a new directory appears, on {@code wekRename} to
-     * re-register a renamed directory's subtree, and during
+     * Called at watcher startup to establish the initial watch tree; on
+     * {@code wekCreate} when a new directory appears and on {@code wekRename} to
+     * re-register a renamed directory's subtree (both through
+     * {@link #registerTree(FilePath, List)}, so that a failure does not stop the rest
+     * of the batch); by the event loop when a directory is created in a folder that
+     * does not have its record yet; and during
      * {@link WatcherThread#reconcileAfterOverflow reconcileAfterOverflow} to recover
-     * from lost {@code OVERFLOW} events. The method is idempotent: directories that
-     * already have records and watch keys are left unchanged.
+     * after an {@code OVERFLOW} event, which means events were lost. The method is
+     * idempotent: directories that already have records and watch keys are left
+     * unchanged.
      * <p>
      * The walk itself only registers watch keys; directories found without records
-     * get them in one FX-thread batch queued after the walk (see the visitor for why
-     * creation cannot happen on this thread). Until that batch runs, such a
-     * directory's watch key maps to no record and the event loop re-resolves it
-     * lazily.
+     * get them in one FX-thread batch queued after the walk, even when the walk fails
+     * partway (see {@link #walkAndRegister walkAndRegister} for why creation cannot
+     * happen on this thread). Until that batch runs, such a directory's watch key maps
+     * to no record and the event loop re-resolves it lazily.
      *
      * @param rootFilePath the root of the subtree to register
      * @throws IOException if the tree walk encounters an unrecoverable I/O error
@@ -730,6 +768,30 @@ public class FolderTreeWatcher
     {
       List<FilePath> dirsMissingRecords = new ArrayList<>();
 
+      // If the walk fails partway, the folders it reached are watched already, so they still get
+      // their records
+
+      try
+      {
+        walkAndRegister(rootFilePath, dirsMissingRecords);
+      }
+      finally
+      {
+        if (dirsMissingRecords.isEmpty() == false) runInFXThread(() ->
+        {
+          // The walk collected these in pre-order, so parents come before children
+          // (and creation fills in any still-missing parents itself)
+
+          dirsMissingRecords.stream().filter(FilePath::exists).forEach(dir -> HyperPath.folderRecordFor(dir, true));
+        });
+      }
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    private void walkAndRegister(FilePath rootFilePath, List<FilePath> dirsMissingRecords) throws IOException
+    {
       Files.walkFileTree(rootFilePath.toPath(), new FileVisitor<>()
       {
         /**
@@ -751,7 +813,8 @@ public class FolderTreeWatcher
           // which throws ConcurrentModificationException. Missing records are
           // created in one FX-thread batch after the walk instead, the same
           // discipline the deletion path follows. A null map value is fine: the
-          // event loop re-resolves it lazily, by which time the batch has run.
+          // event loop re-resolves it lazily, normally after the batch has run
+          // (the event loop says what happens to an event that comes first).
 
           HDT_Folder folder = HyperPath.existingFolderRecordAtExactly(filePath);
 
@@ -797,14 +860,6 @@ public class FolderTreeWatcher
 
           return FileVisitResult.CONTINUE;
         }
-      });
-
-      if (dirsMissingRecords.isEmpty() == false) runInFXThread(() ->
-      {
-        // The walk collected these in pre-order, so parents come before children
-        // (and creation fills in any still-missing parents itself)
-
-        dirsMissingRecords.stream().filter(FilePath::exists).forEach(dir -> HyperPath.folderRecordFor(dir, true));
       });
     }
 
